@@ -10,7 +10,7 @@ server <- function(input, output) {
 
   # Connect to the ODK Central server using ruODK
   ruODK::ru_setup(
-    svc = "https://timicodktest.smartforest.de/v1/projects/2/forms/01-TIMCI-CRF-Facility.svc",
+    svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
     pw = Sys.getenv("ODKC_PW"),
     tz = "Europe/Zurich",
@@ -49,6 +49,6 @@ server <- function(input, output) {
   timci::odk_data_table_server("tab2", odk_form_vlist$fid, odk_data)
 
   # Display de-identified research data in a table
-  timci::odk_data_table_server("tab3", odk_form_vlist$fid, research_data)
+  timci::research_data_table_server("tab3", odk_form_vlist$fid, research_data)
 
 }

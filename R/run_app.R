@@ -12,6 +12,8 @@ run_app <- function() {
     stop("Could not find example directory. Try re-installing `timci`.", call. = FALSE)
   }
 
-  shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir,
+                launch.browser = TRUE,
+                display.mode = "normal")
 
 }
