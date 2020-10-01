@@ -10,8 +10,37 @@ ui <- shiny::fluidPage(
 
                     shiny::tabPanel("Dummy data",
                                     timci::dummy_data_table_ui("tab1")),
+
                     shiny::tabPanel("ODK data",
-                                    timci::odk_data_table_ui("tab2")),
+
+                                    # Sidebar layout with input and output definitions
+                                    shiny::sidebarLayout(
+
+                                      # Sidebar panel for inputs
+                                      shiny::sidebarPanel(
+
+                                        # Help text
+                                        shiny::helpText("Select the form you would like to visualise."),
+
+                                        # Display the list item selection module
+                                        timci::select_list_item_ui("select_odk_form"),
+
+                                        # Info text
+                                        shiny::p(shiny::strong("Database information")),
+
+                                        # Study data info
+                                        timci::odk_data_info_ui("raw_odk_info")
+
+                                      ),
+
+                                      # Display the table module
+                                      shiny::mainPanel(
+                                        shiny::fluidRow(
+                                          shiny::column(12, timci::odk_data_table_ui("raw_odk_table"))
+                                        )
+                                      )
+                                    )),
+
                     shiny::tabPanel("Data Management",
                                     shiny::fluidRow(
                                       shiny::h2("Quality checks")),
@@ -35,9 +64,47 @@ ui <- shiny::fluidPage(
                                       shiny::p("Residence"),
                                       shiny::p("Dates"))
                                     ),
-                    shiny::tabPanel("De-identified research data",
-                                    timci::research_data_table_ui("tab3")),
+
+                    shiny::tabPanel("De-identified study data",
+                                    # Sidebar layout with input and output definitions
+                                    shiny::sidebarLayout(
+
+                                      # Sidebar panel for inputs
+                                      shiny::sidebarPanel(
+
+                                        # Help text
+                                        shiny::helpText("Select the form you would like to visualise."),
+
+                                        # Display the list item selection module
+                                        timci::select_list_item_ui("select_study"),
+
+                                        # Info text
+                                        shiny::p(shiny::strong("Database information")),
+
+                                        # Study data info
+                                        timci::odk_data_info_ui("deidentified_study_info"),
+
+                                        # Download study data in *.csv format
+                                        timci::csv_download_ui("deidentified_study_download")
+
+                                      ),
+
+                                      # Display the table module
+                                      shiny::mainPanel(
+                                        shiny::fluidRow(
+                                          shiny::column(12, timci::odk_data_table_ui("deidentified_study_table"))
+                                        )
+                                      )
+                                    )),
+
                     shiny::tabPanel("Enrolment",
-                                    timci::enrolment_tab_ui("enrolment"))
-                    ),
+                                    shiny::column(
+                                      6,
+                                      timci::enrolment_tab_ui("enrolment"))
+                                    ),
+
+                    shiny::tabPanel("Day 7 follow-up",
+                                    timci::qr_code_image_ui("qrcode"))
+
+                    )
   )

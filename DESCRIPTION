@@ -13,18 +13,20 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    ruODK,
     readxl,
     hash,
     ggplot2,
-    scales,
     dplyr,
     viridis,
-    maps,
     pryr,
     flexdashboard,
     shiny,
     magrittr,
     utils,
-    rmarkdown
+    qrcode,
+    scales,
+    grDevices,
+    stats,
+    tidyr,
+    DT
 RoxygenNote: 7.1.1

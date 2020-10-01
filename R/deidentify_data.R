@@ -4,7 +4,7 @@
 #' @param data numeric, the non de-identified (raw) data vector
 #' @return This function returns de-identified data.
 #' @export
-#' @import dplyr stats magrittr
+#' @import dplyr magrittr
 
 deidentify_data <- function(data) {
 

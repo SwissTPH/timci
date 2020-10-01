@@ -2,7 +2,7 @@
 #' @param id Namespace for the Shiny module
 #' @param data Data
 #' @export
-#' @import flexdashboard rmarkdown
+#' @import flexdashboard
 
 enrolment_tab_server <- function(id, data) {
 
@@ -27,14 +27,6 @@ enrolment_tab_server <- function(id, data) {
       output$global_hist <- renderPlot({
         return(global_hist)
       })
-
-      # Download monitoring report
-      output$report <- downloadHandler(
-        filename = function(){paste("Report-", Sys.Date(), '.pdf',sep='')},
-        content = function(file){
-          ggsave(file, plot=global_hist)
-        }
-      )
 
     })
 

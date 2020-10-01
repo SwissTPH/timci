@@ -1,13 +1,15 @@
 #' Module UI function
 #' @param id Namespace for the Shiny module
-#' @import shiny
 #' @export
+#' @import shiny
 
-dummy_data_table_ui <- function(id) {
+qr_code_image_ui <- function(id) {
 
   # `NS(id)` returns a namespace function, which was saved as `ns` and will be invoked later.
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  shiny::tagList(shiny::tableOutput(ns("table")))
+  shiny::tagList(
+    shiny::imageOutput(ns("qRCodeImage"))
 
+  )
 }

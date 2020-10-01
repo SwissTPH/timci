@@ -11,7 +11,6 @@ dummy_data_table_server <- function(id, dummy_data) {
 
       output$table <- renderTable({
 
-        ns <- session$ns
         return(dummy_data)
 
       })
