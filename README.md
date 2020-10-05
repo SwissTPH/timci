@@ -2,12 +2,10 @@
 
 TIMCI is a R package for managing the data collected through the different studies of the TIMCI project (Tools for Integarted Management of Childhood Illnesses).
 
-## Installation of from GitHub:
-# install.packages("devtools")
-devtools::install_github("Thaliehln/timci")
-
+## Installation of timci from GitHub:
 ```bash
-install.packages('timci')
+install.packages("devtools")
+devtools::install_github("Thaliehln/timci")
 ```
 
 ## Cheatsheet (reproduced as is from the Devtools README)
@@ -31,16 +29,16 @@ valuable resources to help!
 
 1. [Shiny package](https://shiny.rstudio.com/articles/) has extensive documentation on best practices for R Shiny application development.
 
-2. (reproduced as is from the Devtools README) There are a number of fantastic blog posts on writing your first package, including
+2. [RuODK](https://docs.ropensci.org/ruODK/) is an R client to access and parse data from ODK Central.
+
+3. (reproduced as is from the Devtools README) There are a number of fantastic blog posts on writing your first package, including
    - [Writing an R package from scratch - Hilary Parker](https://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/)
    - [How to develop good R packages - Maëlle Salmon](http://www.masalmon.eu/2017/12/11/goodrpackages/)
    - [Making your first R package - Fong Chun Chan](http://tinyheero.github.io/jekyll/update/2015/07/26/making-your-first-R-package.html)
    - [Writing an R package from scratch - Tomas Westlake](https://r-mageddon.netlify.com/post/writing-an-r-package-from-scratch/)
 
-3. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
+4. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
    the exhaustive, canonical reference for writing R packages, maintained by the R core developers.
-
-4. [RuODK](https://docs.ropensci.org/ruODK/) is an R client to access and parse data from ODK Central.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
