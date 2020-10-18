@@ -9,14 +9,14 @@ select_list_item_server(id, list, data)
 \arguments{
 \item{id}{character used to specify namespace, see \code{shiny::\link[shiny]{NS}}}
 
-\item{list}{list of items (non-reactive) containing ODK forms}
+\item{list}{list of strings (non-reactive)}
 
-\item{data}{hash structure (non-reactive) containing the dataframes from different ODK forms}
+\item{data}{hash structure (non-reactive) indexing dataframes}
 }
 \value{
-reactive list with following components
+reactive list with the following components:
 \describe{
-  \item{item}{reactive character string indicating item selection}
+  \item{`citem`}{string indicating the current ODK form}
   \item{`cdata`}{dataframe containing the current ODK data}
 }
 }

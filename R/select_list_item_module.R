@@ -1,12 +1,12 @@
 #' List item selection module server-side processing
 #'
 #' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
-#' @param list list of items (non-reactive) containing ODK forms
-#' @param data hash structure (non-reactive) containing the dataframes from different ODK forms
+#' @param list list of strings (non-reactive)
+#' @param data hash structure (non-reactive) indexing dataframes
 #'
-#' @return reactive list with following components
+#' @return reactive list with the following components:
 #' \describe{
-#'   \item{item}{reactive character string indicating item selection}
+#'   \item{`citem`}{string indicating the current ODK form}
 #'   \item{`cdata`}{dataframe containing the current ODK data}
 #' }
 #' @export

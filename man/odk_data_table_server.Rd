@@ -9,9 +9,9 @@ odk_data_table_server(id, vars)
 \arguments{
 \item{id}{character used to specify namespace, see \code{shiny::\link[shiny]{NS}}}
 
-\item{vars}{parameter containing a reactive list
+\item{vars}{parameter containing a reactive list with the following components:
 \describe{
-  \item{`citem`}{string containing the current ODK form}
+  \item{`citem`}{string indicating the current ODK form}
   \item{`cdata`}{dataframe containing the current ODK data}
 }}
 }
