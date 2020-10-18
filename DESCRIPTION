@@ -9,7 +9,7 @@ Author:
            email = "helene.langet@swisstph.ch")
 Maintainer: The package maintainer <helene.langet@swisstph.ch>
 Description: The package provides all tools and functions necessary for the management, cleansing and visualisation of data generated as part of the TIMCI project, including the main study but other quantitative studies such as SPA.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
@@ -28,5 +28,6 @@ Imports:
     grDevices,
     stats,
     tidyr,
-    DT
+    DT,
+    data.table
 RoxygenNote: 7.1.1
