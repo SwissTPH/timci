@@ -5,18 +5,14 @@ TIMCI is a R package for managing and visualising in a Shiny app the data collec
 ## Installation of timci from GitHub:
 You can copy the development version (`master` branch) of the `timci` package.
 
-## Setup the ODK Central connection:
-You need to setup `ruODK` by creating environment variables in `~/.Renviron` for your project OData service URL and your user’s credentials (username and password):
+## Setup of the ODK Central connection:
+You need to setup `ruODK` by creating environment variables in `~/.Renviron` for your project OData service URL and your ODK Central credentials (username and password):
 ```bash
 ODKC_SVC="https://.../v1/projects/2/forms/....svc"
 ODKC_UN=me@email.com
 ODKC_PW=...
 ```
 For more information about `ruODK`, there are lots of great resources available at [https://docs.ropensci.org/ruODK/](https://docs.ropensci.org/ruODK/)
-
-## Cheatsheet (reproduced as is from the Devtools README)
-
-<a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
 
 ## Usage
 
@@ -42,6 +38,9 @@ timci::run_app() # Run Shiny app
 
 4. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
    the exhaustive, canonical reference for writing R packages, maintained by the R core developers.
+
+5. Cheatsheet (reproduced as is from the Devtools README)
+<a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
