@@ -39,7 +39,7 @@ timci::run_app() # Run Shiny app
 4. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
    the exhaustive, canonical reference for writing R packages, maintained by the R core developers.
 
-5. Cheatsheet (reproduced as is from the Devtools README)
+5. Cheatsheet
 <a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
 
 ## Contributing
