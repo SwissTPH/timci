@@ -3,10 +3,10 @@
 TIMCI is a R package for managing and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
 
 ## Installation of timci from GitHub:
-You can copy the development version (`master` branch) of the `timci` package.
+You can download the `master` branch of the `timci` package.
 
 ## Setup of the ODK Central connection:
-You need to setup `ruODK` by creating environment variables in `~/.Renviron` for your project OData service URL and your ODK Central credentials (username and password):
+You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your project as well as your credentials (username and password) on ODK Central:
 ```bash
 ODKC_SVC="https://.../v1/projects/2/forms/....svc"
 ODKC_UN=me@email.com
@@ -18,7 +18,6 @@ For more information about `ruODK`, there are lots of great resources available 
 
 ```R
 library(timci)
-
 timci::run_app() # Run Shiny app
 ```
 
