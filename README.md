@@ -1,29 +1,27 @@
 # TIMCI
 
-TIMCI is a R package for managing and visualising in a Shiny app the data collected through the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
+TIMCI is a R package for managing and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
 
 ## Installation of timci from GitHub:
+You can download the `master` branch of the `timci` package.
+
+## Setup of the ODK Central connection:
+You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your project as well as your credentials (username and password) on ODK Central:
 ```bash
-install.packages("devtools")
-devtools::install_github("Thaliehln/timci")
+ODKC_SVC="https://.../v1/projects/2/forms/....svc"
+ODKC_UN=me@email.com
+ODKC_PW=...
 ```
-
-## Cheatsheet (reproduced as is from the Devtools README)
-
-<a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
+For more information about `ruODK`, there are lots of great resources available at [https://docs.ropensci.org/ruODK/](https://docs.ropensci.org/ruODK/)
 
 ## Usage
 
 ```R
 library(timci)
-
 timci::run_app() # Run Shiny app
 ```
 
-## Useful resources
-
-R package development can be intimidating, however there are now a number of
-valuable resources to help!
+## Valuable resources
 
 <a href="https://shiny.rstudio.com/articles/"><img src="http://r-pkgs.org/images/cover.png" height="252" align = "right"/></a>
 
@@ -40,8 +38,11 @@ valuable resources to help!
 4. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
    the exhaustive, canonical reference for writing R packages, maintained by the R core developers.
 
+## Cheatsheet
+<a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
+
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome on the `development` branch. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
