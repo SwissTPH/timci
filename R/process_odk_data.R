@@ -48,10 +48,21 @@ deidentify_data <- function(df) {
              'is_young_infant',
              'crfs_t02a_a4_a_6',
              'main_cg',
+             'visit_reason_a3_c_1',
              'county',
+             'crfs_t05a_tt05a_c1_a_1',
+             'crfs_t05a_tt05a_c1_a_3',
+             'crfs_t05a_tt05a_c1_a_4',
              'crfs_t06a_tt06a_d2_6',
              'crfs_t06a_tt06a_d2_6a',
-             'crfs_t09a_g3_1')
+             'crfs_t07a_tt07a_e2_1',
+             'crfs_t07a_tt07a_e2_1a',
+             'crfs_t07a_tt07a_e2_2',
+             'crfs_t07a_tt07a_e2_2a',
+             'crfs_t07a_tt07a_e2_3',
+             'crfs_t09a_g3_1',
+             'crfs_t09a_i2_1',
+             'crfs_t09a_h2_1')
 
   # Combine 2 columns to get the age in years
   df$'a3_a_3' <- ifelse(!is.na(df$'a3_a_3'), df$'a3_a_3', df$'a3a_a3_a_2')
@@ -59,14 +70,21 @@ deidentify_data <- function(df) {
   df$'a3_a_6' <- ifelse(!is.na(df$'a3_a_6'), df$'a3_a_6', df$'a3a_a3_a_5')
   df %>%
     dplyr::select(subcol) %>%
-    dplyr::rename('sick_child_id' = 'pid',
-                  'age_y'         = 'a3_a_3',
-                  'age_m'         = 'a3_a_6',
-                  'sex'           = 'crfs_t02a_a4_a_6',
-                  'rep_temp'      = 'crfs_t06a_tt06a_d2_6',
-                  'meas_temp'     = 'crfs_t06a_tt06a_d2_6a',
-                  'diagnoses'     = 'crfs_t09a_g3_1'
-    )
+    dplyr::rename('sick_child_id'     = 'pid',
+                  'age_y'             = 'a3_a_3',
+                  'age_m'             = 'a3_a_6',
+                  'sex'               = 'crfs_t02a_a4_a_6',
+                  'caregivers'        = 'visit_reason_a3_c_1',
+                  'cough'             = 'crfs_t05a_tt05a_c1_a_1',
+                  'dif_breathing'     = 'crfs_t05a_tt05a_c1_a_3',
+                  'resp_duration'     = 'crfs_t05a_tt05a_c1_a_4',
+                  'meas_rr_bool'      = 'crfs_t07a_tt07a_e2_1',
+                  'meas_rr'           = 'crfs_t07a_tt07a_e2_1a',
+                  'meas_temp_bool'    = 'crfs_t06a_tt06a_d2_6',
+                  'meas_temp'         = 'crfs_t06a_tt06a_d2_6a',
+                  'mgt_diagnoses'     = 'crfs_t09a_g3_1',
+                  'mgt_referral'      = 'crfs_t09a_i2_1',
+                  'mgt_prescr_bool'   = 'crfs_t09a_h2_1')
 
 }
 
