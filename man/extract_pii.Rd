@@ -13,5 +13,5 @@ extract_pii(df)
 This function returns de-identified data.
 }
 \description{
-De-identification of the TIMCI research data
+Extraction of the personally identifiable data from the data collected
 }

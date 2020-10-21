@@ -101,8 +101,8 @@ ui <- shiny::fluidPage(
 
                                                       ),
 
-                                      # Raw ODK data panel (will be hidden / access restricted)
-                                      shiny::tabPanel("Follow-up",
+                                      # Day 7 follow-up data panel
+                                      shiny::tabPanel("Day 7 follow-up",
 
                                                       # Sidebar layout with input and output definitions
                                                       shiny::sidebarLayout(
@@ -110,22 +110,43 @@ ui <- shiny::fluidPage(
                                                         # Sidebar panel for inputs
                                                         shiny::sidebarPanel(
 
-                                                          # Help text
-                                                          shiny::helpText("ODK form selection"),
-
                                                           # Info text
                                                           shiny::p(shiny::strong("Database information")),
 
                                                           # Study data info
-                                                          timci::odk_data_info_ui("fu_info")),
+                                                          timci::odk_data_info_ui("day7fu_info")),
 
                                                         # Display the table module
                                                         shiny::mainPanel(
 
                                                           shiny::fluidRow(
-                                                            timci::data_table_ui("fu_table"))))
+                                                            timci::data_table_ui("day7fu_table"))))
 
-                                                      )
+                                                      ),
+
+                                      # Day 28 follow-up data panel
+                                      shiny::tabPanel("Day 28 follow-up",
+
+                                                      # Sidebar layout with input and output definitions
+                                                      shiny::sidebarLayout(
+
+                                                        # Sidebar panel for inputs
+                                                        shiny::sidebarPanel(
+
+                                                          # Info text
+                                                          shiny::p(shiny::strong("Database information")),
+
+                                                          # Study data info
+                                                          timci::odk_data_info_ui("day28fu_info")),
+
+                                                        # Display the table module
+                                                        shiny::mainPanel(
+
+                                                          shiny::fluidRow(
+                                                            timci::data_table_ui("day28fu_table"))))
+
+                                      )
+
                                       )
                     )
   )

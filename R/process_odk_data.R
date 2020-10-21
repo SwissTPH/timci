@@ -70,7 +70,7 @@ deidentify_data <- function(df) {
 
 #' Extract Personally Identifiable Information (PII)
 #'
-#' De-identification of the TIMCI research data
+#' Extraction of the personally identifiable data from the data collected
 #' @param df numeric, the non de-identified (raw) data vector
 #' @return This function returns de-identified data.
 #' @export
@@ -92,6 +92,29 @@ extract_pii <- function(df) {
                   'child_last_name'  = 'crfs_t02a_a4_a_3',
                   'mother_name'      = 'crfs_t02a_a4_a_8_1',
                   'phone_nb'         = 'crfs_t02b_a4_a_10')
+
+}
+
+#' Generate follow-up log
+#'
+#' Generate a list of participants to be called at Day between wmin and wmax
+#' @param df dataframe
+#' @param wmin dataframe
+#' @param wmax dataframe
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+generate_day7_fu_log <- function(df,
+                                 wmin,
+                                 wmax) {
+
+  cp <- extract_pii(df)
+  cp$"min_date" <- as.Date(cp$date) + wmin
+  cp$"max_date" <- as.Date(cp$date) + wmax
+
+  drops <- c("date")
+  cp[, !(names(cp) %in% drops)]
 
 }
 

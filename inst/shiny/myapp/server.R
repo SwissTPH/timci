@@ -113,10 +113,24 @@ server <- function(input, output) {
   # FOLLOW-UP #
   #############
 
+  # Day 7 follow-up
+
+  day7fu <- generate_day7_fu_log(study_data, 7, 9)
+
   # Execute the info module
-  timci::odk_data_info_server("fu_info", pii)
+  timci::odk_data_info_server("day7fu_info", day7fu)
 
   # Execute the table module
-  timci::data_table_server("fu_table", pii)
+  timci::data_table_server("day7fu_table", day7fu)
+
+  # Day 28 follow-up
+
+  day28fu <- generate_day7_fu_log(study_data, 28, 32)
+
+  # Execute the info module
+  timci::odk_data_info_server("day28fu_info", day28fu)
+
+  # Execute the table module
+  timci::data_table_server("day28fu_table", day28fu)
 
 }
