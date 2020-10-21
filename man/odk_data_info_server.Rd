@@ -4,16 +4,12 @@
 \alias{odk_data_info_server}
 \title{ODK data info module server-side processing}
 \usage{
-odk_data_info_server(id, vars)
+odk_data_info_server(id, df)
 }
 \arguments{
 \item{id}{character used to specify namespace, see \code{shiny::\link[shiny]{NS}}}
 
-\item{vars}{parameter containing a reactive list with the following components:
-\describe{
-  \item{`citem`}{string indicating the current ODK form}
-  \item{`cdata`}{dataframe containing the current ODK data}
-}}
+\item{df}{dataframe containing the current ODK data}
 }
 \description{
 This module displays some global information about the ODK data table that is displayed.

@@ -25,7 +25,7 @@ server <- function(input, output) {
   # RAW ODK DATA #
   ################
 
-  # Load ODK forms that have submissions
+  # Load ODK forms that have at least 1 submission
   odk_form_list <- ruODK::form_list()
   valid_odk_forms <- subset(odk_form_list, submissions > 0, select=c(fid))
   valid_odk_form_list <- valid_odk_forms$fid
@@ -43,13 +43,80 @@ server <- function(input, output) {
                                                      valid_odk_form_list,
                                                      odk_data)
 
+  # Execute the info module about the raw ODK data
+  timci::reactive_odk_data_info_server("raw_odk_info", current_odk_form)
+
+  # Execute the table module that displays the raw ODK data
+  timci::reactive_data_table_server("raw_odk_table", current_odk_form)
+
+  #############
+  # ENROLMENT #
+  #############
+
+  # Extract data from enrolled participants only
+  n_screened <- nrow(odk_data[["01-TIMCI-CRF-Facility"]])
+  study_data <- extract_enrolled_participants(odk_data[["01-TIMCI-CRF-Facility"]])
+  n_enrolled <- nrow(study_data)
+
+  # Execute the pie chart module to plot enrolment vs. non-enrolment
+  timci::pie_chart_server("enrolled",
+                          data.frame(group=c("Enrolled", "Not enrolled"), value= c(n_enrolled, n_screened-n_enrolled)))
+
+  # Execute the pie chart module to plot causes of non-enrolment
+  timci::pie_chart_server("inclusion_exclusion",
+                          count_screening(odk_data[["01-TIMCI-CRF-Facility"]]))
+
+  #######################################
+  # PERSONALLY IDENTIFIABLE INFORMATION #
+  #######################################
+
+  pii <- extract_pii(study_data)
+
+  ############################
+  # DE-IDENTIFIED STUDY DATA #
+  ############################
+
+  study_list = c("Pragmatic cluster randomised controlled trial",
+                 "Observational longitudinal study",
+                 "Service Provision Assessment")
+
+  # De-identify ODK data
+  research_data <- hash()
+  for(form in study_list){
+    if(form == "Pragmatic cluster randomised controlled trial"){
+      research_data[[form]] <- deidentify_data(study_data)
+    }
+    else if(form == "Observational longitudinal study"){
+      research_data[[form]] <- deidentify_data(study_data)
+    }
+    else{
+      research_data[[form]] <- study_data
+    }
+  }
+
+  # Execute the form selection module
+  current_study <- timci::select_list_item_server("select_study",
+                                                  study_list,
+                                                  research_data)
+
   # Execute the info module
-  timci::odk_data_info_server("raw_odk_info", current_odk_form)
+  timci::reactive_odk_data_info_server("deidentified_study_info", current_study)
 
   # Execute the table module
-  timci::odk_data_table_server("raw_odk_table", current_odk_form)
+  timci::reactive_data_table_server("deidentified_study_table", current_study)
 
-  # Execute the CSV download module
-  timci::csv_download_server("odk_data_download", current_odk_form)
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("deidentified_study_csv_export", current_study)
+  timci::xlsx_download_server("deidentified_study_xlsx_export", current_study)
+
+  #############
+  # FOLLOW-UP #
+  #############
+
+  # Execute the info module
+  timci::odk_data_info_server("fu_info", pii)
+
+  # Execute the table module
+  timci::data_table_server("fu_table", pii)
 
 }

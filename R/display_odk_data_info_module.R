@@ -1,4 +1,4 @@
-#' ODK data info module server-side processing
+#' Reactive ODK data info module server-side processing
 #'
 #' This module displays some global information about the ODK data table that is displayed.
 #'
@@ -10,8 +10,8 @@
 #' }
 #' @export
 
-odk_data_info_server <- function(id,
-                                 vars) {
+reactive_odk_data_info_server <- function(id,
+                                          vars) {
 
   dataInput <- reactive({
 
@@ -37,6 +37,39 @@ odk_data_info_server <- function(id,
 
       output$period <- renderText({
         paste("Period: ", min(dataInput()$date), ' - ', max(dataInput()$date))
+      })
+
+    })
+
+}
+
+#' ODK data info module server-side processing
+#'
+#' This module displays some global information about the ODK data table that is displayed.
+#'
+#' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
+#' @param df dataframe containing the current ODK data
+#' @export
+
+odk_data_info_server <- function(id,
+                                 df) {
+
+  moduleServer(
+
+    id,
+
+    function(input, output, session){
+
+      output$displayRecordNb <- renderText({
+        paste("Number of entries: ", nrow(df))
+      })
+
+      output$feature_number <- renderText({
+        paste("Number of features: ", ncol(df))
+      })
+
+      output$period <- renderText({
+        paste("Period: ", min(df$date), ' - ', max(df$date))
       })
 
     })

@@ -29,5 +29,6 @@ Imports:
     stats,
     tidyr,
     DT,
-    data.table
+    data.table,
+    openxlsx
 RoxygenNote: 7.1.1

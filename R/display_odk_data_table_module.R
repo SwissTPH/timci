@@ -1,4 +1,4 @@
-#' ODK data table module server-side processing
+#' Reactive data table module server-side processing
 #'
 #' This module displays the ODK data table corresponding to the form selected by the user.
 #'
@@ -10,8 +10,8 @@
 #' }
 #' @export
 
-odk_data_table_server <- function(id,
-                                  vars) {
+reactive_data_table_server <- function(id,
+                                       vars) {
 
   dataInput <- reactive({
 
@@ -39,7 +39,36 @@ odk_data_table_server <- function(id,
 
 }
 
-#' ODK data table module user interface
+#' Data table module server-side processing
+#'
+#' This module displays the ODK data table corresponding to the form selected by the user.
+#'
+#' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
+#' @param df parameter containing a dataframe
+#' @export
+
+data_table_server <- function(id,
+                              df) {
+
+  moduleServer(
+
+    id,
+
+    # Module function
+    function(input, output, session){
+
+      # Render the ODK data in a dynamic data table
+      output$table <- shiny::renderDataTable({
+
+        df
+
+      })
+
+    })
+
+}
+
+#' Data table module user interface
 #'
 #' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
 #'
@@ -47,7 +76,7 @@ odk_data_table_server <- function(id,
 #' @export
 #' @import shiny
 
-odk_data_table_ui <- function(id) {
+data_table_ui <- function(id) {
 
   # Return a namespace function, which is saved as `ns` and will be invoked later
   ns <- NS(id)
