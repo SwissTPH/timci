@@ -46,6 +46,7 @@ deidentify_data <- function(df) {
              'a3_a_3',
              'a3_a_6',
              'is_young_infant',
+             'crfs_t02a_a4_a_6',
              'main_cg',
              'county',
              'crfs_t06a_tt06a_d2_6',
@@ -59,11 +60,12 @@ deidentify_data <- function(df) {
   df %>%
     dplyr::select(subcol) %>%
     dplyr::rename('sick_child_id' = 'pid',
-                  'age_y' = 'a3_a_3',
-                  'age_m' = 'a3_a_6',
-                  'rep_temp' = 'crfs_t06a_tt06a_d2_6',
-                  'meas_temp' = 'crfs_t06a_tt06a_d2_6a',
-                  'diagnoses' = 'crfs_t09a_g3_1'
+                  'age_y'         = 'a3_a_3',
+                  'age_m'         = 'a3_a_6',
+                  'sex'           = 'crfs_t02a_a4_a_6',
+                  'rep_temp'      = 'crfs_t06a_tt06a_d2_6',
+                  'meas_temp'     = 'crfs_t06a_tt06a_d2_6a',
+                  'diagnoses'     = 'crfs_t09a_g3_1'
     )
 
 }
@@ -79,35 +81,44 @@ deidentify_data <- function(df) {
 extract_pii <- function(df) {
 
   subcol <- c('pid',
+              'crfs_t02b_a4_c_1',
+              'crfs_t02b_a4_c_2',
+              'main_cg',
+              'crfs_t02b_a4_a_10',
+              'crfs_t02b_a4_a_11',
               'date',
               'crfs_t02a_a4_a_1',
               'crfs_t02a_a4_a_3',
-              'crfs_t02a_a4_a_8_1',
-              'crfs_t02b_a4_a_10')
+              'crfs_t02a_a4_a_6',
+              'crfs_t02a_a4_a_8_1')
 
   df %>%
     dplyr::select(subcol) %>%
     dplyr::rename('sick_child_id'    = 'pid',
+                  'cg_first_name'    = 'crfs_t02b_a4_c_1',
+                  'cg_last_name'     = 'crfs_t02b_a4_c_2',
+                  'phone_nb'         = 'crfs_t02b_a4_a_10',
+                  'phone_ownership'  = 'crfs_t02b_a4_a_11',
                   'child_first_name' = 'crfs_t02a_a4_a_1',
                   'child_last_name'  = 'crfs_t02a_a4_a_3',
-                  'mother_name'      = 'crfs_t02a_a4_a_8_1',
-                  'phone_nb'         = 'crfs_t02b_a4_a_10')
+                  'child_sex'        = 'crfs_t02a_a4_a_6',
+                  'mother_name'      = 'crfs_t02a_a4_a_8_1')
 
 }
 
 #' Generate follow-up log
 #'
-#' Generate a list of participants to be called at Day between wmin and wmax
+#' Generate a list of participants to be called in a time window after baseline between wmin and wmax
 #' @param df dataframe
-#' @param wmin dataframe
-#' @param wmax dataframe
+#' @param wmin numerical, start of the follow-up period (in days)
+#' @param wmax numerical, end of the follow-up period (in days)
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
 
-generate_day7_fu_log <- function(df,
-                                 wmin,
-                                 wmax) {
+generate_fu_log <- function(df,
+                            wmin,
+                            wmax) {
 
   cp <- extract_pii(df)
   cp$"min_date" <- as.Date(cp$date) + wmin
@@ -118,6 +129,22 @@ generate_day7_fu_log <- function(df,
 
 }
 
+#' Generate caregiver recruitment log
+#'
+#' Generate a list of caregiver to be called for the qualitative studies
+#' @param df dataframe
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+generate_cg_log <- function(df) {
+
+  cp <- extract_pii(df)
+
+  drops <- c("date", "child_first_name", "child_last_name", "mother_name")
+  cp[, !(names(cp) %in% drops)]
+
+}
 
 #' Count the occurrence of a specific value in a column
 #'

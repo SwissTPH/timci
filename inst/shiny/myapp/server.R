@@ -109,13 +109,19 @@ server <- function(input, output) {
   timci::csv_download_server("deidentified_study_csv_export", current_study)
   timci::xlsx_download_server("deidentified_study_xlsx_export", current_study)
 
-  #############
-  # FOLLOW-UP #
-  #############
+  #####################
+  #####################
+  ###               ###
+  ###   FOLLOW-UP   ###
+  ###               ###
+  #####################
+  #####################
 
-  # Day 7 follow-up
+  ###################
+  # Day 7 follow-up #
+  ###################
 
-  day7fu <- generate_day7_fu_log(study_data, 7, 9)
+  day7fu <- generate_fu_log(study_data, 7, 9)
 
   # Execute the info module
   timci::odk_data_info_server("day7fu_info", day7fu)
@@ -123,14 +129,32 @@ server <- function(input, output) {
   # Execute the table module
   timci::data_table_server("day7fu_table", day7fu)
 
-  # Day 28 follow-up
+  ####################
+  # Day 28 follow-up #
+  ####################
 
-  day28fu <- generate_day7_fu_log(study_data, 28, 32)
+  day28fu <- generate_fu_log(study_data, 28, 32)
 
   # Execute the info module
   timci::odk_data_info_server("day28fu_info", day28fu)
 
   # Execute the table module
   timci::data_table_server("day28fu_table", day28fu)
+
+  ###############################
+  ###############################
+  ###                         ###
+  ###   QUALITATIVE STUDIES   ###
+  ###                         ###
+  ###############################
+  ###############################
+
+  cg_log <- generate_cg_log(study_data)
+
+  # Execute the info module
+  timci::odk_data_info_server("cg_info", cg_log)
+
+  # Execute the table module
+  timci::data_table_server("cg_table", cg_log)
 
 }

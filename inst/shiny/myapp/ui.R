@@ -143,10 +143,33 @@ ui <- shiny::fluidPage(
                                                         shiny::mainPanel(
 
                                                           shiny::fluidRow(
-                                                            timci::data_table_ui("day28fu_table"))))
+                                                            timci::data_table_ui("day28fu_table")))))
 
+                                      ),
+
+                    shiny::navbarMenu("Qualitative studies",
+
+                                      # Caregiver recruitment panel
+                                      shiny::tabPanel("Caregiver recruitment",
+
+                                                      # Sidebar layout with input and output definitions
+                                                      shiny::sidebarLayout(
+
+                                                        # Sidebar panel for inputs
+                                                        shiny::sidebarPanel(
+
+                                                          # Info text
+                                                          shiny::p(shiny::strong("Database information")),
+
+                                                          # Study data info
+                                                          timci::odk_data_info_ui("cg_info")),
+
+                                                        # Display the table module
+                                                        shiny::mainPanel(
+
+                                                          shiny::fluidRow(
+                                                            timci::data_table_ui("cg_table")))))
                                       )
 
-                                      )
                     )
   )
