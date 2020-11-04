@@ -36,7 +36,10 @@ reactive_odk_data_info_server <- function(id,
       })
 
       output$period <- renderText({
-        paste("Period: ", min(dataInput()$date), ' - ', max(dataInput()$date))
+        if("date" %in% colnames(dataInput())){
+          paste("Period: ", min(dataInput()$date), ' - ', max(dataInput()$date))}
+        else{
+          paste("")}
       })
 
     })
@@ -69,7 +72,10 @@ odk_data_info_server <- function(id,
       })
 
       output$period <- renderText({
-        paste("Period: ", min(df$date), ' - ', max(df$date))
+        if("date" %in% colnames(df)){
+          paste("Period: ", min(df$date), ' - ', max(df$date))}
+        else{
+          paste("")}
       })
 
     })

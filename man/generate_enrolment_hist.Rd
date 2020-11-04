@@ -2,16 +2,19 @@
 % Please edit documentation in R/plots.R
 \name{generate_enrolment_hist}
 \alias{generate_enrolment_hist}
-\title{Generate enrolment hist}
+\title{Create an enrolment histogram}
 \usage{
-generate_enrolment_hist(data)
+generate_enrolment_hist(df)
 }
 \arguments{
-\item{data}{Data}
+\item{df}{Dataframe to use for the plot}
 }
 \value{
-This function returns a ggplot object of a histogram representing enrolment in each facility.
+This function returns a ggplot object which contains a histogram representing the enrolment in each facility.
 }
 \description{
-This function plots a histogram representing enrolment.
+generate_enrolment_hist() creates a histogram plot that represents the enrolment level in the different health facilities.
+Red bars indicate health facilities which are far below the enrolment target.
+Orange bars indicate health facilities which are slightly below the enrolment target.
+Green bars indicate health facilities which are above the enrolment target.
 }

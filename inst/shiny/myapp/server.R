@@ -106,8 +106,8 @@ server <- function(input, output) {
   timci::reactive_data_table_server("deidentified_study_table", current_study)
 
   # Execute the CSV and Excel download modules
-  timci::csv_download_server("deidentified_study_csv_export", current_study)
-  timci::xlsx_download_server("deidentified_study_xlsx_export", current_study)
+  timci::reactive_csv_download_server("deidentified_study_csv_export", current_study)
+  timci::reactive_xlsx_download_server("deidentified_study_xlsx_export", current_study)
 
   #####################
   #####################
@@ -129,6 +129,10 @@ server <- function(input, output) {
   # Execute the table module
   timci::data_table_server("day7fu_table", day7fu)
 
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("day7fu_csv_export", "day7fu", day7fu)
+  timci::xlsx_download_server("day7fu_xlsx_export", "day7fu", day7fu)
+
   ####################
   # Day 28 follow-up #
   ####################
@@ -140,6 +144,10 @@ server <- function(input, output) {
 
   # Execute the table module
   timci::data_table_server("day28fu_table", day28fu)
+
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("day28fu_csv_export", "day28fu", day28fu)
+  timci::xlsx_download_server("day28fu_xlsx_export", "day28fu", day28fu)
 
   ###############################
   ###############################
@@ -156,5 +164,9 @@ server <- function(input, output) {
 
   # Execute the table module
   timci::data_table_server("cg_table", cg_log)
+
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("cg_csv_export", "caregiver-selection", cg_log)
+  timci::xlsx_download_server("cg_xlsx_export", "caregiver-selection", cg_log)
 
 }

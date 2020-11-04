@@ -4,16 +4,14 @@
 \alias{csv_download_server}
 \title{CSV data download module server-side processing}
 \usage{
-csv_download_server(id, vars)
+csv_download_server(id, name, df)
 }
 \arguments{
 \item{id}{character used to specify namespace, see \code{shiny::\link[shiny]{NS}}}
 
-\item{vars}{parameter containing a reactive list with the following components:
-\describe{
-  \item{`citem`}{string indicating the current ODK form}
-  \item{`cdata`}{dataframe containing the current ODK data}
-}}
+\item{name}{string containing the name of the data export}
+
+\item{df}{parameter containing a dataframe}
 }
 \description{
 CSV data download module server-side processing

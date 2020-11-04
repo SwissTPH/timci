@@ -2,11 +2,13 @@
 % Please edit documentation in R/plots.R
 \name{plot_enrolment_gauge}
 \alias{plot_enrolment_gauge}
-\title{Plot enrolment gauge}
+\title{Create an enrolment gauge}
 \usage{
-plot_enrolment_gauge(m, s, w, d)
+plot_enrolment_gauge(df, m, s, w, d)
 }
 \arguments{
+\item{df}{Dataframe}
+
 \item{m}{Maximal gauge value}
 
 \item{s}{Sucess}
@@ -19,7 +21,7 @@ plot_enrolment_gauge(m, s, w, d)
 This function plots a gauge representing enrolment.
 }
 \description{
-This function plots a gauge representing enrolment.
+plot_enrolment_gauge() creates a gauge plot that represents the global enrolment with respect to the target.
 }
 \details{
 Description of plot_enrolment_gauge

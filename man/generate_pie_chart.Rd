@@ -2,16 +2,16 @@
 % Please edit documentation in R/plots.R
 \name{generate_pie_chart}
 \alias{generate_pie_chart}
-\title{Generate pie chart with label}
+\title{Create a pie chart plot}
 \usage{
 generate_pie_chart(df)
 }
 \arguments{
-\item{df}{Dataframe}
+\item{df}{Dataframe to use for the plot}
 }
 \value{
-This function returns a ggplot object.
+This function returns a ggplot object which contains a pie chart.
 }
 \description{
-This function plots a pie chart.
+generate_pie_chart() creates a pie chart plot.
 }

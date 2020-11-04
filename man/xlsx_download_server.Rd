@@ -4,16 +4,14 @@
 \alias{xlsx_download_server}
 \title{Excel data download module server-side processing}
 \usage{
-xlsx_download_server(id, vars)
+xlsx_download_server(id, name, df)
 }
 \arguments{
 \item{id}{character used to specify namespace, see \code{shiny::\link[shiny]{NS}}}
 
-\item{vars}{parameter containing a reactive list with the following components:
-\describe{
-  \item{`citem`}{string indicating the current ODK form}
-  \item{`cdata`}{dataframe containing the current ODK data}
-}}
+\item{name}{string containing the name of the data export}
+
+\item{df}{parameter containing a dataframe}
 }
 \description{
 Excel data download module server-side processing

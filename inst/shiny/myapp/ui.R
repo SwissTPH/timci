@@ -114,7 +114,13 @@ ui <- shiny::fluidPage(
                                                           shiny::p(shiny::strong("Database information")),
 
                                                           # Study data info
-                                                          timci::odk_data_info_ui("day7fu_info")),
+                                                          timci::odk_data_info_ui("day7fu_info"),
+
+                                                          # Export study data in *.csv format
+                                                          timci::csv_download_ui("day7fu_csv_export"),
+
+                                                          # Export study data in *.xlsx format
+                                                          timci::xlsx_download_ui("day7fu_xlsx_export")),
 
                                                         # Display the table module
                                                         shiny::mainPanel(
@@ -137,7 +143,13 @@ ui <- shiny::fluidPage(
                                                           shiny::p(shiny::strong("Database information")),
 
                                                           # Study data info
-                                                          timci::odk_data_info_ui("day28fu_info")),
+                                                          timci::odk_data_info_ui("day28fu_info"),
+
+                                                          # Export study data in *.csv format
+                                                          timci::csv_download_ui("day28fu_csv_export"),
+
+                                                          # Export study data in *.xlsx format
+                                                          timci::xlsx_download_ui("day28fu_xlsx_export")),
 
                                                         # Display the table module
                                                         shiny::mainPanel(
@@ -162,7 +174,13 @@ ui <- shiny::fluidPage(
                                                           shiny::p(shiny::strong("Database information")),
 
                                                           # Study data info
-                                                          timci::odk_data_info_ui("cg_info")),
+                                                          timci::odk_data_info_ui("cg_info"),
+
+                                                          # Export study data in *.csv format
+                                                          timci::csv_download_ui("cg_csv_export"),
+
+                                                          # Export study data in *.xlsx format
+                                                          timci::xlsx_download_ui("cg_xlsx_export")),
 
                                                         # Display the table module
                                                         shiny::mainPanel(

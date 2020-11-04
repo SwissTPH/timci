@@ -1,20 +1,23 @@
-#' Generate enrolment hist
+#' Create an enrolment histogram
 #'
-#' This function plots a histogram representing enrolment.
+#' generate_enrolment_hist() creates a histogram plot that represents the enrolment level in the different health facilities.
+#' Red bars indicate health facilities which are far below the enrolment target.
+#' Orange bars indicate health facilities which are slightly below the enrolment target.
+#' Green bars indicate health facilities which are above the enrolment target.
 #'
-#' @param data Data
-#' @return This function returns a ggplot object of a histogram representing enrolment in each facility.
+#' @param df Dataframe to use for the plot
+#' @return This function returns a ggplot object which contains a histogram representing the enrolment in each facility.
 #' @export
 #' @import ggplot2
 
-generate_enrolment_hist <- function(data){
+generate_enrolment_hist <- function(df){
 
-  data <- data %>%
-    mutate(color_name=case_when(data$x<25 ~ "#ff0000",
-                                (data$x>=25 & data$x<45) ~ "#f9c800",
-                                data$x>=45 ~ "#a6d40d"))
-  ggplot(data, aes(x= reorder(Group.1, -x), y=x)) +
-    geom_bar(stat="identity", position = "dodge", fill=data$color_name) +
+  df <- df %>%
+    mutate(color_name=case_when(df$x<25 ~ "#ff0000",
+                                (df$x>=25 & df$x<45) ~ "#f9c800",
+                                df$x>=45 ~ "#a6d40d"))
+  ggplot(df, aes(x= reorder(Group.1, -x), y=x)) +
+    geom_bar(stat="identity", position = "dodge", fill=df$color_name) +
     labs(x="Facilities", y="Number of children enrolled", title="") +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks.y = element_blank()) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
@@ -22,11 +25,12 @@ generate_enrolment_hist <- function(data){
 
 }
 
-#' Plot enrolment gauge
+#' Create an enrolment gauge
 #'
-#' This function plots a gauge representing enrolment.
+#' plot_enrolment_gauge() creates a gauge plot that represents the global enrolment with respect to the target.
 #'
 #' Description of plot_enrolment_gauge
+#' @param df Dataframe
 #' @param m Maximal gauge value
 #' @param s Sucess
 #' @param w Warning
@@ -34,18 +38,18 @@ generate_enrolment_hist <- function(data){
 #' @return This function plots a gauge representing enrolment.
 #' @export
 
-plot_enrolment_gauge <- function(m, s, w, d){
+plot_enrolment_gauge <- function(df, m, s, w, d){
 
-  gauge(sum(data$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
+  gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
 
 }
 
-#' Generate pie chart with label
+#' Create a pie chart plot
 #'
-#' This function plots a pie chart.
+#' generate_pie_chart() creates a pie chart plot.
 #'
-#' @param df Dataframe
-#' @return This function returns a ggplot object.
+#' @param df Dataframe to use for the plot
+#' @return This function returns a ggplot object which contains a pie chart.
 #' @export
 #' @import ggplot2 scales
 #' @importFrom stats reorder
