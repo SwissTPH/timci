@@ -18,7 +18,8 @@ For more information about `ruODK`, there are lots of great resources available 
 
 ```R
 library(timci)
-timci::run_app() # Run Shiny app
+timci::run_mini_app() # Run minimalist Shiny app
+timci::run_app() # Run TIMCI Shiny app (request access to the TIMCI ODK Central instance)
 ```
 
 ## Valuable resources
