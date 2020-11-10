@@ -35,6 +35,7 @@ server <- function(input, output) {
   for(form in valid_odk_form_list){
     current_odk_data <- ruODK::odata_submission_get(fid = form)
     # Process ODK data (this will depend on the form - here targeting RCT / LS main form)
+    print(str(current_odk_data))
     odk_data[[form]] <- format_odk_data(current_odk_data)
   }
 
@@ -62,9 +63,12 @@ server <- function(input, output) {
   timci::pie_chart_server("enrolled",
                           data.frame(group=c("Enrolled", "Not enrolled"), value= c(n_enrolled, n_screened-n_enrolled)))
 
-  # Execute the pie chart module to plot causes of non-enrolment
-  timci::pie_chart_server("inclusion_exclusion",
-                          count_screening(odk_data[["01-TIMCI-CRF-Facility"]]))
+  # Execute the pie chart module to plot global causes of non-enrolment
+  plot1 <- timci::pie_chart_server("inclusion_exclusion",
+                                   count_screening(odk_data[["01-TIMCI-CRF-Facility"]]))
+
+  # Execute the PNG download modules
+  timci::report_download_server("report")
 
   #######################################
   # PERSONALLY IDENTIFIABLE INFORMATION #
@@ -132,6 +136,22 @@ server <- function(input, output) {
   # Execute the CSV and Excel download modules
   timci::csv_download_server("day7fu_csv_export", "day7fu", day7fu)
   timci::xlsx_download_server("day7fu_xlsx_export", "day7fu", day7fu)
+
+  ############################
+  # Referral level follow-up #
+  ############################
+
+  referralfu <- generate_fu_log(study_data, 7, 9) # To modify when follow-up data entered
+
+  # Execute the info module
+  timci::odk_data_info_server("referralfu_info", referralfu)
+
+  # Execute the table module
+  timci::data_table_server("referralfu_table", referralfu)
+
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("referralfu_csv_export", "referralfu", referralfu)
+  timci::xlsx_download_server("referralfu_xlsx_export", "referralfu", referralfu)
 
   ####################
   # Day 28 follow-up #

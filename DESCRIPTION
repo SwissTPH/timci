@@ -30,5 +30,6 @@ Imports:
     tidyr,
     DT,
     data.table,
-    openxlsx
+    openxlsx,
+    rmarkdown
 RoxygenNote: 7.1.1
