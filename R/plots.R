@@ -56,12 +56,15 @@ plot_enrolment_gauge <- function(df, m, s, w, d){
 
 generate_pie_chart <- function(df){
 
+  # Create percentage labels
+  df$percentage <- paste(round(df$value / sum(df$value) * 100, 1), " %")
+
   # Create the pie chart
   ggplot(df, aes(x="", y=value, fill=group)) +
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_brewer(palette = "Set1", name = "Group:") +
-    #geom_text(aes(y = value/3 + c(0, cumsum(value)[-length(value)]),label = scales::percent(value/100)), size=5) +
+    geom_text(aes(label = percentage), position = position_stack(vjust = 0.5))+
     theme_void() # remove background, grid, numeric labels
 
 }
