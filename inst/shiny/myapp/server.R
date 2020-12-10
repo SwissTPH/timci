@@ -17,7 +17,7 @@ server <- function(input, output) {
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
     pw = Sys.getenv("ODKC_PW"),
-    tz = "Europe/Zurich",
+    tz = Sys.getenv("TZ"),
     verbose = FALSE # Can be switched to TRUE for demo or debugging
   )
 
@@ -27,12 +27,13 @@ server <- function(input, output) {
 
   # Load ODK forms that have at least 1 submission
   odk_form_list <- ruODK::form_list()
-  valid_odk_forms <- subset(odk_form_list, submissions > 0, select=c(fid))
+  valid_odk_forms <- subset(odk_form_list, submissions > 0, select = c(fid))
   valid_odk_form_list <- valid_odk_forms$fid
 
   # Load ODK data
   odk_data <- hash::hash()
-  for(form in valid_odk_form_list){
+  for (form in valid_odk_form_list) {
+    # NB: will need to be updated to handle encrypted data
     current_odk_data <- ruODK::odata_submission_get(fid = form)
     # Process ODK data (this will depend on the form - here targeting RCT / LS main form)
     print(str(current_odk_data))
@@ -61,7 +62,7 @@ server <- function(input, output) {
 
   # Execute the pie chart module to plot enrolment vs. non-enrolment
   timci::pie_chart_server("enrolled",
-                          data.frame(group=c("Enrolled", "Not enrolled"), value= c(n_enrolled, n_screened-n_enrolled)))
+                          data.frame(group = c("Enrolled", "Not enrolled"), value = c(n_enrolled, n_screened - n_enrolled)))
 
   # Execute the pie chart module to plot global causes of non-enrolment
   plot1 <- timci::pie_chart_server("inclusion_exclusion",
@@ -86,11 +87,11 @@ server <- function(input, output) {
 
   # De-identify ODK data
   research_data <- hash()
-  for(form in study_list){
-    if(form == "Pragmatic cluster randomised controlled trial"){
+  for (form in study_list) {
+    if (form == "Pragmatic cluster randomised controlled trial") {
       research_data[[form]] <- deidentify_data(study_data)
     }
-    else if(form == "Observational longitudinal study"){
+    else if (form == "Observational longitudinal study") {
       research_data[[form]] <- deidentify_data(study_data)
     }
     else{

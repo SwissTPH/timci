@@ -11,7 +11,7 @@ plot_enrolment_gauge(df, m, s, w, d)
 
 \item{m}{Maximal gauge value}
 
-\item{s}{Sucess}
+\item{s}{Success}
 
 \item{w}{Warning}
 

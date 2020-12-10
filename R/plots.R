@@ -32,15 +32,16 @@ generate_enrolment_hist <- function(df){
 #' Description of plot_enrolment_gauge
 #' @param df Dataframe
 #' @param m Maximal gauge value
-#' @param s Sucess
+#' @param s Success
 #' @param w Warning
 #' @param d Danger
 #' @return This function plots a gauge representing enrolment.
 #' @export
+#' @import flexdashboard
 
 plot_enrolment_gauge <- function(df, m, s, w, d){
 
-  gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
+  flexdashboard::gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
 
 }
 
