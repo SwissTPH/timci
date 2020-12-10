@@ -17,7 +17,7 @@ server <- function(input, output) {
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
     pw = Sys.getenv("ODKC_PW"),
-    tz = "Europe/Zurich",
+    tz = Sys.getenv("TZ"),
     verbose = FALSE # Can be switched to TRUE for demo or debugging
   )
 
