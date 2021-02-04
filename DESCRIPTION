@@ -31,5 +31,6 @@ Imports:
     DT,
     data.table,
     openxlsx,
-    rmarkdown
+    rmarkdown,
+    stringr
 RoxygenNote: 7.1.1

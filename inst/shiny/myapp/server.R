@@ -36,7 +36,6 @@ server <- function(input, output) {
     # NB: will need to be updated to handle encrypted data
     current_odk_data <- ruODK::odata_submission_get(fid = form)
     # Process ODK data (this will depend on the form - here targeting RCT / LS main form)
-    print(str(current_odk_data))
     odk_data[[form]] <- format_odk_data(current_odk_data)
   }
 

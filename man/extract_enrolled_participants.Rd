@@ -10,7 +10,7 @@ extract_enrolled_participants(df)
 \item{df}{dataframe containing the non de-identified (raw) ODK data}
 }
 \value{
-This function returns a dataframe with enrolled participants only.
+This function returns a dataframe containing data of enrolled participants only
 }
 \description{
 Extract enrolled participants

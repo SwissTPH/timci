@@ -1,0 +1,55 @@
+---
+title: "TIMCI Day 7 follow-up log"
+author: "H. Langet"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  output_dir: system.file("export", "rct_exports", package = "timci")
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+This is the Day 7 follow-up log.
+
+## Connect to the ODK Central server using ruODK
+```{r, warning=FALSE, message=FALSE}
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+ruODK::ru_settings()
+```
+## Extract ODK RCT data
+### Load ODK forms that have at least one submission
+```{r, warning=FALSE, message=FALSE}
+odk_form_list <- ruODK::form_list()
+valid_odk_forms <- subset(odk_form_list, submissions > 0, select = c(fid, submissions))
+knitr::kable(valid_odk_forms, caption = 'List of ODK forms with submissions')
+```
+
+### Load contact information
+```{r, warning=FALSE, message=FALSE}
+raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+facility_data <- timci::format_odk_data(raw_facility_data)
+study_data <- timci::extract_enrolled_participants(facility_data)
+pii <- timci::extract_pii(study_data)
+knitr::kable(pii)
+```
+
+## Display QR codes
+```{r, warning=FALSE, message=FALSE}
+```
+
+# Export data in Excel
+```{r, warning=FALSE, message=FALSE}
+export_fname <- file.path(params$output_dir, paste("pii_", "_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(pii, export_fname, row.names = FALSE)
+```

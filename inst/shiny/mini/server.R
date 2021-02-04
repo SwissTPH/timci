@@ -27,12 +27,12 @@ server <- function(input, output) {
 
   # Load ODK forms that have at least 1 submission
   odk_form_list <- ruODK::form_list()
-  valid_odk_forms <- subset(odk_form_list, submissions > 0, select=c(fid))
+  valid_odk_forms <- subset(odk_form_list, submissions > 0, select = c(fid))
   valid_odk_form_list <- valid_odk_forms$fid
 
   # Load ODK data
   odk_data <- hash::hash()
-  for(form in valid_odk_form_list){
+  for (form in valid_odk_form_list) {
     odk_data[[form]] <- ruODK::odata_submission_get(fid = form)
   }
 
