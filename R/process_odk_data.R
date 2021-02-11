@@ -175,6 +175,7 @@ extract_pii <- function(df) {
 #'
 #' Generate a list of participants to be called in a time window after baseline between wmin and wmax
 #' @param df dataframe
+#' @param fudf follow-up dataframe
 #' @param wmin numerical, start of the follow-up period (in days)
 #' @param wmax numerical, end of the follow-up period (in days)
 #' @return This function returns a dataframe.
@@ -182,15 +183,34 @@ extract_pii <- function(df) {
 #' @import magrittr dplyr
 
 generate_fu_log <- function(df,
+                            fudf,
                             wmin,
                             wmax) {
 
-  cp <- extract_pii(df)
-  cp$"min_date" <- as.Date(cp$date_day0) + wmin
-  cp$"max_date" <- as.Date(cp$date_day0) + wmax
+  fu_log <- extract_pii(df)
+  fu_log$min_date <- as.Date(fu_log$date_day0) + wmin
+  fu_log$max_date <- as.Date(fu_log$date_day0) + wmax
+  fu_log$label <- paste(fu_log$fs_name,fu_log$ls_name)
+  fu_log$caregiver <- paste(fu_log$cg_fs_name,fu_log$cg_ls_name)
+  fu_log$mother <- paste(fu_log$mother_fs_name,fu_log$mother_ls_name)
+  fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
 
-  drops <- c("date_day0")
-  cp[, !(names(cp) %in% drops)]
+  col_order <- c('child_id',
+                 'label',
+                 'sex',
+                 'date_day0',
+                 'caregiver',
+                 'main_cg_lbl',
+                 'mother',
+                 'location_name',
+                 'phone_nb')
+  fu_log <- fu_log[, col_order]
+
+  fu_log %>% dplyr::rename('name' = 'child_id',
+                           'enroldate' = 'date_day0',
+                           'relationship' = 'main_cg_lbl',
+                           'location' = 'location_name',
+                           'phonenb' = 'phone_nb')
 
 }
 
