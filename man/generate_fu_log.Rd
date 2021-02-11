@@ -4,10 +4,12 @@
 \alias{generate_fu_log}
 \title{Generate follow-up log}
 \usage{
-generate_fu_log(df, wmin, wmax)
+generate_fu_log(df, fudf, wmin, wmax)
 }
 \arguments{
 \item{df}{dataframe}
+
+\item{fudf}{follow-up dataframe}
 
 \item{wmin}{numerical, start of the follow-up period (in days)}
 
