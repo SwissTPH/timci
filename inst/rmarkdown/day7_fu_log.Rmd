@@ -44,12 +44,35 @@ pii <- timci::extract_pii(study_data)
 knitr::kable(pii)
 ```
 
+### Day 7 follow-up
+```{r, warning=FALSE, message=FALSE}
+day7fu <- timci::generate_fu_log(pii, pii, 7, 9)
+knitr::kable(day7fu)
+```
+
 ## Display QR codes
 ```{r, warning=FALSE, message=FALSE}
 ```
 
 # Export data in Excel
 ```{r, warning=FALSE, message=FALSE}
-export_fname <- file.path(params$output_dir, paste("pii_", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(pii, export_fname, row.names = FALSE)
+xlsx_fname <- file.path(params$output_dir, paste("pii_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(pii, xlsx_fname, row.names = FALSE, password = "timcitest")
+```
+
+# Export the Day 7 follow-up
+```{r, warning=FALSE, message=FALSE}
+csv_fname <- file.path(params$output_dir, "day7fu.csv")
+write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
+```
+
+# Export the Day 7 follow-up
+```{r, warning=FALSE, message=FALSE}
+xlsx_fname <- file.path(params$output_dir, paste("cg_idi_participants_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(day7fu, xlsx_fname, row.names = FALSE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+csv_fname <- file.path(params$output_dir, "cg_idi_participants.csv")
+write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
 ```
