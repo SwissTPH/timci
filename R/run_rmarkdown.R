@@ -1,3 +1,29 @@
+#' Generate Rmarkdown file
+#'
+#' This function generate a standardised Rmarkdown report in two formats: html and docx.
+#'
+#' @param export_dir Path to the output folder for the generated Rmarkdown reports and database exports
+#' @param rmd_fn Filename of the Rmarkdown file
+#' @param output_fn Filename of the Rmarkdown rendered report
+#' @import rmarkdown
+#' @export
+
+generate_report <- function(export_dir, rmd_fn, output_fn) {
+
+  report <- system.file("rmarkdown", rmd_fn, package = "timci")
+  if (report == "") {
+    stop(paste("Could not find `", rmd_fn, "`. Try re-installing `timci`."), call. = FALSE)
+  }
+
+  rmarkdown::render(report,
+                    output_format = c("html_document", "word_document"),
+                    output_file = c(paste0(output_fn, '_',Sys.Date(),'.html'),
+                                    paste0(output_fn, '_',Sys.Date(),'.docx')),
+                    output_dir = export_dir,
+                    params = list(output_dir = export_dir))
+
+}
+
 #' Run Rmarkdown files
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
@@ -8,32 +34,28 @@
 
 run_rmarkdown <- function(export_dir) {
 
-  rmarkdown_dir <- system.file("rmarkdown", package = "timci")
-  if (rmarkdown_dir == "") {
-    stop("Could not find `rmarkdown directory`. Try re-installing `timci`.", call. = FALSE)
-  }
+  ##############
+  # RCT report #
+  ##############
 
-  rct <- system.file("rmarkdown", "rct_report.Rmd", package = "timci")
-  if (rct == "") {
-    stop("Could not find `rct.Rmd`. Try re-installing `timci`.", call. = FALSE)
-  }
+  generate_report(export_dir, "rct_report.Rmd", "rct_report")
 
-  rmarkdown::render(rct,
-                    output_format = c("html_document", "word_document"),
-                    output_file = c(paste0('rct_report_',Sys.Date(),'.html'),
-                                    paste0('rct_report_',Sys.Date(),'.docx')),
-                    output_dir = export_dir,
-                    params = list(output_dir = export_dir))
+  #######################
+  # Day 7 follow-up log #
+  #######################
 
-  day7_fu_log <- system.file("rmarkdown", "day7_fu_log.Rmd", package = "timci")
-  if (day7_fu_log == "") {
-    stop("Could not find `day7_fu_log.Rmd`. Try re-installing `timci`.", call. = FALSE)
-  }
+  generate_report(export_dir, "day7_fu_log.Rmd", "day7_fu_log")
 
-  rmarkdown::render(day7_fu_log,
-                    output_format = c("html_document", "word_document"),
-                    output_file = c(paste0('day7_fu_log_',Sys.Date(),'.html'),
-                                    paste0('day7_fu_log_',Sys.Date(),'.docx')),
-                    output_dir = export_dir)
+  ###################
+  # PATH M&E report #
+  ###################
+
+  generate_report(export_dir, "path_report.Rmd", "path_report")
+
+  #############################
+  # Intervention pilot report #
+  #############################
+
+  generate_report(export_dir, "pilot_report.Rmd", "pilot_report")
 
 }

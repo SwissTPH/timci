@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Pragmatic Cluster RCT"
+title: "TIMCI M&E indicators report"
 author: "H. Langet"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 params:
@@ -43,7 +43,9 @@ end_date <- max(facility_data$date)
 
 This report covers the period from **`r start_date`** to **`r end_date`**.
 
-# Participants
+# Sick child / infant presenting at the facility
+
+# of sick children [0-2 months] and [2-59 months] screened at the facility
 
 ```{r, echo=FALSE}
 n_screened <- nrow(facility_data)

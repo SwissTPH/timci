@@ -32,5 +32,6 @@ Imports:
     data.table,
     openxlsx,
     rmarkdown,
-    stringr
+    stringr,
+    qwraps2
 RoxygenNote: 7.1.1
