@@ -74,18 +74,18 @@ generate_pie_chart <- function(df){
 #'
 #' generate_day_bar_plot() creates a bar plot.
 #'
-#' @param df Dataframe to use for the plot
-#' @param date_min Start of the plot
-#' @param date_max End of the plot
-#' @return This function returns a ggplot object which contains a bar plot.
+#' @param date_vec Vector containing dates
+#' @param date_min Start date of the plot
+#' @param date_max End date of the plot
+#' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
 #' @export
 #' @import ggplot2 scales
 #' @importFrom stats aggregate
 
-generate_day_bar_plot <- function(df, date_min, date_max){
+generate_day_bar_plot <- function(date_vec, date_min, date_max){
 
   # Frequency
-  freqs <- aggregate(df$date, by = list(df$date), FUN = length)
+  freqs <- aggregate(date_vec, by = list(date_vec), FUN = length)
   freqs$names <- as.Date(freqs$Group.1, format = "%Y-%m-%d")
 
   ggplot(freqs, aes(x = names, y = x)) +
