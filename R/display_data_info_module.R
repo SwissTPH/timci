@@ -72,7 +72,7 @@ odk_data_info_server <- function(id,
       })
 
       output$period <- renderText({
-        if("date" %in% colnames(df)){
+        if ("date" %in% colnames(df)) {
           paste("Period: ", min(df$date), ' - ', max(df$date))}
         else{
           paste("")}
