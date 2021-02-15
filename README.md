@@ -1,6 +1,6 @@
 # TIMCI
 
-TIMCI is a R package for managing, exporting RMardown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
+TIMCI is a R package for managing, exporting Rmardown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
 
 ## Installation of timci from GitHub:
 You can download the `master` branch of the `timci` package.
@@ -13,17 +13,25 @@ ODKC_UN=me@email.com
 ODKC_PW=...
 ```
 For more information about `ruODK`, there are lots of great resources available at [https://docs.ropensci.org/ruODK/](https://docs.ropensci.org/ruODK/)
+For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
 ## Usage
 
+### Run a generic Shiny app 
+Should work with any ODK Central server
 ```R
 library(timci)
-timci::run_mini_app() # Run a minimalist Shiny app with RuODK connection to any ODK Central servers
-timci::run_app() # Run the TIMCI Shiny app (this requests access to the TIMCI ODK Central server)
+timci::run_mini_app()
+```
+### Run the TIMCI Shiny app
+This requests access to the TIMCI ODK Central server.
+```R
+library(timci)
+timci::run_app()
 ```
 
-### Generate several reports for TIMCI
-This requests access to the TIMCI ODK Central server
+### Generate several Rmarkdwon reports for TIMCI
+This requests access to the TIMCI ODK Central server.
 ```R
 library(timci)
 output_dir <- "directory_name"
