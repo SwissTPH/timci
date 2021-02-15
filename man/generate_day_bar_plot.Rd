@@ -4,17 +4,17 @@
 \alias{generate_day_bar_plot}
 \title{Create a daily bar plot}
 \usage{
-generate_day_bar_plot(df, date_min, date_max)
+generate_day_bar_plot(date_vec, date_min, date_max)
 }
 \arguments{
-\item{df}{Dataframe to use for the plot}
+\item{date_vec}{Vector containing dates}
 
-\item{date_min}{Start of the plot}
+\item{date_min}{Start date of the plot}
 
-\item{date_max}{End of the plot}
+\item{date_max}{End date of the plot}
 }
 \value{
-This function returns a ggplot object which contains a bar plot.
+This function returns a ggplot object which contains a bar plot of frequencies by dates
 }
 \description{
 generate_day_bar_plot() creates a bar plot.

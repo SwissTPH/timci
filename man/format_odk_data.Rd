@@ -7,11 +7,11 @@
 format_odk_data(df)
 }
 \arguments{
-\item{df}{dataframe containing the non de-identified (raw) ODK data}
+\item{df}{dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.
 }
 \description{
-Description of format_odk_data
+Format ODK data
 }
