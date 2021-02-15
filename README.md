@@ -1,6 +1,6 @@
 # TIMCI
 
-TIMCI is a R package for managing and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
+TIMCI is a R package for managing, exporting RMardown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
 
 ## Installation of timci from GitHub:
 You can download the `master` branch of the `timci` package.
