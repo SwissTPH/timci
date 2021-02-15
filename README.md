@@ -22,6 +22,18 @@ timci::run_mini_app() # Run a minimalist Shiny app with RuODK connection to any 
 timci::run_app() # Run the TIMCI Shiny app (this requests access to the TIMCI ODK Central server)
 ```
 
+### Generate several reports for TIMCI
+This requests access to the TIMCI ODK Central server
+```R
+library(timci)
+output_dir <- "directory_name"
+subdir <- paste0("reports_", Sys.Date())
+cdir <- dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
+timci::run_rmarkdown(file.path(output_dir, subdir))
+```
+## setup of the Windows task scheduler
+To be completed soon
+
 ## Valuable resources
 
 <a href="https://shiny.rstudio.com/articles/"><img src="http://r-pkgs.org/images/cover.png" height="252" align = "right"/></a>
