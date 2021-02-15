@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Intervention Pilot Report"
-author: "H. Langet"
+author: "Swiss Tropical and Public Health Institute"
 date: "11 2 2021"
 output: html_document
 ---

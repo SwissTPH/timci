@@ -1,23 +1,21 @@
 ---
 title: "TIMCI Day 7 follow-up log"
-author: "H. Langet"
+author: "Swiss Tropical and Public Health Institute"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 params:
-  output_dir: system.file("export", "rct_exports", package = "timci")
+  output_dir: tempdir()
 output:
   html_document: default
-  word_document: default
+  word_document:
+    reference_docx: fu_word_styles.docx
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction
-This is the Day 7 follow-up log.
-
-## Connect to the ODK Central server using ruODK
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
+# Connect to the ODK Central server using ruODK
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
   un = Sys.getenv("ODKC_UN"),
@@ -25,54 +23,70 @@ ruODK::ru_setup(
   tz = Sys.getenv("TZ"),
   verbose = FALSE # Can be switched to TRUE for demo or debugging
 )
-ruODK::ru_settings()
-```
-## Extract ODK RCT data
-### Load ODK forms that have at least one submission
-```{r, warning=FALSE, message=FALSE}
-odk_form_list <- ruODK::form_list()
-valid_odk_forms <- subset(odk_form_list, submissions > 0, select = c(fid, submissions))
-knitr::kable(valid_odk_forms, caption = 'List of ODK forms with submissions')
 ```
 
-### Load contact information
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
+# Load contact information
 raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-facility_data <- timci::format_odk_data(raw_facility_data)
+facility_data <- timci::process_facility_data(raw_facility_data)
 study_data <- timci::extract_enrolled_participants(facility_data)
 pii <- timci::extract_pii(study_data)
-knitr::kable(pii)
 ```
 
-### Day 7 follow-up
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
 day7fu <- timci::generate_fu_log(pii, pii, 7, 9)
-knitr::kable(day7fu)
 ```
 
-## Display QR codes
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
 ```
 
-# Export data in Excel
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
 xlsx_fname <- file.path(params$output_dir, paste("pii_", Sys.Date(), ".xlsx", sep = ""))
 openxlsx::write.xlsx(pii, xlsx_fname, row.names = FALSE, password = "timcitest")
 ```
 
-# Export the Day 7 follow-up
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
 csv_fname <- file.path(params$output_dir, "day7fu.csv")
 write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
 ```
 
-# Export the Day 7 follow-up
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
+library(qrcode)
+for (i in 1:nrow(day7fu)) {
+  pid <- toString(day7fu[i,'name'])
+  png_file <- file.path(tempdir(), paste0(pid,".png"))
+  png(png_file)
+  qrcode_gen(pid)
+  dev.off()
+  }
+
+df <- day7fu %>%
+  dplyr::mutate(
+    code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
+    ) %>%
+  dplyr::select('code', dplyr::everything()) %>%
+  dplyr::rename('id' = 'name',
+                'child' = 'label',
+                'date' = 'enroldate',
+                'contact' = 'phonenb')
+
+df$caregiver <- paste(df$caregiver,
+                      paste0('(',df$relationship,')'))
+df$child <- paste(df$child,
+                  paste0('(',df$sex,')'))
+df$contact <- paste(df$contact,
+                  paste0('(',df$location,')'))
+drops <- c("mother", "relationship", "sex", "location")
+df <- df[ , !(names(df) %in% drops)]
+df %>% knitr::kable()
+```
+
+```{r, echo=FALSE}
 xlsx_fname <- file.path(params$output_dir, paste("cg_idi_participants_", Sys.Date(), ".xlsx", sep = ""))
 openxlsx::write.xlsx(day7fu, xlsx_fname, row.names = FALSE)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, echo=FALSE}
 csv_fname <- file.path(params$output_dir, "cg_idi_participants.csv")
 write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
 ```
