@@ -28,13 +28,14 @@ ruODK::ru_setup(
 ```{r, echo=FALSE}
 # Load contact information
 raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
 facility_data <- timci::process_facility_data(raw_facility_data)
 study_data <- timci::extract_enrolled_participants(facility_data)
 pii <- timci::extract_pii(study_data)
 ```
 
 ```{r, echo=FALSE}
-day7fu <- timci::generate_fu_log(pii, pii, 7, 9)
+day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
 ```
 
 ```{r, echo=FALSE}

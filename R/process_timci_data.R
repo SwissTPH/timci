@@ -158,6 +158,7 @@ generate_fu_log <- function(df,
   fu_log$caregiver <- paste(fu_log$cg_fs_name,fu_log$cg_ls_name)
   fu_log$mother <- paste(fu_log$mother_fs_name,fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
+  fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
 
   col_order <- c('child_id',
                  'label',

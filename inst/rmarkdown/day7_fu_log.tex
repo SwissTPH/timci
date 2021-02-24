@@ -1,0 +1,700 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={TIMCI Day 7 follow-up log},
+  pdfauthor={Swiss Tropical and Public Health Institute},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable,booktabs}
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{TIMCI Day 7 follow-up log}
+\author{Swiss Tropical and Public Health Institute}
+\date{15 Februar, 2021}
+
+\begin{document}
+\maketitle
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+This is the Day 7 follow-up log.
+
+\hypertarget{connect-to-the-odk-central-server-using-ruodk}{%
+\subsection{Connect to the ODK Central server using
+ruODK}\label{connect-to-the-odk-central-server-using-ruodk}}
+
+\hypertarget{extract-odk-rct-data}{%
+\subsection{Extract ODK RCT data}\label{extract-odk-rct-data}}
+
+\hypertarget{load-contact-information}{%
+\subsubsection{Load contact
+information}\label{load-contact-information}}
+
+\begin{longtable}[]{@{}llllllllllllllllllllll@{}}
+\toprule
+\begin{minipage}[b]{0.02\columnwidth}\raggedright
+date\_visit\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+child\_id\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+cg\_fs\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+cg\_ls\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.01\columnwidth}\raggedright
+main\_cg\strut
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\raggedright
+main\_cg\_lbl\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+phone\_nb\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+phone\_owner\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+fs\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+ls\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.01\columnwidth}\raggedright
+sex\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+mother\_fs\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+mother\_ls\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+location\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+location\_name\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+prev\_enrl\strut
+\end{minipage} & \begin{minipage}[b]{0.01\columnwidth}\raggedright
+prev\_id\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+prev\_hf\_card\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+prev\_hf\_id\_cg\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+prev\_hf\_cg\strut
+\end{minipage} & \begin{minipage}[b]{0.02\columnwidth}\raggedright
+date\_prev\strut
+\end{minipage} & \begin{minipage}[b]{0.03\columnwidth}\raggedright
+enrl\_days\_card\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.02\columnwidth}\raggedright
+2021-02-06\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+S-F009-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Amina\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Tutuola\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
++254666333444\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Amos\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Tutuola\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+3\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.02\columnwidth}\raggedright
+2021-02-04\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+S-F040-P0004\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Ariyah\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Woods\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
++254657438012\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Tamera\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Wainwright\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+98\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.02\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+S-F040-P0003\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Alara\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Donaldson\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+6\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Other family member (related by blood)\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
++254333111555\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Dorian\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Conroy\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Linda\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Bradley\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+10\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Mboro\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+3\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.02\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+S-F040-P0002\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Madeleine\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Waters\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
++254234567890\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Jasmin\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Rodgers\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+2\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+12\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Tivaoune\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+98\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.02\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+S-F040-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Suzannah\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Martins\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
++254012345678\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Muhammad\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+Cousins\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+1\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+9\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+Thies\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+3\strut
+\end{minipage} & \begin{minipage}[t]{0.01\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.02\columnwidth}\raggedright
+NA\strut
+\end{minipage} & \begin{minipage}[t]{0.03\columnwidth}\raggedright
+NA\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{day-7-follow-up}{%
+\subsubsection{Day 7 follow-up}\label{day-7-follow-up}}
+
+\begin{longtable}[]{@{}lllllllll@{}}
+\toprule
+\begin{minipage}[b]{0.07\columnwidth}\raggedright
+name\strut
+\end{minipage} & \begin{minipage}[b]{0.09\columnwidth}\raggedright
+label\strut
+\end{minipage} & \begin{minipage}[b]{0.04\columnwidth}\raggedright
+sex\strut
+\end{minipage} & \begin{minipage}[b]{0.06\columnwidth}\raggedright
+enroldate\strut
+\end{minipage} & \begin{minipage}[b]{0.09\columnwidth}\raggedright
+caregiver\strut
+\end{minipage} & \begin{minipage}[b]{0.20\columnwidth}\raggedright
+relationship\strut
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\raggedright
+mother\strut
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\raggedright
+location\strut
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\raggedright
+phonenb\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+S-F009-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Amos Tutuola\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.06\columnwidth}\raggedright
+2021-02-06\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Amina Tutuola\strut
+\end{minipage} & \begin{minipage}[t]{0.20\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
++254666333444\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+S-F040-P0004\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Tamera Wainwright\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright
+female\strut
+\end{minipage} & \begin{minipage}[t]{0.06\columnwidth}\raggedright
+2021-02-04\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Ariyah Woods\strut
+\end{minipage} & \begin{minipage}[t]{0.20\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
++254657438012\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+S-F040-P0003\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Dorian Conroy\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.06\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Alara Donaldson\strut
+\end{minipage} & \begin{minipage}[t]{0.20\columnwidth}\raggedright
+Other family member (related by blood)\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Linda Bradley\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Mboro\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
++254333111555\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+S-F040-P0002\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Jasmin Rodgers\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright
+female\strut
+\end{minipage} & \begin{minipage}[t]{0.06\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Madeleine Waters\strut
+\end{minipage} & \begin{minipage}[t]{0.20\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Tivaoune\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
++254234567890\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+S-F040-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Muhammad Cousins\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.06\columnwidth}\raggedright
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\raggedright
+Suzannah Martins\strut
+\end{minipage} & \begin{minipage}[t]{0.20\columnwidth}\raggedright
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
+Thies\strut
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\raggedright
++254012345678\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{display-qr-codes}{%
+\subsection{Display QR codes}\label{display-qr-codes}}
+
+\hypertarget{export-data-in-excel}{%
+\section{Export data in Excel}\label{export-data-in-excel}}
+
+\hypertarget{export-the-day-7-follow-up}{%
+\section{Export the Day 7 follow-up}\label{export-the-day-7-follow-up}}
+
+\hypertarget{export-the-day-7-follow-up-1}{%
+\section{Export the Day 7
+follow-up}\label{export-the-day-7-follow-up-1}}
+
+\begin{verbatim}
+## Warning: package 'magrittr' was built under R version 4.0.3
+\end{verbatim}
+
+\begin{longtable}[]{@{}ccccc@{}}
+\caption{Table continues below}\tabularnewline
+\toprule
+\begin{minipage}[b]{0.17\columnwidth}\centering
+name\strut
+\end{minipage} & \begin{minipage}[b]{0.23\columnwidth}\centering
+label\strut
+\end{minipage} & \begin{minipage}[b]{0.10\columnwidth}\centering
+sex\strut
+\end{minipage} & \begin{minipage}[b]{0.15\columnwidth}\centering
+enroldate\strut
+\end{minipage} & \begin{minipage}[b]{0.21\columnwidth}\centering
+caregiver\strut
+\end{minipage}\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{0.17\columnwidth}\centering
+name\strut
+\end{minipage} & \begin{minipage}[b]{0.23\columnwidth}\centering
+label\strut
+\end{minipage} & \begin{minipage}[b]{0.10\columnwidth}\centering
+sex\strut
+\end{minipage} & \begin{minipage}[b]{0.15\columnwidth}\centering
+enroldate\strut
+\end{minipage} & \begin{minipage}[b]{0.21\columnwidth}\centering
+caregiver\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.17\columnwidth}\centering
+S-F009-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.23\columnwidth}\centering
+Amos Tutuola\strut
+\end{minipage} & \begin{minipage}[t]{0.10\columnwidth}\centering
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\centering
+2021-02-06\strut
+\end{minipage} & \begin{minipage}[t]{0.21\columnwidth}\centering
+Amina Tutuola\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.17\columnwidth}\centering
+S-F040-P0004\strut
+\end{minipage} & \begin{minipage}[t]{0.23\columnwidth}\centering
+Tamera Wainwright\strut
+\end{minipage} & \begin{minipage}[t]{0.10\columnwidth}\centering
+female\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\centering
+2021-02-04\strut
+\end{minipage} & \begin{minipage}[t]{0.21\columnwidth}\centering
+Ariyah Woods\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.17\columnwidth}\centering
+S-F040-P0003\strut
+\end{minipage} & \begin{minipage}[t]{0.23\columnwidth}\centering
+Dorian Conroy\strut
+\end{minipage} & \begin{minipage}[t]{0.10\columnwidth}\centering
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\centering
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.21\columnwidth}\centering
+Alara Donaldson\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.17\columnwidth}\centering
+S-F040-P0002\strut
+\end{minipage} & \begin{minipage}[t]{0.23\columnwidth}\centering
+Jasmin Rodgers\strut
+\end{minipage} & \begin{minipage}[t]{0.10\columnwidth}\centering
+female\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\centering
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.21\columnwidth}\centering
+Madeleine Waters\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.17\columnwidth}\centering
+S-F040-P0001\strut
+\end{minipage} & \begin{minipage}[t]{0.23\columnwidth}\centering
+Muhammad Cousins\strut
+\end{minipage} & \begin{minipage}[t]{0.10\columnwidth}\centering
+male\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\centering
+2021-02-03\strut
+\end{minipage} & \begin{minipage}[t]{0.21\columnwidth}\centering
+Suzannah Martins\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[]{@{}cccc@{}}
+\caption{Table continues below}\tabularnewline
+\toprule
+\begin{minipage}[b]{0.35\columnwidth}\centering
+relationship\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+mother\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+location\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+phonenb\strut
+\end{minipage}\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{0.35\columnwidth}\centering
+relationship\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+mother\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+location\strut
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+phonenb\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.35\columnwidth}\centering
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
++254666333444\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.35\columnwidth}\centering
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Joal Fadiuoth\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
++254657438012\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.35\columnwidth}\centering
+Other family member (related by blood)\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Linda Bradley\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Mboro\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
++254333111555\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.35\columnwidth}\centering
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Tivaoune\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
++254234567890\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.35\columnwidth}\centering
+Mother\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+NA NA\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+Thies\strut
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
++254012345678\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[]{@{}c@{}}
+\toprule
+\begin{minipage}[b]{0.69\columnwidth}\centering
+pic\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.69\columnwidth}\centering
+\includegraphics{C:/Users/langhe/Downloads/S-F0001-P0001.png}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.69\columnwidth}\centering
+\includegraphics{C:/Users/langhe/Downloads/S-F0001-P0001.png}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.69\columnwidth}\centering
+\includegraphics{C:/Users/langhe/Downloads/S-F0001-P0001.png}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.69\columnwidth}\centering
+\includegraphics{C:/Users/langhe/Downloads/S-F0001-P0001.png}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.69\columnwidth}\centering
+\includegraphics{C:/Users/langhe/Downloads/S-F0001-P0001.png}\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\end{document}
