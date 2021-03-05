@@ -2,7 +2,10 @@
 title: "TIMCI Intervention Pilot Report"
 author: "Swiss Tropical and Public Health Institute"
 date: "11 2 2021"
-output: html_document
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles1.docx
 ---
 
 ```{r setup, include=FALSE}

@@ -1,12 +1,11 @@
 ---
 title: "TIMCI M&E indicators report"
 author: "Swiss Tropical and Public Health Institute"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-params:
-  output_dir: tempdir()
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   html_document: default
-  word_document: default
+  word_document:
+    reference_docx: word_styles1.docx
 ---
 
 ```{r setup, include=FALSE}

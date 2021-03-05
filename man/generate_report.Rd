@@ -4,15 +4,17 @@
 \alias{generate_report}
 \title{Generate Rmarkdown file}
 \usage{
-generate_report(export_dir, rmd_fn, output_fn)
+generate_report(report_dir, rmd_fn, report_fn, rmd_params = "")
 }
 \arguments{
-\item{export_dir}{Path to the output folder for the generated Rmarkdown reports and database exports}
+\item{report_dir}{Path to the folder where the generated HTML and Microsoft Word DOCX Rmarkdown reports are stored}
 
 \item{rmd_fn}{Filename of the Rmarkdown file}
 
-\item{output_fn}{Filename of the Rmarkdown rendered report}
+\item{report_fn}{Filename of the Rmarkdown rendered report}
+
+\item{rmd_params}{List of parameters}
 }
 \description{
-This function generate a standardised Rmarkdown report in two formats: html and docx.
+This function generate a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
 }
