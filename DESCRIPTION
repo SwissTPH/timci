@@ -30,5 +30,8 @@ Imports:
     tidyr,
     DT,
     data.table,
-    openxlsx
+    openxlsx,
+    rmarkdown,
+    stringr,
+    qwraps2
 RoxygenNote: 7.1.1

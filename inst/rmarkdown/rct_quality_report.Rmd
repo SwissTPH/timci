@@ -1,0 +1,257 @@
+---
+title: "TIMCI Pragmatic Cluster RCT Data Quality Report"
+author: "Swiss Tropical and Public Health Institute"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  output_dir: tempdir()
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles1.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Introduction
+
+```{r, echo=FALSE}
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+```
+
+```{r, echo=FALSE}
+raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
+raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
+raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
+```
+
+```{r, echo=FALSE}
+facility_data <- timci::process_facility_data(raw_facility_data)
+```
+
+```{r, echo=FALSE}
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+```
+
+This data quality report covers the period from **`r start_date`** to **`r end_date`**.
+
+# 2. Submissions
+
+## Number of submissions per day
+```{r, echo=FALSE}
+w <- 14
+facility_submission_bar_plot <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(end_date) - w, as.Date(end_date))
+plot(facility_submission_bar_plot)
+```
+
+## Number of submissions per form
+```{r, echo=FALSE, results = "asis"}
+n_screened <- nrow(facility_data)
+screening_data <- timci::extract_match_from_xls_dict(facility_data, "screening_dict.xlsx")
+screening_fname <- file.path(params$output_dir, paste("timci_screening_data", "_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(screening_data, screening_fname, row.names = FALSE)
+
+study_data <- timci::extract_enrolled_participants(facility_data)
+pii <- timci::extract_pii(study_data)
+n_enrolled <- nrow(study_data)
+
+repeat_data <- extract_repeat_visits(facility_data)
+n_repeat <- nrow(repeat_data)
+
+n_day7fu <- nrow(raw_day7fu_data)
+n_day28fu <- nrow(raw_day28fu_data)
+n_hospit <- nrow(raw_hospit_data)
+
+n_withdrawal <- nrow(raw_withdrawal_data)
+
+n_all <- n_screened + n_day7fu + n_day28fu + n_hospit + n_withdrawal
+visit_names <- c("Screening",
+                 "Baseline visit",
+                 "Repeat visit",
+                 "Day 7 phone call",
+                 "Day 28 phone call",
+                 "Hospital visit",
+                 "Withdrawal",
+                 "All")
+submissions <- c(n_screened, n_enrolled, n_repeat, n_day7fu, n_day28fu, n_hospit, n_withdrawal, n_all)
+visits <- data.frame(visit_names, submissions) 
+knitr::kable(visits, col.names = c("Visit", "N"))
+```
+
+# 3. Participants
+```{r, echo=FALSE, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+all <- data.frame(facility_data)
+all$sickness[is.na(all$sickness)] <- 0
+all$inpatient[is.na(all$inpatient)] <- 0
+all$consult_reason[is.na(all$consult_reason)] <- 0
+all$prev_enrl[is.na(all$prev_enrl)] <- 0
+all$repeat_consult[is.na(all$repeat_consult)] <- 0
+all$consent[is.na(all$consent)] <- 0
+all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+
+summary_statistics <- list(
+  "Age eligibility" = list(
+    "0 - 59 months" = ~qwraps2::n_perc(age_incl == 1, 2),
+    "First day of life" = ~qwraps2::n_perc(age_excl == 1, 2)
+    ),
+  "Visit eligibility" = list(
+    "Sick child" = ~qwraps2::n_perc(sickness == 1, 2),
+    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2),
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2, 2),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3, 2),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2)
+    ),
+  "Multiple enrolments" = list(
+    "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
+    "Last enrolment < 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
+    ),
+  "Consenting process outcome" = list(
+    "Enrolled" = ~qwraps2::n_perc(consent == 1, 2)
+    )
+)
+st <- qwraps2::summary_table(all, summary_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
+print(cbind(st, st1))
+```
+
+```{r, echo=FALSE}
+deidentified_facility_data <- timci::deidentify_data(study_data)
+day0_data_fname <- file.path(params$output_dir, paste("timci_facility_day0_data", "_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(deidentified_facility_data, day0_data_fname, row.names = FALSE)
+
+deidentified_repeat_data <- timci::deidentify_data(repeat_data)
+repeat_data_fname <- file.path(params$output_dir, paste("timci_facility_repeat_data", "_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(deidentified_repeat_data, repeat_data_fname, row.names = FALSE)
+
+day7fu_data_fname <- file.path(params$output_dir, paste("timci_followup_day7_data", "_", Sys.Date(), ".xlsx", sep = ""))
+openxlsx::write.xlsx(raw_day7fu_data, day7fu_data_fname, row.names = FALSE)
+```
+
+### Enrolment versus global target
+```{r, echo=FALSE}
+#enrolment_hist <- timci::generate_enrolment_hist(deidentified_facility_data)
+#plot(enrolment_hist)
+```
+### Enrolment versus weekly target
+### Enrolment rate
+```{r, echo=FALSE}
+enrolment_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Enrolled", "Not enrolled"), value = c(n_enrolled, n_screened - n_enrolled)))
+plot(enrolment_pie_chart)
+```
+
+### Non-enrolment causes
+```{r, echo=FALSE}
+non_enrolment_causes <- timci::count_screening(facility_data)
+nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
+plot(nec_pie_chart)
+```
+
+# 4. Baseline visit
+
+## Medical history
+
+## Hypoxaemia
+
+## Lab tests
+
+## Diagnosis and care management 
+
+### Referrals
+
+```{r, echo=FALSE, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+all <- data.frame(study_data)
+all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+
+summary_statistics <- list(
+  "Referral" = list(
+    "Reported (caregiver)" = ~qwraps2::n_perc(referral_cg == 1 | referral_cg == 2, 2),
+    "Declined (caregiver)" = ~qwraps2::n_perc(referral_cg == 97, 2),
+    "Reported (registry)" = ~qwraps2::n_perc(referral_hf == 1 | referral_hf == 2 | referral_hf == 3, 2),
+    "Inpatient admission (registry)" = ~qwraps2::n_perc(referral_hf == 4, 2)
+    )
+)
+referral_summary <- qwraps2::summary_table(all, summary_statistics)
+referral_summary1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
+print(cbind(referral_summary, referral_summary1))
+```
+
+```{r, echo=FALSE}
+referral_data <- timci::extract_referrals(deidentified_facility_data)
+n_referrals <- nrow(referral_data)
+referral_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Referred at Day 0", "Not referred at Day 0"), value = c(n_referrals, n_enrolled - n_referrals)))
+plot(referral_pie_chart)
+```
+
+# 5. Day 7 follow-up
+
+Lost to follow-up
+
+Child cured?
+Child alive?
+Visit to hospital between baseline and D7
+If yes, reason for admission, hospital name and location
+Was child hospitalized? If yes, details
+
+```{r, echo=FALSE, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+all <- data.frame(raw_day7fu_data)
+all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
+all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
+all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
+all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
+
+day7_call_ss <- list(
+  "Call outcome" = list(
+    "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+    "Valid time window" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+    "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2)
+    )
+)
+print(qwraps2::summary_table(all, day7_call_ss))
+
+day7_outcome_ss <- list(
+  "Cure" = list(
+    "Known" = ~qwraps2::n_perc(o1_o1_1 == 1 | o1_o1_1 == 2 | o1_o1_1 == 3 | o1_o1_1 == 4, 2)
+    ),
+  "Hospitalisation" = list(
+    "Reported" = ~qwraps2::n_perc(o1_o1_1a == 2 | n1_o3_1 == 1, 2)
+    )
+)
+print(qwraps2::summary_table(all, day7_outcome_ss))
+```
+# 6. Hospital follow-up
+
+# 7. Day 28 follow-up
+```{r, echo=FALSE, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+all <- data.frame(raw_day28fu_data)
+all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
+all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
+all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
+all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
+
+day28_call_ss <- list(
+  "Call outcome" = list(
+    "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+    "Valid time window" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+    "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
+    )
+)
+print(qwraps2::summary_table(all, day28_call_ss))
+```

@@ -1,0 +1,13 @@
+---
+title: "TIMCI Monitoring Report"
+output: html_document
+params:
+  n: NA
+---
+
+## Report generated on the `r Sys.Date()`
+
+```{r}
+# The `params` object is available in the document.
+params$n
+```

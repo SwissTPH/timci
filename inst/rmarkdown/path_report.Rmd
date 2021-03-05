@@ -1,0 +1,36 @@
+---
+title: "TIMCI M&E indicators report"
+author: "Swiss Tropical and Public Health Institute"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles1.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+```{r, echo=FALSE}
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+```
+
+```{r, echo=FALSE}
+raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
+raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
+```
+
+```{r, echo=FALSE}
+facility_data <- timci::process_facility_data(raw_facility_data)
+```

@@ -207,3 +207,69 @@ xlsx_download_ui <- function(id) {
   )
 
 }
+
+#' Report download module server-side processing
+#'
+#' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
+#' @export
+#' @import rmarkdown
+
+report_download_server <- function(id) {
+
+  moduleServer(
+
+    id,
+
+    # Module function
+    function(input, output, session){
+
+      output$download_report <- downloadHandler(
+        # For PDF output, change this to "report.pdf"
+        filename = {
+          paste("report_", Sys.Date(), ".html", sep = "")
+        },
+        content = function(file) {
+          # Copy the report file to a temporary directory before processing it, in
+          # case we don't have write permissions to the current working dir (which
+          # can happen when deployed).
+          temp_report <- file.path(tempdir(), "report.Rmd")
+          file.copy(system.file("extdata", "report.Rmd", package = "timci"), temp_report, overwrite = TRUE)
+
+          # Set up parameters to pass to Rmd document
+          params <- list(n=0)
+
+          # Knit the document, passing in the `params` list, and eval it in a
+          # child of the global environment (this isolates the code in the document
+          # from the code in this app).
+          rmarkdown::render(temp_report, output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        }
+      )
+
+    })
+
+}
+
+#' Report download module user interface
+#'
+#' @param id character used to specify namespace, see \code{shiny::\link[shiny]{NS}}
+#'
+#' @export
+#' @import shiny
+
+report_download_ui <- function(id) {
+
+  # Return a namespace function, which is saved as `ns` and will be invoked later
+  ns <- shiny::NS(id)
+
+  # Create an HTML tag definition
+  tagList(
+
+    # Download data button
+    shiny::downloadButton(ns("download_report"), "Download the monitoring report")
+
+  )
+
+}

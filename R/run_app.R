@@ -9,7 +9,7 @@ run_app <- function() {
 
   appDir <- system.file("shiny", "myapp", package = "timci")
   if (appDir == "") {
-    stop("Could not find myapp directory. Try re-installing `timci`.", call. = FALSE)
+    stop("Could not find `myapp` directory. Try re-installing `timci`.", call. = FALSE)
   }
 
   shiny::runApp(appDir,
@@ -29,7 +29,7 @@ run_mini_app <- function() {
 
   appDir <- system.file("shiny", "mini", package = "timci")
   if (appDir == "") {
-    stop("Could not find mini directory. Try re-installing `timci`.", call. = FALSE)
+    stop("Could not find `mini` directory. Try re-installing `timci`.", call. = FALSE)
   }
 
   shiny::runApp(appDir,

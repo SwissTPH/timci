@@ -17,7 +17,7 @@ server <- function(input, output) {
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
     pw = Sys.getenv("ODKC_PW"),
-    tz = "Europe/Zurich",
+    tz = Sys.getenv("TZ"),
     verbose = FALSE # Can be switched to TRUE for demo or debugging
   )
 
@@ -27,12 +27,13 @@ server <- function(input, output) {
 
   # Load ODK forms that have at least 1 submission
   odk_form_list <- ruODK::form_list()
-  valid_odk_forms <- subset(odk_form_list, submissions > 0, select=c(fid))
+  valid_odk_forms <- subset(odk_form_list, submissions > 0, select = c(fid))
   valid_odk_form_list <- valid_odk_forms$fid
 
   # Load ODK data
   odk_data <- hash::hash()
-  for(form in valid_odk_form_list){
+  for (form in valid_odk_form_list) {
+    # NB: will need to be updated to handle encrypted data
     current_odk_data <- ruODK::odata_submission_get(fid = form)
     # Process ODK data (this will depend on the form - here targeting RCT / LS main form)
     odk_data[[form]] <- format_odk_data(current_odk_data)
@@ -60,11 +61,14 @@ server <- function(input, output) {
 
   # Execute the pie chart module to plot enrolment vs. non-enrolment
   timci::pie_chart_server("enrolled",
-                          data.frame(group=c("Enrolled", "Not enrolled"), value= c(n_enrolled, n_screened-n_enrolled)))
+                          data.frame(group = c("Enrolled", "Not enrolled"), value = c(n_enrolled, n_screened - n_enrolled)))
 
-  # Execute the pie chart module to plot causes of non-enrolment
-  timci::pie_chart_server("inclusion_exclusion",
-                          count_screening(odk_data[["01-TIMCI-CRF-Facility"]]))
+  # Execute the pie chart module to plot global causes of non-enrolment
+  plot1 <- timci::pie_chart_server("inclusion_exclusion",
+                                   count_screening(odk_data[["01-TIMCI-CRF-Facility"]]))
+
+  # Execute the PNG download modules
+  timci::report_download_server("report")
 
   #######################################
   # PERSONALLY IDENTIFIABLE INFORMATION #
@@ -82,11 +86,11 @@ server <- function(input, output) {
 
   # De-identify ODK data
   research_data <- hash()
-  for(form in study_list){
-    if(form == "Pragmatic cluster randomised controlled trial"){
+  for (form in study_list) {
+    if (form == "Pragmatic cluster randomised controlled trial") {
       research_data[[form]] <- deidentify_data(study_data)
     }
-    else if(form == "Observational longitudinal study"){
+    else if (form == "Observational longitudinal study") {
       research_data[[form]] <- deidentify_data(study_data)
     }
     else{
@@ -132,6 +136,22 @@ server <- function(input, output) {
   # Execute the CSV and Excel download modules
   timci::csv_download_server("day7fu_csv_export", "day7fu", day7fu)
   timci::xlsx_download_server("day7fu_xlsx_export", "day7fu", day7fu)
+
+  ############################
+  # Referral level follow-up #
+  ############################
+
+  referralfu <- generate_fu_log(study_data, 7, 9) # To modify when follow-up data entered
+
+  # Execute the info module
+  timci::odk_data_info_server("referralfu_info", referralfu)
+
+  # Execute the table module
+  timci::data_table_server("referralfu_table", referralfu)
+
+  # Execute the CSV and Excel download modules
+  timci::csv_download_server("referralfu_csv_export", "referralfu", referralfu)
+  timci::xlsx_download_server("referralfu_xlsx_export", "referralfu", referralfu)
 
   ####################
   # Day 28 follow-up #

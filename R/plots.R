@@ -13,9 +13,9 @@
 generate_enrolment_hist <- function(df){
 
   df <- df %>%
-    mutate(color_name=case_when(df$x<25 ~ "#ff0000",
-                                (df$x>=25 & df$x<45) ~ "#f9c800",
-                                df$x>=45 ~ "#a6d40d"))
+    mutate(color_name = case_when(df$x<25 ~ "#ff0000",
+                                  (df$x>=25 & df$x<45) ~ "#f9c800",
+                                  df$x>=45 ~ "#a6d40d"))
   ggplot(df, aes(x= reorder(Group.1, -x), y=x)) +
     geom_bar(stat="identity", position = "dodge", fill=df$color_name) +
     labs(x="Facilities", y="Number of children enrolled", title="") +
@@ -32,15 +32,16 @@ generate_enrolment_hist <- function(df){
 #' Description of plot_enrolment_gauge
 #' @param df Dataframe
 #' @param m Maximal gauge value
-#' @param s Sucess
+#' @param s Success
 #' @param w Warning
 #' @param d Danger
 #' @return This function plots a gauge representing enrolment.
 #' @export
+#' @import flexdashboard
 
 plot_enrolment_gauge <- function(df, m, s, w, d){
 
-  gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
+  flexdashboard::gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
 
 }
 
@@ -56,12 +57,42 @@ plot_enrolment_gauge <- function(df, m, s, w, d){
 
 generate_pie_chart <- function(df){
 
+  # Create percentage labels
+  df$percentage <- paste(round(df$value / sum(df$value) * 100, 1), " %")
+
   # Create the pie chart
-  ggplot(df, aes(x="", y=value, fill=group)) +
+  ggplot(df, aes(x = "", y = value, fill = group)) +
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_brewer(palette = "Set1", name = "Group:") +
-    #geom_text(aes(y = value/3 + c(0, cumsum(value)[-length(value)]),label = scales::percent(value/100)), size=5) +
+    geom_text(aes(label = percentage), position = position_stack(vjust = 0.5))+
     theme_void() # remove background, grid, numeric labels
+
+}
+
+#' Create a daily bar plot
+#'
+#' generate_day_bar_plot() creates a bar plot.
+#'
+#' @param date_vec Vector containing dates
+#' @param date_min Start date of the plot
+#' @param date_max End date of the plot
+#' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
+#' @export
+#' @import ggplot2 scales
+#' @importFrom stats aggregate
+
+generate_day_bar_plot <- function(date_vec, date_min, date_max){
+
+  # Frequency
+  freqs <- aggregate(date_vec, by = list(date_vec), FUN = length)
+  freqs$names <- as.Date(freqs$Group.1, format = "%Y-%m-%d")
+
+  ggplot(freqs, aes(x = names, y = x)) +
+    geom_bar(stat="identity") +
+    ylab("Frequency") +
+    xlab("Date") +
+    #scale_x_date(date_labels = "%b %d")
+    theme_bw()
 
 }

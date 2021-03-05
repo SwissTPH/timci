@@ -90,14 +90,17 @@ ui <- shiny::fluidPage(
                                                         shiny::sidebarPanel(
 
                                                           # Help text
-                                                          shiny::helpText("Monitoring")),
+                                                          shiny::helpText("Monitoring"),
+                                                          # Export a monitoring report
+                                                          timci::report_download_ui("report")),
 
                                                         # Display a pie graph
                                                         shiny::mainPanel(
 
                                                           shiny::fluidRow(
                                                             shiny::column(6, timci::pie_chart_ui("enrolled")),
-                                                            shiny::column(6, timci::pie_chart_ui("inclusion_exclusion")))))
+                                                            shiny::column(6, timci::pie_chart_ui("inclusion_exclusion"))
+                                                          )))
 
                                                       ),
 
@@ -129,6 +132,35 @@ ui <- shiny::fluidPage(
                                                             timci::data_table_ui("day7fu_table"))))
 
                                                       ),
+
+                                      # Referral level follow-up data panel
+                                      shiny::tabPanel("Referral level follow-up",
+
+                                                      # Sidebar layout with input and output definitions
+                                                      shiny::sidebarLayout(
+
+                                                        # Sidebar panel for inputs
+                                                        shiny::sidebarPanel(
+
+                                                          # Info text
+                                                          shiny::p(shiny::strong("Database information")),
+
+                                                          # Study data info
+                                                          timci::odk_data_info_ui("referralfu_info"),
+
+                                                          # Export study data in *.csv format
+                                                          timci::csv_download_ui("referralfu_csv_export"),
+
+                                                          # Export study data in *.xlsx format
+                                                          timci::xlsx_download_ui("referralfu_xlsx_export")),
+
+                                                        # Display the table module
+                                                        shiny::mainPanel(
+
+                                                          shiny::fluidRow(
+                                                            timci::data_table_ui("referralfu_table"))))
+
+                                      ),
 
                                       # Day 28 follow-up data panel
                                       shiny::tabPanel("Day 28 follow-up",
