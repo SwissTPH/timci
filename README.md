@@ -35,12 +35,17 @@ timci::run_app()
 This requests access to the TIMCI ODK Central server.
 ```R
 library(timci)
+Sys.setenv(RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc')
 output_dir <- "directory_name"
 subdir <- paste0("reports_", Sys.Date())
-cdir <- dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
-timci::run_rmarkdown(file.path(output_dir, subdir))
+dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, "01_databases"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, "02_followup"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, "04_reports"), showWarnings = FALSE)
+timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(output_dir, subdir, "participants.zip"), file.path(output_dir, subdir, "01_databases"), file.path(output_dir, subdir, "02_followup"), file.path(output_dir, subdir, "03_qualitative")
 ```
-## setup of the Windows task scheduler
+## Setup of the Windows task scheduler
 To be completed soon
 
 ## Valuable resources
