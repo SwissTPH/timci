@@ -1,5 +1,5 @@
 [![Generic badge](https://img.shields.io/badge/<SUBJECT>-<STATUS>-<COLOR>.svg)](https://shields.io/)
-[![Last-changedate]](https://github.com/Thaliehln/timci/commits/master)
+[![Last-changedate](https://img.shields.io/github/last-commit/Thaliehln/timci.svg)](https://github.com/Thaliehln/timci/commits/master)
 
 # Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
