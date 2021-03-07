@@ -31,7 +31,7 @@ PII_PW=...
 ```
 
 ### Setup of the automated pipeline
-Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where pandoc is installed on your machine, it hence needs to be set in `~/.Renviron`:
+`Pandoc` is a document converter that can convert from a number of different markup formats to many other formats, such as .doc, .pdf etc. It is an independent piece of software, separate from R. However, it comes bundled with R Studio because `Rmarkdown` relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine, to use R Markdown within a batch, it hence needs to be set in `~/.Renviron`:
 ```bash
 RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
 ```
