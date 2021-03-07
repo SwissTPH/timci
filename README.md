@@ -5,7 +5,7 @@
 ## Installation of timci from GitHub
 You can download the `master` branch of the `timci` package.
 
-You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`
+You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode` (non-exhaustive list, to be completed)
 
 ## Setup of timci 
 
