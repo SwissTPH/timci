@@ -90,7 +90,7 @@ PAUSE
 
 2. [ODK Central apiary](https://odkcentral.docs.apiary.io/) contains a very comprehensive documentation of the ODK Central RESTful API. Note that anything that can be done in ODK Central's web user interface can be done directly via the API.
 
-3. [RuODK](https://docs.ropensci.org/ruODK/) is an open-source R client to access and parse data from ODK Central.
+3. [RuODK](https://docs.ropensci.org/ruODK/) is an open-source R client to access and parse data from ODK Central, which is developed and maintained by Florian Mayer for the Western Australian Department of Biodiversity, Conservation and Attractions (DBCA).
 
 4. [ODK forum](https://forum.getodk.org/) already contains a fantastic amount of information and the core ODK team is very reactive.
 
