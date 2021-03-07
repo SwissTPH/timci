@@ -30,20 +30,20 @@ PII_PW=...
 ## Usage of timci
 
 ### Run a generic Shiny app 
-Should work with any ODK Central server
+`run_mini_app` should work with any ODK Central server
 ```R
 library(timci)
 timci::run_mini_app()
 ```
 ### Run the TIMCI Shiny app
-This requests access to the TIMCI ODK Central server.
+`run_app` requests an access to a TIMCI ODK Central server.
 ```R
 library(timci)
 timci::run_app()
 ```
 
 ### Generate R Markdown reports for TIMCI
-This requests access to the TIMCI ODK Central server.
+`run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
 Create a R script `timci_daily_routine.R`
 
