@@ -27,24 +27,21 @@ Other environment variables to set in `~/.Renviron`:
 COUNTRY="Switzerland"
 PII_PW=...
 ```
-## Usage of timci
 
-### Run a generic Shiny app 
+## Run a generic Shiny app 
 `run_mini_app` should work with any ODK Central server
 ```R
 library(timci)
 timci::run_mini_app()
 ```
-### Run the TIMCI Shiny app
+## Run the TIMCI Shiny app
 `run_app` requests an access to a TIMCI ODK Central server.
 ```R
 library(timci)
 timci::run_app()
 ```
 
-### Generate R Markdown reports for TIMCI
-
-#### Manual
+## Generate R Markdown reports for TIMCI (manual)
 `run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
 Create a R script `timci_daily_routine.R`
@@ -61,8 +58,8 @@ dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE
 dir.create(file.path(output_dir, subdir, "04_reports"), showWarnings = FALSE)
 timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(output_dir, subdir, "participants.zip"), file.path(output_dir, subdir, "01_databases"), file.path(output_dir, subdir, "02_followup"), file.path(output_dir, subdir, "03_qualitative")
 ```
-#### Automated pipeline 
-##### Setup of the Windows task scheduler
+## Generate R Markdown reports for TIMCI (automated pipeline)
+### Setup of the Windows task scheduler
 Create a .bat file that calls `timci_daily_routine.R`
 ```bat
 cd dirname
