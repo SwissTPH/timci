@@ -33,7 +33,7 @@ PII_PW=...
 `PII_PW` contains the password of the encrypted archive that will store participant personally identifiable information
 
 ### Setup of the automated R Markdown pipeline
-`pandoc` is a document converter that can convert files from one markup format into another (e.g., .docx, .pdf etc). It is an independent piece of software, separate from R. However, it comes bundled with R Studio because `Rmarkdown` relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine. To use R Markdown within a batch, `RSTUDIO_PANDOC` hence needs to be set in your `~/.Renviron` file:
+`pandoc` is a document converter that can convert files from one markup format into another (e.g., .docx, .pdf etc). It is an independent piece of software, separate from R. However, it comes bundled with R Studio because the `rmarkdown` package relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine. To use `rmarkdown` in a batch, `RSTUDIO_PANDOC` needs to be set in your `~/.Renviron` file:
 ```bash
 RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
 ```
