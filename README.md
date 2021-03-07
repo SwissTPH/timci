@@ -40,6 +40,8 @@ timci::run_app()
 
 ### Generate several Rmarkdown reports for TIMCI
 This requests access to the TIMCI ODK Central server.
+timci_daily_routine.R
+
 ```R
 library(timci)
 Sys.setenv(RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc')
@@ -54,6 +56,12 @@ timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(outpu
 ```
 ## Setup of the Windows task scheduler
 To be completed soon
+
+```bat
+cd dirname
+"...\Rscript.exe" ...\timci_daily_routine.R --cd-to-userdocs
+PAUSE
+```
 
 ## Valuable resources
 
