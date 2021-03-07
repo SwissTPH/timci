@@ -24,11 +24,13 @@ For more information about `ruODK`, there are lots of great resources available 
 For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
 ### TIMCI-specific setup
-Other environment variables to set in `~/.Renviron`:
+For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file:
 ```bash
 COUNTRY="Switzerland"
 PII_PW=...
 ```
+
+`PII_PW` contains the password of the encrypted archive that will store participant personally identifiable information
 
 ### Setup of the automated R Markdown pipeline
 `pandoc` is a document converter that can convert from a number of different markup formats to many other formats, such as .doc, .pdf etc. It is an independent piece of software, separate from R. However, it comes bundled with R Studio because `Rmarkdown` relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine. To use R Markdown within a batch, `RSTUDIO_PANDOC` hence needs to be set in your `~/.Renviron` file:
