@@ -31,6 +31,12 @@ PII_PW=...
 RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
 ```
 
+### Setup of the automated pipeline
+Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where pandoc is installed on your machine, it hence needs to be set in `~/.Renviron`:
+```bash
+RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
+```
+
 ## Run a generic Shiny app 
 `run_mini_app` should work with any ODK Central server
 ```R
