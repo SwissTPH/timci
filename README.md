@@ -44,8 +44,6 @@ timci::run_app()
 ## Generate R Markdown reports for TIMCI (manual)
 `run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
-Create a R script `timci_daily_routine.R`
-
 ```R
 library(timci)
 Sys.setenv(RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc')
@@ -60,6 +58,8 @@ timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(outpu
 ```
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
+Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_daily_routine.R`
+
 Create a .bat file that calls `timci_daily_routine.R`
 ```bat
 cd dirname
