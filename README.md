@@ -41,7 +41,7 @@ timci::run_app()
 ### Generate several R Markdown reports for TIMCI
 This requests access to the TIMCI ODK Central server.
 
-timci_daily_routine.R
+Create a R script `timci_daily_routine.R`
 
 ```R
 library(timci)
@@ -56,7 +56,7 @@ dir.create(file.path(output_dir, subdir, "04_reports"), showWarnings = FALSE)
 timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(output_dir, subdir, "participants.zip"), file.path(output_dir, subdir, "01_databases"), file.path(output_dir, subdir, "02_followup"), file.path(output_dir, subdir, "03_qualitative")
 ```
 ## Setup of the Windows task scheduler
-Create a .bat file
+Create a .bat file that calls `timci_daily_routine.R`
 ```bat
 cd dirname
 "...\Rscript.exe" ...\timci_daily_routine.R --cd-to-userdocs
@@ -96,7 +96,7 @@ To be completed soon
 3. (reproduced as is from the Devtools README) [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is
    the exhaustive, canonical reference for writing R packages, maintained by R core developers.
 
-## R cheatsheets / reference guides
+#### R cheatsheets / reference guides
 <a href="https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf"><img src="https://raw.githubusercontent.com/batpigandme/cheatsheets/1c942c36846559b3e8efbd40d023bc351aeed6ba/pngs/thumbnails/package-development-thumbs.png" height="252"/></a>
 
 <a href="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf"><img src="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference-guide.png" height="252"/></a>
