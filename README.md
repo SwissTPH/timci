@@ -28,7 +28,6 @@ Other environment variables to set in `~/.Renviron`:
 ```bash
 COUNTRY="Switzerland"
 PII_PW=...
-RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
 ```
 
 ### Setup of the automated pipeline
