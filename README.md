@@ -1,6 +1,6 @@
 # Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
-`timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses).
+`timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African (Kenya, Senegal and Tanzania) and two Asian (India and Myanmar) countries
 
 NB: this package has been developed on a Windows 10 operating system, with RStudio version 1.3.1073 using R v4.0.2
 
