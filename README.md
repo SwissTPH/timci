@@ -67,11 +67,11 @@ cd dirname
 PAUSE
 ```
 
-Open the task scheduler
+1. Open the task scheduler
 
-Action > Create Task
+2. Action > Create Task
 
-To be completed soon
+3. ... (to be completed soon)
 
 ## Valuable resources
 
