@@ -8,14 +8,21 @@ You can download the `master` branch of the `timci` package.
 ## Setup of the ODK Central connection:
 You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your project as well as your credentials (username and password) on ODK Central:
 ```bash
-ODKC_SVC="https://.../v1/projects/2/forms/....svc"
+ODKC_SVC="https://.../v1/projects/.../forms/....svc"
 ODKC_UN=me@email.com
 ODKC_PW=...
+TZ="Europe/Zurich"
 ```
 For more information about `ruODK`, there are lots of great resources available at [https://docs.ropensci.org/ruODK/](https://docs.ropensci.org/ruODK/)
 
 For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
+## TIMCI-specific setup
+Other environment variables to set in `~/.Renviron`:
+```bash
+COUNTRY="Switzerland"
+PII_PW=...
+```
 ## Usage
 
 ### Run a generic Shiny app 
