@@ -43,6 +43,8 @@ timci::run_app()
 ```
 
 ### Generate R Markdown reports for TIMCI
+
+#### Manual
 `run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
 Create a R script `timci_daily_routine.R`
@@ -59,7 +61,8 @@ dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE
 dir.create(file.path(output_dir, subdir, "04_reports"), showWarnings = FALSE)
 timci::run_rmarkdown(file.path(output_dir,subdir, "04_reports"), file.path(output_dir, subdir, "participants.zip"), file.path(output_dir, subdir, "01_databases"), file.path(output_dir, subdir, "02_followup"), file.path(output_dir, subdir, "03_qualitative")
 ```
-## Setup of the Windows task scheduler
+#### Automated pipeline 
+##### Setup of the Windows task scheduler
 Create a .bat file that calls `timci_daily_routine.R`
 ```bat
 cd dirname
