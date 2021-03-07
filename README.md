@@ -40,7 +40,7 @@ library(timci)
 timci::run_app()
 ```
 
-### Generate several R Markdown reports for TIMCI
+### Generate R Markdown reports for TIMCI
 This requests access to the TIMCI ODK Central server.
 
 Create a R script `timci_daily_routine.R`
