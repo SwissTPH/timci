@@ -26,6 +26,7 @@ Other environment variables to set in `~/.Renviron`:
 ```bash
 COUNTRY="Switzerland"
 PII_PW=...
+RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc'
 ```
 
 ## Run a generic Shiny app 
@@ -46,7 +47,6 @@ timci::run_app()
 
 ```R
 library(timci)
-Sys.setenv(RSTUDIO_PANDOC='C:/Program Files/RStudio/bin/pandoc')
 output_dir <- "directory_name"
 subdir <- paste0("reports_", Sys.Date())
 dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
