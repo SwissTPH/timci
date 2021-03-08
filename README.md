@@ -79,7 +79,7 @@ Save the code needed to generate R Markdown reports for TIMCI (manual) in a R sc
 Create a .bat file that calls `timci_daily_routine.R`
 ```bat
 cd dirname
-"...\Rscript.exe" ...\timci_daily_routine.R --cd-to-userdocs
+"...\Rscript.exe" ...\timci_daily_routine.R
 PAUSE
 ```
 
