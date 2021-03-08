@@ -3,8 +3,9 @@ title: "TIMCI Data Quality and Export Report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  main_output_dir: tempdir()
-  spa_output_dir: tempdir
+  rctls_dir: tempdir()
+  spa_dir: tempdir()
+  qual_dir: tempdir()
 output:
   html_document: default
   word_document:
@@ -67,7 +68,7 @@ plot(facility_submission_bar_plot)
 ```{r, echo=FALSE, results = "asis"}
 n_screened <- nrow(facility_data)
 screening_data <- timci::extract_match_from_xls_dict(facility_data, "screening_dict.xlsx")
-screening_fname <- file.path(params$main_output_dir, paste("timci_screening_data", "_", Sys.Date(), ".xlsx", sep = ""))
+screening_fname <- file.path(params$rctls_dir, paste("timci_screening_data", "_", Sys.Date(), ".xlsx", sep = ""))
 openxlsx::write.xlsx(screening_data, screening_fname, row.names = FALSE)
 
 study_data <- timci::extract_enrolled_participants(facility_data)
@@ -137,14 +138,14 @@ print(cbind(st, st1))
 
 ```{r, echo=FALSE}
 deidentified_facility_data <- timci::deidentify_data(study_data)
-timci::export_df2xlsx(deidentified_facility_data, params$main_output_dir, "timci_facility_day0_data")
+timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "timci_facility_day0_data")
 
 deidentified_repeat_data <- timci::deidentify_data(repeat_data)
-timci::export_df2xlsx(deidentified_repeat_data, params$main_output_dir, "timci_facility_repeat_data")
+timci::export_df2xlsx(deidentified_repeat_data, params$rctls_dir, "timci_facility_repeat_data")
 
-timci::export_df2xlsx(raw_day7fu_data, params$main_output_dir, "timci_followup_day7_data")
-timci::export_df2xlsx(raw_hospit_data, params$main_output_dir, "timci_followup_hospit_data")
-timci::export_df2xlsx(raw_day28fu_data, params$main_output_dir, "timci_followup_day28_data")
+timci::export_df2xlsx(raw_day7fu_data, params$rctls_dir, "timci_followup_day7_data")
+timci::export_df2xlsx(raw_hospit_data, params$rctls_dir, "timci_followup_hospit_data")
+timci::export_df2xlsx(raw_day28fu_data, params$rctls_dir, "timci_followup_day28_data")
 ```
 
 # 2. Service Provision Assessment (SPA)
@@ -157,10 +158,10 @@ raw_spa_sco_data <- ruODK::odata_submission_get(pid = 2, fid = "05-TIMCI-SPA-SCO
 ```
 
 ```{r, echo=FALSE}
-timci::export_df2xlsx(raw_spa_cgei_data, params$spa_output_dir, "timci_spa_exit_interview_data")
-timci::export_df2xlsx(raw_spa_fa_data, params$spa_output_dir, "timci_spa_facility_assessment_data")
-timci::export_df2xlsx(raw_spa_hcpi_data, params$spa_output_dir, "timci_spa_provider_interview_data")
-timci::export_df2xlsx(raw_spa_sco_data, params$spa_output_dir, "timci_spa_consultation_obs_data")
+timci::export_df2xlsx(raw_spa_cgei_data, params$spa_dir, "timci_spa_exit_interview_data")
+timci::export_df2xlsx(raw_spa_fa_data, params$spa_dir, "timci_spa_facility_assessment_data")
+timci::export_df2xlsx(raw_spa_hcpi_data, params$spa_dir, "timci_spa_provider_interview_data")
+timci::export_df2xlsx(raw_spa_sco_data, params$spa_dir, "timci_spa_consultation_obs_data")
 ```
 
 # 3. Qualitative studies
@@ -178,14 +179,14 @@ fs::dir_ls(t)
 fid <- ruODK::get_test_fid()
 sub <- fs::path(t, glue::glue("08c-TIMCI-cg-idi-interview.csv")) %>%
   readr::read_csv()
-sub %>% knitr::kable(.)
+timci::export_df2xlsx(sub, params$qual_dir, "timci_cg_interview_data")
 
-sl <- ruODK::submission_list()
+#sl <- ruODK::submission_list()
 
 # Step 3: Get submissions
-subs <- ruODK::submission_get(sl$instance_id)
-print(subs)
-subs %>% knitr::kable(.)
+#subs <- ruODK::submission_get(sl$instance_id)
+#print(subs)
+#subs %>% knitr::kable(.)
 ```
 
 

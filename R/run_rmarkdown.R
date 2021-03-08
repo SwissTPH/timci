@@ -44,7 +44,7 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir
   # RCT data quality report #
   ###########################
 
-  generate_report(report_dir, "rct_quality_report.Rmd", "timci_rct_data_quality_report", list(main_output_dir = mdb_dir, spa_output_dir = spa_db_dir))
+  generate_report(report_dir, "rct_quality_report.Rmd", "timci_rct_data_quality_report", list(rctls_dir = mdb_dir, spa_dir = spa_db_dir, qual_dir = qual_dir))
 
   #########################
   # RCT monitoring report #
@@ -57,6 +57,12 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir
   #######################
 
   generate_report(fu_dir, "day7_fu_log.Rmd", "timci_day7_fu_log", list(output_dir = fu_dir, participant_zip = participant_zip, qual_dir = qual_dir))
+
+  #######################
+  # Day 28 follow-up log #
+  #######################
+
+  generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", list(output_dir = fu_dir, participant_zip = participant_zip, qual_dir = qual_dir))
 
   ###################
   # PATH M&E report #

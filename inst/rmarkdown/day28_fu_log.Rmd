@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Day 7 follow-up log"
+title: "TIMCI Day 28 follow-up log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
@@ -35,44 +35,34 @@ dir.create(file.path(params$qual_dir, "odk_external_files"), showWarnings = FALS
 
 # Load contact information
 raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
 facility_data <- timci::process_facility_data(raw_facility_data)
 study_data <- timci::extract_enrolled_participants(facility_data)
 pii <- timci::extract_pii(study_data)
 ```
 
 ```{r, echo=FALSE}
-day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
+day28fu <- timci::generate_fu_log(pii, raw_day28fu_data, 28, 32)
 ```
 
 ```{r, echo=FALSE}
-xlsx_fname <- file.path(tempdir(), paste("timci_pii_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(pii, xlsx_fname, row.names = FALSE, password = "timcitest")
-
-pii_pwd <- Sys.getenv("TIMCI_PII_PW")
-zip(params$participant_zip, 
-    files = xlsx_fname, 
-    flags = paste("-r9Xj --password", pii_pwd))
-```
-
-```{r, echo=FALSE}
-csv7_fname <- file.path(params$output_dir, "odk_external_files", "day7fu.csv")
-write.csv(day7fu, csv7_fname, row.names = FALSE, quote = FALSE)
+csv28_fname <- file.path(params$output_dir, "odk_external_files", "day28fu.csv")
+write.csv(day28fu, csv28_fname, row.names = FALSE, quote = FALSE)
 ```
 
 ```{r, echo=FALSE}
 library(qrcode)
-for (i in 1:nrow(day7fu)) {
-  pid <- toString(day7fu[i,'name'])
+for (i in 1:nrow(day28fu)) {
+  pid <- toString(day28fu[i,'name'])
   png_file <- file.path(tempdir(), paste0(pid,".png"))
   png(png_file)
   qrcode_gen(pid)
   dev.off()
   }
 
-df <- day7fu %>%
+df <- day28fu %>%
   dplyr::mutate(
-    code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
+    code = paste0('![](', file.path(tempdir(), paste0(day28fu$name,".png")), ')', '{width=0.75in}')
     ) %>%
   dplyr::select('code', dplyr::everything()) %>%
   dplyr::rename('id' = 'name',
@@ -89,14 +79,4 @@ df$contact <- paste(df$contact,
 drops <- c("mother", "relationship", "sex", "location")
 df <- df[ , !(names(df) %in% drops)]
 df %>% knitr::kable()
-```
-
-```{r, echo=FALSE}
-xlsx_fname <- file.path(params$qual_dir, paste("cg_idi_participants_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(day7fu, xlsx_fname, row.names = FALSE)
-```
-
-```{r, echo=FALSE}
-csv_fname <- file.path(params$qual_dir, "odk_external_files", "cg_idi_participants.csv")
-write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
 ```
