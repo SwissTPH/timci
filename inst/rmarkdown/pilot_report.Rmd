@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Intervention Pilot Report"
-author: "Swiss Tropical and Public Health Institute"
+author: "`r Sys.getenv('INSTITUTION')`"
 date: "11 2 2021"
 output:
   html_document: default

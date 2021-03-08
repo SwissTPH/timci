@@ -31,7 +31,7 @@ For more information about the `ODK Central API`, there are lots of great resour
 ### TIMCI-specific setup
 For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file:
 ```bash
-COUNTRY="Switzerland"
+INSTITUTION="Swiss Tropical and Public Health Institute"
 PII_PW=...
 ```
 

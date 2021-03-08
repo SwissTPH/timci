@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Day 7 follow-up log"
-author: "Swiss Tropical and Public Health Institute"
+author: "`r Sys.getenv('INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: tempdir()

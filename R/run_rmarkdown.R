@@ -31,19 +31,20 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #'
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
-#' @param db_dir Path to the output folder for the database exports
+#' @param mdb_dir Path to the output folder for the RCT / LS database exports
 #' @param fu_dir Path to the output folder for the follow-up exports
 #' @param qual_dir Path to the output folder for the qualitative exports
+#' @param spa_db_dir Path to the output folder for the SPA database exports
 #' @import rmarkdown
 #' @export
 
-run_rmarkdown <- function(report_dir, participant_zip, db_dir, fu_dir, qual_dir) {
+run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir, spa_db_dir) {
 
   ###########################
   # RCT data quality report #
   ###########################
 
-  generate_report(report_dir, "rct_quality_report.Rmd", "timci_rct_data_quality_report", list(output_dir = db_dir))
+  generate_report(report_dir, "rct_quality_report.Rmd", "timci_rct_data_quality_report", list(main_output_dir = mdb_dir, spa_output_dir = spa_db_dir))
 
   #########################
   # RCT monitoring report #

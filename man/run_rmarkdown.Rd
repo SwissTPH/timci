@@ -4,18 +4,27 @@
 \alias{run_rmarkdown}
 \title{Run Rmarkdown files}
 \usage{
-run_rmarkdown(report_dir, participant_zip, db_dir, fu_dir, qual_dir)
+run_rmarkdown(
+  report_dir,
+  participant_zip,
+  mdb_dir,
+  fu_dir,
+  qual_dir,
+  spa_db_dir
+)
 }
 \arguments{
 \item{report_dir}{Path to the output folder for the generated Rmarkdown reports}
 
 \item{participant_zip}{Path to the encrypted zip archive that stores participant data}
 
-\item{db_dir}{Path to the output folder for the database exports}
+\item{mdb_dir}{Path to the output folder for the RCT / LS database exports}
 
 \item{fu_dir}{Path to the output folder for the follow-up exports}
 
 \item{qual_dir}{Path to the output folder for the qualitative exports}
+
+\item{spa_db_dir}{Path to the output folder for the SPA database exports}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
