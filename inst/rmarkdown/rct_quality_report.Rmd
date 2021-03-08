@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Data Quality and Export Report"
-author: "`r Sys.getenv('INSTITUTION')`"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   main_output_dir: tempdir()

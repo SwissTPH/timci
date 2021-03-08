@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Intervention Pilot Report"
-author: "`r Sys.getenv('INSTITUTION')`"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "11 2 2021"
 output:
   html_document: default
