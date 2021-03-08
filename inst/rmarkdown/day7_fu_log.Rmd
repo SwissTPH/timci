@@ -16,7 +16,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, echo=FALSE}
+```{r ruODK-setup, echo=FALSE}
 # Connect to the ODK Central server using ruODK
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),

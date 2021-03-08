@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. Introduction
 
-```{r, echo=FALSE}
+```{r ruODK-setup, echo=FALSE}
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
   un = Sys.getenv("ODKC_UN"),

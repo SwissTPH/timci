@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. Pragmatic cluster Randomised Controlled Trial (RCT) / Observational Longitudinal Study (LS)
 
-```{r, echo=FALSE}
+```{r ruODK-setup, echo=FALSE}
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
   un = Sys.getenv("ODKC_UN"),
@@ -27,21 +27,29 @@ ruODK::ru_setup(
 )
 ```
 
-```{r, echo=FALSE}
+```{r load-RCT-LS-ODK-facility-data, echo=FALSE}
 raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+facility_data <- timci::process_facility_data(raw_facility_data)
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+```
+
+```{r load-RCT-LS-ODK-fu-day7-data, echo=FALSE}
 raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+```
+
+```{r load-RCT-LS-ODK-fu-hospit-data, echo=FALSE}
 raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
 raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
 raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
 ```
 
-```{r, echo=FALSE}
-facility_data <- timci::process_facility_data(raw_facility_data)
+```{r load-RCT-LS-ODK-fu-day28-data, echo=FALSE}
+raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
 ```
 
-```{r, echo=FALSE}
-start_date <- min(facility_data$date_visit)
-end_date <- max(facility_data$date_visit)
+```{r load-RCT-LS-ODK-withdrawal, echo=FALSE}
+raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
 ```
 
 This report covers the period from **`r start_date`** to **`r end_date`**.
@@ -129,21 +137,14 @@ print(cbind(st, st1))
 
 ```{r, echo=FALSE}
 deidentified_facility_data <- timci::deidentify_data(study_data)
-day0_data_fname <- file.path(params$main_output_dir, paste("timci_facility_day0_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(deidentified_facility_data, day0_data_fname, row.names = FALSE)
+timci::export_df2xlsx(deidentified_facility_data, params$main_output_dir, "timci_facility_day0_data")
 
 deidentified_repeat_data <- timci::deidentify_data(repeat_data)
-repeat_data_fname <- file.path(params$main_output_dir, paste("timci_facility_repeat_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(deidentified_repeat_data, repeat_data_fname, row.names = FALSE)
+timci::export_df2xlsx(deidentified_repeat_data, params$main_output_dir, "timci_facility_repeat_data")
 
-day7fu_data_fname <- file.path(params$main_output_dir, paste("timci_followup_day7_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_day7fu_data, day7fu_data_fname, row.names = FALSE)
-
-hospit_data_fname <- file.path(params$main_output_dir, paste("timci_followup_hospit_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_hospit_data, hospit_data_fname, row.names = FALSE)
-
-day28fu_data_fname <- file.path(params$main_output_dir, paste("timci_followup_day28_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_day28fu_data, day28fu_data_fname, row.names = FALSE)
+timci::export_df2xlsx(raw_day7fu_data, params$main_output_dir, "timci_followup_day7_data")
+timci::export_df2xlsx(raw_hospit_data, params$main_output_dir, "timci_followup_hospit_data")
+timci::export_df2xlsx(raw_day28fu_data, params$main_output_dir, "timci_followup_day28_data")
 ```
 
 # 2. Service Provision Assessment (SPA)
@@ -156,15 +157,35 @@ raw_spa_sco_data <- ruODK::odata_submission_get(pid = 2, fid = "05-TIMCI-SPA-SCO
 ```
 
 ```{r, echo=FALSE}
-cgei_data_fname <- file.path(params$spa_output_dir, paste("timci_spa_exit_interview_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_spa_cgei_data, cgei_data_fname, row.names = FALSE)
-
-fa_data_fname <- file.path(params$spa_output_dir, paste("timci_spa_facility_assessment_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_spa_fa_data, fa_data_fname, row.names = FALSE)
-
-hcpi_data_fname <- file.path(params$spa_output_dir, paste("timci_spa_provider_interview_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_spa_hcpi_data, hcpi_data_fname, row.names = FALSE)
-
-sco_data_fname <- file.path(params$spa_output_dir, paste("timci_spa_consultation_obs_data", "_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(raw_spa_sco_data, sco_data_fname, row.names = FALSE)
+timci::export_df2xlsx(raw_spa_cgei_data, params$spa_output_dir, "timci_spa_exit_interview_data")
+timci::export_df2xlsx(raw_spa_fa_data, params$spa_output_dir, "timci_spa_facility_assessment_data")
+timci::export_df2xlsx(raw_spa_hcpi_data, params$spa_output_dir, "timci_spa_provider_interview_data")
+timci::export_df2xlsx(raw_spa_sco_data, params$spa_output_dir, "timci_spa_consultation_obs_data")
 ```
+
+# 3. Qualitative studies
+
+```{r, echo=FALSE}
+raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = 12, fid = "08a-TIMCI-cg-idi-invitation")
+raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = 12, fid = "08b-TIMCI-cg-idi-encryption-list")
+raw_cgidi_interview_data <- ruODK::submission_export(pid = 12, fid = "08c-TIMCI-cg-idi-interview")
+print(raw_cgidi_interview_data)
+
+# Unzip and inspect the loot
+t <- tempdir()
+f <- unzip(raw_cgidi_interview_data, exdir = t)
+fs::dir_ls(t)
+fid <- ruODK::get_test_fid()
+sub <- fs::path(t, glue::glue("08c-TIMCI-cg-idi-interview.csv")) %>%
+  readr::read_csv()
+sub %>% knitr::kable(.)
+
+sl <- ruODK::submission_list()
+
+# Step 3: Get submissions
+subs <- ruODK::submission_get(sl$instance_id)
+print(subs)
+subs %>% knitr::kable(.)
+```
+
+

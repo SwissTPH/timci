@@ -15,36 +15,15 @@ format_odk_data <- function(df) {
 
 }
 
-#' Extract and match variable names using a dictionary
+#' Extract data from ODK zip
 #'
-#' @param df Input dataframe
-#' @param dictionary Dataframe containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param odk_zip The absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
 
-extract_match_from_dict <- function(df, dictionary) {
+extract_data_from_odk_zip <- function(odk_zip) {
 
-  # Add column if it does not exit
-  df[setdiff(dictionary$old,names(df))] <- NA
-
-  # Rename column names based on the dictionary
-  names(df)[match(dictionary$old, names(df))] <- dictionary$new
-  df %>% dplyr::select(dictionary$new)
-
-}
-
-#' Extract and match variable names using an external Excel dictionary
-#'
-#' @param df Input dataframe
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
-#' @return This function returns a dataframe.
-#' @export
-#' @import magrittr dplyr
-
-extract_match_from_xls_dict <- function(df, xls_dict) {
-
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
-  df <- extract_match_from_dict(df, dictionary)
+  # Add function body
 
 }

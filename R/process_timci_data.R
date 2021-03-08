@@ -105,8 +105,6 @@ extract_hypoxaemia <- function(df) {
 
 deidentify_data <- function(df) {
 
-  # TO ADD: DOUBLE DE-IDENTIFICATION
-
   # Merge screening and rctls dictionaries
   s_dictionary <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
   m_dictionary <- readxl::read_excel(system.file(file.path('extdata', "rctls_dict.xlsx"), package = 'timci'))
@@ -115,6 +113,13 @@ deidentify_data <- function(df) {
   dictionary <- dictionary[!(dictionary$new %in% drops),]
 
   df <- extract_match_from_dict(df, dictionary)
+
+  # De-identification
+  df$country_id <- substr(df$child_id, 1, 1)
+  df$facility_id <- substr(df$child_id, 3, 7)
+  df$child_id <- anonymise_dataframe(df, 'child_id')
+
+  df
 
   # Malaria test done
   #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
