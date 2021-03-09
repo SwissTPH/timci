@@ -23,7 +23,7 @@ process_facility_data <- function(df) {
 
   df$'a3_a3_a_5' <- ifelse(df$'a3_a3_a_5' == 98 | (df$'a3_dobk' == 98 & df$'a3_a3_a_3' > 1),
                            0,
-                           NA)
+                           1)
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
@@ -88,8 +88,6 @@ extract_enrolled_participants <- function(df) {
 
   df %>%
     dplyr::filter(df$enrolled == 1) %>%
-    dplyr::relocate('child_id') %>%
-    dplyr::relocate('date_visit', .after = 'child_id') %>%
     extract_pii()
 
 }
@@ -198,11 +196,27 @@ extract_hypoxaemia <- function(df) {
 deidentify_data <- function(df) {
 
   # De-identification
-  df$country_id <- substr(df$child_id, 1, 1)
-  df$facility_id <- substr(df$child_id, 3, 7)
-  df$child_id <- anonymise_dataframe(df, 'child_id')
+  df$country_id <- ifelse(df$child_id != '',
+                          substr(df$child_id, 1, 1),
+                          substr(df$prev_id, 1, 1))
+  df$hf_id <- ifelse(df$child_id != '',
+                     substr(df$child_id, 3, 7),
+                     substr(df$prev_id, 3, 7))
+  df$child_id <- ifelse(df$child_id != '',
+                        anonymise_dataframe(df, 'child_id'),
+                        '')
 
-  df
+  if ("prev_id" %in% colnames(df)) {
+
+    df$prev_id <- ifelse(df$prev_id != '',
+                         anonymise_dataframe(df, 'prev_id'),
+                         '')
+
+  }
+
+  df <- dplyr::relocate(df, 'country_id')
+  df <- dplyr::relocate(df, 'hf_id', .after = 'country_id')
+  df <- dplyr::relocate(df, 'child_id', .after = 'child_id')
 
 }
 
