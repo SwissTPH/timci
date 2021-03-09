@@ -54,9 +54,7 @@ sl <- ruODK::submission_list(pid = 12,
                              fid = "08c-TIMCI-cg-idi-interview")
 for (i in nrow(sl)) {
   crow <- cgidi_interview_data[i,]
-  print(crow)
   uuid <- crow$'meta-instanceID'
-  print(uuid)
   cpath <- file.path(params$qual_dir, crow$'identification-idiidm')
   dir.create(cpath, showWarnings = FALSE)
   tmp <- timci::export_df2xlsx(crow, cpath, "data")
