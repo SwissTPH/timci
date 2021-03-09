@@ -104,7 +104,11 @@ extract_enrolled_participants <- function(df) {
 extract_pii <- function(df) {
 
   # Extract de-identified baseline data
-  demog <- subset_from_xls_dict(df, "demog_dict.xlsx")
+  # Merge dictionaries
+  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
+  d_dict <- readxl::read_excel(system.file(file.path('extdata', "demog_dict.xlsx"), package = 'timci'))
+  dictionary <- rbind(s_dict, d_dict)
+  demog <- df[dictionary$new]
 
   # Extract personally identifiable information
   pii <- subset_from_xls_dict(df, "pii_dict.xlsx")
@@ -123,12 +127,9 @@ extract_pii <- function(df) {
 
 extract_all_visits <- function(df) {
 
-  df <- dplyr::filter(df, (df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1))
-  # Merge dictionaries
-  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
-  v_dict <- readxl::read_excel(system.file(file.path('extdata', "visit_dict.xlsx"), package = 'timci'))
-  dictionary <- rbind(s_dict, v_dict)
-  df <- df[dictionary$new]
+  df %>%
+    dplyr::filter((df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1)) %>%
+    subset_from_xls_dict("visit_dict.xlsx")
 
 }
 

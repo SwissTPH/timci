@@ -80,7 +80,7 @@ res <- timci::extract_enrolled_participants(facility_data)
 demog_data <- res[[1]]
 n_enrolled <- nrow(demog_data)
 deidentified_demog_data <- timci::deidentify_data(demog_data)
-timci::export_df2xlsx(deidentified_demog_data, params$rctls_dir, "02_timci_demog_data")
+timci::export_df2xlsx(deidentified_demog_data, params$rctls_dir, "02_timci_participant_data")
 
 pii <- res[[2]]
 xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_pii")
