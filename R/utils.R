@@ -61,18 +61,3 @@ match_from_xls_dict <- function(df, xls_dict) {
   df <- match_from_dict(df, dictionary)
 
 }
-
-#' Subset columns using an external Excel dictionary
-#'
-#' @param df Input dataframe
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
-#' @return This function returns a dataframe.
-#' @export
-#' @import magrittr dplyr
-
-subset_from_xls_dict <- function(df, xls_dict) {
-
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
-  df[dictionary$new]
-
-}

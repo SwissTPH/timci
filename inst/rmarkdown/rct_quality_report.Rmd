@@ -17,8 +17,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1. Pragmatic cluster Randomised Controlled Trial (RCT) / Observational Longitudinal Study (LS)
-
 ```{r ruODK-setup, echo=FALSE}
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
@@ -36,54 +34,27 @@ start_date <- min(facility_data$date_visit)
 end_date <- max(facility_data$date_visit)
 ```
 
-```{r load-RCT-LS-ODK-fu-day7-data, echo=FALSE}
-raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
-day7fu_data <- format_odk_metadata(raw_day7fu_data)
-```
-
-```{r load-RCT-LS-ODK-fu-hospit-data, echo=FALSE}
-raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
-hospit_data <- process_hospital_data(raw_hospit_data)
-```
-
-```{r load-RCT-LS-ODK-fu-day28-data, echo=FALSE}
-raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
-day28fu_data <- format_odk_metadata(raw_day28fu_data)
-```
-
-```{r load-RCT-LS-ODK-withdrawal, echo=FALSE}
-raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
-withdrawal_data <- format_odk_metadata(raw_withdrawal_data)
-```
-
 This report covers the period from **`r start_date`** to **`r end_date`**.
 
-## 1.2. Submissions
+# 1. Pragmatic cluster Randomised Controlled Trial (RCT) / Observational Longitudinal Study (LS)
 
-### 1.2.1. Number of submissions per day
+## 1.1. Facility data
+
 ```{r, echo=FALSE}
-w <- 14
-facility_submission_bar_plot <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(end_date) - w, as.Date(end_date))
-plot(facility_submission_bar_plot)
-```
-
-### 1.2.2. Number of submissions per form
-```{r, echo=FALSE, results = "asis"}
-n_screened <- nrow(facility_data)
-screening_data <- timci::subset_from_xls_dict(facility_data, "screening_dict.xlsx")
-tmp <- timci::export_df2xlsx(screening_data, params$rctls_dir, "01_timci_screening_data")
+screening_data <- timci::extract_screening_data(facility_data)
+timci::export_df2xlsx(screening_data, params$rctls_dir, "01_timci_screening_data")
 ```
 
 ```{r, echo=FALSE}
 res <- timci::extract_enrolled_participants(facility_data)
 
-demog_data <- res[[1]]
-n_enrolled <- nrow(demog_data)
-deidentified_demog_data <- timci::deidentify_data(demog_data)
-timci::export_df2xlsx(deidentified_demog_data, params$rctls_dir, "02_timci_participant_data")
+day0_data <- res[[1]]
+n_enrolled <- nrow(day0_data)
+deidentified_day0_data <- timci::deidentify_data(day0_data)
+timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
 
 pii <- res[[2]]
-xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_pii")
+xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_contact_data")
 pii_pwd <- Sys.getenv("TIMCI_PII_PW")
 zip(params$participant_zip, 
     files = xlsx_fname, 
@@ -94,87 +65,41 @@ zip(params$participant_zip,
 ```{r, echo=FALSE, results = "asis"}
 study_data <- extract_all_visits(facility_data)
 deidentified_facility_data <- timci::deidentify_data(study_data)
-timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03a_timci_facility_all_data")
+tmp <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+```
+
+## 1.2. Day 7 follow-up data
+
+```{r load-RCT-LS-ODK-fu-day7-data, echo=FALSE}
+raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+day7fu_data <- format_odk_metadata(raw_day7fu_data)
+```
+
+## 1.3. Hospitalisation follow-up data
+
+```{r load-RCT-LS-ODK-fu-hospit-data, echo=FALSE}
+raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
+hospit_data <- process_hospital_data(raw_hospit_data)
+```
+
+## 1.3. Day 28 follow-up data
+
+```{r load-RCT-LS-ODK-fu-day28-data, echo=FALSE}
+raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
+day28fu_data <- format_odk_metadata(raw_day28fu_data)
+```
+
+## 1.4. Withdrawal data
+
+```{r load-RCT-LS-ODK-withdrawal, echo=FALSE}
+raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
+withdrawal_data <- format_odk_metadata(raw_withdrawal_data)
 ```
 
 ```{r, echo=FALSE}
-baseline_data <- extract_baseline_visits(study_data)
-repeat_data <- extract_repeat_visits(study_data)
-n_repeat <- nrow(repeat_data)
-
-n_day7fu <- nrow(raw_day7fu_data)
-n_day28fu <- nrow(raw_day28fu_data)
-n_hospit <- nrow(raw_hospit_data)
-
-n_withdrawal <- nrow(raw_withdrawal_data)
-
-n_all <- n_screened + n_day7fu + n_day28fu + n_hospit + n_withdrawal
-visit_names <- c("Screening",
-                 "Baseline visit",
-                 "Repeat visit",
-                 "Day 7 phone call",
-                 "Day 28 phone call",
-                 "Hospital visit",
-                 "Withdrawal",
-                 "All")
-submissions <- c(n_screened, n_enrolled, n_repeat, n_day7fu, n_day28fu, n_hospit, n_withdrawal, n_all)
-visits <- data.frame(visit_names, submissions) 
-knitr::kable(visits, col.names = c("Visit", "N"))
-```
-
-## 1.3. Participants
-```{r, echo=FALSE, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
-all <- data.frame(facility_data)
-all$sickness[is.na(all$sickness)] <- 0
-all$inpatient[is.na(all$inpatient)] <- 0
-all$consult_reason[is.na(all$consult_reason)] <- 0
-all$prev_enrl[is.na(all$prev_enrl)] <- 0
-all$repeat_consult[is.na(all$repeat_consult)] <- 0
-all$consent[is.na(all$consent)] <- 0
-all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
-
-summary_statistics <- list(
-  "Age eligibility" = list(
-    "0 - 59 months" = ~qwraps2::n_perc(age_incl == 1, 2),
-    "First day of life" = ~qwraps2::n_perc(age_excl == 1, 2)
-    ),
-  "Visit eligibility" = list(
-    "Sick child" = ~qwraps2::n_perc(sickness == 1, 2),
-    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2),
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2, 2),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2)
-    ),
-  "Multiple enrolments" = list(
-    "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
-    "Last enrolment < 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
-    ),
-  "Consenting process outcome" = list(
-    "Enrolled" = ~qwraps2::n_perc(consent == 1, 2)
-    )
-)
-st <- qwraps2::summary_table(all, summary_statistics)
-st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
-print(cbind(st, st1))
-```
-
-## Export
-
-```{r, echo=FALSE}
-deidentified_facility_data <- timci::deidentify_data(study_data)
-timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03a_timci_facility_all_data")
-
-deidentified_baseline_data <- timci::deidentify_data(baseline_data)
-timci::export_df2xlsx(deidentified_baseline_data, params$rctls_dir, "03b_timci_facility_day0_data")
-
-deidentified_repeat_data <- timci::deidentify_data(repeat_data)
-timci::export_df2xlsx(deidentified_repeat_data, params$rctls_dir, "03c_timci_facility_repeat_data")
-
-timci::export_df2xlsx(day7fu_data, params$rctls_dir, "04_timci_followup_day7_data")
-timci::export_df2xlsx(hospit_data, params$rctls_dir, "05_timci_followup_hospit_data")
-timci::export_df2xlsx(day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
+tmp <- timci::export_df2xlsx(day7fu_data, params$rctls_dir, "04_timci_followup_day7_data")
+tmp <- timci::export_df2xlsx(hospit_data, params$rctls_dir, "05_timci_followup_hospit_data")
+tmp <- timci::export_df2xlsx(day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
 ```
 
 # 2. Service Provision Assessment (SPA)
@@ -215,12 +140,17 @@ raw_cgidi_interview_zip <- ruODK::submission_export(pid = 12, fid = "08c-TIMCI-c
 cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, "08c-TIMCI-cg-idi-interview.csv")
 timci::export_df2xlsx(cgidi_interview_data, params$qual_dir, "03_timci_cg_interview_data")
 
-#sl <- ruODK::submission_list()
+sl <- ruODK::submission_list(pid = 12, fid = "08c-TIMCI-cg-idi-interview")
+print(sl)
+```
 
-# Step 3: Get submissions
-#subs <- ruODK::submission_get(sl$instance_id)
-#print(subs)
-#subs %>% knitr::kable(.)
+```{r, echo=FALSE}
+for (i in length(sl$instance_id)) {
+  al <- ruODK::get_one_submission_attachment_list(sl$instance_id[[i]])
+  test <- ruODK::get_one_submission(sl$instance_id[[i]])
+  print(test)
+  dir.create(file.path(params$qual_dir, sl$instance_id[[i]]), showWarnings = FALSE)
+}
 ```
 
 

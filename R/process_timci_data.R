@@ -42,38 +42,29 @@ process_facility_data <- function(df) {
                  "crfs_t05b_c3_6")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
-  # Merge dictionaries
-  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
-  p_dict <- readxl::read_excel(system.file(file.path('extdata', "pii_dict.xlsx"), package = 'timci'))
-  v_dict <- readxl::read_excel(system.file(file.path('extdata', "visit_dict.xlsx"), package = 'timci'))
-  d_dict <- readxl::read_excel(system.file(file.path('extdata', "demog_dict.xlsx"), package = 'timci'))
-  dictionary <- rbind(s_dict, p_dict, v_dict, d_dict)
-  df <- match_from_dict(df, dictionary)
+  # Match column names with names from dictionary
+  df <- match_from_xls_dict(df, "main_dict.xlsx")
+  df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
+
+  df
 
   # Malaria test done
   #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
 
 }
 
-#' Process hospital data (TIMCI-specific function)
+#' Extract screening data (TIMCI-specific function)
 #'
-#' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
-#' @return This function returns a formatted dataframe for future display and analysis.
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing screening data only
 #' @export
-#' @import dplyr magrittr stringr
+#' @import dplyr magrittr
 
-process_hospital_data <- function(df) {
+extract_screening_data <- function(df) {
 
-  df <- format_odk_metadata(df)
-
-  # Replace the space between different answers by a semicolon in multiple select questions
-  sep <- ";"
-  multi_cols = c("n4_n4_1")
-  df <- format_multiselect_asws(df, multi_cols, sep)
-
-  # Merge dictionaries
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "hospit_dict.xlsx"), package = 'timci'))
-  df %>% match_from_dict(dictionary)
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, screening == 1)
+  df[sub$new]
 
 }
 
@@ -103,13 +94,13 @@ extract_pii <- function(df) {
 
   # Extract de-identified baseline data
   # Merge dictionaries
-  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
-  d_dict <- readxl::read_excel(system.file(file.path('extdata', "demog_dict.xlsx"), package = 'timci'))
-  dictionary <- rbind(s_dict, d_dict)
-  demog <- df[dictionary$new]
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, day0 == 1)
+  demog <- df[sub$new]
 
   # Extract personally identifiable information
-  pii <- subset_from_xls_dict(df, "pii_dict.xlsx")
+  sub <- subset(dictionary, contact == 1)
+  pii <- df[sub$new]
 
   # Return a list
   list(demog, pii)
@@ -125,9 +116,11 @@ extract_pii <- function(df) {
 
 extract_all_visits <- function(df) {
 
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, visits == 1)
+  df <- df[sub$new]
   df %>%
-    dplyr::filter((df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1)) %>%
-    subset_from_xls_dict("visit_dict.xlsx")
+    dplyr::filter((df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1))
 
 }
 
@@ -261,6 +254,27 @@ generate_fu_log <- function(pii,
                            'relationship' = 'main_cg_lbl',
                            'location' = 'location_name',
                            'phonenb' = 'phone_nb')
+
+}
+
+#' Process hospital data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr stringr
+
+process_hospital_data <- function(df) {
+
+  df <- format_odk_metadata(df)
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols = c("n4_n4_1")
+  df <- format_multiselect_asws(df, multi_cols, sep)
+
+  # Match column names with names from dictionary
+  df %>% match_from_xls_dict("hospit_dict.xlsx")
 
 }
 

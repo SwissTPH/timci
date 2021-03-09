@@ -1,1 +1,10 @@
-utils::globalVariables(c("Group.1", "x", "value", "group", "percentage", "old"))
+utils::globalVariables(c("Group.1",
+                         "x",
+                         "value",
+                         "group",
+                         "percentage",
+                         "old",
+                         "screening",
+                         "contact",
+                         "day0",
+                         "visits"))
