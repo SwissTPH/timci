@@ -53,15 +53,13 @@ library(data.table)
 sl <- ruODK::submission_list(pid = 12,
                              fid = "08c-TIMCI-cg-idi-interview")
 for (i in nrow(sl)) {
-  uuid <- sl$instance_id[[i]]
-  sub <- ruODK::get_one_submission(pid = 12,
-                                   fid = "08c-TIMCI-cg-idi-interview",
-                                   uuid)
-  sub2 <- unlist(sub)
-  print(sub2)
-  cpath <- file.path(params$qual_dir, sub$identification$idiidm)
+  crow <- cgidi_interview_data[i,]
+  print(crow)
+  uuid <- crow$'meta-instanceID'
+  print(uuid)
+  cpath <- file.path(params$qual_dir, crow$'identification-idiidm')
   dir.create(cpath, showWarnings = FALSE)
-  tmp <- timci::export_df2xlsx(sub2, cpath, "data")
+  tmp <- timci::export_df2xlsx(crow, cpath, "data")
   
   # Download attachments
   al <- ruODK::get_one_submission_attachment_list(pid = 12,
