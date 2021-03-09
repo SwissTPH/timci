@@ -4,10 +4,10 @@
 \alias{generate_fu_log}
 \title{Generate follow-up log (TIMCI-specific function)}
 \usage{
-generate_fu_log(df, fudf, wmin, wmax)
+generate_fu_log(pii, fudf, wmin, wmax)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{pii}{dataframe containing personally identifiable data}
 
 \item{fudf}{dataframe containing the processed follow-up data}
 

@@ -2,16 +2,18 @@
 % Please edit documentation in R/process_odk_data.R
 \name{extract_data_from_odk_zip}
 \alias{extract_data_from_odk_zip}
-\title{Extract data from ODK zip}
+\title{# Unzip and extract data from ODK zip}
 \usage{
-extract_data_from_odk_zip(odk_zip)
+extract_data_from_odk_zip(odk_zip, csv_name)
 }
 \arguments{
-\item{odk_zip}{The absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`}
+\item{odk_zip}{absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`}
+
+\item{csv_name}{name of the .CSV file}
 }
 \value{
-This function returns a dataframe.
+This function returns a formatted dataframe for future display and analysis.
 }
 \description{
-Extract data from ODK zip
+# Unzip and extract data from ODK zip
 }

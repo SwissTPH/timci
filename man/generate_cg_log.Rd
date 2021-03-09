@@ -4,10 +4,10 @@
 \alias{generate_cg_log}
 \title{Generate caregiver recruitment log (TIMCI-specific function)}
 \usage{
-generate_cg_log(df)
+generate_cg_log(pii)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{pii}{dataframe containing personally identifiable data}
 }
 \value{
 This function returns a dataframe.

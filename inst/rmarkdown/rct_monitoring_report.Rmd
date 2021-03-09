@@ -55,13 +55,16 @@ plot(facility_submission_bar_plot)
 ## Number of submissions per form
 ```{r, echo=FALSE, results = "asis"}
 n_screened <- nrow(facility_data)
-screening_data <- timci::extract_match_from_xls_dict(facility_data, "screening_dict.xlsx")
+screening_data <- timci::subset_from_xls_dict(facility_data, "screening_dict.xlsx")
 
-study_data <- timci::extract_enrolled_participants(facility_data)
-pii <- timci::extract_pii(study_data)
-n_enrolled <- nrow(study_data)
+res <- timci::extract_enrolled_participants(facility_data)
+demog_data <- res[[1]]
+pii <- res[[2]]
+n_enrolled <- nrow(demog_data)
 
-repeat_data <- extract_repeat_visits(facility_data)
+study_data <- extract_all_visits(facility_data)
+baseline_data <- extract_baseline_visits(study_data)
+repeat_data <- extract_repeat_visits(study_data)
 n_repeat <- nrow(repeat_data)
 
 n_day7fu <- nrow(raw_day7fu_data)

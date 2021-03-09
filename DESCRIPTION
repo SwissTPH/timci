@@ -34,5 +34,8 @@ Imports:
     rmarkdown,
     stringr,
     qwraps2,
-    digest
+    digest,
+    readr,
+    glue,
+    fs
 RoxygenNote: 7.1.1

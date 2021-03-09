@@ -4,7 +4,6 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: tempdir()
-  participant_zip: tempdir()
   qual_dir: tempdir()
 output:
   html_document: default
@@ -37,8 +36,7 @@ dir.create(file.path(params$qual_dir, "odk_external_files"), showWarnings = FALS
 raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
 raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
 facility_data <- timci::process_facility_data(raw_facility_data)
-study_data <- timci::extract_enrolled_participants(facility_data)
-pii <- timci::extract_pii(study_data)
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
 
 ```{r, echo=FALSE}

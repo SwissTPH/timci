@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_timci_data.R
 \name{extract_pii}
 \alias{extract_pii}
-\title{Extract Personally Identifiable Information (PII) (TIMCI-specific function)}
+\title{Extract personally identifiable information (TIMCI-specific function)}
 \usage{
 extract_pii(df)
 }
@@ -10,8 +10,8 @@ extract_pii(df)
 \item{df}{dataframe containing the processed facility data}
 }
 \value{
-This function returns de-identified data.
+This function returns a list of 2 dataframes: 1 dataframe with pii and 1 dataframe with deidentified demographic data
 }
 \description{
-Extraction of the personally identifiable data from the data collected
+Extract personally identifiable information (TIMCI-specific function)
 }

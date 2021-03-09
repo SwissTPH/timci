@@ -7,16 +7,26 @@
 
 process_facility_data <- function(df) {
 
-  df <- format_odk_data(df)
+  df <- format_odk_metadata(df)
 
   # Combine exact and approximate options to get the age in years
   df$'a3_a3_a_3' <- ifelse(!is.na(df$'a3_a3_a_3'), df$'a3_a3_a_3', df$'a3_a3_a_2a')
 
   # Combine exact and approximate options to get the age in months
-  df$'a3_a3_a_6' <- ifelse(!is.na(df$'a3_a3_a_6'), df$'a3_a3_a_6', ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA))
+  df$'a3_a3_a_6' <- ifelse(!is.na(df$'a3_a3_a_6'),
+                           df$'a3_a3_a_6',
+                           ifelse(!is.na(df$'a3_a3_a_6b'),
+                                  df$'a3_a3_a_6b',
+                                  ifelse(df$'a3_a3_a_5' != 98,
+                                         df$'a3_a3_a_5',
+                                         NA)))
+
+  df$'a3_a3_a_5' <- ifelse(df$'a3_a3_a_5' == 98 | (df$'a3_dobk' == 98 & df$'a3_a3_a_3' > 1),
+                           0,
+                           NA)
 
   # Replace the space between different answers by a semicolon in multiple select questions
-  nsep <- ";"
+  sep <- ";"
   multi_cols = c("visit_reason_a3_c_1",
                  "crfs_t05a_c1_a_11",
                  "crfs_t04a_b1_2",
@@ -30,16 +40,40 @@ process_facility_data <- function(df) {
                  "crfs_t09a2_h2_2a",
                  "crfs_t08a_f2_1",
                  "crfs_t05b_c3_6")
-  for (i in multi_cols) {
-    df[[i]] <- stringr::str_replace_all(df[[i]], " ", nsep)
-  }
+  df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Merge dictionaries
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "facility_dict.xlsx"), package = 'timci'))
-  df <- extract_match_from_dict(df, dictionary)
+  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
+  p_dict <- readxl::read_excel(system.file(file.path('extdata', "pii_dict.xlsx"), package = 'timci'))
+  v_dict <- readxl::read_excel(system.file(file.path('extdata', "visit_dict.xlsx"), package = 'timci'))
+  d_dict <- readxl::read_excel(system.file(file.path('extdata', "demog_dict.xlsx"), package = 'timci'))
+  dictionary <- rbind(s_dict, p_dict, v_dict, d_dict)
+  df <- match_from_dict(df, dictionary)
 
-  # Return the processed facility data
-  df
+  # Malaria test done
+  #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
+
+}
+
+#' Process hospital data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr stringr
+
+process_hospital_data <- function(df) {
+
+  df <- format_odk_metadata(df)
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols = c("n4_n4_1")
+  df <- format_multiselect_asws(df, multi_cols, sep)
+
+  # Merge dictionaries
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "hospit_dict.xlsx"), package = 'timci'))
+  df %>% match_from_dict(dictionary)
 
 }
 
@@ -52,7 +86,63 @@ process_facility_data <- function(df) {
 
 extract_enrolled_participants <- function(df) {
 
-  df %>% dplyr::filter(df$enrolled == 1)
+  df %>%
+    dplyr::filter(df$enrolled == 1) %>%
+    dplyr::relocate('child_id') %>%
+    dplyr::relocate('date_visit', .after = 'child_id') %>%
+    extract_pii()
+
+}
+
+#' Extract personally identifiable information (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a list of 2 dataframes: 1 dataframe with pii and 1 dataframe with deidentified demographic data
+#' @export
+#' @import dplyr magrittr
+
+extract_pii <- function(df) {
+
+  # Extract de-identified baseline data
+  demog <- subset_from_xls_dict(df, "demog_dict.xlsx")
+
+  # Extract personally identifiable information
+  pii <- subset_from_xls_dict(df, "pii_dict.xlsx")
+
+  # Return a list
+  list(demog, pii)
+
+}
+
+#' Extract visits (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing data of all baseline and repeat visits
+#' @export
+#' @import dplyr magrittr
+
+extract_all_visits <- function(df) {
+
+  df <- dplyr::filter(df, (df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1))
+  # Merge dictionaries
+  s_dict <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
+  v_dict <- readxl::read_excel(system.file(file.path('extdata', "visit_dict.xlsx"), package = 'timci'))
+  dictionary <- rbind(s_dict, v_dict)
+  df <- df[dictionary$new]
+
+}
+
+#' Extract baseline visits (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing data of baseline visits only
+#' @export
+#' @import dplyr magrittr
+
+extract_baseline_visits <- function(df) {
+
+  df %>%
+    dplyr::filter(df$repeat_consult == 0)
 
 }
 
@@ -65,7 +155,8 @@ extract_enrolled_participants <- function(df) {
 
 extract_repeat_visits <- function(df) {
 
-  df %>% dplyr::filter(df$repeat_consult == 1)
+  df %>%
+    dplyr::filter(df$repeat_consult == 1)
 
 }
 
@@ -105,15 +196,6 @@ extract_hypoxaemia <- function(df) {
 
 deidentify_data <- function(df) {
 
-  # Merge screening and rctls dictionaries
-  s_dictionary <- readxl::read_excel(system.file(file.path('extdata', "screening_dict.xlsx"), package = 'timci'))
-  m_dictionary <- readxl::read_excel(system.file(file.path('extdata', "rctls_dict.xlsx"), package = 'timci'))
-  dictionary <- rbind(s_dictionary, m_dictionary)
-  drops <- c("date_screen")
-  dictionary <- dictionary[!(dictionary$new %in% drops),]
-
-  df <- extract_match_from_dict(df, dictionary)
-
   # De-identification
   df$country_id <- substr(df$child_id, 1, 1)
   df$facility_id <- substr(df$child_id, 3, 7)
@@ -121,29 +203,12 @@ deidentify_data <- function(df) {
 
   df
 
-  # Malaria test done
-  #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
-
-}
-
-#' Extract Personally Identifiable Information (PII) (TIMCI-specific function)
-#'
-#' Extraction of the personally identifiable data from the data collected
-#' @param df dataframe containing the processed facility data
-#' @return This function returns de-identified data.
-#' @export
-#' @import magrittr dplyr
-
-extract_pii <- function(df) {
-
-  df <- extract_match_from_xls_dict(df, "pii_dict.xlsx")
-
 }
 
 #' Generate follow-up log (TIMCI-specific function)
 #'
 #' Generate a list of participants to be called in a time window after baseline between wmin and wmax
-#' @param df dataframe containing the processed facility data
+#' @param pii dataframe containing personally identifiable data
 #' @param fudf dataframe containing the processed follow-up data
 #' @param wmin numerical, start of the follow-up period (in days)
 #' @param wmax numerical, end of the follow-up period (in days)
@@ -151,12 +216,12 @@ extract_pii <- function(df) {
 #' @export
 #' @import magrittr dplyr
 
-generate_fu_log <- function(df,
+generate_fu_log <- function(pii,
                             fudf,
                             wmin,
                             wmax) {
 
-  fu_log <- extract_pii(df)
+  fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
   fu_log$label <- paste(fu_log$fs_name,fu_log$ls_name)
@@ -187,17 +252,15 @@ generate_fu_log <- function(df,
 #' Generate caregiver recruitment log (TIMCI-specific function)
 #'
 #' Generate a list of caregiver to be called for the qualitative studies
-#' @param df dataframe containing the processed facility data
+#' @param pii dataframe containing personally identifiable data
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
 
-generate_cg_log <- function(df) {
-
-  cp <- extract_pii(df)
+generate_cg_log <- function(pii) {
 
   drops <- c("date_visit", "first_name", "last_name", "mother_name")
-  cp[, !(names(cp) %in% drops)]
+  pii[, !(names(pii) %in% drops)]
 
 }
 

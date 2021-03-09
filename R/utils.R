@@ -9,6 +9,7 @@ export_df2xlsx <- function(df, dirname, xls_name) {
 
   fname <- file.path(dirname, paste(xls_name, "_", Sys.Date(), ".xlsx", sep = ""))
   openxlsx::write.xlsx(df, fname, row.names = FALSE)
+  fname
 
 }
 
@@ -34,14 +35,15 @@ anonymise_dataframe <- function(df, cols_to_anon, algo = "sha256") {
 #' @export
 #' @import magrittr dplyr
 
-extract_match_from_dict <- function(df, dictionary) {
+match_from_dict <- function(df, dictionary) {
 
   # Add column if it does not exit
   df[setdiff(dictionary$old,names(df))] <- NA
 
   # Rename column names based on the dictionary
   names(df)[match(dictionary$old, names(df))] <- dictionary$new
-  df %>% dplyr::select(dictionary$new)
+  df %>%
+    dplyr::select(dictionary$new)
 
 }
 
@@ -53,9 +55,24 @@ extract_match_from_dict <- function(df, dictionary) {
 #' @export
 #' @import magrittr dplyr
 
-extract_match_from_xls_dict <- function(df, xls_dict) {
+match_from_xls_dict <- function(df, xls_dict) {
 
   dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
-  df <- extract_match_from_dict(df, dictionary)
+  df <- match_from_dict(df, dictionary)
+
+}
+
+#' Subset columns using an external Excel dictionary
+#'
+#' @param df Input dataframe
+#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+subset_from_xls_dict <- function(df, xls_dict) {
+
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
+  df[dictionary$new]
 
 }
