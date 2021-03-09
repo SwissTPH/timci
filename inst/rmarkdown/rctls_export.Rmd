@@ -6,7 +6,6 @@ params:
   rctls_dir: tempdir()
   participant_zip: tempdir()
   spa_dir: tempdir()
-  qual_dir: tempdir()
 output:
   html_document: default
   word_document:
@@ -124,33 +123,3 @@ timci::export_df2xlsx(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assess
 timci::export_df2xlsx(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
 timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
 ```
-
-# 3. Qualitative studies
-
-```{r, echo=FALSE}
-raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = 12, fid = "08a-TIMCI-cg-idi-invitation")
-cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
-timci::export_df2xlsx(cgidi_invitation_data, params$qual_dir, "01_timci_cg_invitation_data")
-
-raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = 12, fid = "08b-TIMCI-cg-idi-encryption-list")
-cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
-timci::export_df2xlsx(cgidi_encryption_data, params$qual_dir, "02_timci_cg_encryption_data")
-
-raw_cgidi_interview_zip <- ruODK::submission_export(pid = 12, fid = "08c-TIMCI-cg-idi-interview")
-cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, "08c-TIMCI-cg-idi-interview.csv")
-timci::export_df2xlsx(cgidi_interview_data, params$qual_dir, "03_timci_cg_interview_data")
-
-sl <- ruODK::submission_list(pid = 12, fid = "08c-TIMCI-cg-idi-interview")
-print(sl)
-```
-
-```{r, echo=FALSE}
-for (i in length(sl$instance_id)) {
-  al <- ruODK::get_one_submission_attachment_list(sl$instance_id[[i]])
-  test <- ruODK::get_one_submission(sl$instance_id[[i]])
-  print(test)
-  dir.create(file.path(params$qual_dir, sl$instance_id[[i]]), showWarnings = FALSE)
-}
-```
-
-

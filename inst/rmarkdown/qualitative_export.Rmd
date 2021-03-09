@@ -1,0 +1,80 @@
+---
+title: "TIMCI Qualitative Study Export Report"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  rctls_dir: tempdir()
+  participant_zip: tempdir()
+  spa_dir: tempdir()
+  qual_dir: tempdir()
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles1.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r ruODK-setup, echo=FALSE}
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+```
+
+```{r, echo=FALSE}
+raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = 12,
+                                                         fid = "08a-TIMCI-cg-idi-invitation")
+cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+start_date <- min(cgidi_invitation_data$date_visit)
+end_date <- max(cgidi_invitation_data$date_visit)
+tmp <- timci::export_df2xlsx(cgidi_invitation_data, params$qual_dir, "01_timci_cg_invitation_data")
+
+raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = 12,
+                                                         fid = "08b-TIMCI-cg-idi-encryption-list")
+cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+tmp <- timci::export_df2xlsx(cgidi_encryption_data, params$qual_dir, "02_timci_cg_encryption_data")
+
+raw_cgidi_interview_zip <- ruODK::submission_export(pid = 12,
+                                                    fid = "08c-TIMCI-cg-idi-interview")
+cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, "08c-TIMCI-cg-idi-interview.csv")
+tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual_dir, "03_timci_cg_interview_data")
+```
+
+This report covers the period from **`r start_date`** to **`r end_date`**.
+
+```{r, echo=FALSE}
+library(data.table)
+sl <- ruODK::submission_list(pid = 12,
+                             fid = "08c-TIMCI-cg-idi-interview")
+for (i in nrow(sl)) {
+  uuid <- sl$instance_id[[i]]
+  sub <- ruODK::get_one_submission(pid = 12,
+                                   fid = "08c-TIMCI-cg-idi-interview",
+                                   uuid)
+  sub2 <- unlist(sub)
+  print(sub2)
+  cpath <- file.path(params$qual_dir, sub$identification$idiidm)
+  dir.create(cpath, showWarnings = FALSE)
+  tmp <- timci::export_df2xlsx(sub2, cpath, "data")
+  
+  # Download attachments
+  al <- ruODK::get_one_submission_attachment_list(pid = 12,
+                                                  fid = "08c-TIMCI-cg-idi-interview", uuid)
+  for (j in 1:length(al)) {
+    print(al$name[[j]])
+    ruODK::attachment_get(pid = 12,
+                          fid = "08c-TIMCI-cg-idi-interview",
+                          uuid, 
+                          al$name[[j]],
+                          local_dir = cpath)
+  }
+}
+```
+
+

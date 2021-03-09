@@ -40,15 +40,21 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 
 run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir, spa_db_dir) {
 
+  ############################
+  # Qualitative study export #
+  ############################
+
+  params <- list(qual_dir = qual_dir)
+  generate_report(report_dir, "qualitative_export.Rmd", "timci_qualitative_export_report", params)
+
   ###########################
   # RCT data quality report #
   ###########################
 
   params <- list(rctls_dir = mdb_dir,
                  participant_zip = participant_zip,
-                 spa_dir = spa_db_dir,
-                 qual_dir = qual_dir)
-  generate_report(report_dir, "rct_quality_report.Rmd", "timci_rct_data_quality_report", params)
+                 spa_dir = spa_db_dir)
+  generate_report(report_dir, "rctls_export.Rmd", "timci_rct_data_quality_report", params)
 
   #########################
   # RCT monitoring report #
@@ -83,6 +89,5 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir
   #############################
 
   generate_report(report_dir, "pilot_report.Rmd", "timci_pilot_report")
-
 
 }
