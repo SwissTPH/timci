@@ -14,3 +14,4 @@ DT
 data.table
 openxlsx
 rmarkdown
+digest

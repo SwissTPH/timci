@@ -38,14 +38,7 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @import rmarkdown
 #' @export
 
-run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir, spa_db_dir) {
-
-  ############################
-  # Qualitative study export #
-  ############################
-
-  params <- list(qual_dir = qual_dir)
-  generate_report(report_dir, "qualitative_export.Rmd", "timci_qualitative_export_report", params)
+run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir) {
 
   ###########################
   # RCT data quality report #
@@ -53,8 +46,9 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir
 
   params <- list(rctls_dir = mdb_dir,
                  participant_zip = participant_zip,
-                 spa_dir = spa_db_dir)
-  generate_report(report_dir, "rctls_export.Rmd", "timci_rct_data_quality_report", params)
+                 spa_dir = spa_db_dir,
+                 qual1_dir = qual1_dir)
+  generate_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
 
   #########################
   # RCT monitoring report #
@@ -66,17 +60,22 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual_dir
   # Day 7 follow-up log #
   #######################
 
-  params <- list(output_dir = fu_dir,
-                 qual_dir = qual_dir)
+  params <- list(output_dir = fu_dir)
   generate_report(fu_dir, "day7_fu_log.Rmd", "timci_day7_fu_log", params)
 
   #######################
   # Day 28 follow-up log #
   #######################
 
-  params <- list(output_dir = fu_dir,
-                 qual_dir = qual_dir)
+  params <- list(output_dir = fu_dir)
   generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", params)
+
+  ###################################
+  # Qualitative caregiver selection #
+  ###################################
+
+  params <- list(qual1_dir = qual1_dir)
+  generate_report(fu_dir, "qual_cg_selection.Rmd", "timci_caregiver_selection", params)
 
   ###################
   # PATH M&E report #

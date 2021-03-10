@@ -44,6 +44,8 @@ process_facility_data <- function(df) {
 
   # Match column names with names from dictionary
   df <- match_from_xls_dict(df, "main_dict.xlsx")
+
+  # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
 
   df
@@ -232,11 +234,18 @@ generate_fu_log <- function(pii,
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
-  fu_log$label <- paste(fu_log$fs_name,fu_log$ls_name)
-  fu_log$caregiver <- paste(fu_log$cg_fs_name,fu_log$cg_ls_name)
-  fu_log$mother <- paste(fu_log$mother_fs_name,fu_log$mother_ls_name)
+  fu_log$label <- paste(fu_log$fs_name, fu_log$ls_name)
+  fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
+  fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
-  fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+
+  # Exclude children who already underwent follow-up
+  if (!is.null(fudf)) {
+    fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+  }
+
+  # Exclude children who are outside of the follow-up window period
+  fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
 
   col_order <- c('child_id',
                  'label',
@@ -257,12 +266,35 @@ generate_fu_log <- function(pii,
 
 }
 
+#' Process day 7 follow-up data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr
+
+process_day7_data <- function(df) {
+
+  df <- format_odk_metadata(df)
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols = c("n1_o3_1a",
+                 "n1_o3_1b",
+                 "n1_o3_2b")
+  df <- format_multiselect_asws(df, multi_cols, sep)
+
+  # Match column names with names from dictionary
+  df %>% match_from_xls_dict("day7_dict.xlsx")
+
+}
+
 #' Process hospital data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr stringr
+#' @import dplyr magrittr
 
 process_hospital_data <- function(df) {
 
@@ -282,11 +314,12 @@ process_hospital_data <- function(df) {
 #'
 #' Generate a list of caregiver to be called for the qualitative studies
 #' @param pii dataframe containing personally identifiable data
+#' @param day7fu dataframe containing day7 follow-up data
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
 
-generate_cg_log <- function(pii) {
+generate_cg_log <- function(pii, day7fu) {
 
   drops <- c("date_visit", "first_name", "last_name", "mother_name")
   pii[, !(names(pii) %in% drops)]

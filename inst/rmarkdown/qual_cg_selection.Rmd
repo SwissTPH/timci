@@ -1,0 +1,55 @@
+---
+title: "Qualitative caregiver selection"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  qual1_dir: tempdir()
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles2.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r ruODK-setup, echo=FALSE}
+# Connect to the ODK Central server using ruODK
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+```
+
+```{r, echo=FALSE}
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+```
+
+```{r, echo=FALSE}
+# Create `odk_external_files` folder if it does not exist
+dir.create(file.path(params$qual1_dir, "odk_external_files"), showWarnings = FALSE)
+
+# Load contact information
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+facility_data <- timci::process_facility_data(raw_facility_data)
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+```
+
+```{r, echo=FALSE}
+cg_selection <- timci::generate_fu_log(pii, NULL, 0, 2000)
+```
+
+```{r, echo=FALSE}
+tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_participants")
+```
+
+```{r, echo=FALSE}
+csv_fname <- file.path(params$qual1_dir, "odk_external_files", "cg_idi_participants.csv")
+write.csv(cg_selection, csv_fname, row.names = FALSE, quote = FALSE)
+```

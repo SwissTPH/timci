@@ -23,14 +23,3 @@ ruODK::ru_setup(
   verbose = FALSE # Can be switched to TRUE for demo or debugging
 )
 ```
-
-```{r, echo=FALSE}
-raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
-raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
-raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
-```
-
-```{r, echo=FALSE}
-facility_data <- timci::process_facility_data(raw_facility_data)
-```

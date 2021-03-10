@@ -4,7 +4,6 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: tempdir()
-  qual_dir: tempdir()
 output:
   html_document: default
   word_document:
@@ -27,20 +26,25 @@ ruODK::ru_setup(
 ```
 
 ```{r, echo=FALSE}
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+```
 
+```{r, echo=FALSE}
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
-dir.create(file.path(params$qual_dir, "odk_external_files"), showWarnings = FALSE)
 
 # Load contact information
-raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
 facility_data <- timci::process_facility_data(raw_facility_data)
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
 
 ```{r, echo=FALSE}
 day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
+day7lost <- timci::generate_fu_log(pii, raw_day7fu_data, 10, 2000)
+tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "day7_lost_to_followup")
 ```
 
 ```{r, echo=FALSE}
@@ -77,14 +81,4 @@ df$contact <- paste(df$contact,
 drops <- c("mother", "relationship", "sex", "location")
 df <- df[ , !(names(df) %in% drops)]
 df %>% knitr::kable()
-```
-
-```{r, echo=FALSE}
-xlsx_fname <- file.path(params$qual_dir, paste("cg_idi_participants_", Sys.Date(), ".xlsx", sep = ""))
-openxlsx::write.xlsx(day7fu, xlsx_fname, row.names = FALSE)
-```
-
-```{r, echo=FALSE}
-csv_fname <- file.path(params$qual_dir, "odk_external_files", "cg_idi_participants.csv")
-write.csv(day7fu, csv_fname, row.names = FALSE, quote = FALSE)
 ```

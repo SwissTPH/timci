@@ -27,20 +27,27 @@ ruODK::ru_setup(
 ```
 
 ```{r, echo=FALSE}
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+```
+
+```{r, echo=FALSE}
 
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 dir.create(file.path(params$qual_dir, "odk_external_files"), showWarnings = FALSE)
 
 # Load contact information
-raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
 facility_data <- timci::process_facility_data(raw_facility_data)
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
 
 ```{r, echo=FALSE}
 day28fu <- timci::generate_fu_log(pii, raw_day28fu_data, 28, 32)
+day28lost <- timci::generate_fu_log(pii, raw_day28fu_data, 33, 2000)
+tmp <- timci::export_df2xlsx(day28lost, params$output_dir, "day28_lost_to_followup")
 ```
 
 ```{r, echo=FALSE}

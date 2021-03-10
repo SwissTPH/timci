@@ -1,0 +1,215 @@
+---
+title: "TIMCI Data Export Report"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  rctls_dir: tempdir()
+  participant_zip: tempdir()
+  spa_dir: tempdir()
+  qual1_dir: tempdir()
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles1.docx
+---
+
+```{r rmd-setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ruODK setup
+
+```{r ruODK-setup}
+ruODK::ru_setup(
+  svc = Sys.getenv("ODKC_SVC"),
+  un = Sys.getenv("ODKC_UN"),
+  pw = Sys.getenv("ODKC_PW"),
+  tz = Sys.getenv("TZ"),
+  verbose = FALSE # Can be switched to TRUE for demo or debugging
+)
+```
+
+TIMCI-specific RCT / LS setup
+
+```{r}
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
+crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+wd_fid <- Sys.getenv("TIMCI_WD_FID")
+```
+
+Load TIMCI facility CRF data
+
+```{r load-RCT-LS-ODK-facility-data}
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+facility_data <- timci::process_facility_data(raw_facility_data)
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+```
+
+This report covers the period from **`r start_date`** to **`r end_date`**.
+
+# 1. **`r Sys.getenv("TIMCI_MAIN_TRIAL")`**
+
+## 1.1. Facility data
+
+```{r}
+screening_data <- timci::extract_screening_data(facility_data)
+timci::export_df2xlsx(screening_data, params$rctls_dir, "01_timci_screening_data")
+```
+
+```{r}
+res <- timci::extract_enrolled_participants(facility_data)
+
+day0_data <- res[[1]]
+n_enrolled <- nrow(day0_data)
+deidentified_day0_data <- timci::deidentify_data(day0_data)
+timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+
+pii <- res[[2]]
+xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_contact_data")
+pii_pwd <- Sys.getenv("TIMCI_PII_PW")
+zip(params$participant_zip, 
+    files = xlsx_fname, 
+    flags = paste("-r9Xj --password", pii_pwd))
+
+```
+
+```{r}
+study_data <- extract_all_visits(facility_data)
+deidentified_facility_data <- timci::deidentify_data(study_data)
+tmp <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+```
+
+## 1.2. Day 7 follow-up
+
+```{r load-RCT-LS-ODK-fu-day7-data}
+raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+day7fu_data <- process_day7_data(raw_day7fu_data)
+tmp <- timci::export_df2xlsx(day7fu_data, params$rctls_dir, "04_timci_followup_day7_data")
+```
+
+## 1.3. Hospitalisation follow-up
+
+```{r load-RCT-LS-ODK-fu-hospit-data}
+raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid)
+hospit_data <- process_hospital_data(raw_hospit_data)
+tmp <- timci::export_df2xlsx(hospit_data, params$rctls_dir, "05_timci_followup_hospit_data")
+```
+
+## 1.3. Day 28 follow-up
+
+```{r load-RCT-LS-ODK-fu-day28-data}
+raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
+day28fu_data <- format_odk_metadata(raw_day28fu_data)
+tmp <- timci::export_df2xlsx(day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
+```
+
+## 1.4. Withdrawal data
+
+```{r load-RCT-LS-ODK-withdrawal}
+raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid)
+withdrawal_data <- format_odk_metadata(raw_withdrawal_data)
+```
+
+# 2. Service Provision Assessment (SPA)
+
+```{r spa-setup}
+spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
+fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
+sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
+hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+```
+
+## 2.1. Caregiver exit interview
+
+```{r cg-exit-interview-export}
+raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
+spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
+timci::export_df2xlsx(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
+```
+
+## 2.2. Facility assessment
+
+```{r facility-assessment-export}
+raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
+spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
+timci::export_df2xlsx(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
+```
+
+## 2.3. Healthcare provider interview
+
+```{r hcp-interview-export}
+raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
+spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
+timci::export_df2xlsx(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
+```
+
+## 2.4. Sick child observation protocol
+
+```{r sick-child-observation-export}
+raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
+spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+```
+
+# 3. Qualitative studies
+
+```{r qual-setup}
+cpid <- Sys.getenv("TIMCI_QUAL_PID")
+cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
+cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
+cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
+```
+
+## 3.1. Caregiver in-depth interview
+
+```{r cg-idi-invitation-export}
+raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = cpid,
+                                                         fid = cgidi1_fid)
+cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+tmp <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
+```
+
+```{r cg-idi-encryption-export}
+raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = cpid,
+                                                         fid = cgidi2_fid)
+cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+tmp <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
+```
+
+```{r cg-idi-interview-export}
+raw_cgidi_interview_zip <- ruODK::submission_export(pid = cpid,
+                                                    fid = cgidi3_fid)
+cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
+tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
+```
+
+```{r}
+library(data.table)
+sl <- ruODK::submission_list(pid = cpid,
+                             fid = cgidi3_fid)
+for (i in nrow(sl)) {
+  crow <- cgidi_interview_data[i,]
+  uuid <- crow$'meta-instanceID'
+  cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
+  print(paste0("Participant: ", crow$'identification-idiidm'))
+  dir.create(cpath, showWarnings = FALSE)
+  tmp <- timci::export_df2xlsx(crow, cpath, "data")
+  
+  # Download attachments
+  al <- ruODK::get_one_submission_attachment_list(pid = cpid,
+                                                  fid = cgidi3_fid, uuid)
+  for (j in 1:length(al)) {
+    aid <- al$name[[j]]
+    print(paste0("Attachment: ", aid))
+    ruODK::attachment_get(pid = cpid,
+                          fid = cgidi3_fid,
+                          uuid, 
+                          aid,
+                          local_dir = cpath)
+  }
+}
+```

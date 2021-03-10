@@ -25,11 +25,19 @@ ruODK::ru_setup(
 ```
 
 ```{r, echo=FALSE}
-raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
-raw_day7fu_data <- ruODK::odata_submission_get(fid = "01c-TIMCI-CRF-Day7")
-raw_hospit_data <- ruODK::odata_submission_get(fid = "01b-TIMCI-CRF-Hospital")
-raw_day28fu_data <- ruODK::odata_submission_get(fid = "01d-TIMCI-CRF-Day28")
-raw_withdrawal_data <- ruODK::odata_submission_get(fid = "99-TIMCI-withdrawal")
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
+crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+wd_fid <- Sys.getenv("TIMCI_WD_FID")
+```
+
+```{r, echo=FALSE}
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid)
+raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
+raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid)
 ```
 
 ```{r, echo=FALSE}
