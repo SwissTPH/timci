@@ -33,7 +33,8 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
 #' @param mdb_dir Path to the output folder for the RCT / LS database exports
 #' @param fu_dir Path to the output folder for the follow-up exports
-#' @param qual_dir Path to the output folder for the qualitative exports
+#' @param qual1_dir Path to the output folder for the caregiver IDI exports
+#' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
 #' @param spa_db_dir Path to the output folder for the SPA database exports
 #' @import rmarkdown
 #' @export
@@ -75,7 +76,7 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   ###################################
 
   params <- list(qual1_dir = qual1_dir)
-  generate_report(fu_dir, "qual_cg_selection.Rmd", "timci_caregiver_selection", params)
+  generate_report(fu_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
 
   ###################
   # PATH M&E report #

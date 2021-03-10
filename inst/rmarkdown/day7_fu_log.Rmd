@@ -43,6 +43,8 @@ pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
 ```{r, echo=FALSE}
 day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
+failed_day7fu_data <- format_day7_data(raw_day7fu_data)[[2]]
+tmp <- timci::export_df2xlsx(failed_day7fu_data, params$output_dir, "day7_unsuccessful_calls")
 day7lost <- timci::generate_fu_log(pii, raw_day7fu_data, 10, 2000)
 tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "day7_lost_to_followup")
 ```

@@ -274,7 +274,7 @@ generate_fu_log <- function(pii,
 #' @export
 #' @import dplyr magrittr
 
-process_day7_data <- function(df) {
+format_day7_data <- function(df) {
 
   df <- format_odk_metadata(df)
 
@@ -285,8 +285,39 @@ process_day7_data <- function(df) {
                  "n1_o3_2b")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
+  # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
+  day7_df <- df[df$proceed == 1,]
+  fail_df <- df[df$proceed == 0,]
+
   # Match column names with names from dictionary
-  df %>% match_from_xls_dict("day7_dict.xlsx")
+  day7_df <- match_from_xls_dict(day7_df, "day7_dict.xlsx")
+  fail_df <- match_from_xls_dict(fail_df, "day7_dict.xlsx")
+
+  list(day7_df, fail_df)
+
+}
+
+#' Generate caregiver recruitment log (TIMCI-specific function)
+#'
+#' Generate a list of caregiver to be called for the qualitative studies
+#' @param pii dataframe containing personally identifiable data
+#' @param day7fu dataframe containing day7 follow-up data
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+generate_cg_log <- function(pii, day7fu) {
+
+  # Select only caregivers who express willingness to participate at Day 7
+  cg_selection <- day7fu[day7fu$qual_ok,]
+
+  # Merge cg_selection with participant contact information
+  cg_selection <- merge(cg_selection, pii, by = "child_id", no.dups = TRUE)
+
+  drops <- c("date_visit", "first_name", "last_name", "mother_name")
+  pii[, !(names(pii) %in% drops)]
+
+  cg_selection
 
 }
 
@@ -308,30 +339,6 @@ process_hospital_data <- function(df) {
 
   # Match column names with names from dictionary
   df %>% match_from_xls_dict("hospit_dict.xlsx")
-
-}
-
-#' Generate caregiver recruitment log (TIMCI-specific function)
-#'
-#' Generate a list of caregiver to be called for the qualitative studies
-#' @param pii dataframe containing personally identifiable data
-#' @param day7fu dataframe containing day7 follow-up data
-#' @return This function returns a dataframe.
-#' @export
-#' @import magrittr dplyr
-
-generate_cg_log <- function(pii, day7fu) {
-
-  # Select only caregivers who express willingness to participate at Day 7
-  cg_selection <- day7fu[day7fu$qual_ok,]
-
-  # Merge cg_selection with participant contact information
-  cg_selection <- merge(cg_selection, pii, by = "child_id")
-
-  drops <- c("date_visit", "first_name", "last_name", "mother_name")
-  pii[, !(names(pii) %in% drops)]
-
-  cg_selection
 
 }
 

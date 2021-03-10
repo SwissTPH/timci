@@ -37,7 +37,8 @@ dir.create(file.path(params$qual1_dir, "odk_external_files"), showWarnings = FAL
 # Load contact information
 raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
 raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
-day7fu_data <- process_day7_data(raw_day7fu_data)
+res <- format_day7_data(raw_day7fu_data)
+day7fu_data <- res[[1]]
 facility_data <- timci::process_facility_data(raw_facility_data)
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```

@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Pragmatic Cluster RCT Monitoring Report"
+title: "TIMCI `r Sys.getenv('TIMCI_MAIN_STUDY')` Monitoring Report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
@@ -196,13 +196,12 @@ plot(referral_pie_chart)
 
 # 5. Day 7 follow-up
 
-Lost to follow-up
-
-Child cured?
-Child alive?
-Visit to hospital between baseline and D7
-If yes, reason for admission, hospital name and location
-Was child hospitalized? If yes, details
+Lost to follow-up  
+Child cured?  
+Child alive?  
+Visit to hospital between baseline and D7  
+If yes, reason for admission, hospital name and location  
+Was child hospitalized? If yes, details  
 
 ```{r, echo=FALSE, results = "asis"}
 options(qwraps2_markup = 'markdown')
