@@ -247,6 +247,7 @@ generate_fu_log <- function(pii,
   # Exclude children who are outside of the follow-up window period
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
 
+  # Order columns
   col_order <- c('child_id',
                  'label',
                  'sex',
@@ -321,8 +322,16 @@ process_hospital_data <- function(df) {
 
 generate_cg_log <- function(pii, day7fu) {
 
+  # Select only caregivers who express willingness to participate at Day 7
+  cg_selection <- day7fu[day7fu$qual_ok,]
+
+  # Merge cg_selection with participant contact information
+  cg_selection <- merge(cg_selection, pii, by = "child_id")
+
   drops <- c("date_visit", "first_name", "last_name", "mother_name")
   pii[, !(names(pii) %in% drops)]
+
+  cg_selection
 
 }
 
