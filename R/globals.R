@@ -7,4 +7,6 @@ utils::globalVariables(c("Group.1",
                          "screening",
                          "contact",
                          "day0",
-                         "visits"))
+                         "visits",
+                         "fs_name",
+                         "ls_name"))

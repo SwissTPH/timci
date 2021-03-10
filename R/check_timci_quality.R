@@ -1,14 +1,40 @@
-#' Detect duplicate participants (TIMCI-specific function)
+#' Detect ID duplicates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
-#' @return This function returns a dataframe containing data of possible duplicate participants only
+#' @return This function returns a vector containing IDs of duplicate IDs
 #' @export
 #' @import dplyr magrittr
 
-detect_duplicate_participants <- function(df) {
+detect_id_duplicates <- function(df) {
 
-  # To complete
-  df[duplicated(df)]
+  vec <- df$child_id
+  vec[duplicated(vec)]
+
+}
+
+#' Detect name duplicates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a vector containing IDs and names of duplicate names
+#' @export
+#' @import dplyr magrittr
+
+detect_name_duplicates <- function(df) {
+
+  # Exact (case-insensitive) duplicates
+  df <- dplyr::mutate(df,
+                      full_name = paste(fs_name, ls_name, sep = ' '))
+  df1 <- df[c("child_id", "full_name")]
+  qc1 <- df1[duplicated(tolower(df1$full_name)),]
+
+  # Switched (case-insensitive) names
+  df2 <- dplyr::mutate(df,
+                      full_name = paste(ls_name, fs_name, sep = ' '))
+  df2 <- df2[c("child_id", "full_name")]
+  df2 <- rbind(df1, df2)
+  qc2 <- df2[duplicated(tolower(df2$full_name)),]
+
+  list(qc1, qc2)
 
 }
 

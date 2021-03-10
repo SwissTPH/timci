@@ -55,6 +55,8 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 
 ## 1.1. Facility data
 
+### Load data
+
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
 timci::export_df2xlsx(screening_data, params$rctls_dir, "01_timci_screening_data")
@@ -78,9 +80,38 @@ zip(params$participant_zip,
 ```
 
 ```{r}
-study_data <- extract_all_visits(facility_data)
+study_data <- timci::extract_all_visits(facility_data)
 deidentified_facility_data <- timci::deidentify_data(study_data)
 tmp <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+```
+
+### Quality checks
+
+#### Duplicates
+
+```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
+duplicates <- timci::detect_id_duplicates(day0_data)
+if (length(duplicates) > 0) { 
+     knitr::kable(duplicates, caption = "ID duplicates")
+} else {
+  cat("No ID duplicates detected")
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
+res <- timci::detect_name_duplicates(pii)
+duplicates <- res[[1]]
+if (nrow(duplicates) > 0) { 
+     knitr::kable(duplicates, caption = "Exact name duplicates")
+} else {
+  cat("No exact name duplicates detected")
+}
+duplicates <- res[[2]]
+if (nrow(duplicates) > 0) { 
+     knitr::kable(duplicates, caption = "Switched first and last names")
+} else {
+  cat("No switched first and last names detected")
+}
 ```
 
 ## 1.2. Day 7 follow-up
@@ -89,15 +120,19 @@ tmp <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_t
 
 ```{r load-RCT-LS-ODK-fu-day7-data}
 raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
-res <- format_day7_data(raw_day7fu_data)
+res <- timci::format_day7_data(raw_day7fu_data)
 day7fu_data <- res[[1]]
 ```
 
 ### Quality checks
 
 ```{r check-RCT-LS-ODK-fu-day7-data, results='asis'}
-day7fu_duplicates <- detect_duplicate_participants(day7fu_data$child_id)
-knitr::kable(day7fu_duplicates, caption = "Duplicates with same child ID")
+day7fu_duplicates <- timci::detect_id_duplicates(day7fu_data)
+if (length(day7fu_duplicates) > 0) { 
+     knitr::kable(day7fu_duplicates, caption = "ID duplicates")
+} else {
+  cat("No ID duplicates detected")
+}
 ```
 
 ### Export data
@@ -118,8 +153,12 @@ hospit_data <- process_hospital_data(raw_hospit_data)
 ### Quality checks
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
-hospit_data_duplicates <- detect_duplicate_participants(hospit_data$child_id)
-knitr::kable(hospit_data_duplicates, caption = "Duplicates with same child ID")
+hospit_data_duplicates <- detect_id_duplicates(hospit_data)
+if (length(hospit_data_duplicates) > 0) { 
+     knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
+} else {
+  cat("No ID duplicates detected")
+}
 ```
 
 ### Export data
@@ -218,10 +257,9 @@ tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_c
 ```
 
 ```{r}
-library(data.table)
 sl <- ruODK::submission_list(pid = cpid,
                              fid = cgidi3_fid)
-for (i in nrow(sl)) {
+for (i in 1:nrow(sl)) {
   crow <- cgidi_interview_data[i,]
   uuid <- crow$'meta-instanceID'
   cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
@@ -231,8 +269,9 @@ for (i in nrow(sl)) {
   
   # Download attachments
   al <- ruODK::get_one_submission_attachment_list(pid = cpid,
-                                                  fid = cgidi3_fid, uuid)
-  for (j in 1:length(al)) {
+                                                  fid = cgidi3_fid,
+                                                  uuid)
+  for (j in 1:nrow(al)) {
     aid <- al$name[[j]]
     print(paste0("Attachment: ", aid))
     ruODK::attachment_get(pid = cpid,
