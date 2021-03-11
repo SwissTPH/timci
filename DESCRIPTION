@@ -36,6 +36,5 @@ Imports:
     qwraps2,
     digest,
     readr,
-    glue,
     fs
 RoxygenNote: 7.1.1

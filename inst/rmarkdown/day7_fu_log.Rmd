@@ -43,7 +43,7 @@ pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
 ```{r, echo=FALSE}
 day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
-failed_day7fu_data <- format_day7_data(raw_day7fu_data)[[2]]
+failed_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[2]]
 tmp <- timci::export_df2xlsx(failed_day7fu_data, params$output_dir, "day7_unsuccessful_calls")
 day7lost <- timci::generate_fu_log(pii, raw_day7fu_data, 10, 2000)
 tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "day7_lost_to_followup")
@@ -56,11 +56,12 @@ write.csv(day7fu, csv7_fname, row.names = FALSE, quote = FALSE)
 
 ```{r, echo=FALSE}
 library(qrcode)
+library(magrittr)
 for (i in 1:nrow(day7fu)) {
   pid <- toString(day7fu[i,'name'])
   png_file <- file.path(tempdir(), paste0(pid,".png"))
   png(png_file)
-  qrcode_gen(pid)
+  qrcode::qrcode_gen(pid)
   dev.off()
   }
 
@@ -83,4 +84,52 @@ df$contact <- paste(df$contact,
 drops <- c("mother", "relationship", "sex", "location")
 df <- df[ , !(names(df) %in% drops)]
 df %>% knitr::kable()
+```
+
+## Get form details 
+
+```{r}
+library(magrittr)
+url <- "https://timicodktest.smartforest.de"
+res <- httr::RETRY("GET",
+                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7"),
+                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
+cversion <- as.numeric(res$version)
+print(cversion)
+```
+
+## Create a draft form
+
+```{r}
+library(magrittr)
+url <- "https://timicodktest.smartforest.de"
+res <- httr::RETRY("POST",
+                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7/draft"),
+                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
+print(res)
+```
+
+## Upload a form attachment
+
+```{r}
+library(magrittr)
+url <- "https://timicodktest.smartforest.de"
+f <- system.file(file.path('extdata', "day7fu_test.csv"), package = 'timci')
+res <- httr::RETRY("POST",
+                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7/draft/attachments/day7fu.csv"),
+                   body = httr::upload_file(f),
+                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW")))
+print(res)
+```
+
+## Publish a draft form
+```{r}
+library(magrittr)
+nversion <- as.character(cversion + 0.00001)
+print(nversion)
+url <- "https://timicodktest.smartforest.de"
+res <- httr::RETRY("POST",
+                   paste0(url, "/v1/projects/7/forms/08-TIMCI-cg-idi-main2/draft/publish?version=",nversion),
+                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
+print(res)
 ```
