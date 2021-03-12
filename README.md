@@ -152,7 +152,7 @@ PAUSE
 
 ## Valuable resources
 
-### ODK
+### ODK resources
 [OpenDataKit (ODK)](https://getodk.org/) is a free-and open-source software that helps millions of people collect data quickly, accurately, offline, and at scale. [ODK Central](https://docs.getodk.org/central-intro/) is the latest cloud-based data clearinghouse ODK solution for digitally captured data.
 
 1. [ODK Central setup](https://docs.getodk.org/central-setup/)
@@ -163,7 +163,7 @@ PAUSE
 
 4. [ODK forum](https://forum.getodk.org/) already contains a fantastic amount of information and the core ODK team is very reactive.
 
-### R
+### R resources
 
 <a href="https://shiny.rstudio.com/articles/"><img src="http://r-pkgs.org/images/cover.png" height="252" align = "right"/></a>
 
