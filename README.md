@@ -185,7 +185,7 @@ PAUSE
 <a href="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf"><img src="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference-guide.png" height="252"/></a>
 
 ## Contributing
-Pull requests are welcome on the `development` branch. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome on the `develop` branch. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
