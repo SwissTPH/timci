@@ -78,6 +78,8 @@ TIMCI_WD_FID="99-TIMCI-withdrawal"
 
 `TIMCI_WD_FID` is an environment variable that sets the ODK Central ID for the withdrawal form
 
+![image](https://user-images.githubusercontent.com/71643277/110971003-9d0b7080-835a-11eb-9b56-eb493d4c5e27.png)
+
 ### Setup of the automated R Markdown pipeline
 `pandoc` is a document converter that can convert files from one markup format into another (e.g., .docx, .pdf etc). It is an independent piece of software, separate from R. However, it comes bundled with R Studio because the `rmarkdown` package relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine. To use `rmarkdown` in a batch, `RSTUDIO_PANDOC` needs to be set in your `~/.Renviron` file:
 ```bash
