@@ -146,8 +146,8 @@ PAUSE
 
 3. ... (to be completed soon)
 
-![image](https://user-images.githubusercontent.com/71643277/110971144-cb894b80-835a-11eb-9797-e5b0c71a911b.png)
-![image](https://user-images.githubusercontent.com/71643277/110971360-12774100-835b-11eb-8d84-a7ed9f7b02bf.png)
+![image](https://user-images.githubusercontent.com/71643277/110971144-cb894b80-835a-11eb-9797-e5b0c71a911b.png)  
+![image](https://user-images.githubusercontent.com/71643277/110971360-12774100-835b-11eb-8d84-a7ed9f7b02bf.png)  
 ![image](https://user-images.githubusercontent.com/71643277/110971385-1b681280-835b-11eb-8510-6ca0ea8f7bc3.png)
 
 ## Valuable resources
