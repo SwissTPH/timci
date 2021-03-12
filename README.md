@@ -138,9 +138,16 @@ PAUSE
 
 1. Open the task scheduler
 
+![image](https://user-images.githubusercontent.com/71643277/110971229-e360cf80-835a-11eb-9e66-c9a328b8493b.png)
+
 2. Action > Create Task
 
+![image](https://user-images.githubusercontent.com/71643277/110971196-d8a63a80-835a-11eb-9557-a37b7ece4f6c.png)
+
 3. ... (to be completed soon)
+
+![image](https://user-images.githubusercontent.com/71643277/110971144-cb894b80-835a-11eb-9797-e5b0c71a911b.png)
+
 
 ## Valuable resources
 
