@@ -9,12 +9,13 @@ The overall goal of the TIMCI project is to reduce morbidity and mortality in si
 
 This package has been developed on a Windows 10 operating system, with RStudio version 1.3.1073 using R v4.0.2.
 
-## Installation of timci from GitHub
+## Getting started
+
+### Installation of timci from GitHub
 You can download the `master` branch of the `timci` package.
 
+### Prerequisites
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
-
-## Setup of timci 
 
 ### Setup of the ODK Central connection
 You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your main project as well as your credentials (username and password) on ODK Central:
@@ -28,7 +29,7 @@ For more information about `ruODK`, there are lots of great resources available 
 
 For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
-### TIMCI-specific setup
+### Setup specific to the TIMCI project
 For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file:
 ```bash
 TIMCI_INSTITUTION="Swiss Tropical and Public Health Institute"
