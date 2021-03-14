@@ -17,9 +17,8 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
   }
 
   rmarkdown::render(report,
-                    output_format = c("html_document", "word_document"),
-                    output_file = c(paste0(report_fn, '_',Sys.Date(),'.html'),
-                                    paste0(report_fn, '_',Sys.Date(),'.docx')),
+                    output_format = c("word_document"),
+                    output_file = c(paste0(report_fn, '_',Sys.Date(),'.docx')),
                     output_dir = report_dir,
                     params = rmd_params)
 
