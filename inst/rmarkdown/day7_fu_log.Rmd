@@ -26,17 +26,12 @@ ruODK::ru_setup(
 ```
 
 ```{r, echo=FALSE}
-crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-```
-
-```{r, echo=FALSE}
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 
 # Load contact information
-raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
-raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+raw_facility_data <- ruODK::odata_submission_get(fid = Sys.getenv("TIMCI_CRF_FACILITY_FID"))
+raw_day7fu_data <- ruODK::odata_submission_get(fid = Sys.getenv("TIMCI_CRF_DAY7_FID"))
 facility_data <- timci::process_facility_data(raw_facility_data)
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
@@ -89,47 +84,45 @@ df %>% knitr::kable()
 ## Get form details 
 
 ```{r}
-library(magrittr)
-url <- "https://timicodktest.smartforest.de"
-res <- httr::RETRY("GET",
-                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7"),
-                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
-cversion <- as.numeric(res$version)
-print(cversion)
+cform <- ruODK::form_detail(
+  pid = ruODK::get_default_pid(),
+  fid = Sys.getenv("TIMCI_CRF_DAY7_FID"),
+  url = ruODK::get_default_url(),
+  un = ruODK::get_default_un(),
+  pw = ruODK::get_default_pw(),
+)
+current_version <- as.numeric(cform$version)
+print(current_version)
 ```
 
 ## Create a draft form
 
 ```{r}
 library(magrittr)
-url <- "https://timicodktest.smartforest.de"
 res <- httr::RETRY("POST",
-                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7/draft"),
-                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
+                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft"),
+                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw())) %>% httr::content(.)
 print(res)
 ```
 
-## Upload a form attachment
+## Upload the new CSV created as a form attachment
 
 ```{r}
 library(magrittr)
-url <- "https://timicodktest.smartforest.de"
-f <- system.file(file.path('extdata', "day7fu_test.csv"), package = 'timci')
 res <- httr::RETRY("POST",
-                   paste0(url, "/v1/projects/14/forms/01c-TIMCI-CRF-Day7/draft/attachments/day7fu.csv"),
-                   body = httr::upload_file(f),
-                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW")))
+                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft/attachments/day7fu.csv"),
+                   body = httr::upload_file(csv7_fname),
+                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw()))
 print(res)
 ```
 
 ## Publish a draft form
 ```{r}
 library(magrittr)
-nversion <- as.character(cversion + 0.00001)
-print(nversion)
-url <- "https://timicodktest.smartforest.de"
+new_version <- as.character(current_version + 0.000001)
 res <- httr::RETRY("POST",
-                   paste0(url, "/v1/projects/7/forms/08-TIMCI-cg-idi-main2/draft/publish?version=",nversion),
-                   httr::authenticate(Sys.getenv("ODKC_UN"), Sys.getenv("ODKC_PW"))) %>% httr::content(.)
+                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft/publish?version=",new_version),
+                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw())) %>% httr::content(.)
+print(new_version)
 print(res)
 ```
