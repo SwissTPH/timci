@@ -9,12 +9,13 @@ The overall goal of the TIMCI project is to reduce morbidity and mortality in si
 
 This package has been developed on a Windows 10 operating system, with RStudio version 1.3.1073 using R v4.0.2.
 
-## Installation of timci from GitHub
+## Getting started
+
+### Installation of timci from GitHub
 You can download the `master` branch of the `timci` package.
 
+### Prerequisites
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
-
-## Setup of timci 
 
 ### Setup of the ODK Central connection
 You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your main project as well as your credentials (username and password) on ODK Central:
@@ -28,7 +29,7 @@ For more information about `ruODK`, there are lots of great resources available 
 
 For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
-### TIMCI-specific setup
+### Setup specific to the TIMCI project
 For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file:
 ```bash
 TIMCI_INSTITUTION="Swiss Tropical and Public Health Institute"
@@ -77,6 +78,8 @@ TIMCI_WD_FID="99-TIMCI-withdrawal"
 `TIMCI_SPA_HCPI_FID` is an environment variable that sets the ODK Central ID for the SPA healthcare provider interview form
 
 `TIMCI_WD_FID` is an environment variable that sets the ODK Central ID for the withdrawal form
+
+![image](https://user-images.githubusercontent.com/71643277/110971003-9d0b7080-835a-11eb-9b56-eb493d4c5e27.png)
 
 ### Setup of the automated R Markdown pipeline
 `pandoc` is a document converter that can convert files from one markup format into another (e.g., .docx, .pdf etc). It is an independent piece of software, separate from R. However, it comes bundled with R Studio because the `rmarkdown` package relies on it for document conversion. Rstudio uses the `RSTUDIO_PANDOC` environment variable to find where `pandoc` is installed on your machine. To use `rmarkdown` in a batch, `RSTUDIO_PANDOC` needs to be set in your `~/.Renviron` file:
@@ -136,13 +139,21 @@ PAUSE
 
 1. Open the task scheduler
 
+![image](https://user-images.githubusercontent.com/71643277/110971229-e360cf80-835a-11eb-9e66-c9a328b8493b.png)
+
 2. Action > Create Task
+
+![image](https://user-images.githubusercontent.com/71643277/110971196-d8a63a80-835a-11eb-9557-a37b7ece4f6c.png)
 
 3. ... (to be completed soon)
 
+![image](https://user-images.githubusercontent.com/71643277/110971144-cb894b80-835a-11eb-9797-e5b0c71a911b.png)  
+![image](https://user-images.githubusercontent.com/71643277/110971360-12774100-835b-11eb-8d84-a7ed9f7b02bf.png)  
+![image](https://user-images.githubusercontent.com/71643277/110971385-1b681280-835b-11eb-8510-6ca0ea8f7bc3.png)
+
 ## Valuable resources
 
-### ODK
+### ODK resources
 [OpenDataKit (ODK)](https://getodk.org/) is a free-and open-source software that helps millions of people collect data quickly, accurately, offline, and at scale. [ODK Central](https://docs.getodk.org/central-intro/) is the latest cloud-based data clearinghouse ODK solution for digitally captured data.
 
 1. [ODK Central setup](https://docs.getodk.org/central-setup/)
@@ -153,7 +164,7 @@ PAUSE
 
 4. [ODK forum](https://forum.getodk.org/) already contains a fantastic amount of information and the core ODK team is very reactive.
 
-### R
+### R resources
 
 <a href="https://shiny.rstudio.com/articles/"><img src="http://r-pkgs.org/images/cover.png" height="252" align = "right"/></a>
 
@@ -174,7 +185,7 @@ PAUSE
 <a href="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf"><img src="https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference-guide.png" height="252"/></a>
 
 ## Contributing
-Pull requests are welcome on the `development` branch. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome on the `develop` branch. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
