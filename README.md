@@ -5,7 +5,7 @@
 
 `timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
-The TIMCI project is funded by (Unitaid)[https://unitaid.org/] and led by PATH, in partnership with the Swiss Tropical and Public Health Institute.
+The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by PATH, in partnership with the Swiss Tropical and Public Health Institute.
 
 The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and two Asian countries (India and Myanmar), in collaboration with University of Nairobi, Université Cheikh Anta Diop de Dakar, Ifakara Health Institute, King's College Medical University and Burnet Institute.
 
@@ -13,9 +13,10 @@ The overall goal of the TIMCI project is to reduce morbidity and mortality in si
 
 ### Installation of timci from GitHub
 You can download the `master` branch of the `timci` package.
+![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
 
 ### Prerequisites
-This package was developed on a Windows 10 operating system, with R version 4.0.2 (2020-06-22) (R download)[https://cran.r-project.org/mirrors.html] and RStudio version 1.4.1106 (RStudio download)[https://rstudio.com/products/rstudio/download/#download] 
+This package was developed on a Windows 10 operating system, with R version 4.0.2 (2020-06-22) [R download](https://cran.r-project.org/mirrors.html) and RStudio version 1.4.1106 [RStudio download](https://rstudio.com/products/rstudio/download/#download) 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
 
 ### Setup of the ODK Central connection
