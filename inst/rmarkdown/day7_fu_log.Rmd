@@ -3,7 +3,7 @@ title: "TIMCI Day 7 follow-up log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  output_dir: tempdir()
+  output_dir: ""
 output:
   html_document: default
   word_document:
@@ -12,6 +12,12 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+if (params$output_dir == "") {
+  params$output_dir <- tempdir()
+}
 ```
 
 ```{r ruODK-setup, echo=FALSE}
@@ -45,13 +51,13 @@ tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "day7_lost_to_followup
 ```
 
 ```{r, echo=FALSE}
+dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 csv7_fname <- file.path(params$output_dir, "odk_external_files", "day7fu.csv")
 write.csv(day7fu, csv7_fname, row.names = FALSE, quote = FALSE)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(qrcode)
-library(magrittr)
 for (i in 1:nrow(day7fu)) {
   pid <- toString(day7fu[i,'name'])
   png_file <- file.path(tempdir(), paste0(pid,".png"))
@@ -81,9 +87,10 @@ df <- df[ , !(names(df) %in% drops)]
 df %>% knitr::kable()
 ```
 
-## Get form details 
+# Upload list of participants on the ODK Central server
 
-```{r}
+```{r, echo=FALSE}
+## Get form details
 cform <- ruODK::form_detail(
   pid = ruODK::get_default_pid(),
   fid = Sys.getenv("TIMCI_CRF_DAY7_FID"),
@@ -95,34 +102,17 @@ current_version <- as.numeric(cform$version)
 print(current_version)
 ```
 
-## Create a draft form
-
-```{r}
-library(magrittr)
-res <- httr::RETRY("POST",
-                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft"),
-                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw())) %>% httr::content(.)
-print(res)
-```
-
-## Upload the new CSV created as a form attachment
-
-```{r}
-library(magrittr)
-res <- httr::RETRY("POST",
-                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft/attachments/day7fu.csv"),
-                   body = httr::upload_file(csv7_fname),
-                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw()))
-print(res)
-```
-
-## Publish a draft form
-```{r}
-library(magrittr)
+```{r, echo=FALSE}
+form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"))
+print(form_url)
+# Create a draft form
+response <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
+print(response)
+# Upload the new CSV created as a form attachment
+response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv7_fname)
+# Publish a draft form
 new_version <- as.character(current_version + 0.000001)
-res <- httr::RETRY("POST",
-                   paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY7_FID"), "/draft/publish?version=",new_version),
-                   httr::authenticate(ruODK::get_default_un(), ruODK::get_default_pw())) %>% httr::content(.)
 print(new_version)
-print(res)
+response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)
+print(response)
 ```

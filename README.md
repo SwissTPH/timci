@@ -23,8 +23,18 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 * [Link to download RStudio](https://rstudio.com/products/rstudio/download/#download)
 
 ### Installation of timci from GitHub
-You can download the `master` branch of the `timci` package.  
+To install the `timci` package on your workstation, you can
+* either download the `master` branch as a ZIP.  
 ![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
+
+* or install the latest released version  
+```r
+install.packages("devtools")
+```
+```r
+library(devtools)
+devtools::install_github("thaliehln/timci")
+```
 
 ### Prerequisites 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.

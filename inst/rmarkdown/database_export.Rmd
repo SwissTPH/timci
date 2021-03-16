@@ -3,10 +3,10 @@ title: "TIMCI Data Export Report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  rctls_dir: tempdir()
-  participant_zip: tempdir()
-  spa_dir: tempdir()
-  qual1_dir: tempdir()
+  rctls_dir: ""
+  participant_zip: ""
+  spa_dir: ""
+  qual1_dir: ""
 output:
   html_document: default
   word_document:
@@ -15,6 +15,21 @@ output:
 
 ```{r rmd-setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+if (params$rctls_dir == "") {
+  params$rctls_dir <- tempdir()
+}
+if (params$participant_zip == "") {
+  params$participant_zip <- file.path(tempdir(),"participants.zip")
+}
+if (params$spa_dir == "") {
+  params$spa_dir <- tempdir()
+}
+if (params$qual1_dir == "") {
+  params$qual1_dir <- tempdir()
+}
 ```
 
 ruODK setup
@@ -259,13 +274,20 @@ tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_c
 ```{r}
 sl <- ruODK::submission_list(pid = cpid,
                              fid = cgidi3_fid)
+
+# Loop on all rows
 for (i in 1:nrow(sl)) {
   crow <- cgidi_interview_data[i,]
   uuid <- crow$'meta-instanceID'
   cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
   print(paste0("Participant: ", crow$'identification-idiidm'))
   dir.create(cpath, showWarnings = FALSE)
-  tmp <- timci::export_df2xlsx(crow, cpath, "data")
+  # Create a new dataframe using the transpose of crow
+  tcrow <- as.data.frame(t(as.matrix(crow)))
+  names(tcrow)[names(tcrow) == "V1"] <- "values"
+  print(tcrow)
+  fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
+  openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
   
   # Download attachments
   al <- ruODK::get_one_submission_attachment_list(pid = cpid,

@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Day 28 follow-up log"
+title: "TIMCI hospitalisation follow-up log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
@@ -32,47 +32,41 @@ ruODK::ru_setup(
 ```
 
 ```{r, echo=FALSE}
-crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
-```
-
-```{r, echo=FALSE}
-
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 
 # Load contact information
-raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
-raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
+raw_facility_data <- ruODK::odata_submission_get(fid = Sys.getenv("TIMCI_CRF_FACILITY_FID"))
+raw_day7fu_data <- ruODK::odata_submission_get(fid = Sys.getenv("TIMCI_CRF_HOSPIT_FID"))
 facility_data <- timci::process_facility_data(raw_facility_data)
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
 
 ```{r, echo=FALSE}
-day28fu <- timci::generate_fu_log(pii, raw_day28fu_data, 28, 32)
-day28lost <- timci::generate_fu_log(pii, raw_day28fu_data, 33, 2000)
-tmp <- timci::export_df2xlsx(day28lost, params$output_dir, "day28_lost_to_followup")
+day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
+day7lost <- timci::generate_fu_log(pii, raw_day7fu_data, 10, 2000)
+tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "hospit_lost_to_followup")
 ```
 
 ```{r, echo=FALSE}
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
-csv28_fname <- file.path(params$output_dir, "odk_external_files", "day28fu.csv")
-write.csv(day28fu, csv28_fname, row.names = FALSE, quote = FALSE)
+csvh_fname <- file.path(params$output_dir, "odk_external_files", "higher_level_visits.csv")
+write.csv(day7fu, csvh_fname, row.names = FALSE, quote = FALSE)
 ```
 
-```{r, echo=FALSE,  warning=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(qrcode)
-for (i in 1:nrow(day28fu)) {
-  pid <- toString(day28fu[i,'name'])
+for (i in 1:nrow(day7fu)) {
+  pid <- toString(day7fu[i,'name'])
   png_file <- file.path(tempdir(), paste0(pid,".png"))
   png(png_file)
-  qrcode_gen(pid)
+  qrcode::qrcode_gen(pid)
   dev.off()
   }
 
-df <- day28fu %>%
+df <- day7fu %>%
   dplyr::mutate(
-    code = paste0('![](', file.path(tempdir(), paste0(day28fu$name,".png")), ')', '{width=0.75in}')
+    code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
     ) %>%
   dplyr::select('code', dplyr::everything()) %>%
   dplyr::rename('id' = 'name',
@@ -97,7 +91,7 @@ df %>% knitr::kable()
 ## Get form details
 cform <- ruODK::form_detail(
   pid = ruODK::get_default_pid(),
-  fid = Sys.getenv("TIMCI_CRF_DAY28_FID"),
+  fid = Sys.getenv("TIMCI_CRF_HOSPIT_FID"),
   url = ruODK::get_default_url(),
   un = ruODK::get_default_un(),
   pw = ruODK::get_default_pw(),
@@ -107,13 +101,13 @@ print(current_version)
 ```
 
 ```{r, echo=FALSE}
-form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_DAY28_FID"))
+form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", Sys.getenv("TIMCI_CRF_HOSPIT_FID"))
 print(form_url)
 # Create a draft form
 response <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
 print(response)
 # Upload the new CSV created as a form attachment
-response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv28_fname)
+response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csvh_fname)
 # Publish a draft form
 new_version <- as.character(current_version + 0.000001)
 print(new_version)

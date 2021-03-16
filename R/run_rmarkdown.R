@@ -63,6 +63,13 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   params <- list(output_dir = fu_dir)
   generate_report(fu_dir, "day7_fu_log.Rmd", "timci_day7_fu_log", params)
 
+  #################################
+  # Hospitalisation follow-up log #
+  #################################
+
+  params <- list(output_dir = fu_dir)
+  generate_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+
   #######################
   # Day 28 follow-up log #
   #######################
