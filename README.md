@@ -12,7 +12,7 @@ The overall goal of the TIMCI project is to reduce morbidity and mortality in si
 ## Getting started
 
 ### Installation of timci from GitHub
-You can download the `master` branch of the `timci` package.
+You can download the `master` branch of the `timci` package.  
 ![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
 
 ### Prerequisites
