@@ -5,13 +5,21 @@
 
 `timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
-The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by PATH, in partnership with the Swiss Tropical and Public Health Institute.
+The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by [PATH](https://www.path.org/), in partnership with the [Swiss Tropical and Public Health Institute (swiss TPH)](https://www.swisstph.ch/en/).
 
 The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and two Asian countries (India and Myanmar), in collaboration with University of Nairobi, Université Cheikh Anta Diop de Dakar, Ifakara Health Institute, King's College Medical University and Burnet Institute.
 
+## Table of contents
+* [Getting started](https://github.com/Thaliehln/timci#getting-started)
+* [Run a generic Shiny app](https://github.com/Thaliehln/timci#run-a-generic-shiny-app)
+* [Run the TIMCI Shiny app](https://github.com/Thaliehln/timci#run-the-timci-shiny-app)
+* [Generate R Markdown reports for TIMCI (manual)](https://github.com/Thaliehln/timci#generate-r-markdown-reports-for-timci-manual)
+* [Generate R Markdown reports for TIMCI (automated pipeline)](https://github.com/Thaliehln/timci#generate-r-markdown-reports-for-timci-automated-pipeline)
+* [Valuable resources](https://github.com/Thaliehln/timci#valuable-resources)
+
 ## Getting started
-This package was developed on a Windows 10 operating system, with R version 4.0.2 (2020-06-22) and RStudio version 1.4.1106.  
-* [Link to download R](https://cran.r-project.org/mirrors.html)
+This package was developed on a Windows 10 operating system, with R version 4.0.2 (2020-06-22), RStudio version 1.4.1106 and Rtools40.  
+* [CRAN mirrors to download R and RTools](https://cran.r-project.org/mirrors.html)
 * [Link to download RStudio](https://rstudio.com/products/rstudio/download/#download)
 
 ### Installation of timci from GitHub
