@@ -15,6 +15,7 @@ This package has been developed on a Windows 10 operating system, with RStudio v
 You can download the `master` branch of the `timci` package.
 
 ### Prerequisites
+This package was developed with R version 4.0.2 (2020-06-22) (R download)[https://cran.r-project.org/mirrors.html] and RStudio version 1.4.1106 (RStudio download)[https://rstudio.com/products/rstudio/download/#download] 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
 
 ### Setup of the ODK Central connection
