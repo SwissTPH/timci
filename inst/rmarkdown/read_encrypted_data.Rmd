@@ -20,6 +20,7 @@ ruODK::ru_setup(
   un = Sys.getenv("ODKC_UN"),
   pw = Sys.getenv("ODKC_PW"),
   tz = Sys.getenv("TZ"),
+  pp = "Passphrase",
   verbose = FALSE # Can be switched to TRUE for demo or debugging
 )
 ```
@@ -27,9 +28,21 @@ ruODK::ru_setup(
 # Demo
 
 ```{r}
-raw_facility_data <- ruODK::odata_submission_get(fid = "01-TIMCI-CRF-Facility")
+raw_facility_data <- ruODK::odata_submission_get(fid="01a-TIMCI-CRF-Facility")
+print(raw_facility_data)
 ```
 
 ```{r}
-facility_data <- timci::process_facility_data(raw_facility_data)
+library(magrittr)
+se <- ruODK::submission_export(fid = "01a-TIMCI-CRF-Facility")
+print(se)
+# Unzip and inspect the loot
+t <- tempdir()
+f <- unzip(se, exdir = t)
+print(f)
+fs::dir_ls(t)
+fid <- ruODK::get_test_fid()
+print(fid)
+sub <- file.path(t, "01a-TIMCI-CRF-Facility.csv") %>% readr::read_csv()
+sub %>% knitr::kable(.)
 ```

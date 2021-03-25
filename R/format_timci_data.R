@@ -259,6 +259,18 @@ generate_fu_log <- function(pii,
                  'phone_nb')
   fu_log <- fu_log[, col_order]
 
+  # Add a first generic row
+  fu_log <- rbind(data.frame('child_id' = 'X-F0000-P0000',
+                             'label' = '[CHILD NAME]',
+                             'sex' = '[SEX]',
+                             'date_visit' = '[DATE OF ENROLMENT]',
+                             'caregiver' = '[CAREGIVER NAME]',
+                             'main_cg_lbl' = '[RELATIONSHIP]',
+                             'mother' = '[MOTHER NAME]',
+                             'location_name' = '[LOCATION]',
+                             'phone_nb' = '[PHONE NB]'),
+                  fu_log)
+
   fu_log %>% dplyr::rename('name' = 'child_id',
                            'enroldate' = 'date_visit',
                            'relationship' = 'main_cg_lbl',

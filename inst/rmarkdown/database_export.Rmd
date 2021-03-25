@@ -285,7 +285,6 @@ for (i in 1:nrow(sl)) {
   # Create a new dataframe using the transpose of crow
   tcrow <- as.data.frame(t(as.matrix(crow)))
   names(tcrow)[names(tcrow) == "V1"] <- "values"
-  print(tcrow)
   fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
   openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
   

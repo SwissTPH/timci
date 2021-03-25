@@ -74,8 +74,12 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   # Day 28 follow-up log #
   #######################
 
-  params <- list(output_dir = fu_dir)
-  generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", params)
+  # Day 28 follow-up log is only generated if
+  is_rct <- Sys.getenv("TIMCI_IS_RCT")
+  if (is_rct == 1) {
+    params <- list(output_dir = fu_dir)
+    generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", params)
+  }
 
   ###################################
   # Qualitative caregiver selection #
