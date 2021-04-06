@@ -7,12 +7,12 @@
 display_weekly_fa_data_per_facility(df, all_df)
 }
 \arguments{
-\item{df}{dataframe containing the processed ODK data collected in the weekly facility assessment}
+\item{df}{dataframe containing the last available assessment for each facility}
 
-\item{all_df}{dataframe containing the processed ODK data collected in the weekly facility assessment}
+\item{all_df}{dataframe containing all the processed facility assessment data}
 }
 \value{
-This function returns a formatted dataframe for future display and analysis.
+This function outputs information about the weekly facility assessment data per facility.
 }
 \description{
 Display weekly facility assessment data per facility (TIMCI-specific function)

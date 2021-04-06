@@ -35,10 +35,11 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @param qual1_dir Path to the output folder for the caregiver IDI exports
 #' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
 #' @param spa_db_dir Path to the output folder for the SPA database exports
+#' @param path_dir Path to the output folder for the reports to be shared with PATH
 #' @import rmarkdown
 #' @export
 
-run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir) {
+run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir, path_dir) {
 
   ###########################
   # RCT data quality report #
@@ -92,8 +93,8 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   # PATH M&E report #
   ###################
 
-  params <- list(path_dir = report_dir)
-  generate_report(report_dir, "path_report.Rmd", "timci_path_report", params)
+  params <- list(path_dir = path_dir)
+  generate_report(path_dir, "path_report.Rmd", "timci_path_report", params)
 
   #############################
   # Intervention pilot report #

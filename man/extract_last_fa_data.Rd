@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_timci_fa_data.R
 \name{extract_last_fa_data}
 \alias{extract_last_fa_data}
-\title{Extract the last available facility assessment data (TIMCI-specific function)}
+\title{Extract last available facility assessment data (TIMCI-specific function)}
 \usage{
 extract_last_fa_data(df)
 }
@@ -13,5 +13,5 @@ extract_last_fa_data(df)
 This function returns a dataframe that only contains the last available assessment for each facility.
 }
 \description{
-Extract the last available facility assessment data (TIMCI-specific function)
+Extract last available facility assessment data (TIMCI-specific function)
 }

@@ -11,7 +11,8 @@ run_rmarkdown(
   fu_dir,
   qual1_dir,
   qual2_dir,
-  spa_db_dir
+  spa_db_dir,
+  path_dir
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ run_rmarkdown(
 \item{qual2_dir}{Path to the output folder for the healthcare provider IDI exports}
 
 \item{spa_db_dir}{Path to the output folder for the SPA database exports}
+
+\item{path_dir}{Path to the output folder for the reports to be shared with PATH}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
