@@ -6,22 +6,30 @@
 #' Green bars indicate health facilities which are above the enrolment target.
 #'
 #' @param df Dataframe to use for the plot
+#' @param col1 Column
+#' @param col2 Column
+#' @param lb Threshold
+#' @param ub Threshold
 #' @return This function returns a ggplot object which contains a histogram representing the enrolment in each facility.
 #' @export
 #' @import ggplot2
 
-generate_enrolment_hist <- function(df){
+generate_enrolment_hist <- function(df, col1, col2, lb, ub){
+
+  col1 <- dplyr::enquo(col1)
+  col2 <- dplyr::enquo(col2)
 
   df <- df %>%
-    mutate(color_name = case_when(df$x<25 ~ "#ff0000",
-                                  (df$x>=25 & df$x<45) ~ "#f9c800",
-                                  df$x>=45 ~ "#a6d40d"))
-  ggplot(df, aes(x= reorder(Group.1, -x), y=x)) +
+    dplyr::mutate(color_name = dplyr::case_when(!!col2<lb ~ "#ff0000",
+                                                (!!col2>=lb & !!col2<ub) ~ "#f9c800",
+                                                !!col2>=ub ~ "#a6d40d"))
+  ggplot(df, aes(x= reorder(!!col1, -!!col2), y = !!col2)) +
     geom_bar(stat="identity", position = "dodge", fill=df$color_name) +
     labs(x="Facilities", y="Number of children enrolled", title="") +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks.y = element_blank()) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    scale_fill_brewer(palette = "Set1")
+    scale_fill_brewer(palette = "Set1")  +
+    coord_flip()
 
 }
 
@@ -92,7 +100,7 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max){
     geom_bar(stat="identity") +
     ylab("Frequency") +
     xlab("Date") +
-    #scale_x_date(date_labels = "%b %d")
+    scale_x_date(date_labels = "%Y-%m-%d", limits = c(date_min, date_max)) +
     theme_bw()
 
 }
