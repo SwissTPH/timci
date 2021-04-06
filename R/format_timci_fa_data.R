@@ -54,7 +54,7 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
   cat('##', n, 'facility(ies) where the pulse oximeter is not used\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], '(', sub[i,'page1_district'], ')','\n\n')
+      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
@@ -64,7 +64,7 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
   cat('##', n, 'facility(ies) where a new provider started\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], '(', sub[i,'page1_district'], ')','\n\n')
+      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
@@ -74,7 +74,7 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
   cat('##', n, 'facility(ies) where a trained provider stopped working\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], '(', sub[i,'page1_district'], ')','\n\n')
+      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
@@ -85,8 +85,8 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
     fid <- row$'page1_fcode'
     cat('###', sprintf("%s", row$'page1_fname'),'\n\n')
     res <- all_df[all_df$'page1_fcode' == fid,]
-    cat(sprintf('<strong>%s</strong>', nrow(res)), ' weekly assessments available for this facility\n\n')
-    cat('The latest report covers the period from ', sprintf('<strong>%s</strong>',as.character(row$'prev')), ' to ', sprintf('<strong>%s</strong>',as.character(row$'date')), '\n\n')
+    cat(paste0('**', nrow(res), '**'), ' weekly assessments available for this facility\n\n')
+    cat('The latest report covers the period from ', paste0('**', as.character(row$'prev'), '**'), ' to ', paste0('**', as.character(row$'date'), '**'), '\n\n')
     cat('* Number of children screened: TBD\n\n')
     cat('* Pulse oximeter in use for the sick neonate / child consultations: ')
     if (row$'page1_pox_use' == 1) {
