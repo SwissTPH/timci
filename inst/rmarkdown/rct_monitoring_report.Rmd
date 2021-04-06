@@ -172,6 +172,12 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
 timci::generate_calendar_heatmap(facility_data, date_visit)
 ```
 
+### Enrolment
+
+```{r, echo=FALSE}
+timci::generate_calendar_heatmap(baseline_data, date_visit)
+```
+
 # 2. Participants
 ```{r, echo=FALSE, results = "asis"}
 options(qwraps2_markup = 'markdown')

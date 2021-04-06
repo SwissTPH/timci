@@ -130,7 +130,12 @@ timci::run_app()
 
 ```R
 library(timci)
+library(readxl)
+# Root directory
 output_dir <- "my_directory"
+# Import the mapping between the ODK Collect device IDs and the research facilities
+research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
+# Create the directory structure for storing results
 subdir <- paste0("export_", Sys.Date())
 dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "01_rct_ls"), showWarnings = FALSE)
@@ -143,13 +148,16 @@ dir.create(file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"),
 dir.create(file.path(output_dir, subdir, "03_qualitative", "02_provider_idis"), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "04_cost"), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "05_reports"), showWarnings = FALSE)
-timci::run_rmarkdown(file.path(output_dir,subdir, "05_reports"),
+dir.create(file.path(output_dir, subdir, "06_path"), showWarnings = FALSE)
+timci::run_rmarkdown(research_facilities,
+                     file.path(output_dir,subdir, "05_reports"),
                      file.path(output_dir, subdir, "01_rct_ls", "participants.zip"),
                      file.path(output_dir, subdir, "01_rct_ls", "01_database"),
                      file.path(output_dir, subdir, "01_rct_ls", "02_followup"),
                      file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"),
                      file.path(output_dir, subdir, "03_qualitative", "01_provider_idis"),
-                     file.path(output_dir, subdir, "02_spa", "01_database"))
+                     file.path(output_dir, subdir, "02_spa", "01_database"),
+                     file.path(output_dir,subdir, "06_path"))
 ```
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler

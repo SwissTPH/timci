@@ -20,4 +20,5 @@ utils::globalVariables(c("Group.1",
                          "yg_infant",
                          "month",
                          "week",
-                         "weekday"))
+                         "weekday",
+                         "ndate"))
