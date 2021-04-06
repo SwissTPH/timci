@@ -3,10 +3,10 @@ title: "TIMCI Data Export Report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  rctls_dir: ""
-  participant_zip: ""
-  spa_dir: ""
-  qual1_dir: ""
+  rctls_dir: "."
+  participant_zip: "."
+  spa_dir: "."
+  qual1_dir: "."
 output:
   html_document: default
   word_document:
@@ -15,21 +15,6 @@ output:
 
 ```{r rmd-setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, echo=FALSE}
-if (params$rctls_dir == "") {
-  params$rctls_dir <- tempdir()
-}
-if (params$participant_zip == "") {
-  params$participant_zip <- file.path(tempdir(),"participants.zip")
-}
-if (params$spa_dir == "") {
-  params$spa_dir <- tempdir()
-}
-if (params$qual1_dir == "") {
-  params$qual1_dir <- tempdir()
-}
 ```
 
 ruODK setup
@@ -42,6 +27,8 @@ ruODK::ru_setup(
   tz = Sys.getenv("TZ"),
   verbose = FALSE # Can be switched to TRUE for demo or debugging
 )
+logs <- ruODK::audit_get()
+print(logs)
 ```
 
 TIMCI-specific RCT / LS setup

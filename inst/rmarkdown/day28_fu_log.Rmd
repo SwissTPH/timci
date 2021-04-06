@@ -3,7 +3,7 @@ title: "TIMCI Day 28 follow-up log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  output_dir: ""
+  output_dir: "."
 output:
   html_document: default
   word_document:
@@ -12,12 +12,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, echo=FALSE}
-if (params$output_dir == "") {
-  params$output_dir <- tempdir()
-}
 ```
 
 ```{r ruODK-setup, echo=FALSE}
