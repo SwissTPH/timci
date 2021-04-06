@@ -7,7 +7,7 @@
 generate_pie_chart(df)
 }
 \arguments{
-\item{df}{Dataframe to use for the plot}
+\item{df}{Data frame to use for the plot}
 }
 \value{
 This function returns a ggplot object which contains a pie chart.

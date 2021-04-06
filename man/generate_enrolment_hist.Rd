@@ -2,27 +2,26 @@
 % Please edit documentation in R/plots.R
 \name{generate_enrolment_hist}
 \alias{generate_enrolment_hist}
-\title{Create an enrolment histogram}
+\title{Create a histogram that represents the distribution of values in `col2` for each category in `col1`}
 \usage{
-generate_enrolment_hist(df, col1, col2, lb, ub)
+generate_enrolment_hist(df, col1, col2, lthres, uthres)
 }
 \arguments{
-\item{df}{Dataframe to use for the plot}
+\item{df}{Data frame to use for the plot}
 
-\item{col1}{Column}
+\item{col1}{Column name in data frame `df`}
 
-\item{col2}{Column}
+\item{col2}{Column name in data frame `df` that contains numeric values}
 
-\item{lb}{Threshold}
+\item{lthres}{Numeric value,  lower threshold}
 
-\item{ub}{Threshold}
+\item{uthres}{Numeric value, upper threshold threshold}
 }
 \value{
-This function returns a ggplot object which contains a histogram representing the enrolment in each facility.
+This function returns a ggplot object which contains a histogram representing the distribution of values in `col2` for each category in `col1`.
 }
 \description{
-generate_enrolment_hist() creates a histogram plot that represents the enrolment level in the different health facilities.
-Red bars indicate health facilities which are far below the enrolment target.
-Orange bars indicate health facilities which are slightly below the enrolment target.
-Green bars indicate health facilities which are above the enrolment target.
+Red bars indicate health facilities which are far below the lower target.
+Orange bars indicate health facilities which are above the lower target, but below the upper target.
+Green bars indicate health facilities which are above the upper target.
 }

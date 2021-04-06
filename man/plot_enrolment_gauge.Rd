@@ -7,7 +7,7 @@
 plot_enrolment_gauge(df, m, s, w, d)
 }
 \arguments{
-\item{df}{Dataframe}
+\item{df}{Data frame}
 
 \item{m}{Maximal gauge value}
 

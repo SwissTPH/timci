@@ -5,6 +5,7 @@
 \title{Run Rmarkdown files}
 \usage{
 run_rmarkdown(
+  research_facilities,
   report_dir,
   participant_zip,
   mdb_dir,
@@ -16,6 +17,8 @@ run_rmarkdown(
 )
 }
 \arguments{
+\item{research_facilities}{Dataframe that contains the research facilities}
+
 \item{report_dir}{Path to the output folder for the generated Rmarkdown reports}
 
 \item{participant_zip}{Path to the encrypted zip archive that stores participant data}

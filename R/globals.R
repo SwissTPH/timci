@@ -17,4 +17,7 @@ utils::globalVariables(c("Group.1",
                          "spo2_meas1_day0",
                          "sex",
                          "referral_hf",
-                         "yg_infant"))
+                         "yg_infant",
+                         "month",
+                         "week",
+                         "weekday"))

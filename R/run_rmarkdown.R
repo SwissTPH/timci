@@ -28,6 +28,7 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
+#' @param research_facilities Dataframe that contains the research facilities
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
 #' @param mdb_dir Path to the output folder for the RCT / LS database exports
@@ -39,7 +40,7 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @import rmarkdown
 #' @export
 
-run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir, path_dir) {
+run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir, path_dir) {
 
   ###########################
   # RCT data quality report #
@@ -55,7 +56,8 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   # RCT monitoring report #
   #########################
 
-  generate_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report")
+  params <- list(research_facilities = research_facilities)
+  generate_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
 
   #######################
   # Day 7 follow-up log #

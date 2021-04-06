@@ -36,5 +36,8 @@ Imports:
     qwraps2,
     digest,
     readr,
-    fs
+    fs,
+    lubridate,
+    httr,
+    plyr
 RoxygenNote: 7.1.1
