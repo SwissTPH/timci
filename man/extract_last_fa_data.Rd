@@ -4,10 +4,12 @@
 \alias{extract_last_fa_data}
 \title{Extract last available facility assessment data (TIMCI-specific function)}
 \usage{
-extract_last_fa_data(df)
+extract_last_fa_data(df, stats)
 }
 \arguments{
 \item{df}{dataframe containing the processed facility assessment data}
+
+\item{stats}{dataframe containing summary statistics for each facility}
 }
 \value{
 This function returns a dataframe that only contains the last available assessment for each facility.

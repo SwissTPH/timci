@@ -4,10 +4,18 @@
 \alias{generate_enrolment_hist}
 \title{Create an enrolment histogram}
 \usage{
-generate_enrolment_hist(df)
+generate_enrolment_hist(df, col1, col2, lb, ub)
 }
 \arguments{
 \item{df}{Dataframe to use for the plot}
+
+\item{col1}{Column}
+
+\item{col2}{Column}
+
+\item{lb}{Threshold}
+
+\item{ub}{Threshold}
 }
 \value{
 This function returns a ggplot object which contains a histogram representing the enrolment in each facility.

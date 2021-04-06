@@ -30,7 +30,7 @@ run_rmarkdown(
 
 \item{spa_db_dir}{Path to the output folder for the SPA database exports}
 
-\item{path_dir}{Path to the output folder for the reports to be shared with PATH}
+\item{path_dir}{Path to the output folder for the M&E exports to be shared with PATH}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
