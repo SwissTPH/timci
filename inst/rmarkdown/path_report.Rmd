@@ -43,26 +43,23 @@ wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
 ```
 
 ```{r, echo=FALSE}
-last <- extract_last_fa_data(wfa_data)
-
-pox <- last[last$'page1_arm' == 1,]
-cdsa <- last[last$'page1_arm' == 2,]
+last_data <- extract_last_fa_data(wfa_data)
+soc_data <- last_data[last_data$'page1_arm' == 0,]
+pox_data <- last_data[last_data$'page1_arm' == 1,]
+cdsa_data <- last_data[last_data$'page1_arm' == 2,]
 ```
 
 ```{r, echo=FALSE, results='asis'}
-if (nrow(pox) > 0) {
+if (nrow(pox_data) > 0) {
   cat('# Facilities with pulse oximetry alone\n\n')
-  display_weekly_fa_data_per_facility(pox, wfa_data)
+  display_weekly_fa_data_per_facility(pox_data, wfa_data)
 }
-```
-
-```{r, echo=FALSE, results='asis'}
-if (nrow(cdsa) > 0) {
+if (nrow(cdsa_data) > 0) {
   cat('# Facilities with pulse oximetry and CDSA\n\n')
-  display_weekly_fa_data_per_facility(cdsa, wfa_data)
+  display_weekly_fa_data_per_facility(cdsa_data, wfa_data)
 }
 ```
 
 ```{r xlsx-export, echo=FALSE}
-tmp <- timci::export_df2xlsx(format_weekly_fa_data_to_export(wfa_data), params$path_dir, "path_data")
+tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(wfa_data), params$path_dir, "path_data")
 ```
