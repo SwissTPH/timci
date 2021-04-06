@@ -172,36 +172,6 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
 timci::generate_calendar_heatmap(facility_data, date_visit)
 ```
 
-```{r, echo=FALSE}
-df %>%
-  ggplot(aes(weekday,-week, fill = n)) +
-  geom_tile(colour = "white")  + 
-  geom_text(aes(label = lubridate::day(date_visit)), size = 2.5, color = "black") +
-  theme(aspect.ratio = 1/2,
-        legend.position = "top",
-        legend.key.width = unit(3, "cm"),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.y = element_blank(),
-        panel.grid = element_blank(),
-        axis.ticks = element_blank(),
-        panel.background = element_blank(),
-        legend.title.align = 0.5,
-        strip.background = element_blank(),
-        strip.text = element_text(face = "bold", size = 15),
-        panel.border = element_rect(colour = "grey", fill=NA, size=1),
-        plot.title = element_text(hjust = 0.5, size = 21, face = "bold",
-                                  margin = margin(0,0,0.5,0, unit = "cm"))) +
-  scale_fill_gradientn(colours = c("#ff0000", "#f9c800", "#a6d40d"),
-                       values = scales::rescale(c(-1, -0.05, 0, 0.05, 1)), 
-                       name = "Number of facility submissions",
-                       guide = guide_colorbar(title.position = "top", 
-                                              direction = "horizontal")) +
-  facet_wrap(~month, nrow = 4, ncol = 3, scales = "free")
-
-timci::generate_calendar_heatmap <- function(facility_data, date)
-```
-
 # 2. Participants
 ```{r, echo=FALSE, results = "asis"}
 options(qwraps2_markup = 'markdown')
