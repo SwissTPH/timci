@@ -80,7 +80,7 @@ extract_screening_data <- function(df) {
 extract_enrolled_participants <- function(df) {
 
   df %>%
-    dplyr::filter(df$enrolled == 1) %>%
+    dplyr::filter(enrolled == 1) %>%
     extract_pii()
 
 }
@@ -122,7 +122,7 @@ extract_all_visits <- function(df) {
   sub <- subset(dictionary, visits == 1)
   df <- df[sub$new]
   df %>%
-    dplyr::filter((df$repeat_consult == 1) | (df$repeat_consult == 0 & df$enrolled == 1))
+    dplyr::filter((repeat_consult == 1) | (repeat_consult == 0 & enrolled == 1))
 
 }
 
@@ -136,7 +136,7 @@ extract_all_visits <- function(df) {
 extract_baseline_visits <- function(df) {
 
   df %>%
-    dplyr::filter(df$repeat_consult == 0)
+    dplyr::filter(repeat_consult == 0)
 
 }
 
@@ -150,7 +150,7 @@ extract_baseline_visits <- function(df) {
 extract_repeat_visits <- function(df) {
 
   df %>%
-    dplyr::filter(df$repeat_consult == 1)
+    dplyr::filter(repeat_consult == 1)
 
 }
 
@@ -163,7 +163,7 @@ extract_repeat_visits <- function(df) {
 
 extract_referrals <- function(df) {
 
-  df %>% dplyr::filter(df$referral_hf == 1)
+  df %>% dplyr::filter(referral_hf == 1)
 
 }
 
@@ -176,7 +176,52 @@ extract_referrals <- function(df) {
 
 extract_hypoxaemia <- function(df) {
 
-  df %>% dplyr::filter(df$spo2_meas1_day0 <= 90)
+  df %>% dplyr::filter(spo2_meas1_day0 <= 90)
+
+}
+
+#' Get summary statistics grouped by facility (TIMCI-specific function)
+#'
+#' @param df Dataframe containing the processed facility data
+#' @return This function returns a dataframe containing summary statistics grouped by health facility
+#' @export
+#' @import dplyr magrittr
+
+get_summary_by_facility <- function(df) {
+
+  df1 <- df %>%
+    dplyr::group_by(device_id) %>%
+    dplyr::summarise(recruitment_start = min(date_visit),
+                     recruitment_last = max(date_visit),
+                     n = dplyr::n())
+
+  enrolled <- extract_enrolled_participants(df)
+
+  df2 <- enrolled[[1]] %>%
+    dplyr::count(device_id)
+
+  df3 <- enrolled[[1]] %>%
+    dplyr::filter(sex == 2) %>%
+    dplyr::count(device_id)
+
+  df4 <- enrolled[[1]] %>%
+    dplyr::filter(yg_infant == 1) %>%
+    dplyr::count(device_id)
+
+  df5 <- enrolled[[1]] %>%
+    dplyr::filter((yg_infant == 1) & (sex == 2)) %>%
+    dplyr::count(device_id)
+
+  # Merge and rename
+  res <- merge(x = df1, y = df2, by = 'device_id', all.x = TRUE)
+  res <- res %>% dplyr::rename('screened' = 'n.x',
+                               'children' = 'n.y')
+  res <- merge(x = res, y = df3, by = 'device_id', all.x = TRUE)
+  res <- res %>% dplyr::rename('female' = 'n')
+  res <- merge(x = res, y = df4, by = 'device_id', all.x = TRUE)
+  res <- res %>% dplyr::rename('yg_infant' = 'n')
+  res <- merge(x = res, y = df5, by = 'device_id', all.x = TRUE)
+  res %>% dplyr::rename('yg_female' = 'n')
 
 }
 

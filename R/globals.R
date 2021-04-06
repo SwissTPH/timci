@@ -9,4 +9,12 @@ utils::globalVariables(c("Group.1",
                          "day0",
                          "visits",
                          "fs_name",
-                         "ls_name"))
+                         "ls_name",
+                         "date_visit",
+                         "device_id",
+                         "repeat_consult",
+                         "enrolled",
+                         "spo2_meas1_day0",
+                         "sex",
+                         "referral_hf",
+                         "yg_infant"))

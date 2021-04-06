@@ -35,7 +35,7 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @param qual1_dir Path to the output folder for the caregiver IDI exports
 #' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
 #' @param spa_db_dir Path to the output folder for the SPA database exports
-#' @param path_dir Path to the output folder for the reports to be shared with PATH
+#' @param path_dir Path to the output folder for the M&E exports to be shared with PATH
 #' @import rmarkdown
 #' @export
 

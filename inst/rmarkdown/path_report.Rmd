@@ -1,5 +1,5 @@
 ---
-title: "TIMCI M&E indicators"
+title: "TIMCI M&E report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
@@ -31,8 +31,7 @@ crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
 raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
                                                  download = FALSE)
 facility_data <- timci::process_facility_data(raw_facility_data)
-start_date <- min(facility_data$date_visit)
-end_date <- max(facility_data$date_visit)
+stats <- timci::get_summary_by_facility(facility_data)
 ```
 
 ```{r, echo=FALSE}
@@ -43,7 +42,7 @@ wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
 ```
 
 ```{r, echo=FALSE}
-last_data <- extract_last_fa_data(wfa_data)
+last_data <- extract_last_fa_data(wfa_data, stats)
 soc_data <- last_data[last_data$'page1_arm' == 0,]
 pox_data <- last_data[last_data$'page1_arm' == 1,]
 cdsa_data <- last_data[last_data$'page1_arm' == 2,]
@@ -61,5 +60,5 @@ if (nrow(cdsa_data) > 0) {
 ```
 
 ```{r xlsx-export, echo=FALSE}
-tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(wfa_data), params$path_dir, "path_data")
+tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), params$path_dir, "path_data")
 ```
