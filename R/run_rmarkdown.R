@@ -92,7 +92,8 @@ run_rmarkdown <- function(report_dir, participant_zip, mdb_dir, fu_dir, qual1_di
   # PATH M&E report #
   ###################
 
-  generate_report(report_dir, "path_report.Rmd", "timci_path_report")
+  params <- list(path_dir = report_dir)
+  generate_report(report_dir, "path_report.Rmd", "timci_path_report", params)
 
   #############################
   # Intervention pilot report #

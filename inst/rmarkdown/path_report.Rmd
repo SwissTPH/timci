@@ -1,20 +1,22 @@
 ---
-title: "TIMCI M&E indicators report"
+title: "TIMCI M&E indicators"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  path_dir: "."
 output:
   html_document: default
   word_document:
     reference_docx: word_styles1.docx
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE}
+library(timci)
+library(magrittr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction
-
-```{r, echo=FALSE}
+```{r ruODK-setup, echo=FALSE}
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
   un = Sys.getenv("ODKC_UN"),
@@ -22,4 +24,45 @@ ruODK::ru_setup(
   tz = Sys.getenv("TZ"),
   verbose = FALSE # Can be switched to TRUE for demo or debugging
 )
+```
+
+```{r, echo=FALSE}
+crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
+                                                 download = FALSE)
+facility_data <- timci::process_facility_data(raw_facility_data)
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+```
+
+```{r, echo=FALSE}
+crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
+                                            download = FALSE)
+wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+```
+
+```{r, echo=FALSE}
+last <- extract_last_fa_data(wfa_data)
+
+pox <- last[last$'page1_arm' == 1,]
+cdsa <- last[last$'page1_arm' == 2,]
+```
+
+```{r, echo=FALSE, results='asis'}
+if (nrow(pox) > 0) {
+  cat('# Facilities with pulse oximetry alone\n\n')
+  display_weekly_fa_data_per_facility(pox, wfa_data)
+}
+```
+
+```{r, echo=FALSE, results='asis'}
+if (nrow(cdsa) > 0) {
+  cat('# Facilities with pulse oximetry and CDSA\n\n')
+  display_weekly_fa_data_per_facility(cdsa, wfa_data)
+}
+```
+
+```{r xlsx-export, echo=FALSE}
+tmp <- timci::export_df2xlsx(format_weekly_fa_data_to_export(wfa_data), params$path_dir, "path_data")
 ```
