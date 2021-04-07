@@ -40,7 +40,10 @@ devtools::install_github("thaliehln/timci")
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
 
 ### Setup of the ODK Central connection
-You need to setup `ruODK` by creating environment variables in the `~/.Renviron` file that contains the OData service URL of your main project as well as your credentials (username and password) on ODK Central:
+You need to setup `ruODK` by creating environment variables in the `~/.Renviron` file that contains the OData service URL of your main project as well as your credentials (username and password) on ODK Central.
+
+![image](https://user-images.githubusercontent.com/71643277/113840950-87d70580-9791-11eb-9433-7073079961f7.png)
+
 ```bash
 ODKC_SVC="https://.../v1/projects/.../forms/....svc"
 ODKC_UN=me@email.com
@@ -52,7 +55,10 @@ For more information about `ruODK`, there are lots of great resources available 
 For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
 
 ### Setup specific to the TIMCI project
-For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file:
+For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file.
+
+![image](https://user-images.githubusercontent.com/71643277/113840980-8dcce680-9791-11eb-98ac-c95c4a0a59bf.png)
+
 ```bash
 TIMCI_INSTITUTION="Swiss Tropical and Public Health Institute"
 TIMCI_IS_RCT=1
@@ -127,6 +133,10 @@ timci::run_app()
 
 ## Generate R Markdown reports for TIMCI (manual)
 
+You should now have the following three files in your working directory: `timci_run.R`, `timci_research_facilities.xlsx` and `~/.Renviron`
+
+![image](https://user-images.githubusercontent.com/71643277/113839377-ebf8ca00-978f-11eb-9b58-8c0bd23aa76c.png)
+
 Excel file `timci_research_facilities.xlsx` maps the correspondences between the ODK Collect devices and the research facilities
 
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
@@ -172,10 +182,6 @@ timci::run_rmarkdown(research_facilities,
                      file.path(output_dir,subdir, "06_path"))
 ```
 NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
-
-You should now have four files in your working directory: `timci_run.R`, `timci_research_facilities.xlsx` and `~/.Renviron`
-
-![image](https://user-images.githubusercontent.com/71643277/113839377-ebf8ca00-978f-11eb-9b58-8c0bd23aa76c.png)
 
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
