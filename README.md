@@ -126,13 +126,14 @@ timci::run_app()
 ```
 
 ## Generate R Markdown reports for TIMCI (manual)
-`run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
 ![image](https://user-images.githubusercontent.com/71643277/113839377-ebf8ca00-978f-11eb-9b58-8c0bd23aa76c.png)
 
 Excel file `timci_research_facilities.xlsx` maps the correspondences between the ODK Collect devices and the research facilities
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
 
+Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_run.R`
+![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
 ```R
 library(timci)
 library(readxl)
@@ -169,11 +170,12 @@ timci::run_rmarkdown(research_facilities,
                      file.path(output_dir, subdir, "02_spa", "01_database"),
                      file.path(output_dir,subdir, "06_path"))
 ```
+NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
+
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
-Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_daily_routine.R`
-
-Create a .bat file that calls `timci_daily_routine.R`
+Create a .bat file that calls `timci_run.R`
+![image](https://user-images.githubusercontent.com/71643277/113839973-7d683c00-9790-11eb-9f7d-50f668186f6c.png)
 ```bat
 cd dirname
 "...\Rscript.exe" ...\timci_daily_routine.R
