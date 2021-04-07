@@ -140,7 +140,7 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113839377-ebf8ca00-978f-11eb-9b58-8c0bd23aa76c.png)
 
-Excel file `timci_research_facilities.xlsx` maps the correspondences between the ODK Collect devices and the research facilities
+`timci_research_facilities.xlsx` maps the correspondences between the ODK Collect device identifiers and the health facilities where the research assistants are posted.
 
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
 
@@ -155,7 +155,7 @@ library(readxl)
 # Set the root directory for storing results
 output_dir <- "my_directory"
 
-# Import the mapping between the ODK Collect device IDs and the research facilities
+# Import the mapping between the ODK Collect device identifiers and the health facilities where the research assistants are posted
 research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
 
 # Create the structure of the folder and subfolders that are created everyday to store the reports and exports
