@@ -39,7 +39,7 @@ devtools::install_github("thaliehln/timci")
 ### Prerequisites 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
 
-To install `ruODK`, which is the R client that the `timci` package uses to simply interact with the ODK Central API, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
+To install `ruODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
 
 ### Setup of the connection to ODK Central
 You need to setup `ruODK` by creating environment variables in a `~/.Renviron` file that will contain the OData service URL of your main project as well as your credentials (username and password) on ODK Central.
