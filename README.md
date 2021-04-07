@@ -40,7 +40,7 @@ devtools::install_github("thaliehln/timci")
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
 
 ### Setup of the ODK Central connection
-You need to setup `ruODK` by creating environment variables in `~/.Renviron` containing the OData service URL of your main project as well as your credentials (username and password) on ODK Central:
+You need to setup `ruODK` by creating environment variables in the `~/.Renviron` file that contains the OData service URL of your main project as well as your credentials (username and password) on ODK Central:
 ```bash
 ODKC_SVC="https://.../v1/projects/.../forms/....svc"
 ODKC_UN=me@email.com
@@ -128,14 +128,22 @@ timci::run_app()
 ## Generate R Markdown reports for TIMCI (manual)
 `run_rmarkdown` requests an access to a TIMCI ODK Central server.
 
+![image](https://user-images.githubusercontent.com/71643277/113839377-ebf8ca00-978f-11eb-9b58-8c0bd23aa76c.png)
+
+Excel file `timci_research_facilities.xlsx` maps the correspondences between the ODK Collect devices and the research facilities
+![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
+
 ```R
 library(timci)
 library(readxl)
-# Root directory
+
+# Set the root directory for storing results
 output_dir <- "my_directory"
+
 # Import the mapping between the ODK Collect device IDs and the research facilities
 research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
-# Create the directory structure for storing results
+
+# Create the structure of the folder and subfolders that are created everyday to store the reports and exports
 subdir <- paste0("export_", Sys.Date())
 dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "01_rct_ls"), showWarnings = FALSE)
@@ -149,6 +157,8 @@ dir.create(file.path(output_dir, subdir, "03_qualitative", "02_provider_idis"), 
 dir.create(file.path(output_dir, subdir, "04_cost"), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "05_reports"), showWarnings = FALSE)
 dir.create(file.path(output_dir, subdir, "06_path"), showWarnings = FALSE)
+
+# Run several Rmarkdown files to generate standardised automated reports
 timci::run_rmarkdown(research_facilities,
                      file.path(output_dir,subdir, "05_reports"),
                      file.path(output_dir, subdir, "01_rct_ls", "participants.zip"),
@@ -169,6 +179,8 @@ cd dirname
 "...\Rscript.exe" ...\timci_daily_routine.R
 PAUSE
 ```
+
+![image](https://user-images.githubusercontent.com/71643277/113839486-02068a80-9790-11eb-9d55-6d65f492f41f.png)
 
 1. Open the task scheduler
 
