@@ -4,7 +4,7 @@
 \alias{generate_enrolment_hist}
 \title{Create a histogram that represents the distribution of values in `col2` for each category in `col1`}
 \usage{
-generate_enrolment_hist(df, col1, col2, lthres, uthres)
+generate_enrolment_hist(df, col1, col2, lthres, uthres, lblx, lbly)
 }
 \arguments{
 \item{df}{Data frame to use for the plot}
@@ -15,7 +15,11 @@ generate_enrolment_hist(df, col1, col2, lthres, uthres)
 
 \item{lthres}{Numeric value,  lower threshold}
 
-\item{uthres}{Numeric value, upper threshold threshold}
+\item{uthres}{Numeric value, upper threshold}
+
+\item{lblx}{Label of the x-axis}
+
+\item{lbly}{Label of the y-axis}
 }
 \value{
 This function returns a ggplot object which contains a histogram representing the distribution of values in `col2` for each category in `col1`.

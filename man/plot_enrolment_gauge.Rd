@@ -4,18 +4,18 @@
 \alias{plot_enrolment_gauge}
 \title{Create an enrolment gauge}
 \usage{
-plot_enrolment_gauge(df, m, s, w, d)
+plot_enrolment_gauge(val, lbl, m, lthres, uthres)
 }
 \arguments{
-\item{df}{Data frame}
+\item{val}{Value}
+
+\item{lbl}{Label}
 
 \item{m}{Maximal gauge value}
 
-\item{s}{Success}
+\item{lthres}{Numeric value,  lower threshold}
 
-\item{w}{Warning}
-
-\item{d}{Danger}
+\item{uthres}{Numeric value, upper threshold}
 }
 \value{
 This function plots a gauge representing enrolment.

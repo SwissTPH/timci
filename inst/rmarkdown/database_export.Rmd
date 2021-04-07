@@ -53,7 +53,7 @@ end_date <- max(facility_data$date_visit)
 
 This report covers the period from **`r start_date`** to **`r end_date`**.
 
-# 1. `r main_study`
+# 1. `r if(Sys.getenv('TIMCI_IS_RCT') == 1){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
 
 ## 1.1. Facility data
 

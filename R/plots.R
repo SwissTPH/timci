@@ -8,12 +8,14 @@
 #' @param col1 Column name in data frame `df`
 #' @param col2 Column name in data frame `df` that contains numeric values
 #' @param lthres Numeric value,  lower threshold
-#' @param uthres Numeric value, upper threshold threshold
+#' @param uthres Numeric value, upper threshold
+#' @param lblx Label of the x-axis
+#' @param lbly Label of the y-axis
 #' @return This function returns a ggplot object which contains a histogram representing the distribution of values in `col2` for each category in `col1`.
 #' @export
 #' @import ggplot2
 
-generate_enrolment_hist <- function(df, col1, col2, lthres, uthres){
+generate_enrolment_hist <- function(df, col1, col2, lthres, uthres, lblx, lbly){
 
   # Quote the arguments that refer to data frame columns
   col1 <- dplyr::enquo(col1)
@@ -26,7 +28,7 @@ generate_enrolment_hist <- function(df, col1, col2, lthres, uthres){
                                                 !!col2>=uthres ~ "#a6d40d"))
   ggplot(df, aes(x= reorder(!!col1, -!!col2), y = !!col2)) +
     geom_bar(stat="identity", position = "dodge", fill=df$color_name) +
-    labs(x="Facilities", y="Number of children enrolled", title="") +
+    labs(x=lbly, y=lblx, title="") +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks.y = element_blank()) +
     theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
     scale_fill_brewer(palette = "Set1")  +
@@ -102,18 +104,42 @@ generate_calendar_heatmap <- function(df, datecol){
 #' plot_enrolment_gauge() creates a gauge plot that represents the global enrolment with respect to the target.
 #'
 #' Description of plot_enrolment_gauge
-#' @param df Data frame
+#' @param val Value
+#' @param lbl Label
 #' @param m Maximal gauge value
-#' @param s Success
-#' @param w Warning
-#' @param d Danger
+#' @param lthres Numeric value,  lower threshold
+#' @param uthres Numeric value, upper threshold
 #' @return This function plots a gauge representing enrolment.
 #' @export
-#' @import flexdashboard
 
-plot_enrolment_gauge <- function(df, m, s, w, d){
+plot_enrolment_gauge <- function(val, lbl, m, lthres, uthres){
 
-  flexdashboard::gauge(sum(df$x), min = 0, max = m, sectors = gaugeSectors(success = s, warning = w, danger = d))
+  df <- data.frame(matrix(nrow = 1, ncol = 2))
+
+  names(df) <- c("variable", "percentage")
+  df$variable <- c(lbl)
+  df$percentage <- c(val)
+
+  lthres <- lthres / m
+  uthres <- uthres / m
+
+  df <- df %>% dplyr::mutate(group=ifelse(percentage < lthres, "red", ifelse(percentage >= lthres & percentage < uthres, "orange","green")),
+                             label=paste0(format(round(percentage * 100, 1), nsmall = 1), "%"),
+                             title=lbl)
+
+  ggplot(df, aes(fill = group, ymax = percentage, ymin = 0, xmax = 2, xmin = 1)) +
+    geom_rect(aes(ymax = 1, ymin = 0, xmax = 2, xmin = 1), fill = "#dcdcdc") +
+    geom_rect() +
+    coord_polar(theta = "y", start = -pi/2) + xlim(c(0, 2)) + ylim(c(0,2)) +
+    geom_text(aes(x = 0, y = 0, label = label, colour = group), size = 10, family = "Poppins SemiBold") +
+    geom_text(aes(x = 0.5, y = 1.5, label = title), family = "Poppins Light", size = 4.2) +
+    theme_void() +
+    scale_fill_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
+    scale_colour_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
+    theme(strip.background = element_blank(),
+          strip.text.x = element_blank()) +
+    guides(fill = FALSE) +
+    guides(colour = FALSE)
 
 }
 
