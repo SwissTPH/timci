@@ -41,8 +41,8 @@ You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `
 
 To install `ruODK`, which is the R client that the `timci` package uses to simply interact with the ODK Central API, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
 
-### Setup of the ODK Central connection
-You need to setup `ruODK` by creating environment variables in the `~/.Renviron` file that contains the OData service URL of your main project as well as your credentials (username and password) on ODK Central.
+### Setup of the connection to ODK Central
+You need to setup `ruODK` by creating environment variables in a `~/.Renviron` file that will contain the OData service URL of your main project as well as your credentials (username and password) on ODK Central.
 
 ![image](https://user-images.githubusercontent.com/71643277/113840950-87d70580-9791-11eb-9433-7073079961f7.png)
 
@@ -52,9 +52,9 @@ ODKC_UN=me@email.com
 ODKC_PW=...
 TZ="Europe/Zurich"
 ```
-For more information about `ruODK`, there are lots of great resources available at [https://docs.ropensci.org/ruODK/](https://docs.ropensci.org/ruODK/)
+For more information about `ruODK`, the detailed documentation is available [here](https://docs.ropensci.org/ruODK/)
 
-For more information about the `ODK Central API`, there are lots of great resources available at [https://odkcentral.docs.apiary.io/](https://odkcentral.docs.apiary.io/)
+For more information about the `ODK Central API`, the detailed documentation is available [here](https://odkcentral.docs.apiary.io/)
 
 ### Setup specific to the TIMCI project
 For the TIMCI project, you need to set the following environment variables in your `~/.Renviron` file.
