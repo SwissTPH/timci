@@ -23,4 +23,5 @@ utils::globalVariables(c("Group.1",
                          "weekday",
                          "ndate",
                          "label",
-                         "title"))
+                         "title",
+                         "type"))

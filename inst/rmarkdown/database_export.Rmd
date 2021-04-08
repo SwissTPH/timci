@@ -11,6 +11,7 @@ output:
   html_document: default
   word_document:
     reference_docx: word_styles1.docx
+    fig_width: 7.5
 ---
 
 ```{r rmd-setup, include=FALSE}

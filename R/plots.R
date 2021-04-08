@@ -27,9 +27,12 @@ generate_enrolment_hist <- function(df, col1, col2, lthres, uthres, lblx, lbly){
                                                 (!!col2>=lthres & !!col2<uthres) ~ "#f9c800",
                                                 !!col2>=uthres ~ "#a6d40d"))
   ggplot(df, aes(x= reorder(!!col1, -!!col2), y = !!col2)) +
-    geom_bar(stat="identity", position = "dodge", fill=df$color_name) +
+    geom_bar(stat="identity", position = "dodge", fill = df$color_name) +
     labs(x=lbly, y=lblx, title="") +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks.y = element_blank()) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.ticks.y = element_blank()) +
     theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
     scale_fill_brewer(palette = "Set1")  +
     coord_flip()
@@ -175,22 +178,77 @@ generate_pie_chart <- function(df){
 #' @param date_vec Vector containing dates
 #' @param date_min Start date of the plot
 #' @param date_max End date of the plot
+#' @param ylbl String of the y-axis
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
 #' @export
 #' @import ggplot2 scales
 #' @importFrom stats aggregate
 
-generate_day_bar_plot <- function(date_vec, date_min, date_max){
+generate_day_bar_plot <- function(date_vec, date_min, date_max, ylbl = "Frequencies"){
 
-  # Frequency
-  freqs <- aggregate(date_vec, by = list(date_vec), FUN = length)
-  freqs$names <- as.Date(freqs$Group.1, format = "%Y-%m-%d")
+  # Count elements
+  counts <- aggregate(date_vec, by = list(date_vec), FUN = length)
+  counts$names <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
-  ggplot(freqs, aes(x = names, y = x)) +
-    geom_bar(stat="identity") +
-    ylab("Frequency") +
+  ggplot(counts, aes(x = names, y = x)) +
+    geom_bar(stat="identity", fill = "#7dbbd6", width=1) +
+    ylab(ylbl) +
     xlab("Date") +
-    scale_x_date(date_labels = "%Y-%m-%d", limits = c(date_min, date_max)) +
-    theme_bw()
+    ggplot2::scale_x_date(limits = c(date_min, date_max),
+                          breaks = waiver(),
+                          date_labels = "%y-%m-%d") +
+    theme(panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_blank(),
+          panel.background = element_blank())
+
+}
+
+#' Create a cumulative daily bar plot
+#'
+#' generate_day_cumbar_plot() creates a bar plot.
+#'
+#' @param date_vec1 Vector #1 containing dates
+#' @param lbl1 Name of vector #1
+#' @param date_vec2 Vector #2 containing dates
+#' @param lbl2 Name of vector #1
+#' @param date_min Start date of the plot
+#' @param date_max End date of the plot
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
+#' @param ylbl String of the y-axis
+#' @return This function returns a ggplot object which contains a cumulative bar plot of frequencies by dates
+#' @export
+#' @import ggplot2 scales
+#' @importFrom stats aggregate
+
+generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min, date_max, ylim, ylbl = "Frequencies"){
+
+  # Count elements
+  c1 <- aggregate(date_vec1, by = list(date_vec1), FUN = length)
+  c1$names <- as.Date(c1$Group.1, format = "%Y-%m-%d")
+  c1$type <- lbl1
+
+  c2 <- aggregate(date_vec2, by = list(date_vec2), FUN = length)
+  c2$names <- as.Date(c2$Group.1, format = "%Y-%m-%d")
+  c2$type <- lbl2
+
+  counts <- rbind(c1, c2)
+
+  ggplot(counts, aes(x = names, y = x, fill = factor(type, levels=c(lbl2, lbl1)))) +
+    geom_bar(stat = "identity", width = 1) +
+    ylab(ylbl) +
+    xlab("Date") +
+    scale_y_continuous(limits = ylim) +
+    scale_x_date(limits = c(date_min, date_max),
+                 breaks = waiver(),
+                 date_labels = "%y-%m-%d") +
+    theme(panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_blank(),
+          legend.title = element_blank(),
+          panel.background = element_blank(),
+          legend.position="bottom")
 
 }

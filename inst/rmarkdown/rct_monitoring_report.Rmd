@@ -8,6 +8,7 @@ output:
   html_document: default
   word_document:
     reference_docx: word_styles1.docx
+    fig_width: 7.5
 ---
 
 ```{r setup, include=FALSE}
@@ -124,17 +125,28 @@ knitr::kable(visits, col.names = c("Visit", "N"))
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
 w <- 30
 if (nrow(facility_data) > 0) {
-  plot(timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w), Sys.Date()))
+  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
+  plot(p)
+  ylim <- layer_scales(p)$y$get_limits()
 } else{
   cat('N/A\n\n')
 }
 ```
 
-### Baseline visit (enrolment)
+### Baseline and repeat visits
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
 w <- 30
+# Frequency
 if (nrow(baseline_data) > 0) {
-  plot(timci::generate_day_bar_plot(baseline_data$date_visit, as.Date(Sys.Date() - w), Sys.Date()))
+  
+  timci::generate_day_cumbar_plot(baseline_data$date_visit,
+                                  "Baseline",
+                                  repeat_data$date_visit,
+                                  "Repeat",
+                                  as.Date(Sys.Date() - w),
+                                  as.Date(Sys.Date() + 1),
+                                  ylim,
+                                  "Submissions")
 } else{
   cat('N/A\n\n')
 }
@@ -143,7 +155,7 @@ if (nrow(baseline_data) > 0) {
 ### Day 7 phone call
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
 if (nrow(raw_day7fu_data) > 0) {
-  plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), Sys.Date()))
+  plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
 } else{
   cat('N/A\n\n')
 }
@@ -152,9 +164,9 @@ if (nrow(raw_day7fu_data) > 0) {
 ### Hospital visit
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
 if (nrow(raw_hospit_data) > 0) {
-  plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), Sys.Date()))
+  plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
 } else{
-  cat('N/A\n\n')
+  cat('0 submissions since the start of the study.\n\n')
 }
 ```
 
@@ -162,9 +174,9 @@ if (nrow(raw_hospit_data) > 0) {
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('### Day 28 phone call\n\n')
   if (nrow(raw_day28fu_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_day28fu_data$today, as.Date(Sys.Date() - w), Sys.Date()))
-  } else{
-    cat('N/A\n\n')
+    plot(timci::generate_day_bar_plot(raw_day28fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+  } else {
+    cat('0 submissions since the start of the study.\n\n')
   }
 }
 ```
