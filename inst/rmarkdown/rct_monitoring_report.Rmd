@@ -11,13 +11,13 @@ output:
     fig_width: 7.5
 ---
 
-```{r setup, include=FALSE}
+```{r setup-rmd, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(magrittr)
 library(readxl)
 ```
 
-```{r ruODK-setup, echo=FALSE}
+```{r setup-ruODK, echo=FALSE}
 ruODK::ru_setup(
   svc = Sys.getenv("ODKC_SVC"),
   un = Sys.getenv("ODKC_UN"),
@@ -27,7 +27,7 @@ ruODK::ru_setup(
 )
 ```
 
-```{r, echo=FALSE}
+```{r load-RCT-LS-environment-variables, echo=FALSE}
 crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
 crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
 crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
@@ -35,30 +35,41 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
 }
 wd_fid <- Sys.getenv("TIMCI_WD_FID")
+form_list <- ruODK::form_list()$fid
 ```
 
-```{r, echo=FALSE}
+```{r load-RCT-LS-ODK-facility-data, echo=FALSE}
 raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
                                                  download = FALSE)
-raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
-                                               download = FALSE)
+if (crf_day7_fid %in% form_list) {
+  raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+                                                 download = FALSE)
+}
+if (crf_hospit_fid %in% form_list) {
 raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
                                                download = FALSE)
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
-                                                download = FALSE)
 }
+if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (crf_day28_fid %in% form_list) {
+    raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
+                                                  download = FALSE)
+  }
+}
+if (wd_fid %in% form_list) {
 raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
                                                    download = FALSE)
+}
 ```
 
-```{r, echo=FALSE, warning=FALSE}
-facility_data <- timci::process_facility_data(raw_facility_data)
-```
-
-```{r, echo=FALSE}
-start_date <- min(facility_data$date_visit)
-end_date <- max(facility_data$date_visit)
+```{r process-facility-data, echo=FALSE, warning=FALSE}
+facility_data <- NULL
+start_date <- NULL
+end_date <- NULL
+if (nrow(raw_facility_data) > 0) {
+  facility_data <- timci::process_facility_data(raw_facility_data)
+  start_date <- min(facility_data$date_visit)
+  end_date <- max(facility_data$date_visit)
+}
 ```
 
 This report covers the period from **`r start_date`** to **`r end_date`**.
@@ -66,7 +77,7 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 # 1. Submissions
 
 ## Total number of submissions per form
-```{r, echo=FALSE, results = "asis"}
+```{r submissions-1, echo=FALSE, results = "asis"}
 n_screened <- nrow(facility_data)
 screening_data <- timci::extract_screening_data(facility_data)
 
