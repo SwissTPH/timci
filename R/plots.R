@@ -229,11 +229,14 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
   c1$names <- as.Date(c1$Group.1, format = "%Y-%m-%d")
   c1$type <- lbl1
 
-  c2 <- aggregate(date_vec2, by = list(date_vec2), FUN = length)
-  c2$names <- as.Date(c2$Group.1, format = "%Y-%m-%d")
-  c2$type <- lbl2
-
-  counts <- rbind(c1, c2)
+  if (length(date_vec2) > 0) {
+    c2 <- aggregate(date_vec2, by = list(date_vec2), FUN = length)
+    c2$names <- as.Date(c2$Group.1, format = "%Y-%m-%d")
+    c2$type <- lbl2
+    counts <- rbind(c1, c2)
+  } else {
+    counts <- c1
+  }
 
   ggplot(counts, aes(x = names, y = x, fill = factor(type, levels=c(lbl2, lbl1)))) +
     geom_bar(stat = "identity", width = 1) +

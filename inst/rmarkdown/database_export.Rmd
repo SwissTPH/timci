@@ -302,62 +302,64 @@ cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
 ```{r cg-idi-invitation-export}
 if (cpid %in% project_list) {
-  raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = cpid,
-                                                           fid = cgidi1_fid)
-  cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
-  tmp <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
+  if (cgidi1_fid %in% ruODK::form_list(pid = cpid)$fid) {
+    raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = cpid,
+                                                             fid = cgidi1_fid)
+    cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+    tmp <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
+  }
 }
 ```
 
 ```{r cg-idi-encryption-export}
 if (cpid %in% project_list) {
-  raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = cpid,
-                                                           fid = cgidi2_fid)
-  cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
-  tmp <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
+  if (cgidi2_fid %in% ruODK::form_list(pid = cpid)$fid) {
+    raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = cpid,
+                                                             fid = cgidi2_fid)
+    cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+    tmp <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
+  }
 }
 ```
 
 ```{r cg-idi-interview-export}
 if (cpid %in% project_list) {
-  raw_cgidi_interview_zip <- ruODK::submission_export(pid = cpid,
-                                                      fid = cgidi3_fid)
-  cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
-  tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
-}
-```
-
-```{r}
-if (cpid %in% project_list) {
-  sl <- ruODK::submission_list(pid = cpid,
-                               fid = cgidi3_fid)
+  if (cgidi3_fid %in% ruODK::form_list(pid = cpid)$fid) {
+    raw_cgidi_interview_zip <- ruODK::submission_export(pid = cpid,
+                                                        fid = cgidi3_fid)
+    cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
+    tmp <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
   
-  # Loop on all rows
-  for (i in 1:nrow(sl)) {
-    crow <- cgidi_interview_data[i,]
-    uuid <- crow$'meta-instanceID'
-    cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
-    print(paste0("Participant: ", crow$'identification-idiidm'))
-    dir.create(cpath, showWarnings = FALSE)
-    # Create a new dataframe using the transpose of crow
-    tcrow <- as.data.frame(t(as.matrix(crow)))
-    names(tcrow)[names(tcrow) == "V1"] <- "values"
-    fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
-    openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
+    sl <- ruODK::submission_list(pid = cpid,
+                                 fid = cgidi3_fid)
     
-    # Download attachments
-    al <- ruODK::get_one_submission_attachment_list(pid = cpid,
-                                                    fid = cgidi3_fid,
-                                                    uuid)
-    for (j in 1:nrow(al)) {
-      aid <- al$name[[j]]
-      print(paste0("Attachment: ", aid))
-      ruODK::attachment_get(pid = cpid,
-                            fid = cgidi3_fid,
-                            uuid, 
-                            aid,
-                            local_dir = cpath)
+    # Loop on all rows
+    for (i in 1:nrow(sl)) {
+      crow <- cgidi_interview_data[i,]
+      uuid <- crow$'meta-instanceID'
+      cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
+      print(paste0("Participant: ", crow$'identification-idiidm'))
+      dir.create(cpath, showWarnings = FALSE)
+      # Create a new dataframe using the transpose of crow
+      tcrow <- as.data.frame(t(as.matrix(crow)))
+      names(tcrow)[names(tcrow) == "V1"] <- "values"
+      fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
+      openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
+      
+      # Download attachments
+      al <- ruODK::get_one_submission_attachment_list(pid = cpid,
+                                                      fid = cgidi3_fid,
+                                                      uuid)
+      for (j in 1:nrow(al)) {
+        aid <- al$name[[j]]
+        print(paste0("Attachment: ", aid))
+        ruODK::attachment_get(pid = cpid,
+                              fid = cgidi3_fid,
+                              uuid, 
+                              aid,
+                              local_dir = cpath)
+        }
+      }
     }
-  }
 }
 ```

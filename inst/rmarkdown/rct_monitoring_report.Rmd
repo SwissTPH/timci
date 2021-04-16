@@ -41,20 +41,28 @@ form_list <- ruODK::form_list()$fid
 ```{r load-RCT-LS-ODK-facility-data, echo=FALSE}
 raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
                                                  download = FALSE)
+
+raw_day7fu_data <- NULL
 if (crf_day7_fid %in% form_list) {
   raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
                                                  download = FALSE)
 }
+
+raw_hospit_data <- NULL
 if (crf_hospit_fid %in% form_list) {
 raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
                                                download = FALSE)
 }
+
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  raw_day28fu_data <- NULL
   if (crf_day28_fid %in% form_list) {
     raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
                                                   download = FALSE)
   }
 }
+
+raw_withdrawal_data <- NULL
 if (wd_fid %in% form_list) {
 raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
                                                    download = FALSE)
@@ -78,53 +86,67 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 
 ## Total number of submissions per form
 ```{r submissions-1, echo=FALSE, results = "asis"}
+
+n_total <-0
+
+# Screening data
 n_screened <- nrow(facility_data)
 screening_data <- timci::extract_screening_data(facility_data)
-
-res <- timci::extract_enrolled_participants(facility_data)
-demog_data <- res[[1]]
-pii <- res[[2]]
-n_enrolled <- nrow(demog_data)
+visit_names <- c("Screening")
+submissions <- c(n_screened)
+n_total <- n_total + n_screened
 
 study_data <- timci::extract_all_visits(facility_data)
+res <- timci::extract_enrolled_participants(facility_data)
+
+# Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
-repeat_data <- timci::extract_repeat_visits(study_data)
+demog_data <- res[[1]]
+n_enrolled <- nrow(demog_data)
+visit_names <- c(visit_names, "Baseline visit")
+submissions <- c(submissions, n_enrolled)
 
 # Count facility submissions corresponding to repeat visits
+repeat_data <- timci::extract_repeat_visits(study_data)
 n_repeat <- nrow(repeat_data)
+visit_names <- c(visit_names, "Repeat visit")
+submissions <- c(submissions, n_repeat)
 
 # Count Day 7 phone call submissions
-n_day7fu <- nrow(raw_day7fu_data)
+if (!is.null(raw_day7fu_data)) {
+  n_day7fu <- nrow(raw_day7fu_data)
+  visit_names <- c(visit_names, "Day 7 phone call")
+  submissions <- c(submissions, n_day7fu)
+  n_total <- n_total + n_day7fu
+}
 
 # Count hospital visit submissions
-n_hospit <- nrow(raw_hospit_data)
+if (!is.null(raw_hospit_data)) {
+  n_hospit <- nrow(raw_hospit_data)
+  visit_names <- c(visit_names, "Hospital visit")
+  submissions <- c(submissions, n_hospit)
+  n_total <- n_total + n_hospit
+}
 
 # Count withdrawal submissions
-n_withdrawal <- nrow(raw_withdrawal_data)
+if (!is.null(raw_withdrawal_data)) {
+  n_withdrawal <- nrow(raw_withdrawal_data)
+  visit_names <- c(visit_names, "Withdrawal")
+  submissions <- c(submissions, n_withdrawal)
+  n_total <- n_total + n_withdrawal
+}
 
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  n_day28fu <- nrow(raw_day28fu_data)
-  n_all <- n_screened + n_day7fu + n_day28fu + n_hospit + n_withdrawal
-  visit_names <- c("Screening",
-                 "Baseline visit",
-                 "Repeat visit",
-                 "Day 7 phone call",
-                 "Day 28 phone call",
-                 "Hospital visit",
-                 "Withdrawal",
-                 "All")
-  submissions <- c(n_screened, n_enrolled, n_repeat, n_day7fu, n_day28fu, n_hospit, n_withdrawal, n_all)
-} else {
-  n_all <- n_screened + n_day7fu + n_hospit + n_withdrawal
-  visit_names <- c("Screening",
-                 "Baseline visit",
-                 "Repeat visit",
-                 "Day 7 phone call",
-                 "Hospital visit",
-                 "Withdrawal",
-                 "All")
-  submissions <- c(n_screened, n_enrolled, n_repeat, n_day7fu, n_hospit, n_withdrawal, n_all)
+  if (!is.null(raw_day28fu_data)) {
+    n_day28fu <- nrow(raw_day28fu_data)
+    visit_names <- c(visit_names, "Day 28 phone call")
+    submissions <- c(submissions, n_day28fu)
+    n_total <- n_total + n_day28fu
+  }
 }
+  
+visit_names <- c(visit_names, "All")
+submissions <- c(submissions, n_total)
 
 visits <- data.frame(visit_names, submissions) 
 knitr::kable(visits, col.names = c("Visit", "N"))
@@ -165,29 +187,35 @@ if (nrow(baseline_data) > 0) {
 
 ### Day 7 phone call
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
-if (nrow(raw_day7fu_data) > 0) {
-  plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
-} else{
-  cat('N/A\n\n')
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+  } else{
+    cat('N/A\n\n')
+  }
 }
 ```
 
 ### Hospital visit
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
-if (nrow(raw_hospit_data) > 0) {
-  plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
-} else{
-  cat('0 submissions since the start of the study.\n\n')
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+  } else{
+    cat('0 submissions since the start of the study.\n\n')
+  }
 }
 ```
 
 ```{r, echo=FALSE, warning=FALSE, results='asis'}
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('### Day 28 phone call\n\n')
-  if (nrow(raw_day28fu_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_day28fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
-  } else {
-    cat('0 submissions since the start of the study.\n\n')
+  if (!is.null(raw_day28fu_data)) {
+    if (nrow(raw_day28fu_data) > 0) {
+      plot(timci::generate_day_bar_plot(raw_day28fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+    } else {
+      cat('0 submissions since the start of the study.\n\n')
+    }
   }
 }
 ```
@@ -322,46 +350,57 @@ plot(referral_pie_chart)
 ```{r, echo=FALSE}
 wmin <- 7
 wmax <- 10
-raw_day7fu_data <- raw_day7fu_data %>%
-  dplyr::mutate(days = as.Date(today) - as.Date(a1_enroldate), na.rm = TRUE)
+if (nrow(raw_day7fu_data) > 0) {
+  raw_day7fu_data <- raw_day7fu_data %>%
+    dplyr::mutate(days = as.Date(today) - as.Date(a1_enroldate), na.rm = TRUE)
+}
 ```
 
 The valid Day 7 follow-up period is **`r wmin`** to **`r wmax`** days.
 
 ```{r, echo=FALSE, warning=FALSE}
-n_reached_day7fu <- sum(!is.na(raw_day7fu_data$a1_contact_a4_d_1b) & (raw_day7fu_data$a1_contact_a4_d_1b == 1))
+if (nrow(raw_day7fu_data) > 0) {
+  n_reached_day7fu <- sum(!is.na(raw_day7fu_data$a1_contact_a4_d_1b) & (raw_day7fu_data$a1_contact_a4_d_1b == 1))
+  n_valid_day7fu <- sum((raw_day7fu_data$days >= wmin) & (raw_day7fu_data$days < wmax))
+} else {
+  n_reached_day7fu <- 0
+  n_valid_day7fu <- 0
+}
+
+# gauge plots
 timci::plot_enrolment_gauge(n_reached_day7fu/n_enrolled, "Day 7 follow-up rate", 100, 80, 90)
-n_valid_day7fu <- sum((raw_day7fu_data$days >= wmin) & (raw_day7fu_data$days < wmax))
 timci::plot_enrolment_gauge(n_valid_day7fu/n_enrolled, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
 ```
 
 ```{r, echo=FALSE, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-all <- data.frame(raw_day7fu_data)
-all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
-all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
-all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
-all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
-
-day7_call_ss <- list(
-  "Call outcome" = list(
-    "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-    "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
-    "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
-    )
-)
-print(qwraps2::summary_table(all, day7_call_ss))
-
-day7_outcome_ss <- list(
-  "Cure" = list(
-    "Known" = ~qwraps2::n_perc(o1_o1_1 == 1 | o1_o1_1 == 2 | o1_o1_1 == 3 | o1_o1_1 == 4, 2)
-    ),
-  "Hospitalisation" = list(
-    "Reported" = ~qwraps2::n_perc(o1_o1_1a == 2 | n1_o3_1 == 1, 2)
-    )
-)
-print(qwraps2::summary_table(all, day7_outcome_ss))
+if (nrow(raw_day7fu_data) > 0) {
+  all <- data.frame(raw_day7fu_data)
+  all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
+  all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
+  all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
+  all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
+  
+  day7_call_ss <- list(
+    "Call outcome" = list(
+      "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+      "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
+      "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
+      )
+  )
+  print(qwraps2::summary_table(all, day7_call_ss))
+  
+  day7_outcome_ss <- list(
+    "Cure" = list(
+      "Known" = ~qwraps2::n_perc(o1_o1_1 == 1 | o1_o1_1 == 2 | o1_o1_1 == 3 | o1_o1_1 == 4, 2)
+      ),
+    "Hospitalisation" = list(
+      "Reported" = ~qwraps2::n_perc(o1_o1_1a == 2 | n1_o3_1 == 1, 2)
+      )
+  )
+  print(qwraps2::summary_table(all, day7_outcome_ss))
+}
 ```
 # 5. Hospital follow-up
 
@@ -370,19 +409,23 @@ options(qwraps2_markup = 'markdown')
 
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('# 6. Day 28 follow-up\n\n')
-  all <- data.frame(raw_day28fu_data)
-  all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
-  all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
-  all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
-  all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
-  
-  day28_call_ss <- list(
-    "Call outcome" = list(
-      "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-      "Valid time window" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-      "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
+  if (!is.null(raw_day28fu_data)) {
+    if (nrow(raw_day28fu_data) > 0) {
+      all <- data.frame(raw_day28fu_data)
+      all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
+      all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
+      all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
+      all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
+      
+      day28_call_ss <- list(
+        "Call outcome" = list(
+          "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+          "Valid time window" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
+          "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
+          )
       )
-  )
-  print(qwraps2::summary_table(all, day28_call_ss))
+      print(qwraps2::summary_table(all, day28_call_ss))
+    }
+  }
 }
 ```
