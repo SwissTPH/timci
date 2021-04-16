@@ -4,14 +4,14 @@
 \alias{export_df2xlsx}
 \title{Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp}
 \usage{
-export_df2xlsx(df, dirname, xls_name)
+export_df2xlsx(df, dirname, prefix)
 }
 \arguments{
 \item{df}{dataframe.}
 
 \item{dirname}{directory where the Excel file will be created.}
 
-\item{xls_name}{filename prefix}
+\item{prefix}{filename prefix}
 }
 \description{
 Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp

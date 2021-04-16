@@ -8,22 +8,32 @@
 process_facility_data <- function(df) {
 
   df <- format_odk_metadata(df)
+  cols <- colnames(df)
 
   # Combine exact and approximate options to get the age in years
-  df$'a3_a3_a_3' <- ifelse(!is.na(df$'a3_a3_a_3'), df$'a3_a3_a_3', df$'a3_a3_a_2a')
+  df$'a3_a3_a_3' <- ifelse('a3_a3_a_3' %in% cols,
+                           ifelse(!is.na(df$'a3_a3_a_3'), df$'a3_a3_a_3', df$'a3_a3_a_2a'),
+                           df$'a3_a3_a_2a')
 
   # Combine exact and approximate options to get the age in months
-  df$'a3_a3_a_6' <- ifelse(!is.na(df$'a3_a3_a_6'),
-                           df$'a3_a3_a_6',
-                           ifelse(!is.na(df$'a3_a3_a_6b'),
-                                  df$'a3_a3_a_6b',
-                                  ifelse(df$'a3_a3_a_5' != 98,
-                                         df$'a3_a3_a_5',
-                                         NA)))
+  df$'a3_a3_a_6' <- ifelse('a3_a3_a_6' %in% cols,
+                           ifelse(!is.na(df$'a3_a3_a_6'),
+                                  df$'a3_a3_a_6',
+                                  ifelse(!is.na(df$'a3_a3_a_6b'),
+                                         df$'a3_a3_a_6b',
+                                         ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA))),
+                           ifelse('a3_a3_a_6b' %in% cols,
+                                  ifelse(!is.na(df$'a3_a3_a_6b'),
+                                         df$'a3_a3_a_6b',
+                                         ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA)
+                                         ),
+                                  ifelse('a3_a3_a_5' %in% cols,
+                                         ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA),
+                                         "")))
 
-  df$'a3_a3_a_5' <- ifelse(df$'a3_a3_a_5' == 98 | (df$'a3_dobk' == 98 & df$'a3_a3_a_3' > 1),
-                           0,
-                           1)
+  df$'a3_a3_a_5' <- ifelse('a3_a3_a_5' %in% cols,
+                           ifelse(df$'a3_a3_a_5' == 98 | (df$'a3_dobk' == 98 & df$'a3_a3_a_3' > 1), 0, 1),
+                           "")
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"

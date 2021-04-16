@@ -47,9 +47,13 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name) {
 
 format_multiselect_asws <- function(df, cols, sep) {
 
+  dfcols <- colnames(df)
+
   # Replace the space between different answers by `sep` in multiple select questions
-  for (i in cols) {
-    df[[i]] <- stringr::str_replace_all(df[[i]], " ", sep)
+  for (c in cols) {
+    if (c %in% dfcols) {
+      df[[c]] <- stringr::str_replace_all(df[[c]], " ", sep)
+    }
   }
   df
 

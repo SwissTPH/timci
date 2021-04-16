@@ -2,13 +2,28 @@
 #'
 #' @param df dataframe.
 #' @param dirname directory where the Excel file will be created.
-#' @param xls_name filename prefix
+#' @param prefix filename prefix
 #' @export
 
-export_df2xlsx <- function(df, dirname, xls_name) {
+export_df2xlsx <- function(df, dirname, prefix) {
 
-  fname <- file.path(dirname, paste(xls_name, "_", Sys.Date(), ".xlsx", sep = ""))
+  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
   openxlsx::write.xlsx(df, fname, row.names = FALSE)
+  fname
+
+}
+
+#' Write dataframe to an RDS file format, with a filename consisting of a prefix and a date stamp
+#'
+#' @param df dataframe.
+#' @param dirname directory where the RDS file will be created.
+#' @param prefix filename prefix
+#' @export
+
+export_df2rds <- function(df, dirname, prefix) {
+
+  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".rds", sep = ""))
+  saveRDS(df, file = fname)
   fname
 
 }
