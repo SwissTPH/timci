@@ -43,7 +43,6 @@ if (!is.null(params$raw_day7fu_data)) {
 ```
 
 ```{r}
-dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 csv7_fname <- file.path(params$output_dir, "odk_external_files", "day7fu.csv")
 write.csv(day7fu, csv7_fname, row.names = FALSE, quote = FALSE)
 ```

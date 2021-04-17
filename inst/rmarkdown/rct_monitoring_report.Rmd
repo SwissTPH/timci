@@ -6,6 +6,9 @@ params:
   research_facilities: data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
   raw_day7fu_data: NULL
+  raw_hospit_data: NULL
+  raw_day28fu_data: NULL
+  raw_withdrawal_data: NULL
 output:
   html_document: default
   word_document:
@@ -16,13 +19,97 @@ output:
 ```{r setup-rmd, include=FALSE}
 library(magrittr)
 library(readxl)
+library(ggplot2)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
 ```
 
+```{r setup-variables}
+if (!is.null(params$facility_data)) {
+  
+  facility_data <- params$facility_data
+  raw_day7fu_data <- params$raw_day7fu_data
+  raw_hospit_data <- params$raw_hospit_data
+  raw_day28fu_data <- params$raw_day28fu_data
+  raw_withdrawal_data <- params$raw_withdrawal_data
+  
+} else {
+  
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = TRUE # Can be switched to TRUE for demo or debugging
+  )
+
+  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+
+  # RCT / LS environment variables
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  print(crf_facility_fid)
+  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+  crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
+  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+    crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+  }
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  # List of forms visible in the RCT / LS project
+  rct_ls_form_list <- ruODK::form_list()$fid
+
+  # Load facility data
+  print("Load facility data")
+  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+  facility_data <- timci::process_facility_data(raw_facility_data)
+
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  # Load day 7 follow-up data
+  print("Load day 7 follow-up data")
+  raw_day7fu_data <- NULL
+  if (crf_day7_fid %in% rct_ls_form_list) {
+    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+                                                   download = FALSE)
+  }
+
+  # Load hospital visit follow-up data
+  print("Load hospital visit data")
+  raw_hospit_data <- NULL
+  if (crf_hospit_fid %in% rct_ls_form_list) {
+    raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
+                                                   download = FALSE)
+  }
+
+  # Load day 28 follow-up data
+  raw_day28fu_data <- NULL
+  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+    print("Load day 28 follow-up data")
+    if (crf_day28_fid %in% rct_ls_form_list) {
+      raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
+                                                      download = FALSE)
+    }
+  }
+
+  # Load widthdrawal data
+  print("Load withdrawal data")
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
+                                                       download = FALSE)
+  }
+  
+}
+```
+
 ```{r load-RCT-LS-environment-variables}
-crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
 crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
@@ -31,40 +118,12 @@ wd_fid <- Sys.getenv("TIMCI_WD_FID")
 form_list <- ruODK::form_list()$fid
 ```
 
-```{r load-RCT-LS-ODK-facility-data}
-raw_day7fu_data <- NULL
-if (crf_day7_fid %in% form_list) {
-  raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
-                                                 download = FALSE)
-}
-
-raw_hospit_data <- NULL
-if (crf_hospit_fid %in% form_list) {
-raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
-                                               download = FALSE)
-}
-
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  raw_day28fu_data <- NULL
-  if (crf_day28_fid %in% form_list) {
-    raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
-                                                  download = FALSE)
-  }
-}
-
-raw_withdrawal_data <- NULL
-if (wd_fid %in% form_list) {
-raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
-                                                   download = FALSE)
-}
-```
-
 ```{r process-facility-data}
 start_date <- NULL
 end_date <- NULL
-if (nrow(params$facility_data) > 0) {
-  start_date <- min(params$facility_data$date_visit)
-  end_date <- max(params$facility_data$date_visit)
+if (nrow(facility_data) > 0) {
+  start_date <- min(facility_data$date_visit)
+  end_date <- max(facility_data$date_visit)
 }
 ```
 
@@ -78,14 +137,14 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 n_total <- 0
 
 # Screening data
-n_screened <- nrow(params$facility_data)
-screening_data <- timci::extract_screening_data(params$facility_data)
+n_screened <- nrow(facility_data)
+screening_data <- timci::extract_screening_data(facility_data)
 visit_names <- c("Screening")
 submissions <- c(n_screened)
 n_total <- n_total + n_screened
 
-study_data <- timci::extract_all_visits(params$facility_data)
-res <- timci::extract_enrolled_participants(params$facility_data)
+study_data <- timci::extract_all_visits(facility_data)
+res <- timci::extract_enrolled_participants(facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
@@ -145,10 +204,10 @@ knitr::kable(visits, col.names = c("Visit", "N"))
 ### Screening
 ```{r, results='asis'}
 w <- 30
-if (nrow(params$facility_data) > 0) {
-  p <- timci::generate_day_bar_plot(params$facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
+if (nrow(facility_data) > 0) {
+  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
   plot(p)
-  ylim <- layer_scales(p)$y$get_limits()
+  ylim <- ggplot2::layer_scales(p)$y$get_limits()
 } else{
   cat('N/A\n\n')
 }
@@ -213,7 +272,7 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
 ### Screening
 
 ```{r}
-timci::generate_calendar_heatmap(params$facility_data, date_visit)
+timci::generate_calendar_heatmap(facility_data, date_visit)
 ```
 
 ### Enrolment
@@ -228,7 +287,7 @@ if (nrow(baseline_data) > 0) {
 ```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-all <- data.frame(params$facility_data)
+all <- data.frame(facility_data)
 all$sickness[is.na(all$sickness)] <- 0
 all$inpatient[is.na(all$inpatient)] <- 0
 all$consult_reason[is.na(all$consult_reason)] <- 0
@@ -268,7 +327,7 @@ deidentified_facility_data <- timci::deidentify_data(study_data)
 
 ## Screening by facility
 ```{r}
-stats <- timci::get_summary_by_facility(params$facility_data)
+stats <- timci::get_summary_by_facility(facility_data)
 stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
 timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
 ```
@@ -292,7 +351,7 @@ timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\
 
 ### Non-enrolment causes
 ```{r}
-non_enrolment_causes <- timci::count_screening(params$facility_data)
+non_enrolment_causes <- timci::count_screening(facility_data)
 nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
 plot(nec_pie_chart)
 ```

@@ -7,9 +7,18 @@ params:
   participant_zip: "."
   spa_dir: "."
   qual1_dir: "."
-  odkc_project_list: NULL
-  rct_ls_form_list: NULL
   facility_data: NULL
+  raw_day7fu_data: NULL
+  raw_hospit_data: NULL
+  raw_day28fu_data: NULL
+  raw_withdrawal_data: NULL
+  spa_cgei_data: NULL
+  spa_fa_data: NULL
+  spa_hcpi_data: NULL
+  spa_sco_data: NULL
+  cgidi_invitation_data: NULL
+  cgidi_encryption_data: NULL
+  cgidi_interview_data: NULL
 output:
   html_document: default
   word_document:
@@ -18,31 +27,224 @@ output:
 ---
 
 ```{r setup-rmd, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
-TIMCI-specific RCT / LS setup
+```{r setup-variables, echo = FALSE}
 
-```{r load-RCT-LS-environment-variables}
-crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+qpid <- Sys.getenv("TIMCI_QUAL_PID")
+cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
+
+if (!is.null(params$facility_data)) {
+  
+  facility_data <- params$facility_data
+  raw_day7fu_data <- params$raw_day7fu_data
+  raw_hospit_data <- params$raw_hospit_data
+  raw_day28fu_data <- params$raw_day28fu_data
+  raw_withdrawal_data <- params$raw_withdrawal_data
+  spa_cgei_data <- params$spa_cgei_data
+  spa_fa_data <- params$spa_fa_data
+  spa_hcpi_data <- params$spa_hcpi_data
+  spa_sco_data <- params$spa_sco_data
+  cgidi_invitation_data <- params$cgidi_invitation_data
+  cgidi_encryption_data <- params$cgidi_encryption_data
+  cgidi_interview_data <- params$cgidi_interview_data
+  
+} else {
+  
+  ################
+  # Set up ruODK #
+  ################
+
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = TRUE # Can be switched to TRUE for demo or debugging
+  )
+
+  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+
+  #logs <- ruODK::audit_get()
+  #print(logs)
+
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+
+  # RCT / LS environment variables
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  print(crf_facility_fid)
+  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+  crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
+  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+    crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+  }
+  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+
+  # SPA environment variables
+  spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+  cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
+  fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
+  sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
+  hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+
+  # Qualitative environment variables
+  cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
+  cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  # List of forms visible in the RCT / LS project
+  rct_ls_form_list <- ruODK::form_list()$fid
+
+  # List of forms visible in the SPA project
+  spa_form_list <- NULL
+  if (spa_pid %in% odkc_project_list) {
+    spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
+  }
+
+  # List of forms visible in the qualitative project
+  qual_form_list <- NULL
+  if (qpid %in% odkc_project_list) {
+    qual_form_list <- ruODK::form_list(pid = qpid)$fid
+  }
+
+  # Load facility data
+  print("Load facility data")
+  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+  facility_data <- timci::process_facility_data(raw_facility_data)
+
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  # Load day 7 follow-up data
+  print("Load day 7 follow-up data")
+  raw_day7fu_data <- NULL
+  if (crf_day7_fid %in% rct_ls_form_list) {
+    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+                                                   download = FALSE)
+  }
+
+  # Load hospital visit follow-up data
+  print("Load hospital visit data")
+  raw_hospit_data <- NULL
+  if (crf_hospit_fid %in% rct_ls_form_list) {
+    raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
+                                                   download = FALSE)
+  }
+
+  # Load day 28 follow-up data
+  raw_day28fu_data <- NULL
+  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+    print("Load day 28 follow-up data")
+    if (crf_day28_fid %in% rct_ls_form_list) {
+      raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
+                                                      download = FALSE)
+    }
+  }
+
+  # Load widthdrawal data
+  print("Load withdrawal data")
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
+                                                       download = FALSE)
+  }
+
+  # Load weekly facility assessment data
+  print("Load weekly facility assessment data")
+  wfa_data <- NULL
+  if (crf_wfa_fid %in% rct_ls_form_list) {
+    raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
+                                                download = FALSE)
+    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+  }
+
+  # Load SPA data
+  spa_cgei_data <- NULL
+  spa_fa_data <- NULL
+  spa_hcpi_data <- NULL
+  spa_sco_data <- NULL
+
+  if (spa_pid %in% odkc_project_list) {
+
+    # Load SPA caregiver exit interview data
+    print("Load SPA caregiver exit interview data")
+    if (cgei_fid %in% spa_form_list) {
+      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
+      spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
+    }
+
+    # Load SPA facility assessment data
+    print("Load SPA facility assessment data")
+    if (fa_fid %in% spa_form_list) {
+      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
+      spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
+    }
+
+    # Load SPA healthcare provider interview data
+    print("Load SPA healthcare provider interview data")
+    if (hcpi_fid %in% spa_form_list) {
+      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
+      spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
+    }
+
+    # Load SPA sick child observation protocol data
+    print("Load SPA sick child observation protocol data")
+    if (sco_fid %in% spa_form_list) {
+      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
+      spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+    }
+
+  }
+
+  # Load qualitative data
+  cgidi_invitation_data <- NULL
+  cgidi_encryption_data <- NULL
+  cgidi_interview_data <- NULL
+
+  if (qpid %in% odkc_project_list) {
+
+    # Load caregiver IDI invitation data
+    print("Load caregiver IDI invitation data")
+    if (cgidi1_fid %in% qual_form_list) {
+      raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
+                                                               fid = cgidi1_fid)
+      cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+    }
+
+    # Load caregiver IDI encryption list
+    print("Load caregiver IDI encryption list")
+    if (cgidi2_fid %in% qual_form_list) {
+      raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
+                                                               fid = cgidi2_fid)
+      cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+    }
+
+    # Load caregiver IDI interview data
+    print("Load caregiver IDI interview data")
+    if (cgidi3_fid %in% qual_form_list) {
+      raw_cgidi_interview_zip <- ruODK::submission_export(pid = qpid,
+                                                          fid = cgidi3_fid)
+      cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
+    }
+
+  }
+  
 }
-wd_fid <- Sys.getenv("TIMCI_WD_FID")
-main_study <- Sys.getenv("TIMCI_MAIN_STUDY")
-form_list <- ruODK::form_list()$fid
 ```
-
-Load TIMCI facility CRF data
 
 ```{r load-RCT-LS-ODK-facility-data}
 start_date <- NULL
 end_date <- NULL
-if (!is.null(params$facility_data)) { 
-  if (nrow(params$facility_data) > 0) {
-    start_date <- min(params$facility_data$date_visit)
-    end_date <- max(params$facility_data$date_visit)
+if (!is.null(facility_data)) { 
+  if (nrow(facility_data) > 0) {
+    start_date <- min(facility_data$date_visit)
+    end_date <- max(facility_data$date_visit)
   }
 }
 ```
@@ -56,8 +258,8 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 ### Load data
 
 ```{r export-screening-data}
-if (!is.null(params$facility_data)) { 
-  screening_data <- timci::extract_screening_data(params$facility_data)
+if (!is.null(facility_data)) { 
+  screening_data <- timci::extract_screening_data(facility_data)
   fn <- timci::export_df2xlsx(screening_data, params$rctls_dir, "01_timci_screening_data")
   fn <- timci::export_df2rds(screening_data, params$rctls_dir, "01_timci_screening_data")
   fn <- timci::export_df2csv(screening_data, params$rctls_dir, "01_timci_screening_data")
@@ -65,8 +267,8 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r split-pii-from-research-data}
-if (!is.null(params$facility_data)) {
-  res <- timci::extract_enrolled_participants(params$facility_data)
+if (!is.null(facility_data)) {
+  res <- timci::extract_enrolled_participants(facility_data)
   
   day0_data <- res[[1]]
   n_enrolled <- nrow(day0_data)
@@ -85,8 +287,8 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r export-visit-data}
-if (!is.null(params$facility_data)) {
-  study_data <- timci::extract_all_visits(params$facility_data)
+if (!is.null(facility_data)) {
+  study_data <- timci::extract_all_visits(facility_data)
   deidentified_facility_data <- timci::deidentify_data(study_data)
   fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
   fn <- timci::export_df2rds(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
@@ -99,7 +301,7 @@ if (!is.null(params$facility_data)) {
 #### Duplicates
 
 ```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
-if (!is.null(params$facility_data)) {
+if (!is.null(facility_data)) {
   duplicates <- timci::detect_id_duplicates(day0_data)
   if (length(duplicates) > 0) { 
        knitr::kable(duplicates, caption = "ID duplicates")
@@ -110,7 +312,7 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
-if (!is.null(params$facility_data)) {
+if (!is.null(facility_data)) {
   res <- timci::detect_name_duplicates(pii)
   duplicates <- res[[1]]
   if (nrow(duplicates) > 0) { 
@@ -133,8 +335,7 @@ if (!is.null(params$facility_data)) {
 
 ```{r load-RCT-LS-ODK-fu-day7-data}
 day7fu_data <- NULL
-if (crf_day7_fid %in% params$rct_ls_form_list) {
-  raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     res <- timci::format_day7_data(raw_day7fu_data)
     day7fu_data <- res[[1]]
@@ -171,8 +372,7 @@ if (!is.null(day7fu_data)) {
 
 ```{r load-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
-if (crf_hospit_fid %in% params$rct_ls_form_list) {
-  raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid)
+if (!is.null(raw_hospit_data)) {
   hospit_data <- process_hospital_data(raw_hospit_data)
 }
 ```
@@ -204,8 +404,7 @@ if (!is.null(hospit_data)) {
 
 ```{r load-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  if (crf_day28_fid %in% params$rct_ls_form_list) {
-    raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
+  if (!is.null(raw_day28fu_data)) {
     day28fu_data <- format_odk_metadata(raw_day28fu_data)
     fn <- timci::export_df2xlsx(day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
     fn <- timci::export_df2rds(day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
@@ -217,149 +416,102 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
 ## 1.4. Withdrawal data
 
 ```{r load-RCT-LS-ODK-withdrawal}
-if (wd_fid %in% params$rct_ls_form_list) {
-  raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid)
+if (!is.null(raw_withdrawal_data)) {
   withdrawal_data <- format_odk_metadata(raw_withdrawal_data)
 }
 ```
 
 # 2. Service Provision Assessment (SPA)
 
-```{r load-SPA-environment-variables}
-spa_pid <- Sys.getenv("TIMCI_SPA_PID")
-cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
-fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
-sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
-hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
-```
-
 ## 2.1. Caregiver exit interview
 
 ```{r cg-exit-interview-export}
-if (spa_pid %in% params$odkc_project_list) {
-  if (cgei_fid %in% ruODK::form_list(pid = spa_pid)$fid) {
-    raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
-    spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
-    fn <- timci::export_df2xlsx(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
-    fn <- timci::export_df2rds(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
-    fn <- timci::export_df2csv(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
-  }
+if (!is.null(spa_cgei_data)) {
+  fn <- timci::export_df2xlsx(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
+  fn <- timci::export_df2rds(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
+  fn <- timci::export_df2csv(spa_cgei_data, params$spa_dir, "03_timci_spa_exit_interview_data")
 }
 ```
 
 ## 2.2. Facility assessment
 
 ```{r facility-assessment-export}
-if (spa_pid %in% params$odkc_project_list) {
-  if (fa_fid %in% ruODK::form_list(pid = spa_pid)$fid) {
-    raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
-    spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
-    fn <- timci::export_df2xlsx(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
-    fn <- timci::export_df2rds(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
-    fn <- timci::export_df2csv(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
-  }
+if (!is.null(spa_fa_data)) {
+  fn <- timci::export_df2xlsx(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
+  fn <- timci::export_df2rds(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
+  fn <- timci::export_df2csv(spa_fa_data, params$spa_dir, "01_timci_spa_facility_assessment_data")
 }
 ```
 
 ## 2.3. Healthcare provider interview
 
 ```{r hcp-interview-export}
-if (spa_pid %in% params$odkc_project_list) {
-  if (hcpi_fid %in% ruODK::form_list(pid = spa_pid)$fid) {
-    raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
-    spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
-    fn <- timci::export_df2xlsx(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
-    fn <- timci::export_df2rds(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
-    fn <- timci::export_df2csv(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
-  }
+if (!is.null(spa_hcpi_data)) {
+  fn <- timci::export_df2xlsx(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
+  fn <- timci::export_df2rds(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
+  fn <- timci::export_df2csv(spa_hcpi_data, params$spa_dir, "02_timci_spa_provider_interview_data")
 }
 ```
 
 ## 2.4. Sick child observation protocol
 
 ```{r sick-child-observation-export}
-if (spa_pid %in% params$odkc_project_list) {
-  if (sco_fid %in% ruODK::form_list(pid = spa_pid)$fid) {
-    raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
-    spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
-    fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2rds(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2csv(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  }
+if (!is.null(spa_sco_data)) {
+  fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+  fn <- timci::export_df2rds(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+  fn <- timci::export_df2csv(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
 }
 ```
 
 # 3. Qualitative studies
 
-```{r qual-setup}
-cpid <- Sys.getenv("TIMCI_QUAL_PID")
-cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
-cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
-cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
-```
-
 ## 3.1. Caregiver in-depth interview
 
 ```{r cg-idi-invitation-export}
-if (cpid %in% params$odkc_project_list) {
-  if (cgidi1_fid %in% ruODK::form_list(pid = cpid)$fid) {
-    raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = cpid,
-                                                             fid = cgidi1_fid)
-    cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
-    fn <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
-  }
+if (!is.null(cgidi_invitation_data)) {
+  fn <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
 }
 ```
 
 ```{r cg-idi-encryption-export}
-if (cpid %in% params$odkc_project_list) {
-  if (cgidi2_fid %in% ruODK::form_list(pid = cpid)$fid) {
-    raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = cpid,
-                                                             fid = cgidi2_fid)
-    cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
-    fn <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
-  }
+if (!is.null(cgidi_encryption_data)) {
+  fn <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
 }
 ```
 
 ```{r cg-idi-interview-export}
-if (cpid %in% params$odkc_project_list) {
-  if (cgidi3_fid %in% ruODK::form_list(pid = cpid)$fid) {
-    raw_cgidi_interview_zip <- ruODK::submission_export(pid = cpid,
-                                                        fid = cgidi3_fid)
-    cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
-    fn <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
+if (!is.null(cgidi_interview_data)) {
+  fn <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
+
+  sl <- ruODK::submission_list(pid = qpid,
+                               fid = cgidi3_fid)
   
-    sl <- ruODK::submission_list(pid = cpid,
-                                 fid = cgidi3_fid)
+  # Loop on all rows
+  for (i in 1:nrow(sl)) {
+    crow <- cgidi_interview_data[i,]
+    uuid <- crow$'meta-instanceID'
+    cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
+    print(paste0("Participant: ", crow$'identification-idiidm'))
+    dir.create(cpath, showWarnings = FALSE)
+    # Create a new dataframe using the transpose of crow
+    tcrow <- as.data.frame(t(as.matrix(crow)))
+    names(tcrow)[names(tcrow) == "V1"] <- "values"
+    fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
+    openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
     
-    # Loop on all rows
-    for (i in 1:nrow(sl)) {
-      crow <- cgidi_interview_data[i,]
-      uuid <- crow$'meta-instanceID'
-      cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
-      print(paste0("Participant: ", crow$'identification-idiidm'))
-      dir.create(cpath, showWarnings = FALSE)
-      # Create a new dataframe using the transpose of crow
-      tcrow <- as.data.frame(t(as.matrix(crow)))
-      names(tcrow)[names(tcrow) == "V1"] <- "values"
-      fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
-      openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
-      
-      # Download attachments
-      al <- ruODK::get_one_submission_attachment_list(pid = cpid,
-                                                      fid = cgidi3_fid,
-                                                      uuid)
-      for (j in 1:nrow(al)) {
-        aid <- al$name[[j]]
-        print(paste0("Attachment: ", aid))
-        ruODK::attachment_get(pid = cpid,
-                              fid = cgidi3_fid,
-                              uuid, 
-                              aid,
-                              local_dir = cpath)
-        }
-      }
+    # Download attachments
+    al <- ruODK::get_one_submission_attachment_list(pid = qpid,
+                                                    fid = cgidi3_fid,
+                                                    uuid)
+    for (j in 1:nrow(al)) {
+      aid <- al$name[[j]]
+      print(paste0("Attachment: ", aid))
+      ruODK::attachment_get(pid = qpid,
+                            fid = cgidi3_fid,
+                            uuid, 
+                            aid,
+                            local_dir = cpath)
     }
+  }
 }
 ```

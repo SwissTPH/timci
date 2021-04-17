@@ -4,7 +4,6 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: "."
-  rct_ls_form_list: NULL
   pii: NULL
   raw_day7fu_data: NULL
   raw_withdrawal_data: NULL
@@ -20,7 +19,6 @@ library(qrcode)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
-crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
 ```
 
 ```{r output-directory}

@@ -23,7 +23,7 @@ export_df2xlsx <- function(df, dirname, prefix) {
 export_df2csv <- function(df, dirname, prefix) {
 
   fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".csv", sep = ""))
-  write.csv(df, file = fname, row.names = FALSE)
+  write.csv(df, file = fname, row.names = FALSE, quote = FALSE)
   fname
 
 }

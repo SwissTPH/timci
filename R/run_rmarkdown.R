@@ -60,6 +60,9 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   #logs <- ruODK::audit_get()
   #print(logs)
 
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+
+  # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
   print(crf_facility_fid)
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
@@ -67,10 +70,20 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   if (Sys.getenv('TIMCI_IS_RCT') == 1) {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
-  wd_fid <- Sys.getenv("TIMCI_WD_FID")
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
-  main_study <- Sys.getenv("TIMCI_MAIN_STUDY")
-  form_list <- ruODK::form_list()$fid
+
+  # SPA environment variables
+  spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+  cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
+  fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
+  sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
+  hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+
+  # Qualitative environment variables
+  qpid <- Sys.getenv("TIMCI_QUAL_PID")
+  cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
+  cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
+  cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
   #######################
   # Load TIMCI ODK data #
@@ -78,6 +91,18 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   # List of forms visible in the RCT / LS project
   rct_ls_form_list <- ruODK::form_list()$fid
+
+  # List of forms visible in the SPA project
+  spa_form_list <- NULL
+  if (spa_pid %in% odkc_project_list) {
+    spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
+  }
+
+  # List of forms visible in the qualitative project
+  qual_form_list <- NULL
+  if (qpid %in% odkc_project_list) {
+    qual_form_list <- ruODK::form_list(pid = qpid)$fid
+  }
 
   # Load facility data
   print("Load facility data")
@@ -89,42 +114,115 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
-  if (crf_day7_fid %in% form_list) {
+  if (crf_day7_fid %in% rct_ls_form_list) {
     raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
                                                    download = FALSE)
   }
 
-  print("Load raw hospital visit data")
+  # Load hospital visit follow-up data
+  print("Load hospital visit data")
   raw_hospit_data <- NULL
-  if (crf_hospit_fid %in% form_list) {
+  if (crf_hospit_fid %in% rct_ls_form_list) {
     raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
                                                    download = FALSE)
   }
 
+  # Load day 28 follow-up data
+  raw_day28fu_data <- NULL
   if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-    print("Load raw day 28 follow-up data")
-    raw_day28fu_data <- NULL
-    if (crf_day28_fid %in% form_list) {
+    print("Load day 28 follow-up data")
+    if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
                                                       download = FALSE)
     }
   }
 
+  # Load widthdrawal data
   print("Load withdrawal data")
-  if (wd_fid %in% form_list) {
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
     raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
                                                        download = FALSE)
-  } else {
-    raw_withdrawal_data <- NULL
   }
 
+  # Load weekly facility assessment data
   print("Load weekly facility assessment data")
+  wfa_data <- NULL
   if (crf_wfa_fid %in% rct_ls_form_list) {
     raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
                                                 download = FALSE)
     wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-  } else {
-    wfa_data <- NULL
+  }
+
+  # Load SPA data
+  spa_cgei_data <- NULL
+  spa_fa_data <- NULL
+  spa_hcpi_data <- NULL
+  spa_sco_data <- NULL
+
+  if (spa_pid %in% odkc_project_list) {
+
+    # Load SPA caregiver exit interview data
+    print("Load SPA caregiver exit interview data")
+    if (cgei_fid %in% spa_form_list) {
+      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
+      spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
+    }
+
+    # Load SPA facility assessment data
+    print("Load SPA facility assessment data")
+    if (fa_fid %in% spa_form_list) {
+      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
+      spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
+    }
+
+    # Load SPA healthcare provider interview data
+    print("Load SPA healthcare provider interview data")
+    if (hcpi_fid %in% spa_form_list) {
+      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
+      spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
+    }
+
+    # Load SPA sick child observation protocol data
+    print("Load SPA sick child observation protocol data")
+    if (sco_fid %in% spa_form_list) {
+      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
+      spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+    }
+
+  }
+
+  # Load qualitative data
+  cgidi_invitation_data <- NULL
+  cgidi_encryption_data <- NULL
+  cgidi_interview_data <- NULL
+
+  if (qpid %in% odkc_project_list) {
+
+    # Load caregiver IDI invitation data
+    print("Load caregiver IDI invitation data")
+    if (cgidi1_fid %in% qual_form_list) {
+      raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
+                                                               fid = cgidi1_fid)
+      cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+    }
+
+    # Load caregiver IDI encryption list
+    print("Load caregiver IDI encryption list")
+    if (cgidi2_fid %in% qual_form_list) {
+      raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
+                                                               fid = cgidi2_fid)
+      cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+    }
+
+    # Load caregiver IDI interview data
+    print("Load caregiver IDI interview data")
+    if (cgidi3_fid %in% qual_form_list) {
+      raw_cgidi_interview_zip <- ruODK::submission_export(pid = qpid,
+                                                          fid = cgidi3_fid)
+      cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
+    }
+
   }
 
   ###########################
@@ -135,9 +233,18 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                  participant_zip = participant_zip,
                  spa_dir = spa_db_dir,
                  qual1_dir = qual1_dir,
-                 odkc_project_list = odkc_project_list,
-                 rct_ls_form_list = rct_ls_form_list,
-                 facility_data = facility_data)
+                 facility_data = facility_data,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_day28fu_data = raw_day28fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 spa_cgei_data = spa_cgei_data,
+                 spa_fa_data = spa_fa_data,
+                 spa_hcpi_data = spa_hcpi_data,
+                 spa_sco_data = spa_sco_data,
+                 cgidi_invitation_data = cgidi_invitation_data,
+                 cgidi_encryption_data = cgidi_encryption_data,
+                 cgidi_interview_data = cgidi_interview_data)
   generate_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
 
   #########################
@@ -146,7 +253,10 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   params <- list(research_facilities = research_facilities,
                  facility_data = facility_data,
-                 raw_day7fu_data = raw_day7fu_data)
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_day28fu_data = raw_day28fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data)
   generate_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
 
   #######################
@@ -155,7 +265,6 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   for (fid in research_facilities$facility_id) {
     params <- list(output_dir = fu_dir,
-                   rct_ls_form_list = rct_ls_form_list,
                    pii = pii,
                    raw_day7fu_data = raw_day7fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
