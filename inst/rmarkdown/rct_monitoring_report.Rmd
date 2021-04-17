@@ -4,6 +4,7 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   research_facilities: data.frame(deviceid = character(0), district = character(0), facility = character(0))
+  facility_data: NULL
 output:
   html_document: default
   word_document:
@@ -12,23 +13,14 @@ output:
 ---
 
 ```{r setup-rmd, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(magrittr)
 library(readxl)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
 ```
 
-```{r setup-ruODK, echo=FALSE}
-ruODK::ru_setup(
-  svc = Sys.getenv("ODKC_SVC"),
-  un = Sys.getenv("ODKC_UN"),
-  pw = Sys.getenv("ODKC_PW"),
-  tz = Sys.getenv("TZ"),
-  verbose = FALSE # Can be switched to TRUE for demo or debugging
-)
-```
-
-```{r load-RCT-LS-environment-variables, echo=FALSE}
-crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+```{r load-RCT-LS-environment-variables}
 crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
 crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
@@ -38,10 +30,7 @@ wd_fid <- Sys.getenv("TIMCI_WD_FID")
 form_list <- ruODK::form_list()$fid
 ```
 
-```{r load-RCT-LS-ODK-facility-data, echo=FALSE}
-raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
-                                                 download = FALSE)
-
+```{r load-RCT-LS-ODK-facility-data}
 raw_day7fu_data <- NULL
 if (crf_day7_fid %in% form_list) {
   raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
@@ -69,14 +58,12 @@ raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
 }
 ```
 
-```{r process-facility-data, echo=FALSE, warning=FALSE}
-facility_data <- NULL
+```{r process-facility-data}
 start_date <- NULL
 end_date <- NULL
-if (nrow(raw_facility_data) > 0) {
-  facility_data <- timci::process_facility_data(raw_facility_data)
-  start_date <- min(facility_data$date_visit)
-  end_date <- max(facility_data$date_visit)
+if (nrow(params$facility_data) > 0) {
+  start_date <- min(params$facility_data$date_visit)
+  end_date <- max(params$facility_data$date_visit)
 }
 ```
 
@@ -85,19 +72,19 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 # 1. Submissions
 
 ## Total number of submissions per form
-```{r submissions-1, echo=FALSE, results = "asis"}
+```{r submissions-1, results = "asis"}
 
-n_total <-0
+n_total <- 0
 
 # Screening data
-n_screened <- nrow(facility_data)
-screening_data <- timci::extract_screening_data(facility_data)
+n_screened <- nrow(params$facility_data)
+screening_data <- timci::extract_screening_data(params$facility_data)
 visit_names <- c("Screening")
 submissions <- c(n_screened)
 n_total <- n_total + n_screened
 
-study_data <- timci::extract_all_visits(facility_data)
-res <- timci::extract_enrolled_participants(facility_data)
+study_data <- timci::extract_all_visits(params$facility_data)
+res <- timci::extract_enrolled_participants(params$facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
@@ -155,10 +142,10 @@ knitr::kable(visits, col.names = c("Visit", "N"))
 ## Number of submissions during the last 30 days
 
 ### Screening
-```{r, echo=FALSE, warning=FALSE, results='asis'}
+```{r, results='asis'}
 w <- 30
-if (nrow(facility_data) > 0) {
-  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
+if (nrow(params$facility_data) > 0) {
+  p <- timci::generate_day_bar_plot(params$facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
   plot(p)
   ylim <- layer_scales(p)$y$get_limits()
 } else{
@@ -167,7 +154,7 @@ if (nrow(facility_data) > 0) {
 ```
 
 ### Baseline and repeat visits
-```{r, echo=FALSE, warning=FALSE, results='asis'}
+```{r, results='asis'}
 w <- 30
 # Frequency
 if (nrow(baseline_data) > 0) {
@@ -186,7 +173,7 @@ if (nrow(baseline_data) > 0) {
 ```
 
 ### Day 7 phone call
-```{r, echo=FALSE, warning=FALSE, results='asis'}
+```{r, results='asis'}
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
@@ -197,7 +184,7 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ### Hospital visit
-```{r, echo=FALSE, warning=FALSE, results='asis'}
+```{r, results='asis'}
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
     plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
@@ -207,7 +194,7 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
-```{r, echo=FALSE, warning=FALSE, results='asis'}
+```{r, results='asis'}
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('### Day 28 phone call\n\n')
   if (!is.null(raw_day28fu_data)) {
@@ -224,21 +211,23 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
 
 ### Screening
 
-```{r, echo=FALSE}
-timci::generate_calendar_heatmap(facility_data, date_visit)
+```{r}
+timci::generate_calendar_heatmap(params$facility_data, date_visit)
 ```
 
 ### Enrolment
 
-```{r, echo=FALSE}
-timci::generate_calendar_heatmap(baseline_data, date_visit)
+```{r}
+if (nrow(baseline_data) > 0) {
+  timci::generate_calendar_heatmap(baseline_data, date_visit)
+}
 ```
 
 # 2. Participants
-```{r, echo=FALSE, results = "asis"}
+```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-all <- data.frame(facility_data)
+all <- data.frame(params$facility_data)
 all$sickness[is.na(all$sickness)] <- 0
 all$inpatient[is.na(all$inpatient)] <- 0
 all$consult_reason[is.na(all$consult_reason)] <- 0
@@ -272,19 +261,19 @@ st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistic
 print(cbind(st, st1))
 ```
 
-```{r, echo=FALSE}
+```{r}
 deidentified_facility_data <- timci::deidentify_data(study_data)
 ```
 
 ## Screening by facility
-```{r, echo=FALSE, warning=FALSE}
-stats <- timci::get_summary_by_facility(facility_data)
+```{r}
+stats <- timci::get_summary_by_facility(params$facility_data)
 stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
 timci::generate_enrolment_hist(stats, facility, screened, 5, 15, "Number of children screened", "facilities")
 ```
 
 ## Enrolment by facility
-```{r, echo=FALSE, warning=FALSE}
+```{r}
 timci::generate_enrolment_hist(stats, facility, children, 5, 15, "Number of children enrolled", "facilities")
 ```
 
@@ -292,7 +281,7 @@ timci::generate_enrolment_hist(stats, facility, children, 5, 15, "Number of chil
 
 ### Enrolment versus global target
 
-```{r, echo=FALSE, warning=FALSE}
+```{r}
 timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\n(excl. repeat visits)", 100, 60, 85)
 ```
   
@@ -301,8 +290,8 @@ timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\
 
 
 ### Non-enrolment causes
-```{r, echo=FALSE}
-non_enrolment_causes <- timci::count_screening(facility_data)
+```{r}
+non_enrolment_causes <- timci::count_screening(params$facility_data)
 nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
 plot(nec_pie_chart)
 ```
@@ -319,35 +308,39 @@ plot(nec_pie_chart)
 
 ### Referrals
 
-```{r, echo=FALSE, results = "asis"}
+```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-all <- data.frame(study_data)
-all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
-
-summary_statistics <- list(
-  "Referral" = list(
-    "Reported (caregiver)" = ~qwraps2::n_perc(referral_cg == 1 | referral_cg == 2, 2),
-    "Declined (caregiver)" = ~qwraps2::n_perc(referral_cg == 97, 2),
-    "Reported (registry)" = ~qwraps2::n_perc(referral_hf == 1 | referral_hf == 2 | referral_hf == 3, 2),
-    "Inpatient admission (registry)" = ~qwraps2::n_perc(referral_hf == 4, 2)
-    )
-)
-referral_summary <- qwraps2::summary_table(all, summary_statistics)
-referral_summary1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
-print(cbind(referral_summary, referral_summary1))
+if (nrow(baseline_data) > 0) {
+  all <- data.frame(study_data)
+  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+  
+  summary_statistics <- list(
+    "Referral" = list(
+      "Reported (caregiver)" = ~qwraps2::n_perc(referral_cg == 1 | referral_cg == 2, 2),
+      "Declined (caregiver)" = ~qwraps2::n_perc(referral_cg == 97, 2),
+      "Reported (registry)" = ~qwraps2::n_perc(referral_hf == 1 | referral_hf == 2 | referral_hf == 3, 2),
+      "Inpatient admission (registry)" = ~qwraps2::n_perc(referral_hf == 4, 2)
+      )
+  )
+  referral_summary <- qwraps2::summary_table(all, summary_statistics)
+  referral_summary1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
+  print(cbind(referral_summary, referral_summary1))
+}
 ```
 
-```{r, echo=FALSE}
-referral_data <- timci::extract_referrals(deidentified_facility_data)
-n_referrals <- nrow(referral_data)
-referral_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Referred at Day 0", "Not referred at Day 0"), value = c(n_referrals, n_enrolled - n_referrals)))
-plot(referral_pie_chart)
+```{r}
+if (nrow(baseline_data) > 0) {
+  referral_data <- timci::extract_referrals(deidentified_facility_data)
+  n_referrals <- nrow(referral_data)
+  referral_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Referred at Day 0", "Not referred at Day 0"), value = c(n_referrals, n_enrolled - n_referrals)))
+  plot(referral_pie_chart)
+}
 ```
 
 # 4. Day 7 follow-up
 
-```{r, echo=FALSE}
+```{r}
 wmin <- 7
 wmax <- 10
 if (nrow(raw_day7fu_data) > 0) {
@@ -358,7 +351,7 @@ if (nrow(raw_day7fu_data) > 0) {
 
 The valid Day 7 follow-up period is **`r wmin`** to **`r wmax`** days.
 
-```{r, echo=FALSE, warning=FALSE}
+```{r}
 if (nrow(raw_day7fu_data) > 0) {
   n_reached_day7fu <- sum(!is.na(raw_day7fu_data$a1_contact_a4_d_1b) & (raw_day7fu_data$a1_contact_a4_d_1b == 1))
   n_valid_day7fu <- sum((raw_day7fu_data$days >= wmin) & (raw_day7fu_data$days < wmax))
@@ -372,7 +365,7 @@ timci::plot_enrolment_gauge(n_reached_day7fu/n_enrolled, "Day 7 follow-up rate",
 timci::plot_enrolment_gauge(n_valid_day7fu/n_enrolled, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
 ```
 
-```{r, echo=FALSE, results = "asis"}
+```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
 if (nrow(raw_day7fu_data) > 0) {
@@ -404,7 +397,7 @@ if (nrow(raw_day7fu_data) > 0) {
 ```
 # 5. Hospital follow-up
 
-```{r, echo=FALSE, results = "asis"}
+```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
 if (Sys.getenv('TIMCI_IS_RCT') == 1) {

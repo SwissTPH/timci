@@ -39,5 +39,6 @@ Imports:
     fs,
     lubridate,
     httr,
-    plyr
+    plyr,
+    ruODK
 RoxygenNote: 7.1.1

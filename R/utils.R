@@ -13,6 +13,22 @@ export_df2xlsx <- function(df, dirname, prefix) {
 
 }
 
+#' Write dataframe to a CSV file format, with a filename consisting of a prefix and a date stamp
+#'
+#' @param df dataframe.
+#' @param dirname directory where the RDS file will be created.
+#' @param prefix filename prefix
+#' @export
+
+export_df2csv <- function(df, dirname, prefix) {
+
+  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".csv", sep = ""))
+  write.csv(df, file = fname, row.names = FALSE)
+  fname
+
+}
+
+
 #' Write dataframe to an RDS file format, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.

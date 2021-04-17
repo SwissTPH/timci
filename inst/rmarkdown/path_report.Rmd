@@ -4,6 +4,8 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   path_dir: "."
+  facility_data: NULL
+  wfa_data: NULL
 output:
   html_document: default
   word_document:
@@ -11,55 +13,41 @@ output:
     fig_width: 7.5
 ---
 
-```{r setup, include=FALSE, warning=FALSE}
+```{r setup-rmd, include=FALSE, warning=FALSE}
 library(timci)
 library(magrittr)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
 ```
 
-```{r ruODK-setup, echo=FALSE}
-ruODK::ru_setup(
-  svc = Sys.getenv("ODKC_SVC"),
-  un = Sys.getenv("ODKC_UN"),
-  pw = Sys.getenv("ODKC_PW"),
-  tz = Sys.getenv("TZ"),
-  verbose = FALSE # Can be switched to TRUE for demo or debugging
-)
+```{r}
+stats <- timci::get_summary_by_facility(params$facility_data)
 ```
 
-```{r, echo=FALSE}
-crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
-                                                 download = FALSE)
-facility_data <- timci::process_facility_data(raw_facility_data)
-stats <- timci::get_summary_by_facility(facility_data)
-```
-
-```{r, echo=FALSE}
-crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
-raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
-                                            download = FALSE)
-wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-```
-
-```{r, echo=FALSE}
-last_data <- extract_last_fa_data(wfa_data, stats)
-soc_data <- last_data[last_data$'page1_arm' == 0,]
-pox_data <- last_data[last_data$'page1_arm' == 1,]
-cdsa_data <- last_data[last_data$'page1_arm' == 2,]
-```
-
-```{r, echo=FALSE, results='asis'}
-if (nrow(pox_data) > 0) {
-  cat('# Facilities with pulse oximetry alone\n\n')
-  display_weekly_fa_data_per_facility(pox_data, wfa_data)
+```{r, results = "asis"}
+form_list <- ruODK::form_list()$fid
+if (!is.null(params$wfa_data)) {
+  
+  if (nrow(params$wfa_data) > 0) {
+    
+    last_data <- extract_last_fa_data(params$wfa_data, stats)
+    soc_data <- last_data[last_data$'page1_arm' == 0,]
+    pox_data <- last_data[last_data$'page1_arm' == 1,]
+    cdsa_data <- last_data[last_data$'page1_arm' == 2,]
+    
+    if (nrow(pox_data) > 0) {
+      cat('# Facilities with pulse oximetry alone\n\n')
+      display_weekly_fa_data_per_facility(pox_data, params$wfa_data)
+    }
+    if (nrow(cdsa_data) > 0) {
+      cat('# Facilities with pulse oximetry and CDSA\n\n')
+      display_weekly_fa_data_per_facility(cdsa_data, params$wfa_data)
+    }
+    
+    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), params$path_dir, "path_data")
+    
+  }
+  
 }
-if (nrow(cdsa_data) > 0) {
-  cat('# Facilities with pulse oximetry and CDSA\n\n')
-  display_weekly_fa_data_per_facility(cdsa_data, wfa_data)
-}
-```
-
-```{r xlsx-export, echo=FALSE}
-tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), params$path_dir, "path_data")
 ```
