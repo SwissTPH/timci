@@ -1,51 +1,43 @@
 ---
-title: "TIMCI Day 7 follow-up log"
+title: "TIMCI Day 7 follow-up - Daily log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: "."
-  facility_data: NULL
+  rct_ls_form_list: NULL
+  pii: NULL
+  raw_day7fu_data: NULL
+  raw_withdrawal_data: NULL
 output:
   html_document: default
   word_document:
-    reference_docx: word_styles2.docx
+    reference_docx: word_styles1.docx
 ---
 
-```{r setup-rmd, include=FALSE}
+```{r setup, include=FALSE}
 library(qrcode)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
-```
-
-```{r load-Day7-fu-environment-variables}
 crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-wd_fid <- Sys.getenv("TIMCI_WD_FID")
-form_list <- ruODK::form_list()$fid
 ```
 
-```{r}
+```{r output-directory}
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
-
-# Load contact information
-pii <- timci::extract_enrolled_participants(params$facility_data)[[2]]
-
-raw_day7fu_data <- NULL
-if (crf_day7_fid %in% form_list) {
-  raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
-}
 ```
 
 ```{r}
 day7fu <- NULL
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 7, 9)
-    failed_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[2]]
+if (!is.null(params$raw_day7fu_data)) {
+  if (nrow(params$raw_day7fu_data) > 0) {
+    
+    day7fu <- timci::generate_fu_log(params$pii, params$raw_day7fu_data, 7, 9)
+    failed_day7fu_data <- timci::format_day7_data(params$raw_day7fu_data)[[2]]
     tmp <- timci::export_df2xlsx(failed_day7fu_data, params$output_dir, "day7_unsuccessful_calls")
-    day7lost <- timci::generate_fu_log(pii, raw_day7fu_data, 10, 2000)
+    day7lost <- timci::generate_fu_log(params$pii, params$raw_day7fu_data, 10, 2000)
     tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "day7_lost_to_followup")
+    
   }
 }
 ```
@@ -56,47 +48,11 @@ csv7_fname <- file.path(params$output_dir, "odk_external_files", "day7fu.csv")
 write.csv(day7fu, csv7_fname, row.names = FALSE, quote = FALSE)
 ```
 
-```{r}
-if (!is.null(day7fu)) {
-  for (i in 1:nrow(day7fu)) {
-    pid <- toString(day7fu[i,'name'])
-    png_file <- file.path(tempdir(), paste0(pid,".png"))
-    png(png_file)
-    qrcode::qrcode_gen(pid)
-    dev.off()
-    }
-  
-  df <- day7fu %>%
-    dplyr::mutate(
-      code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
-      ) %>%
-    dplyr::select('code', dplyr::everything()) %>%
-    dplyr::rename('id' = 'name',
-                  'child' = 'label',
-                  'date' = 'enroldate',
-                  'contact' = 'phonenb')
-  
-  df$caregiver <- paste(df$caregiver,
-                        paste0('(',df$relationship,')'))
-  df$child <- paste(df$child,
-                    paste0('(',df$sex,')'))
-  df$contact <- paste(df$contact,
-                    paste0('(',df$location,')'))
-  drops <- c("mother", "relationship", "sex", "location")
-  df <- df[ , !(names(df) %in% drops)]
-  
-  # Split tables by facilities
-  df_by_facility <- split(df, df$id)
-  
-  df %>% knitr::kable()
-}
-```
-
 # Upload list of participants on the ODK Central server
 
 ```{r}
 current_version <- "N/A"
-if (crf_day7_fid %in% form_list) {
+if (crf_day7_fid %in% params$rct_ls_form_list) {
   # Get form details
   cform <- ruODK::form_detail(
     pid = ruODK::get_default_pid(),
@@ -115,13 +71,12 @@ draft_response <- NULL
 csv_upload_response <- NULL
 new_version <- "N/A"
 publication_response <- NULL
-if (crf_day7_fid %in% form_list) {
+if (crf_day7_fid %in% params$rct_ls_form_list) {
   form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", crf_day7_fid)
   # Create a new draft of the form
   draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
   # Upload the new CSV created as a form attachment
   csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv7_fname)
-  print(csv_upload_response)
   # Publish a draft form
   new_version <- as.character(current_version + 0.000001)
   publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)

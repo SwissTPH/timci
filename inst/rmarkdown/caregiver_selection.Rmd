@@ -4,7 +4,8 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   qual1_dir: "."
-  facility_data: NULL
+  rct_ls_form_list: NULL
+  pii: NULL
 output:
   html_document: default
   word_document:
@@ -19,18 +20,14 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r load-caregiver-selection-environment-variables}
 crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-form_list <- ruODK::form_list()$fid
 ```
 
 ```{r}
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$qual1_dir, "odk_external_files"), showWarnings = FALSE)
 
-# Load contact information
-pii <- timci::extract_enrolled_participants(params$facility_data)[[2]]
-
 day7fu_data <- NULL
-if (crf_day7_fid %in% form_list) {
+if (crf_day7_fid %in% params$rct_ls_form_list) {
   raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
   if (nrow(raw_day7fu_data) > 0) {
     res <- format_day7_data(raw_day7fu_data)
@@ -42,7 +39,7 @@ if (crf_day7_fid %in% form_list) {
 ```{r}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
-    cg_selection <- timci::generate_cg_log(pii, day7fu_data)
+    cg_selection <- timci::generate_cg_log(params$pii, day7fu_data)
     tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_participants")
     csv_fname <- file.path(params$qual1_dir, "odk_external_files", "cg_idi_participants.csv")
     write.csv(cg_selection, csv_fname, row.names = FALSE, quote = FALSE)

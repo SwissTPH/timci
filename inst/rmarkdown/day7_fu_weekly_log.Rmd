@@ -1,0 +1,74 @@
+---
+title: "TIMCI Day 7 follow-up - `r params$facility_id` Weekly log"
+author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+params:
+  output_dir: "."
+  rct_ls_form_list: NULL
+  pii: NULL
+  raw_day7fu_data: NULL
+  raw_withdrawal_data: NULL
+  facility_id: NULL
+output:
+  html_document: default
+  word_document:
+    reference_docx: word_styles2.docx
+---
+
+```{r setup, include=FALSE}
+library(qrcode)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+```
+
+```{r output-directory}
+# Create `odk_external_files` folder if it does not exist
+dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
+```
+
+```{r}
+day7fu <- NULL
+if (!is.null(params$raw_day7fu_data)) {
+  if (nrow(params$raw_day7fu_data) > 0) {
+    
+    day7fu <- timci::generate_fu_log(params$pii, params$raw_day7fu_data, 7, 9)
+    
+  }
+}
+```
+
+```{r}
+if (!is.null(day7fu)) {
+  
+  for (i in 1:nrow(day7fu)) {
+    pid <- toString(day7fu[i,'name'])
+    png_file <- file.path(tempdir(), paste0(pid,".png"))
+    png(png_file)
+    qrcode::qrcode_gen(pid)
+    dev.off()
+  }
+  
+  df <- day7fu %>%
+    dplyr::mutate(
+      code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
+      ) %>%
+    dplyr::select('code', dplyr::everything()) %>%
+    dplyr::rename('id' = 'name',
+                  'child' = 'label',
+                  'date' = 'enroldate',
+                  'contact' = 'phonenb')
+  
+  df$caregiver <- paste(df$caregiver,
+                        paste0('(',df$relationship,')'))
+  df$child <- paste(df$child,
+                    paste0('(',df$sex,')'))
+  df$contact <- paste(df$contact,
+                    paste0('(',df$location,')'))
+  drops <- c("mother", "relationship", "sex", "location")
+  df <- df[ , !(names(df) %in% drops)]
+  
+  df %>% knitr::kable()
+}
+```

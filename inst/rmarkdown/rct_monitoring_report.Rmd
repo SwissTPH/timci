@@ -5,6 +5,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   research_facilities: data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
+  raw_day7fu_data: NULL
 output:
   html_document: default
   word_document:
@@ -269,12 +270,12 @@ deidentified_facility_data <- timci::deidentify_data(study_data)
 ```{r}
 stats <- timci::get_summary_by_facility(params$facility_data)
 stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
-timci::generate_enrolment_hist(stats, facility, screened, 5, 15, "Number of children screened", "facilities")
+timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
 ```
 
 ## Enrolment by facility
 ```{r}
-timci::generate_enrolment_hist(stats, facility, children, 5, 15, "Number of children enrolled", "facilities")
+timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
 ```
 
 ## Enrolment heatmap by facility

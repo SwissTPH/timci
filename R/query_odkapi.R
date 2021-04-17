@@ -28,10 +28,11 @@ create_odkc_draft_form <- function(un, pw, form_url) {
 upload_odkc_csv_attachment <- function(un, pw, form_url, csv_path) {
 
   csv_fn <- basename(csv_path)
-  httr::RETRY("POST",
-              paste0(form_url, "/draft/attachments/", csv_fn),
-              body = httr::upload_file(csv_path),
-              httr::authenticate(un, pw))
+  response <- httr::RETRY("POST",
+                          paste0(form_url, "/draft/attachments/", csv_fn),
+                          body = httr::upload_file(csv_path),
+                          httr::authenticate(un, pw))
+  httr::content(response)
 
 }
 

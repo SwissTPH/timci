@@ -4,7 +4,9 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: "."
-  facility_data: NULL
+  rct_ls_form_list: NULL
+  pii: NULL
+  raw_day28fu_data: NULL
 output:
   html_document: default
   word_document:
@@ -21,29 +23,20 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r load-Day28-fu-environment-variables}
 crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
 wd_fid <- Sys.getenv("TIMCI_WD_FID")
-form_list <- ruODK::form_list()$fid
 ```
 
 ```{r}
 
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
-
-# Load contact information
-pii <- timci::extract_enrolled_participants(params$facility_data)[[2]]
-
-raw_day28fu_data <- NULL
-if (crf_day28_fid %in% form_list) {
-  raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid)
-}
 ```
 
 ```{r}
 day28fu <- NULL
-if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
-    day28fu <- timci::generate_fu_log(pii, raw_day28fu_data, 28, 32)
-    day28lost <- timci::generate_fu_log(pii, raw_day28fu_data, 33, 2000)
+if (!is.null(params$raw_day28fu_data)) {
+  if (nrow(params$raw_day28fu_data) > 0) {
+    day28fu <- timci::generate_fu_log(params$pii, params$raw_day28fu_data, 28, 32)
+    day28lost <- timci::generate_fu_log(params$pii, params$raw_day28fu_data, 33, 2000)
     tmp <- timci::export_df2xlsx(day28lost, params$output_dir, "day28_lost_to_followup")
   }
 }
@@ -91,7 +84,7 @@ if (!is.null(day28fu)) {
 
 ```{r}
 current_version <- "N/A"
-if (crf_day28_fid %in% form_list) {
+if (crf_day28_fid %in% params$rct_ls_form_list) {
   # Get form details
   cform <- ruODK::form_detail(
     pid = ruODK::get_default_pid(),
@@ -110,7 +103,7 @@ draft_response <- NULL
 csv_upload_response <- NULL
 new_version <- "N/A"
 publication_response <- NULL
-if (crf_day28_fid %in% form_list) {
+if (crf_day28_fid %in% params$rct_ls_form_list) {
   form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", crf_day28_fid)
   # Create a draft form
   draft_response <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)

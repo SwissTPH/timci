@@ -4,7 +4,7 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: "."
-  facility_data: NULL
+  pii: NULL
 output:
   html_document: default
   word_document:
@@ -28,9 +28,6 @@ form_list <- ruODK::form_list()$fid
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
 
-# Load contact information
-pii <- timci::extract_enrolled_participants(params$facility_data)[[2]]
-
 raw_hospit_data <- NULL
 if (crf_hospit_fid %in% form_list) {
   raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid)
@@ -41,8 +38,8 @@ if (crf_hospit_fid %in% form_list) {
 day7fu <- NULL
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
-    day7fu <- timci::generate_fu_log(pii, raw_hospit_data, 7, 9)
-    day7lost <- timci::generate_fu_log(pii, raw_hospit_data, 10, 2000)
+    day7fu <- timci::generate_fu_log(params$pii, raw_hospit_data, 7, 9)
+    day7lost <- timci::generate_fu_log(params$pii, raw_hospit_data, 10, 2000)
     tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "hospit_lost_to_followup")
   }
 }

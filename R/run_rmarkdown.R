@@ -72,18 +72,22 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   main_study <- Sys.getenv("TIMCI_MAIN_STUDY")
   form_list <- ruODK::form_list()$fid
 
-  ###########################
-  # Load TIMCI raw ODK data #
-  ###########################
+  #######################
+  # Load TIMCI ODK data #
+  #######################
 
   # List of forms visible in the RCT / LS project
   rct_ls_form_list <- ruODK::form_list()$fid
 
-  print("Load raw facility data")
+  # Load facility data
+  print("Load facility data")
   raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
   facility_data <- timci::process_facility_data(raw_facility_data)
 
-  print("Load raw day 7 follow-up data")
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  # Load day 7 follow-up data
+  print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
   if (crf_day7_fid %in% form_list) {
     raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
@@ -141,23 +145,36 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   #########################
 
   params <- list(research_facilities = research_facilities,
-                 facility_data = facility_data)
+                 facility_data = facility_data,
+                 raw_day7fu_data = raw_day7fu_data)
   generate_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
 
   #######################
   # Day 7 follow-up log #
   #######################
 
+  for (fid in research_facilities$facility_id) {
+    params <- list(output_dir = fu_dir,
+                   rct_ls_form_list = rct_ls_form_list,
+                   pii = pii,
+                   raw_day7fu_data = raw_day7fu_data,
+                   raw_withdrawal_data = raw_withdrawal_data,
+                   facility_id = fid)
+    generate_report(fu_dir, "day7_fu_weekly_log.Rmd", paste0("timci_day7_fu_log_", fid), params)
+  }
   params <- list(output_dir = fu_dir,
-                 facility_data = facility_data)
-  generate_report(fu_dir, "day7_fu_log.Rmd", "timci_day7_fu_log", params)
+                 rct_ls_form_list = rct_ls_form_list,
+                 pii = pii,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data)
+  generate_report(fu_dir, "day7_fu_daily_log.Rmd", "timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
   #################################
 
   params <- list(output_dir = fu_dir,
-                 facility_data = facility_data)
+                 pii = pii)
   generate_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
@@ -168,7 +185,9 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   is_rct <- Sys.getenv("TIMCI_IS_RCT")
   if (is_rct == 1) {
     params <- list(output_dir = fu_dir,
-                   facility_data = facility_data)
+                   rct_ls_form_list = rct_ls_form_list,
+                   pii = pii,
+                   raw_day28fu_data = raw_day28fu_data)
     generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", params)
   }
 
@@ -177,7 +196,8 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   ###################################
 
   params <- list(qual1_dir = qual1_dir,
-                 facility_data = facility_data)
+                 rct_ls_form_list = rct_ls_form_list,
+                 pii = pii)
   generate_report(fu_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
 
   ###################
