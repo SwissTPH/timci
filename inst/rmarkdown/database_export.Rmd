@@ -6,7 +6,7 @@ params:
   rctls_dir: "."
   participant_zip: "."
   spa_dir: "."
-  qual1_dir: "."
+  qual1_dir: NULL
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
@@ -36,6 +36,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
+
+if (!is.null(params$qual1_dir)) {
+  qual1_dir <- params$qual1_dir
+} else {
+  qual1_dir <- tempdir()
+}
 
 if (!is.null(params$facility_data)) {
   
@@ -469,19 +475,19 @@ if (!is.null(spa_sco_data)) {
 
 ```{r cg-idi-invitation-export}
 if (!is.null(cgidi_invitation_data)) {
-  fn <- timci::export_df2xlsx(cgidi_invitation_data, params$qual1_dir, "01_timci_cg_invitation_data")
+  fn <- timci::export_df2xlsx(cgidi_invitation_data, qual1_dir, "01_timci_cg_invitation_data")
 }
 ```
 
 ```{r cg-idi-encryption-export}
 if (!is.null(cgidi_encryption_data)) {
-  fn <- timci::export_df2xlsx(cgidi_encryption_data, params$qual1_dir, "02_timci_cg_encryption_data")
+  fn <- timci::export_df2xlsx(cgidi_encryption_data, qual1_dir, "02_timci_cg_encryption_data")
 }
 ```
 
 ```{r cg-idi-interview-export}
 if (!is.null(cgidi_interview_data)) {
-  fn <- timci::export_df2xlsx(cgidi_interview_data, params$qual1_dir, "03_timci_cg_interview_data")
+  fn <- timci::export_df2xlsx(cgidi_interview_data, qual1_dir, "03_timci_cg_interview_data")
 
   sl <- ruODK::submission_list(pid = qpid,
                                fid = cgidi3_fid)
@@ -490,7 +496,7 @@ if (!is.null(cgidi_interview_data)) {
   for (i in 1:nrow(sl)) {
     crow <- cgidi_interview_data[i,]
     uuid <- crow$'meta-instanceID'
-    cpath <- file.path(params$qual1_dir, crow$'identification-idiidm')
+    cpath <- file.path(qual1_dir, crow$'identification-idiidm')
     print(paste0("Participant: ", crow$'identification-idiidm'))
     dir.create(cpath, showWarnings = FALSE)
     # Create a new dataframe using the transpose of crow

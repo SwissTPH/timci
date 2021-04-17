@@ -3,35 +3,110 @@ title: "TIMCI Day 7 follow-up - `r params$facility_id` Weekly log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  output_dir: "."
+  output_dir: NULL
   pii: NULL
   raw_day7fu_data: NULL
   raw_withdrawal_data: NULL
-  facility_id: NULL
+  facility_id: "F0000"
 output:
   html_document: default
   word_document:
     reference_docx: word_styles2.docx
 ---
 
-```{r setup, include=FALSE}
+```{r setup-rmd, include=FALSE}
+
 library(qrcode)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
+
 ```
 
-```{r output-directory}
+```{r setup-variables}
+
+facility_id <- params$facility_id
+
+if (!is.null(params$output_dir)) {
+  output_dir <- params$output_dir
+} else {
+  output_dir <- tempdir()
+}
+
 # Create `odk_external_files` folder if it does not exist
-dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
+dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
+
+if (!is.null(params$pii)) {
+  
+  pii <- params$pii
+  raw_day7fu_data <- params$raw_day7fu_data
+  raw_withdrawal_data <- params$raw_withdrawal_data
+  
+} else {
+  
+  ################
+  # Set up ruODK #
+  ################
+  
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = TRUE # Can be switched to TRUE for demo or debugging
+  )
+
+  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+
+  # RCT / LS environment variables
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  print(crf_facility_fid)
+  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  # List of forms visible in the RCT / LS project
+  rct_ls_form_list <- ruODK::form_list()$fid
+
+  # Load facility data
+  print("Load facility data")
+  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+  facility_data <- timci::process_facility_data(raw_facility_data)
+
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  # Load day 7 follow-up data
+  print("Load day 7 follow-up data")
+  raw_day7fu_data <- NULL
+  if (crf_day7_fid %in% rct_ls_form_list) {
+    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+                                                   download = FALSE)
+  }
+
+  # Load widthdrawal data
+  print("Load withdrawal data")
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
+                                                       download = FALSE)
+  }
+  
+}
 ```
 
 ```{r}
 day7fu <- NULL
-if (!is.null(params$raw_day7fu_data)) {
-  if (nrow(params$raw_day7fu_data) > 0) {
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
     
-    day7fu <- timci::generate_fu_log(params$pii, params$raw_day7fu_data, 7, 9)
+    day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
+    day7fu <- day7fu %>%
+      dplyr::filter(fid == facility_id | fid == "F0000")
     
   }
 }

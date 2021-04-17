@@ -14,7 +14,7 @@ output:
     reference_docx: word_styles1.docx
 ---
 
-```{r setup, include=FALSE}
+```{r setup-rmd, include=FALSE}
 library(qrcode)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,

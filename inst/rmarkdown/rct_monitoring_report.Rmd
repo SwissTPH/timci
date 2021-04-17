@@ -36,6 +36,10 @@ if (!is.null(params$facility_data)) {
   
 } else {
   
+  ################
+  # Set up ruODK #
+  ################
+  
   ruODK::ru_setup(
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
@@ -205,7 +209,9 @@ knitr::kable(visits, col.names = c("Visit", "N"))
 ```{r, results='asis'}
 w <- 30
 if (nrow(facility_data) > 0) {
-  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions")
+  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w),
+                                    as.Date(Sys.Date() + 1),
+                                    "Submissions")
   plot(p)
   ylim <- ggplot2::layer_scales(p)$y$get_limits()
 } else{
@@ -236,7 +242,9 @@ if (nrow(baseline_data) > 0) {
 ```{r, results='asis'}
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+    plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w),
+                                      as.Date(Sys.Date() + 1),
+                                      "Submissions"))
   } else{
     cat('N/A\n\n')
   }
@@ -247,7 +255,9 @@ if (!is.null(raw_day7fu_data)) {
 ```{r, results='asis'}
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+    plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w),
+                                      as.Date(Sys.Date() + 1),
+                                      "Submissions"))
   } else{
     cat('0 submissions since the start of the study.\n\n')
   }

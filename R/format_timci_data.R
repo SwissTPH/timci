@@ -304,7 +304,8 @@ generate_fu_log <- function(pii,
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
 
   # Order columns
-  col_order <- c('child_id',
+  col_order <- c('fid',
+                 'child_id',
                  'label',
                  'sex',
                  'date_visit',
@@ -316,7 +317,8 @@ generate_fu_log <- function(pii,
   fu_log <- fu_log[, col_order]
 
   # Add a first generic row
-  fu_log <- rbind(data.frame('child_id' = 'X-F0000-P0000',
+  fu_log <- rbind(data.frame('fid' = 'F0000',
+                             'child_id' = 'X-F0000-P0000',
                              'label' = '[CHILD NAME]',
                              'sex' = '[SEX]',
                              'date_visit' = '[DATE OF ENROLMENT]',
