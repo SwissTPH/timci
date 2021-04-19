@@ -1,13 +1,15 @@
 ---
-title: "TIMCI Day 7 follow-up - `r params$facility_id` Weekly log"
+title: "TIMCI `r if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')){'Day 7'} else if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')){'Day 28'}` follow-up - `r params$facility_id` Weekly log"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  output_dir: NULL
   pii: NULL
-  raw_day7fu_data: NULL
+  fu_fid: !r Sys.getenv('TIMCI_CRF_DAY7_FID')
+  raw_fu_data: NULL
   raw_withdrawal_data: NULL
   facility_id: "F0000"
+  fu_start: 0
+  fu_end: 9
 output:
   html_document: default
   word_document:
@@ -26,20 +28,14 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r setup-variables}
 
 facility_id <- params$facility_id
-
-if (!is.null(params$output_dir)) {
-  output_dir <- params$output_dir
-} else {
-  output_dir <- tempdir()
-}
-
-# Create `odk_external_files` folder if it does not exist
-dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
+fu_fid <- params$fu_fid
+fu_start <- params$fu_start
+fu_end <- params$fu_end
 
 if (!is.null(params$pii)) {
   
   pii <- params$pii
-  raw_day7fu_data <- params$raw_day7fu_data
+  raw_fu_data <- params$raw_fu_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   
 } else {
@@ -60,11 +56,7 @@ if (!is.null(params$pii)) {
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
-
-  # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  print(crf_facility_fid)
-  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
 
   #######################
   # Load TIMCI ODK data #
@@ -80,11 +72,11 @@ if (!is.null(params$pii)) {
 
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
-  # Load day 7 follow-up data
-  print("Load day 7 follow-up data")
-  raw_day7fu_data <- NULL
-  if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+  # Load follow-up data
+  print("Load follow-up data")
+  raw_fu_data <- NULL
+  if (fu_fid %in% rct_ls_form_list) {
+    raw_fu_data <- ruODK::odata_submission_get(fid = fu_fid,
                                                    download = FALSE)
   }
 
@@ -100,12 +92,12 @@ if (!is.null(params$pii)) {
 ```
 
 ```{r}
-day7fu <- NULL
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
+fu <- NULL
+if (!is.null(raw_fu_data)) {
+  if (nrow(raw_fu_data) > 0) {
     
-    day7fu <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
-    day7fu <- day7fu %>%
+    fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end)
+    fu <- fu %>%
       dplyr::filter(fid == facility_id | fid == "F0000")
     
   }
@@ -113,19 +105,19 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r}
-if (!is.null(day7fu)) {
+if (!is.null(fu)) {
   
-  for (i in 1:nrow(day7fu)) {
-    pid <- toString(day7fu[i,'name'])
+  for (i in 1:nrow(fu)) {
+    pid <- toString(fu[i,'name'])
     png_file <- file.path(tempdir(), paste0(pid,".png"))
     png(png_file)
     qrcode::qrcode_gen(pid)
     dev.off()
   }
   
-  df <- day7fu %>%
+  df <- fu %>%
     dplyr::mutate(
-      code = paste0('![](', file.path(tempdir(), paste0(day7fu$name,".png")), ')', '{width=0.75in}')
+      code = paste0('![](', file.path(tempdir(), paste0(fu$name,".png")), ')', '{width=0.75in}')
       ) %>%
     dplyr::select('code', dplyr::everything()) %>%
     dplyr::rename('id' = 'name',

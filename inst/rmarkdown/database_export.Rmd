@@ -3,10 +3,10 @@ title: "TIMCI Data Export Report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  rctls_dir: "."
+  rctls_dir: !r tempdir()
   participant_zip: "."
-  spa_dir: "."
-  qual1_dir: NULL
+  spa_dir: !r tempdir()
+  qual1_dir: !r tempdir()
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
@@ -37,11 +37,7 @@ knitr::opts_chunk$set(echo = TRUE)
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
-if (!is.null(params$qual1_dir)) {
-  qual1_dir <- params$qual1_dir
-} else {
-  qual1_dir <- tempdir()
-}
+qual1_dir <- params$qual1_dir
 
 if (!is.null(params$facility_data)) {
   
@@ -234,7 +230,8 @@ if (!is.null(params$facility_data)) {
     # Load caregiver IDI interview data
     print("Load caregiver IDI interview data")
     if (cgidi3_fid %in% qual_form_list) {
-      raw_cgidi_interview_zip <- ruODK::submission_export(pid = qpid,
+      raw_cgidi_interview_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                          pid = qpid,
                                                           fid = cgidi3_fid)
       cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
     }
@@ -278,10 +275,15 @@ if (!is.null(facility_data)) {
   
   day0_data <- res[[1]]
   n_enrolled <- nrow(day0_data)
-  deidentified_day0_data <- timci::deidentify_data(day0_data)
-  fn <- timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
-  fn <- timci::export_df2rds(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
-  fn <- timci::export_df2csv(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+  
+  fn <- timci::export_df2xlsx(day0_data, params$rctls_dir, "02_timci_day0_data")
+  fn <- timci::export_df2rds(day0_data, params$rctls_dir, "02_timci_day0_data")
+  fn <- timci::export_df2csv(day0_data, params$rctls_dir, "02_timci_day0_data")
+  
+  #deidentified_day0_data <- timci::deidentify_data(day0_data)
+  #fn <- timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+  #fn <- timci::export_df2rds(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+  #fn <- timci::export_df2csv(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
   
   pii <- res[[2]]
   xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_contact_data")

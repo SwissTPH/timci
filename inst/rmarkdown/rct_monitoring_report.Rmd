@@ -3,7 +3,7 @@ title: "TIMCI `r if(Sys.getenv('TIMCI_IS_RCT') == 1){'Pragmatic cluster RCT'} el
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  research_facilities: data.frame(deviceid = character(0), district = character(0), facility = character(0))
+  research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL

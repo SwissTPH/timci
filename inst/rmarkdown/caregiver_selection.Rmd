@@ -3,7 +3,7 @@ title: "Qualitative caregiver selection"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  qual1_dir: "."
+  qual1_dir: !r tempdir()
   rct_ls_form_list: NULL
   pii: NULL
 output:

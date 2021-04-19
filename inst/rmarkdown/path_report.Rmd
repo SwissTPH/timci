@@ -3,7 +3,7 @@ title: "TIMCI M&E report"
 author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
-  path_dir: "."
+  path_dir: !r tempdir()
   facility_data: NULL
   wfa_data: NULL
 output:

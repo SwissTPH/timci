@@ -42,6 +42,22 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 
 run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir, path_dir) {
 
+  #################################
+  # Generate the folder structure #
+  #################################
+
+  #dir.create(file.path(output_dir, subdir, "01_rct_ls"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "01_rct_ls", "01_database"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "01_rct_ls", "02_followup"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "02_spa"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "02_spa", "01_database"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "03_qualitative", "02_provider_idis"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "04_cost"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "05_reports"), showWarnings = FALSE)
+  #dir.create(file.path(output_dir, subdir, "06_path"), showWarnings = FALSE)
+
   ################
   # Set up ruODK #
   ################
@@ -64,7 +80,6 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  print(crf_facility_fid)
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
   if (Sys.getenv('TIMCI_IS_RCT') == 1) {
@@ -218,7 +233,8 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
     # Load caregiver IDI interview data
     print("Load caregiver IDI interview data")
     if (cgidi3_fid %in% qual_form_list) {
-      raw_cgidi_interview_zip <- ruODK::submission_export(pid = qpid,
+      raw_cgidi_interview_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                          pid = qpid,
                                                           fid = cgidi3_fid)
       cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
     }
@@ -263,20 +279,27 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   # Day 7 follow-up log #
   #######################
 
+  day7fu_week_dir <- file.path(fu_dir, "day7_weekly_log")
+  dir.create(day7fu_week_dir, showWarnings = FALSE)
   for (fid in research_facilities$facility_id) {
-    params <- list(output_dir = fu_dir,
-                   pii = pii,
-                   raw_day7fu_data = raw_day7fu_data,
+    params <- list(pii = pii,
+                   fu_fid = crf_day7_fid,
+                   raw_fu_data = raw_day7fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
-                   facility_id = fid)
-    generate_report(fu_dir, "day7_fu_weekly_log.Rmd", paste0("timci_day7_fu_log_", fid), params)
+                   facility_id = fid,
+                   fu_start = 0,
+                   fu_end = 9)
+    generate_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0("timci_day7_fu_log_", fid), params)
   }
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  pii = pii,
-                 raw_day7fu_data = raw_day7fu_data,
-                 raw_withdrawal_data = raw_withdrawal_data)
-  generate_report(fu_dir, "day7_fu_daily_log.Rmd", "timci_day7_fu_daily_log", params)
+                 fu_fid = crf_day7_fid,
+                 raw_fu_data = raw_day7fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 fu_start = 7,
+                 fu_end = 9)
+  generate_report(fu_dir, "fu_daily_log.Rmd", "timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -293,11 +316,28 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   # Day 28 follow-up log is only generated if
   is_rct <- Sys.getenv("TIMCI_IS_RCT")
   if (is_rct == 1) {
+    day28fu_week_dir <- file.path(fu_dir, "day28_weekly_log")
+    dir.create(day28fu_week_dir, showWarnings = FALSE)
+    for (fid in research_facilities$facility_id) {
+      params <- list(pii = pii,
+                     fu_fid = crf_day28_fid,
+                     raw_fu_data = raw_day28fu_data,
+                     raw_withdrawal_data = raw_withdrawal_data,
+                     facility_id = fid,
+                     fu_start = 0,
+                     fu_end = 32)
+      generate_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0("timci_day28_fu_log_", fid), params)
+    }
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
                    pii = pii,
-                   raw_day28fu_data = raw_day28fu_data)
-    generate_report(fu_dir, "day28_fu_log.Rmd", "timci_day28_fu_log", params)
+                   fu_fid = crf_day28_fid,
+                   raw_fu_data = raw_day28fu_data,
+                   raw_withdrawal_data = raw_withdrawal_data,
+                   fu_start = 28,
+                   fu_end = 32)
+    generate_report(fu_dir, "fu_daily_log.Rmd", "timci_day28_fu_daily_log", params)
+
   }
 
   ###################################
