@@ -121,7 +121,8 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   # Load facility data
   print("Load facility data")
-  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
+                                                   local_dir = file.path(mdb_dir, "facility_crf_media"))
   facility_data <- timci::process_facility_data(raw_facility_data)
 
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
