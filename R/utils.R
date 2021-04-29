@@ -7,7 +7,8 @@
 
 export_df2xlsx <- function(df, dirname, prefix) {
 
-  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
+  #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
+  fname <- file.path(dirname, paste0(prefix, ".xlsx"))
   openxlsx::write.xlsx(df, fname, row.names = FALSE)
   fname
 
@@ -22,7 +23,8 @@ export_df2xlsx <- function(df, dirname, prefix) {
 
 export_df2csv <- function(df, dirname, prefix) {
 
-  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".csv", sep = ""))
+  #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".csv", sep = ""))
+  fname <- file.path(dirname, paste0(prefix, ".csv"))
   write.csv(df, file = fname, row.names = FALSE, quote = FALSE)
   fname
 
@@ -38,7 +40,8 @@ export_df2csv <- function(df, dirname, prefix) {
 
 export_df2rds <- function(df, dirname, prefix) {
 
-  fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".rds", sep = ""))
+  #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".rds", sep = ""))
+  fname <- file.path(dirname, paste0(prefix, ".rds"))
   saveRDS(df, file = fname)
   fname
 

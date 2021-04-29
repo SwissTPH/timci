@@ -93,6 +93,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
   hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+  tf_fid <- Sys.getenv("TIMCI_TF_FID")
 
   # Qualitative environment variables
   qpid <- Sys.getenv("TIMCI_QUAL_PID")
@@ -175,35 +176,49 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
+  tf_data <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
     # Load SPA caregiver exit interview data
     print("Load SPA caregiver exit interview data")
     if (cgei_fid %in% spa_form_list) {
-      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
+      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid,
+                                                       download = FALSE)
       spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
     }
 
     # Load SPA facility assessment data
     print("Load SPA facility assessment data")
     if (fa_fid %in% spa_form_list) {
-      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
+      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid,
+                                                     download = FALSE)
       spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
     }
 
     # Load SPA healthcare provider interview data
     print("Load SPA healthcare provider interview data")
     if (hcpi_fid %in% spa_form_list) {
-      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
+      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid,
+                                                       download = FALSE)
       spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
     }
 
     # Load SPA sick child observation protocol data
     print("Load SPA sick child observation protocol data")
     if (sco_fid %in% spa_form_list) {
-      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
+      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid,
+                                                      download = FALSE)
       spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+    }
+
+    # Load time-flow data
+    print("Load time-flow data")
+    if (tf_fid %in% spa_form_list) {
+      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid, fid = tf_fid,
+                                                 download = TRUE,
+                                                 local_dir = file.path(spa_db_dir, "timeflow_media"))
+      tf_data <- format_odk_metadata(raw_tf_data)
     }
 
   }
@@ -219,7 +234,8 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
     print("Load caregiver IDI invitation data")
     if (cgidi1_fid %in% qual_form_list) {
       raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi1_fid)
+                                                               fid = cgidi1_fid,
+                                                               download = FALSE)
       cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
     }
 
@@ -227,7 +243,8 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
     print("Load caregiver IDI encryption list")
     if (cgidi2_fid %in% qual_form_list) {
       raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi2_fid)
+                                                               fid = cgidi2_fid,
+                                                               download = FALSE)
       cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
     }
 
@@ -259,6 +276,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,
                  spa_sco_data = spa_sco_data,
+                 tf_data = tf_data,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data)
@@ -282,6 +300,10 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   day7fu_week_dir <- file.path(fu_dir, "day7_weekly_log")
   dir.create(day7fu_week_dir, showWarnings = FALSE)
+
+  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
+  timci::export_df2xlsx(fu7all, day7fu_week_dir, "02_timci_day7_fu_weekly_log_all")
+
   for (fid in research_facilities$facility_id) {
     params <- list(pii = pii,
                    fu_fid = crf_day7_fid,
@@ -290,7 +312,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                    facility_id = fid,
                    fu_start = 0,
                    fu_end = 9)
-    generate_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0("timci_day7_fu_log_", fid), params)
+    generate_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
   }
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
@@ -300,7 +322,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                  raw_withdrawal_data = raw_withdrawal_data,
                  fu_start = 7,
                  fu_end = 9)
-  generate_report(fu_dir, "fu_daily_log.Rmd", "timci_day7_fu_daily_log", params)
+  generate_report(day7fu_week_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -316,9 +338,14 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   # Day 28 follow-up log is only generated if
   is_rct <- Sys.getenv("TIMCI_IS_RCT")
+
   if (is_rct == 1) {
     day28fu_week_dir <- file.path(fu_dir, "day28_weekly_log")
     dir.create(day28fu_week_dir, showWarnings = FALSE)
+
+    fu28all <- timci::generate_fu_log(pii, raw_day28fu_data, 0, 32)
+    timci::export_df2xlsx(fu28all, day28fu_week_dir, "02_timci_day28_fu_weekly_log_all")
+
     for (fid in research_facilities$facility_id) {
       params <- list(pii = pii,
                      fu_fid = crf_day28_fid,
@@ -327,7 +354,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                      facility_id = fid,
                      fu_start = 0,
                      fu_end = 32)
-      generate_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0("timci_day28_fu_log_", fid), params)
+      generate_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
     }
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
@@ -337,7 +364,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                    raw_withdrawal_data = raw_withdrawal_data,
                    fu_start = 28,
                    fu_end = 32)
-    generate_report(fu_dir, "fu_daily_log.Rmd", "timci_day28_fu_daily_log", params)
+    generate_report(day28fu_week_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
   }
 
@@ -346,9 +373,10 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   ###################################
 
   params <- list(qual1_dir = qual1_dir,
-                 rct_ls_form_list = rct_ls_form_list,
-                 pii = pii)
-  generate_report(fu_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
+                 pii = pii,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data)
+  generate_report(qual1_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
 
   ###################
   # PATH M&E report #

@@ -16,6 +16,7 @@ params:
   spa_fa_data: NULL
   spa_hcpi_data: NULL
   spa_sco_data: NULL
+  tf_data: NULL
   cgidi_invitation_data: NULL
   cgidi_encryption_data: NULL
   cgidi_interview_data: NULL
@@ -50,6 +51,7 @@ if (!is.null(params$facility_data)) {
   spa_fa_data <- params$spa_fa_data
   spa_hcpi_data <- params$spa_hcpi_data
   spa_sco_data <- params$spa_sco_data
+  tf_data <- params$tf_data
   cgidi_invitation_data <- params$cgidi_invitation_data
   cgidi_encryption_data <- params$cgidi_encryption_data
   cgidi_interview_data <- params$cgidi_interview_data
@@ -92,6 +94,7 @@ if (!is.null(params$facility_data)) {
   fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
   hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+  tf_fid <- Sys.getenv("TIMCI_TF_FID")
 
   # Qualitative environment variables
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
@@ -201,6 +204,14 @@ if (!is.null(params$facility_data)) {
       raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
       spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
     }
+    
+    # Load time-flow data
+    print("Load time-flow data")
+    if (tf_fid %in% spa_form_list) {
+      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid, fid = tf_fid,
+                                                      download = FALSE)
+      tf_data <- format_odk_metadata(raw_tf_data)
+    }
 
   }
 
@@ -297,10 +308,14 @@ if (!is.null(facility_data)) {
 ```{r export-visit-data}
 if (!is.null(facility_data)) {
   study_data <- timci::extract_all_visits(facility_data)
-  deidentified_facility_data <- timci::deidentify_data(study_data)
-  fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
-  fn <- timci::export_df2rds(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
-  fn <- timci::export_df2csv(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+  #deidentified_facility_data <- timci::deidentify_data(study_data)
+  #fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+  #fn <- timci::export_df2rds(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+  #fn <- timci::export_df2csv(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+  
+  fn <- timci::export_df2xlsx(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+  fn <- timci::export_df2rds(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+  fn <- timci::export_df2csv(study_data, params$rctls_dir, "03_timci_facility_visits_data")
 }
 ```
 
@@ -468,6 +483,16 @@ if (!is.null(spa_sco_data)) {
   fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
   fn <- timci::export_df2rds(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
   fn <- timci::export_df2csv(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+}
+```
+
+## 2.5. Time-flow
+
+```{r time-flow-export}
+if (!is.null(tf_data)) {
+  fn <- timci::export_df2xlsx(tf_data, params$spa_dir, "05_timci_timeflow_data")
+  fn <- timci::export_df2rds(tf_data, params$spa_dir, "05_timci_timeflow_data")
+  fn <- timci::export_df2csv(tf_data, params$spa_dir, "05_timci_timeflow_data")
 }
 ```
 

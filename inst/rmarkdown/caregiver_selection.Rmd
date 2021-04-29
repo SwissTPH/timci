@@ -4,8 +4,9 @@ author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   qual1_dir: !r tempdir()
-  rct_ls_form_list: NULL
   pii: NULL
+  raw_day7fu_data: NULL
+  raw_withdrawal_data: NULL
 output:
   html_document: default
   word_document:
@@ -13,6 +14,7 @@ output:
 ---
 
 ```{r setup-rmd, include=FALSE}
+library(qrcode)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
@@ -20,29 +22,110 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r load-caregiver-selection-environment-variables}
 crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+
+if (!is.null(params$pii)) {
+  
+  pii <- params$pii
+  raw_day7fu_data <- params$raw_day7fu_data
+  raw_withdrawal_data <- params$raw_withdrawal_data
+  
+} else {
+  
+  ################
+  # Set up ruODK #
+  ################
+  
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = TRUE # Can be switched to TRUE for demo or debugging
+  )
+
+  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  # List of forms visible in the RCT / LS project
+  rct_ls_form_list <- ruODK::form_list()$fid
+
+  # Load facility data
+  print("Load facility data")
+  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+  facility_data <- timci::process_facility_data(raw_facility_data)
+
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  # Load follow-up data
+  print("Load follow-up data")
+  raw_fu_data <- NULL
+  if (crf_day7_fid %in% rct_ls_form_list) {
+    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
+                                                   download = FALSE)
+  }
+
+  # Load widthdrawal data
+  print("Load withdrawal data")
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
+                                                       download = FALSE)
+  }
+  
+}
 ```
 
 ```{r}
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(params$qual1_dir, "odk_external_files"), showWarnings = FALSE)
 
-day7fu_data <- NULL
-if (crf_day7_fid %in% params$rct_ls_form_list) {
-  raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid)
+cg_selection <- NULL
+if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    res <- format_day7_data(raw_day7fu_data)
+    res <- timci::format_day7_data(raw_day7fu_data)
     day7fu_data <- res[[1]]
+    
+    cg_selection <- timci::generate_cg_log(pii, day7fu_data)
+    tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_participants")
+    tmp <- timci::export_df2csv(cg_selection, file.path(params$qual1_dir, "odk_external_files"), "cg_idi_participants")
   }
 }
 ```
 
 ```{r}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    cg_selection <- timci::generate_cg_log(params$pii, day7fu_data)
-    tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_participants")
-    csv_fname <- file.path(params$qual1_dir, "odk_external_files", "cg_idi_participants.csv")
-    write.csv(cg_selection, csv_fname, row.names = FALSE, quote = FALSE)
+library(magrittr)
+if (!is.null(cg_selection)) {
+  
+  for (i in 1:nrow(cg_selection)) {
+    pid <- toString(cg_selection[i,'child_id'])
+    png_file <- file.path(tempdir(), paste0(pid,".png"))
+    png(png_file)
+    qrcode::qrcode_gen(pid)
+    dev.off()
   }
+  
+  df <- cg_selection %>%
+    dplyr::mutate(
+      code = paste0('![](', file.path(tempdir(), paste0(cg_selection$child_id,".png")), ')', '{width=0.75in}')
+      ) %>%
+    dplyr::select('code', dplyr::everything())
+  
+  # Order columns
+  col_order <- c('code',
+                 'child_id',
+                 'cg_name',
+                 'main_cg.x',
+                 'phone_nb.y')
+  df <- df[, col_order]
+
+  
+  df %>% knitr::kable()
 }
 ```
