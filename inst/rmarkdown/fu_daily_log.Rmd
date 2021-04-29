@@ -1,6 +1,6 @@
 ---
 title: "TIMCI `r if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')){'Day 7'} else if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')){'Day 28'}` follow-up - Daily log"
-author: "`r Sys.getenv('TIMCI_INSTITUTION')`"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: !r tempdir()

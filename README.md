@@ -62,7 +62,7 @@ For the TIMCI project, you need to set the following environment variables in yo
 ![image](https://user-images.githubusercontent.com/71643277/113840980-8dcce680-9791-11eb-98ac-c95c4a0a59bf.png)
 
 ```bash
-TIMCI_INSTITUTION="Swiss Tropical and Public Health Institute"
+TIMCI_COUNTRY="Tanzania"
 TIMCI_IS_RCT=1
 TIMCI_PII_PW=...
 TIMCI_CRF_PID=14
@@ -85,7 +85,7 @@ TIMCI_QUAL_CGIDI3_FID="08c-TIMCI-cg-idi-interview"
 TIMCI_WD_FID="99-TIMCI-withdrawal"
 ```
 
-`TIMCI_INSTITUTION` is an environment variable that sets the name of your institution (Burnet Institute, Ifakara Health Institute, King George's Medical University, Université Cheikh Anta Diop de Dakar, University of Nairobi).
+`TIMCI_COUNTRY` is an environment variable that sets the name of your country (`India`, `Kenya`, `Myanmar`, `Senegal` and `Tanzania`).
 
 `TIMCI_IS_RCT` is an environment variable that indicates if the main data collection is the pragmatic cluster randomised controlled trial (RCT) or the longitudinal observational study (LS). It should be set to `1` in Tanzania and India where the main data collection is the pragmatic cluster RCT, and `0` in Kenya, Myanmar, and Senegal where the main data collection is the LS.
 
