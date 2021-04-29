@@ -298,7 +298,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   # Day 7 follow-up log #
   #######################
 
-  day7fu_week_dir <- file.path(fu_dir, "day7_weekly_log")
+  day7fu_week_dir <- file.path(fu_dir, "day7_log")
   dir.create(day7fu_week_dir, showWarnings = FALSE)
 
   fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
@@ -340,7 +340,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   is_rct <- Sys.getenv("TIMCI_IS_RCT")
 
   if (is_rct == 1) {
-    day28fu_week_dir <- file.path(fu_dir, "day28_weekly_log")
+    day28fu_week_dir <- file.path(fu_dir, "day28_log")
     dir.create(day28fu_week_dir, showWarnings = FALSE)
 
     fu28all <- timci::generate_fu_log(pii, raw_day28fu_data, 0, 32)
