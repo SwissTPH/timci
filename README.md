@@ -167,36 +167,43 @@ library(timci)
 library(readxl)
 
 # Set the root directory for storing results
-output_dir <- "my_directory"
-
+output_dir <- file.path(getwd(),"timci_exports")
 # Import the mapping between the ODK Collect device identifiers and the health facilities where the research assistants are posted
 research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
 
 # Create the structure of the folder and subfolders that are created everyday to store the reports and exports
 subdir <- paste0("export_", Sys.Date())
+
+rctls_dirname <- paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_rct_ls")
+spa_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_spa")
+qual_dirname <- paste0("03_", Sys.getenv('TIMCI_COUNTRY'), "_qualitative")
+cost_dirname <- paste0("04_", Sys.getenv('TIMCI_COUNTRY'), "_cost")
+report_dirname <- paste0("05_", Sys.getenv('TIMCI_COUNTRY'), "_reports")
+path_dirname <- paste0("06_", Sys.getenv('TIMCI_COUNTRY'), "_path")
+
 dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "01_rct_ls"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "01_rct_ls", "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "01_rct_ls", "02_followup"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "02_spa"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "02_spa", "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "03_qualitative", "02_provider_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "04_cost"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "05_reports"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, "06_path"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, rctls_dirname), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, rctls_dirname, "01_database"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, rctls_dirname, "02_followup"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, spa_dirname), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, spa_dirname, "01_database"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, qual_dirname), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, qual_dirname, "02_provider_idis"), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, cost_dirname), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, report_dirname), showWarnings = FALSE)
+dir.create(file.path(output_dir, subdir, path_dirname), showWarnings = FALSE)
 
 # Run several Rmarkdown files to generate standardised automated reports
 timci::run_rmarkdown(research_facilities,
-                     file.path(output_dir,subdir, "05_reports"),
-                     file.path(output_dir, subdir, "01_rct_ls", "participants.zip"),
-                     file.path(output_dir, subdir, "01_rct_ls", "01_database"),
-                     file.path(output_dir, subdir, "01_rct_ls", "02_followup"),
-                     file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"),
-                     file.path(output_dir, subdir, "03_qualitative", "01_provider_idis"),
-                     file.path(output_dir, subdir, "02_spa", "01_database"),
-                     file.path(output_dir,subdir, "06_path"))
+                     file.path(output_dir,subdir, report_dirname),
+                     file.path(output_dir, subdir, rctls_dirname, "participants.zip"),
+                     file.path(output_dir, subdir, rctls_dirname, "01_database"),
+                     file.path(output_dir, subdir, rctls_dirname, "02_followup"),
+                     file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"),
+                     file.path(output_dir, subdir, qual_dirname, "01_provider_idis"),
+                     file.path(output_dir, subdir, spa_dirname, "01_database"),
+                     file.path(output_dir,subdir, path_dirname))
 ```
 NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
 
