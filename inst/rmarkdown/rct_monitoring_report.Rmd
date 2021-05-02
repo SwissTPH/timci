@@ -25,6 +25,8 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
+The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up.
+
 ```{r traductions}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   baseline_str <- "Visite de base"
@@ -145,12 +147,17 @@ if (nrow(facility_data) > 0) {
   start_date <- min(facility_data$date_visit)
   end_date <- max(facility_data$date_visit)
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    cat(paste0("Ce rapport couvre la période du **", start_date, "** au **", end_date, "**."))
+    cat(paste0("Ce rapport couvre la période du **", start_date, "** au **", end_date, "** pour le **Sénégal**."))
   } else {
-    cat(paste0("This report covers the period from **", start_date, "** to **", end_date, "**."))
+    cat(paste0("This report covers the period from **", start_date, "** to **", end_date, "** for **", Sys.getenv('TIMCI_COUNTRY'), "**."))
   }
 }
 ```
+
+\begin{equation} 
+  f\left(k\right) = \binom{n}{k} p^k\left(1-p\right)^{n-k}
+  (\#eq:binom)
+\end{equation}
 
 ```{r submissions-1, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {

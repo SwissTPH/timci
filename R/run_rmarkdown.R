@@ -1,6 +1,6 @@
 #' Generate Rmarkdown file
 #'
-#' This function generate a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
+#' This function generates a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
 #'
 #' @param report_dir Path to the folder where the generated HTML and Microsoft Word DOCX Rmarkdown reports are stored
 #' @param rmd_fn Filename of the Rmarkdown file

@@ -40,5 +40,6 @@ Imports:
     lubridate,
     httr,
     plyr,
-    ruODK
+    ruODK,
+    emayili
 RoxygenNote: 7.1.1

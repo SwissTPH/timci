@@ -16,5 +16,5 @@ generate_report(report_dir, rmd_fn, report_fn, rmd_params = "")
 \item{rmd_params}{List of parameters}
 }
 \description{
-This function generate a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
+This function generates a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
 }
