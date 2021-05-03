@@ -7,50 +7,49 @@
 
 process_facility_data <- function(df) {
 
-  df <- format_odk_metadata(df)
   cols <- colnames(df)
 
   # Combine exact and approximate options to get the age in years
-  if ('a3_a3_a_3' %in% cols) {
-    df$'a3_a3_a_3' <- ifelse(!is.na(df$'a3_a3_a_3'), df$'a3_a3_a_3', df$'a3_a3_a_2a')
+  if ('a3-a3_a_3' %in% cols) {
+    df$'a3-a3_a_3' <- ifelse(!is.na(df$'a3-a3_a_3'), df$'a3-a3_a_3', df$'a3-a3_a_2a')
   } else {
-    df$'a3_a3_a_3' <- df$'a3_a3_a_2a'
+    df$'a3-a3_a_3' <- df$'a3-a3_a_2a'
   }
 
   # Combine exact and approximate options to get the age in months
-  if ('a3_a3_a_6' %in% cols) {
-    df$'a3_a3_a_6' <- ifelse(!is.na(df$'a3_a3_a_6'),
-                             df$'a3_a3_a_6',
-                             ifelse(!is.na(df$'a3_a3_a_6b'),
-                                    df$'a3_a3_a_6b',
-                                    ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA)))
-  } else if ('a3_a3_a_6b' %in% cols) {
-    df$'a3_a3_a_6' <- ifelse(!is.na(df$'a3_a3_a_6b'),
-                             df$'a3_a3_a_6b',
-                             ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA))
-  } else if ('a3_a3_a_5' %in% cols) {
-    df$'a3_a3_a_6' <- ifelse(df$'a3_a3_a_5' != 98, df$'a3_a3_a_5', NA)
+  if ('a3-a3_a_6' %in% cols) {
+    df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6'),
+                             df$'a3-a3_a_6',
+                             ifelse(!is.na(df$'a3-a3_a_6b'),
+                                    df$'a3-a3_a_6b',
+                                    ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)))
+  } else if ('a3-a3_a_6b' %in% cols) {
+    df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6b'),
+                             df$'a3-a3_a_6b',
+                             ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
+  } else if ('a3-a3_a_5' %in% cols) {
+    df$'a3-a3_a_6' <- ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)
   }
 
-  if ('a3_a3_a_5' %in% cols) {
-    df$'a3_a3_a_5' <- ifelse(df$'a3_a3_a_5' == 98 | (df$'a3_dobk' == 98 & df$'a3_a3_a_3' > 1), 0, 1)
+  if ('a3-a3_a_5' %in% cols) {
+    df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
   }
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("visit_reason_a3_c_1",
-                 "crfs_t05a_c1_a_11",
-                 "crfs_t04a_b1_2",
-                 "crfs_t04a_b1_2a",
-                 "crfs_t04a_b1_2b",
-                 "crfs_t04a_b1_4",
-                 "crfs_t03_m1_3",
-                 "crfs_t09a1_injection_types",
-                 "crfs_t09a1_h2_2",
-                 "crfs_t09a2_g3_1",
-                 "crfs_t09a2_h2_2a",
-                 "crfs_t08a_f2_1",
-                 "crfs_t05b_c3_6")
+  multi_cols = c("visit_reason-a3_c_1",
+                 "crfs-t05a-c1_a_11",
+                 "crfs-t04a-b1_2",
+                 "crfs-t04a-b1_2a",
+                 "crfs-t04a-b1_2b",
+                 "crfs-t04a-b1_4",
+                 "crfs-t03-m1_3",
+                 "crfs-t09a1-injection_types",
+                 "crfs-t09a1-h2_2",
+                 "crfs-t09a2-g3_1",
+                 "crfs-t09a2-h2_2a",
+                 "crfs-t08a-f2_1",
+                 "crfs-t05b-c3_6")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
@@ -246,16 +245,25 @@ get_summary_by_facility <- function(df) {
 
 deidentify_data <- function(df) {
 
-  # De-identification
-  df$country_id <- ifelse(df$child_id != '',
-                          substr(df$child_id, 1, 1),
-                          substr(df$prev_id, 1, 1))
-  df$hf_id <- ifelse(df$child_id != '',
-                     substr(df$child_id, 3, 7),
-                     substr(df$prev_id, 3, 7))
-  df$child_id <- ifelse(df$child_id != '',
-                        anonymise_dataframe(df, 'child_id'),
-                        '')
+  mapping <- NULL
+  # Keep mapping
+  if (is.null(mapping)) {
+    mapping <- data.frame(old = df$child_id)
+
+    # De-identification
+    df$country_id <- ifelse(df$child_id != '',
+                            substr(df$child_id, 1, 1),
+                            substr(df$prev_id, 1, 1))
+    df$hf_id <- ifelse(df$child_id != '',
+                       substr(df$child_id, 3, 7),
+                       substr(df$prev_id, 3, 7))
+    df$child_id <- ifelse(df$child_id != '',
+                          anonymise_dataframe(df, 'child_id'),
+                          '')
+
+    mapping$new <- df$child_id
+    fn <- timci::export_df2xlsx(mapping, getwd(), "mapping")
+  }
 
   if ("prev_id" %in% colnames(df)) {
 
@@ -267,7 +275,26 @@ deidentify_data <- function(df) {
 
   df <- dplyr::relocate(df, 'country_id')
   df <- dplyr::relocate(df, 'hf_id', .after = 'country_id')
-  df <- dplyr::relocate(df, 'child_id', .after = 'child_id')
+  df <- dplyr::relocate(df, 'child_id', .after = 'hf_id')
+
+}
+
+#' Deidentify SPA data (TIMCI-specific function)
+#'
+#' De-identification of the TIMCI research data
+#' @param df dataframe containing the processed facility data
+#' @return This function returns de-identified data.
+#' @export
+#' @import magrittr dplyr readxl
+
+deidentify_spa_data <- function(df) {
+
+  # De-identification
+  df$child_identification_pid <- ifelse(df$child_identification_pid != '',
+                                        anonymise_dataframe(df, 'child_identification_pid'),
+                                        '')
+
+  df <- dplyr::relocate(df, 'child_identification_pid')
 
 }
 
@@ -346,8 +373,6 @@ generate_fu_log <- function(pii,
 
 format_day7_data <- function(df) {
 
-  df <- format_odk_metadata(df)
-
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols = c("n1_o3_1a",
@@ -367,6 +392,34 @@ format_day7_data <- function(df) {
 
 }
 
+#' Process day 28 follow-up data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 28 follow-up call
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr
+
+format_day28_data <- function(df) {
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols = c("n1_o3_1a",
+                 "n1_o3_1b",
+                 "n1_o3_2b")
+  df <- format_multiselect_asws(df, multi_cols, sep)
+
+  # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
+  day28_df <- df[df$proceed == 1,]
+  fail_df <- df[df$proceed == 0,]
+
+  # Match column names with names from dictionary
+  day28_df <- match_from_xls_dict(day28_df, "day28_dict.xlsx")
+  fail_df <- match_from_xls_dict(fail_df, "day28_dict.xlsx")
+
+  list(day28_df, fail_df)
+
+}
+
 #' Process hospital data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
@@ -375,8 +428,6 @@ format_day7_data <- function(df) {
 #' @import dplyr magrittr
 
 process_hospital_data <- function(df) {
-
-  df <- format_odk_metadata(df)
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"

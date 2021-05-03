@@ -6,14 +6,13 @@
 
 process_weekly_fa_data <- function(df) {
 
-  df <- format_odk_metadata(df)
+  df$"page1-pox_use" <- as.integer(df$"page1-pox_use")
+  df$"page1-new_hcp" <- as.integer(df$"page1-new_hcp")
+  df$"page1-hcp_leave" <- as.integer(df$"page1-hcp_leave")
+  df$"page1-drug_stock_out" <- as.integer(df$"page1-drug_stock_out")
 
-  df$page1_pox_use <- as.integer(df$page1_pox_use)
-  df$page1_new_hcp <- as.integer(df$page1_new_hcp)
-  df$page1_hcp_leave <- as.integer(df$page1_hcp_leave)
-  df$page1_drug_stock_out <- as.integer(df$page1_drug_stock_out)
-
-  df
+  # Match column names with names from dictionary
+  df <- match_from_xls_dict(df, "wfa_dict.xlsx")
 
 }
 
@@ -28,15 +27,15 @@ process_weekly_fa_data <- function(df) {
 extract_last_fa_data <- function(df, stats) {
 
   # Retrieve last assessment
-  res <- plyr::ddply(df, 'page1_fcode', head, 1)
-  res <- merge(x = res, y = stats, by.x = 'deviceid', by.y = 'device_id', all.x = TRUE)
+  res <- plyr::ddply(df, 'fcode', head, 1)
+  res <- merge(x = res, y = stats, by = 'device_id', all.x = TRUE)
 
   # Retrieve previous assessment
-  prev <- plyr::ddply(df, 'page1_fcode', head, 2)
-  prev <- plyr::ddply(prev, 'page1_fcode', tail, 1)
+  prev <- plyr::ddply(df, 'fcode', head, 2)
+  prev <- plyr::ddply(prev, 'fcode', tail, 1)
 
   # Add the date of the last assessment
-  res <- merge(x = res, y = prev[,c('date','page1_fcode')], by = 'page1_fcode', all.x = TRUE)
+  res <- merge(x = res, y = prev[,c('date','fcode')], by = 'fcode', all.x = TRUE)
   res %>% dplyr::rename('date' = 'date.x',
                         'prev' = 'date.y')
 
@@ -51,32 +50,32 @@ extract_last_fa_data <- function(df, stats) {
 
 display_weekly_fa_data_per_facility <- function(df, all_df) {
 
-  sub <- df[df$page1_pox_use == 0,]
+  sub <- df[df$pox_in_use == 0,]
   n <- nrow(sub)
   cat('##', n, 'facility(ies) where the pulse oximeter is not used\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
+      cat('* ', sub[i,'facility'], paste0('(', sub[i,'district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
   }
-  sub <- df[df$page1_new_hcp == 1,]
+  sub <- df[df$hcp_arrival == 1,]
   n <- nrow(sub)
   cat('##', n, 'facility(ies) where a new provider started\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
+      cat('* ', sub[i,'facility'], paste0('(', sub[i,'district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
   }
-  sub <- df[df$page1_hcp_leave == 1,]
+  sub <- df[df$hcp_departure == 1,]
   n <- nrow(sub)
   cat('##', n, 'facility(ies) where a trained provider stopped working\n\n')
   if (n > 0) {
     for (i in 1:nrow(sub)) {
-      cat('* ', sub[i,'page1_fname'], paste0('(', sub[i,'page1_district'], ')'),'\n\n')
+      cat('* ', sub[i,'facility'], paste0('(', sub[i,'district'], ')'),'\n\n')
     }
   } else {
     cat('N/A\n\n')
@@ -84,30 +83,30 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
   cat('## Details for each facility\n\n')
   for (i in 1:nrow(df)) {
     row <- df[i,]
-    fid <- row$'page1_fcode'
-    cat('###', sprintf("%s", row$'page1_fname'),'\n\n')
-    cat('Recruitment covers the period from ', paste0('**', as.character(row$'recruitment_start'), '**'), ' to ' , paste0('**', as.character(row$'recruitment_last'), '**'),'\n\n')
-    cat('* ', paste0('**', row$'children', '**'), 'children 0-59m enrolled\n\n')
-    cat('* ', paste0('**', row$'female', '**'), 'female children 0-59m enrolled\n\n')
-    cat('* ', paste0('**', row$'yg_infant', '**'), 'young infants (0-2m) enrolled\n\n')
-    cat('* ', paste0('**', row$'yg_female', '**'), 'female young infants (0-2m) enrolled\n\n')
-    res <- all_df[all_df$'page1_fcode' == fid,]
+    fid <- row$'fcode'
+    cat('###', sprintf("%s", row$facility),'\n\n')
+    cat('Recruitment covers the period from ', paste0('**', as.character(row$recruitment_start), '**'), ' to ' , paste0('**', as.character(row$recruitment_last), '**'),'\n\n')
+    cat('* ', paste0('**', row$children, '**'), 'children 0-59m enrolled\n\n')
+    cat('* ', paste0('**', row$female, '**'), 'female children 0-59m enrolled\n\n')
+    cat('* ', paste0('**', row$yg_infant, '**'), 'young infants (0-2m) enrolled\n\n')
+    cat('* ', paste0('**', row$yg_female, '**'), 'female young infants (0-2m) enrolled\n\n')
+    res <- all_df[all_df$fcode == fid,]
     cat(paste0('**', nrow(res), '**'), ' weekly assessment(s) available for this facility\n\n')
-    cat('The latest assessment covers the period from ', paste0('**', as.character(row$'prev'), '**'), ' to ', paste0('**', as.character(row$'date'), '**'), '\n\n')
+    cat('The latest assessment covers the period from ', paste0('**', as.character(row$prev), '**'), ' to ', paste0('**', as.character(row$date), '**'), '\n\n')
     cat('* Pulse oximeter in use for the sick neonate / child consultations: ')
-    if (row$'page1_pox_use' == 1) {
+    if (row$pox_in_use == 1) {
       cat('**YES** \n\n')
     } else {
       cat('**NO** \n\n')
     }
     cat('* New provider started working at the facility: ')
-    if (row$'page1_new_hcp' == 1) {
+    if (row$hcp_arrival == 1) {
       cat('**YES** \n\n')
     } else {
       cat('**NO** \n\n')
     }
     cat('* Trained provider stopped working at this facility: ')
-    if (row$'page1_hcp_leave' == 1) {
+    if (row$hcp_departure == 1) {
       cat('**YES** \n\n')
     } else {
       cat('**NO** \n\n')
@@ -127,9 +126,9 @@ format_weekly_fa_data_for_export <- function(df) {
 
   # Order columns
   col_order <- c('date',
-                 'deviceid',
-                 'page1_district',
-                 'page1_fname',
+                 'device_id',
+                 'district',
+                 'facility',
                  'recruitment_start',
                  'recruitment_last',
                  'screened',
@@ -137,16 +136,10 @@ format_weekly_fa_data_for_export <- function(df) {
                  'female',
                  'yg_infant',
                  'yg_female',
-                 'page1_pox_use',
-                 'page1_new_hcp',
-                 'page1_hcp_leave',
-                 'page1_drug_stock_out')
+                 'pox_in_use',
+                 'hcp_arrival',
+                 'hcp_departure',
+                 'drug_stockout')
   df <- df[, col_order]
-  df %>% dplyr::rename('district' = 'page1_district',
-                       'facility' = 'page1_fname',
-                       'pox_in_use' = 'page1_pox_use',
-                       'hcp_arrival' = 'page1_new_hcp',
-                       'hcp_departure' = 'page1_hcp_leave',
-                       'stockout' = 'page1_drug_stock_out')
 
 }

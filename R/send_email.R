@@ -2,29 +2,34 @@
 #'
 #' This function sends an automated email with the generated reports
 #'
-#' @param report_dir Path to the folder where the generated HTML and Microsoft Word DOCX Rmarkdown reports are stored
-#' @param report_fn Filename of the Rmarkdown rendered report
 #' @param dest vector of strings containing email addresses
-#' @import emayili magrittr
+#' @param attachment_list Vector containing the paths to the files to be attached to the email
+#' @import magrittr
 #' @export
 
-send_email <- function(report_dir, report_fn, dest) {
+send_email <- function(dest, attachment_list) {
 
-  filename <- paste0(report_fn, '_',Sys.Date(),'.docx')
+  if (!requireNamespace("emayili", quietly = TRUE)) {
+    stop("Package \"emayili\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  } else {
+    email <- emayili::envelope() %>%
+      emayili::from(Sys.getenv('EMAIL_UN')) %>%
+      emayili::to(dest) %>%
+      emayili::subject(paste0("TIMCI reports - ", Sys.getenv('TIMCI_COUNTRY'), " - ", format(Sys.time(), '%Y-%m-%d'))) %>%
+      emayili::text(paste0("Dear all,\n\nPlease receive the TIMCI daily report for ", Sys.getenv('TIMCI_COUNTRY'), ".\n\nBest regards,\n\nThe TIMCI team\n\n[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]"))
 
-  email <- emayili::envelope() %>%
-    emayili::from(Sys.getenv('EMAIL_UN')) %>%
-    emayili::to(dest) %>%
-    emayili::subject(paste0("TIMCI reports - ", Sys.getenv('TIMCI_COUNTRY'), " - ", format(Sys.time(), '%Y-%m-%d')))
+    smtp <- emayili::server(host = "smtp.gmail.com",
+                            port = 465,
+                            username = Sys.getenv('EMAIL_UN'),
+                            password = Sys.getenv('EMAIL_PW'))
 
-  smtp <- server(host = "smtp.gmail.com",
-                 port = 465,
-                 username = Sys.getenv('EMAIL_UN'),
-                 password = Sys.getenv('EMAIL_PW'))
+    for (atch in attachment_list){
+      email <- email %>%
+        emayili::attachment(atch)
+    }
 
-  email <- email %>%
-    emayili::attachment(path = c(file.path(report_dir, filename)))
-
-  smtp(email, verbose = TRUE)
+    smtp(email, verbose = TRUE)
+  }
 
 }

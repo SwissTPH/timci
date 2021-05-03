@@ -28,6 +28,11 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
+#' @param rctls_pid Numeric ID of the RCT/LS ODK Central project
+#' @param rctls_pp Passphrase
+#' @param spa_pid Numeric ID of the SPA / time-flow ODK Central project
+#' @param qpid Numeric ID of the qualitative ODK Central project
+#' @param qual_pp Passphrase
 #' @param research_facilities Dataframe that contains the research facilities
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
@@ -40,23 +45,20 @@ generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @import rmarkdown ruODK
 #' @export
 
-run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_dir, fu_dir, qual1_dir, qual2_dir, spa_db_dir, path_dir) {
-
-  #################################
-  # Generate the folder structure #
-  #################################
-
-  #dir.create(file.path(output_dir, subdir, "01_rct_ls"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "01_rct_ls", "01_database"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "01_rct_ls", "02_followup"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "02_spa"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "02_spa", "01_database"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "03_qualitative"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "03_qualitative", "01_caregiver_idis"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "03_qualitative", "02_provider_idis"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "04_cost"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "05_reports"), showWarnings = FALSE)
-  #dir.create(file.path(output_dir, subdir, "06_path"), showWarnings = FALSE)
+run_rmarkdown <- function(rctls_pid,
+                          rctls_pp,
+                          spa_pid,
+                          qpid,
+                          qual_pp,
+                          research_facilities,
+                          report_dir,
+                          participant_zip,
+                          mdb_dir,
+                          fu_dir,
+                          qual1_dir,
+                          qual2_dir,
+                          spa_db_dir,
+                          path_dir) {
 
   ################
   # Set up ruODK #
@@ -73,9 +75,6 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
   odkc_project_list <- ruODK::project_list()$id
 
-  #logs <- ruODK::audit_get()
-  #print(logs)
-
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
 
   # RCT / LS environment variables
@@ -88,7 +87,6 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
   # SPA environment variables
-  spa_pid <- Sys.getenv("TIMCI_SPA_PID")
   cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
   fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
@@ -96,7 +94,6 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   tf_fid <- Sys.getenv("TIMCI_TF_FID")
 
   # Qualitative environment variables
-  qpid <- Sys.getenv("TIMCI_QUAL_PID")
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
   cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
   cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
@@ -106,7 +103,7 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   #######################
 
   # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list()$fid
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
   # List of forms visible in the SPA project
   spa_form_list <- NULL
@@ -122,26 +119,40 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
 
   # Load facility data
   print("Load facility data")
-  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid,
-                                                   local_dir = file.path(mdb_dir, "facility_crf_media"))
-  facility_data <- timci::process_facility_data(raw_facility_data)
 
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp)
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
+  facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  #To do copy audit trail in folder
+  # local_dir = file.path(mdb_dir, "facility_crf_media")
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
   if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
-                                                   download = FALSE)
+    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_day7_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+    raw_day7fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip, paste0(crf_day7_fid,".csv"))
   }
 
   # Load hospital visit follow-up data
   print("Load hospital visit data")
   raw_hospit_data <- NULL
   if (crf_hospit_fid %in% rct_ls_form_list) {
-    raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
-                                                   download = FALSE)
+    raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_hospit_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+    raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip, paste0(crf_hospit_fid,".csv"))
   }
 
   # Load day 28 follow-up data
@@ -149,8 +160,12 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   if (Sys.getenv('TIMCI_IS_RCT') == 1) {
     print("Load day 28 follow-up data")
     if (crf_day28_fid %in% rct_ls_form_list) {
-      raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
-                                                      download = FALSE)
+      raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                  pid = rctls_pid,
+                                                  fid = crf_day28_fid,
+                                                  pp = rctls_pp,
+                                                  media = FALSE)
+      raw_day28fu_data <- timci::extract_data_from_odk_zip(raw_day28fu_zip, paste0(crf_day28_fid,".csv"))
     }
   }
 
@@ -158,16 +173,24 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
-                                                       download = FALSE)
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip, paste0(wd_fid,".csv"))
   }
 
   # Load weekly facility assessment data
   print("Load weekly facility assessment data")
   wfa_data <- NULL
   if (crf_wfa_fid %in% rct_ls_form_list) {
-    raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
-                                                download = FALSE)
+    raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                            pid = rctls_pid,
+                                            fid = crf_wfa_fid,
+                                            pp = rctls_pp,
+                                            media = FALSE)
+    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip, paste0(crf_wfa_fid,".csv"))
     wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
   }
 
@@ -386,11 +409,5 @@ run_rmarkdown <- function(research_facilities, report_dir, participant_zip, mdb_
                  facility_data = facility_data,
                  wfa_data = wfa_data)
   generate_report(path_dir, "path_report.Rmd", "timci_path_report", params)
-
-  #############################
-  # Intervention pilot report #
-  #############################
-
-  generate_report(report_dir, "pilot_report.Rmd", "timci_pilot_report")
 
 }

@@ -22,30 +22,110 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r}
-stats <- timci::get_summary_by_facility(params$facility_data)
+
+path_dir <- params$path_dir
+
+if (!is.null(params$facility_data)) {
+  
+  facility_data <- params$facility_data
+  wfa_data <- params$wfa_data
+  
+} else {
+  
+  rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+  rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+
+  ################
+  # Set up ruODK #
+  ################
+  
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = TRUE # Can be switched to TRUE for demo or debugging
+  )
+  
+  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+  
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  
+  # RCT / LS environment variables
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+  
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+  
+  # List of forms visible in the RCT / LS project
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
+  
+  # Load facility data
+  print("Load facility data")
+  
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp)
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
+  facility_data <- timci::process_facility_data(raw_facility_data)
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+  
+  # Load widthdrawal data
+  print("Load withdrawal data")
+  raw_withdrawal_data <- NULL
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip, paste0(wd_fid,".csv"))
+  }
+  
+  # Load weekly facility assessment data
+  print("Load weekly facility assessment data")
+  wfa_data <- NULL
+  if (crf_wfa_fid %in% rct_ls_form_list) {
+    raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                            pid = rctls_pid,
+                                            fid = crf_wfa_fid,
+                                            pp = rctls_pp,
+                                            media = FALSE)
+    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip, paste0(crf_wfa_fid,".csv"))
+    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+  }
+  
+}
+```
+
+```{r}
+stats <- timci::get_summary_by_facility(facility_data)
 ```
 
 ```{r, results = "asis"}
-form_list <- ruODK::form_list()$fid
-if (!is.null(params$wfa_data)) {
+if (!is.null(wfa_data)) {
   
-  if (nrow(params$wfa_data) > 0) {
+  if (nrow(wfa_data) > 0) {
     
-    last_data <- extract_last_fa_data(params$wfa_data, stats)
-    soc_data <- last_data[last_data$'page1_arm' == 0,]
-    pox_data <- last_data[last_data$'page1_arm' == 1,]
-    cdsa_data <- last_data[last_data$'page1_arm' == 2,]
+    last_data <- extract_last_fa_data(wfa_data, stats)
+    soc_data <- last_data[last_data$arm == 0,]
+    pox_data <- last_data[last_data$arm == 1,]
+    cdsa_data <- last_data[last_data$arm == 2,]
     
     if (nrow(pox_data) > 0) {
       cat('# Facilities with pulse oximetry alone\n\n')
-      display_weekly_fa_data_per_facility(pox_data, params$wfa_data)
+      display_weekly_fa_data_per_facility(pox_data, wfa_data)
     }
     if (nrow(cdsa_data) > 0) {
       cat('# Facilities with pulse oximetry and CDSA\n\n')
-      display_weekly_fa_data_per_facility(cdsa_data, params$wfa_data)
+      display_weekly_fa_data_per_facility(cdsa_data, wfa_data)
     }
     
-    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), params$path_dir, "path_data")
+    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), path_dir, "path_data")
     
   }
   

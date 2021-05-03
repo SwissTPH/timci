@@ -4,14 +4,12 @@
 \alias{send_email}
 \title{Send email}
 \usage{
-send_email(report_dir, report_fn, dest)
+send_email(dest, attachment_list)
 }
 \arguments{
-\item{report_dir}{Path to the folder where the generated HTML and Microsoft Word DOCX Rmarkdown reports are stored}
-
-\item{report_fn}{Filename of the Rmarkdown rendered report}
-
 \item{dest}{vector of strings containing email addresses}
+
+\item{attachment_list}{Vector containing the paths to the files to be attached to the email}
 }
 \description{
 This function sends an automated email with the generated reports

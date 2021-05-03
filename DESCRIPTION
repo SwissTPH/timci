@@ -19,8 +19,6 @@ Imports:
     dplyr,
     viridis,
     pryr,
-    flexdashboard,
-    shiny,
     magrittr,
     utils,
     qrcode,
@@ -41,5 +39,8 @@ Imports:
     httr,
     plyr,
     ruODK,
-    emayili
+    shiny
 RoxygenNote: 7.1.1
+Suggests: 
+    emayili,
+    flexdashboard

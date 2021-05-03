@@ -290,7 +290,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_day7fu_data$today, as.Date(Sys.Date() - w),
+    plot(timci::generate_day_bar_plot(raw_day7fu_data$date, as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
                                       submission_str))
   } else{
@@ -308,7 +308,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_hospit_data$today, as.Date(Sys.Date() - w),
+    plot(timci::generate_day_bar_plot(raw_hospit_data$date, as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
                                       "Submissions"))
   } else{
@@ -322,7 +322,7 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('### Day 28 phone call\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
-      plot(timci::generate_day_bar_plot(raw_day28fu_data$today, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+      plot(timci::generate_day_bar_plot(raw_day28fu_data$date, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
     } else {
       cat('0 submissions since the start of the study.\n\n')
     }
@@ -499,54 +499,65 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("The valid Day 7 follow-up period is **", wmin, "** to **", wmax, "** days."))
 }
 
-if (nrow(raw_day7fu_data) > 0) {
-  raw_day7fu_data <- raw_day7fu_data %>%
-    dplyr::mutate(days = as.Date(today) - as.Date(a1_enroldate), na.rm = TRUE)
+day7fu_data <- NULL
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+
+    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
+    
+    day7fu_data <- day7fu_data %>%
+      dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+  }
 }
 ```
 
 ```{r}
-if (nrow(raw_day7fu_data) > 0) {
-  n_reached_day7fu <- sum(!is.na(raw_day7fu_data$a1_contact_a4_d_1b) & (raw_day7fu_data$a1_contact_a4_d_1b == 1))
-  n_valid_day7fu <- sum((raw_day7fu_data$days >= wmin) & (raw_day7fu_data$days < wmax))
-} else {
-  n_reached_day7fu <- 0
-  n_valid_day7fu <- 0
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    n_reached_day7fu <- sum(!is.na(day7fu_data$cg_ok) & (day7fu_data$cg_ok == 1))
+    n_valid_day7fu <- sum((day7fu_data$days >= wmin) & (day7fu_data$days < wmax))
+  } else {
+    n_reached_day7fu <- 0
+    n_valid_day7fu <- 0
+  }
+  
+  # gauge plots
+  timci::plot_enrolment_gauge(n_reached_day7fu/n_enrolled, "Day 7 follow-up rate", 100, 80, 90)
+  timci::plot_enrolment_gauge(n_valid_day7fu/n_enrolled, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
 }
-
-# gauge plots
-timci::plot_enrolment_gauge(n_reached_day7fu/n_enrolled, "Day 7 follow-up rate", 100, 80, 90)
-timci::plot_enrolment_gauge(n_valid_day7fu/n_enrolled, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
 ```
 
 ```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-if (nrow(raw_day7fu_data) > 0) {
-  all <- data.frame(raw_day7fu_data)
-  all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
-  all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
-  all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
-  all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
-  
-  day7_call_ss <- list(
-    "Call outcome" = list(
-      "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-      "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
-      "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
-      )
-  )
-  print(qwraps2::summary_table(all, day7_call_ss))
-  
-  day7_outcome_ss <- list(
-    "Cure" = list(
-      "Known" = ~qwraps2::n_perc(o1_o1_1 == 1 | o1_o1_1 == 2 | o1_o1_1 == 3 | o1_o1_1 == 4, 2)
-      ),
-    "Hospitalisation" = list(
-      "Reported" = ~qwraps2::n_perc(o1_o1_1a == 2 | n1_o3_1 == 1, 2)
-      )
-  )
-  print(qwraps2::summary_table(all, day7_outcome_ss))
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(day7fu_data)
+    all$cg_ok[is.na(all$cg_ok)] <- 0
+    all$status_day7[is.na(all$status_day7)] <- 0
+    all$cure_day7[is.na(all$cure_day7)] <- 0
+    all$cure_day7[is.na(all$cure_day7)] <- 0
+    
+    day7_call_ss <- list(
+      "Call outcome" = list(
+        "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
+        "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
+        "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
+        )
+    )
+    print(qwraps2::summary_table(all, day7_call_ss))
+    
+    day7_outcome_ss <- list(
+      "Cure" = list(
+        "Known" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2 | cure_day7 == 3 | cure_day7 == 4, 2)
+        ),
+      "Hospitalisation" = list(
+        "Reported" = ~qwraps2::n_perc(status_day7 == 2 | cure_day7 == 1, 2)
+        )
+    )
+    print(qwraps2::summary_table(all, day7_outcome_ss))
+  }
 }
 ```
 
@@ -565,17 +576,25 @@ if (Sys.getenv('TIMCI_IS_RCT') == 1) {
   cat('# 6. Day 28 follow-up\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
-      all <- data.frame(raw_day28fu_data)
-      all$a1_contact_a4_d_1b[is.na(all$a1_contact_a4_d_1b)] <- 0
-      all$o1_o1_1a[is.na(all$o1_o1_1a)] <- 0
-      all$o1_o1_1[is.na(all$o1_o1_1)] <- 0
-      all$n1_o3_1[is.na(all$n1_o3_1)] <- 0
+      
+      wmin <- 28
+      wmax <- 32
+      
+      day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
+      day28fu_data <- day28fu_data %>%
+        dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+      
+      all <- data.frame(day28fu_data)
+      all$a1_contact_a4_d_1b[is.na(all$cg_ok)] <- 0
+      all$o1_o1_1a[is.na(all$status_day28)] <- 0
+      all$o1_o1_1[is.na(all$cure_day28)] <- 0
+      all$n1_o3_1[is.na(all$hf_visit_day28)] <- 0
       
       day28_call_ss <- list(
         "Call outcome" = list(
-          "Participant reached" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-          "Valid time window" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 1, 2),
-          "Lost to follow-up" = ~qwraps2::n_perc(a1_contact_a4_d_1b == 0, 2)
+          "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
+          "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
+          "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
           )
       )
       print(qwraps2::summary_table(all, day28_call_ss))

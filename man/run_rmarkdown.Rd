@@ -5,6 +5,11 @@
 \title{Run Rmarkdown files}
 \usage{
 run_rmarkdown(
+  rctls_pid,
+  rctls_pp,
+  spa_pid,
+  qpid,
+  qual_pp,
   research_facilities,
   report_dir,
   participant_zip,
@@ -17,6 +22,16 @@ run_rmarkdown(
 )
 }
 \arguments{
+\item{rctls_pid}{Numeric ID of the RCT/LS ODK Central project}
+
+\item{rctls_pp}{Passphrase}
+
+\item{spa_pid}{Numeric ID of the SPA / time-flow ODK Central project}
+
+\item{qpid}{Numeric ID of the qualitative ODK Central project}
+
+\item{qual_pp}{Passphrase}
+
 \item{research_facilities}{Dataframe that contains the research facilities}
 
 \item{report_dir}{Path to the output folder for the generated Rmarkdown reports}
