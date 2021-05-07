@@ -58,6 +58,9 @@ if (!is.null(params$facility_data)) {
   
 } else {
   
+  rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+  rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+  
   ################
   # Set up ruODK #
   ################
@@ -73,23 +76,18 @@ if (!is.null(params$facility_data)) {
   # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
   odkc_project_list <- ruODK::project_list()$id
 
-  #logs <- ruODK::audit_get()
-  #print(logs)
-
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  print(crf_facility_fid)
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
   # SPA environment variables
-  spa_pid <- Sys.getenv("TIMCI_SPA_PID")
   cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
   fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
@@ -99,13 +97,14 @@ if (!is.null(params$facility_data)) {
   # Qualitative environment variables
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
   cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
+  cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
   #######################
   # Load TIMCI ODK data #
   #######################
 
   # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list()$fid
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
   # List of forms visible in the SPA project
   spa_form_list <- NULL
@@ -121,34 +120,53 @@ if (!is.null(params$facility_data)) {
 
   # Load facility data
   print("Load facility data")
-  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
-  facility_data <- timci::process_facility_data(raw_facility_data)
 
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp)
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
+  facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  #To do copy audit trail in folder
+  # local_dir = file.path(mdb_dir, "facility_crf_media")
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
   if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
-                                                   download = FALSE)
+    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_day7_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+    raw_day7fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip, paste0(crf_day7_fid,".csv"))
   }
 
   # Load hospital visit follow-up data
   print("Load hospital visit data")
   raw_hospit_data <- NULL
   if (crf_hospit_fid %in% rct_ls_form_list) {
-    raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
-                                                   download = FALSE)
+    raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_hospit_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+    raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip, paste0(crf_hospit_fid,".csv"))
   }
 
   # Load day 28 follow-up data
   raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     print("Load day 28 follow-up data")
     if (crf_day28_fid %in% rct_ls_form_list) {
-      raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
-                                                      download = FALSE)
+      raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                  pid = rctls_pid,
+                                                  fid = crf_day28_fid,
+                                                  pp = rctls_pp,
+                                                  media = FALSE)
+      raw_day28fu_data <- timci::extract_data_from_odk_zip(raw_day28fu_zip, paste0(crf_day28_fid,".csv"))
     }
   }
 
@@ -156,16 +174,24 @@ if (!is.null(params$facility_data)) {
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
-                                                       download = FALSE)
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip, paste0(wd_fid,".csv"))
   }
 
   # Load weekly facility assessment data
   print("Load weekly facility assessment data")
   wfa_data <- NULL
   if (crf_wfa_fid %in% rct_ls_form_list) {
-    raw_wfa_data <- ruODK::odata_submission_get(fid = crf_wfa_fid,
-                                                download = FALSE)
+    raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                            pid = rctls_pid,
+                                            fid = crf_wfa_fid,
+                                            pp = rctls_pp,
+                                            media = FALSE)
+    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip, paste0(crf_wfa_fid,".csv"))
     wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
   }
 
@@ -174,42 +200,52 @@ if (!is.null(params$facility_data)) {
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
+  tf_data <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
     # Load SPA caregiver exit interview data
     print("Load SPA caregiver exit interview data")
     if (cgei_fid %in% spa_form_list) {
-      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid)
+      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                       fid = cgei_fid,
+                                                       download = FALSE)
       spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
     }
 
     # Load SPA facility assessment data
     print("Load SPA facility assessment data")
     if (fa_fid %in% spa_form_list) {
-      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid)
+      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                     fid = fa_fid,
+                                                     download = FALSE)
       spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
     }
 
     # Load SPA healthcare provider interview data
     print("Load SPA healthcare provider interview data")
     if (hcpi_fid %in% spa_form_list) {
-      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid)
+      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                       fid = hcpi_fid,
+                                                       download = FALSE)
       spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
     }
 
     # Load SPA sick child observation protocol data
     print("Load SPA sick child observation protocol data")
     if (sco_fid %in% spa_form_list) {
-      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid)
+      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                      fid = sco_fid,
+                                                      download = FALSE)
       spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
     }
-    
+
     # Load time-flow data
     print("Load time-flow data")
     if (tf_fid %in% spa_form_list) {
-      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid, fid = tf_fid,
-                                                      download = FALSE)
+      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                 fid = tf_fid,
+                                                 download = FALSE)
       tf_data <- format_odk_metadata(raw_tf_data)
     }
 
@@ -226,7 +262,8 @@ if (!is.null(params$facility_data)) {
     print("Load caregiver IDI invitation data")
     if (cgidi1_fid %in% qual_form_list) {
       raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi1_fid)
+                                                               fid = cgidi1_fid,
+                                                               download = FALSE)
       cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
     }
 
@@ -234,7 +271,8 @@ if (!is.null(params$facility_data)) {
     print("Load caregiver IDI encryption list")
     if (cgidi2_fid %in% qual_form_list) {
       raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi2_fid)
+                                                               fid = cgidi2_fid,
+                                                               download = FALSE)
       cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
     }
 
@@ -265,7 +303,7 @@ if (!is.null(facility_data)) {
 
 This report covers the period from **`r start_date`** to **`r end_date`**.
 
-# 1. `r if(Sys.getenv('TIMCI_IS_RCT') == 1){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
+# 1. `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
 
 ## 1.1. Facility data
 
@@ -324,31 +362,41 @@ if (!is.null(facility_data)) {
 #### Duplicates
 
 ```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
+day0_qc <- NULL
 if (!is.null(facility_data)) {
-  duplicates <- timci::detect_id_duplicates(day0_data)
-  if (length(duplicates) > 0) { 
-       knitr::kable(duplicates, caption = "ID duplicates")
+  if (nrow(day0_data) > 0) {
+    day0_qc <- timci::detect_id_duplicates(day0_data)
+    duplicates <- day0_qc[day0_qc$id_fq > 1,]
+    if (nrow(duplicates) > 0) { 
+      knitr::kable(duplicates, caption = "ID duplicates", row.names = FALSE)
+    } else {
+      cat("No ID duplicates detected")
+    }
   } else {
-    cat("No ID duplicates detected")
+    cat("N/A")
   }
 }
 ```
 
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
 if (!is.null(facility_data)) {
-  res <- timci::detect_name_duplicates(pii)
-  duplicates <- res[[1]]
-  if (nrow(duplicates) > 0) { 
-       knitr::kable(duplicates, caption = "Exact name duplicates")
+  if (nrow(pii) > 0) {
+    day0_qc1 <- timci::detect_name_duplicates(pii)
+    day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
+    duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
+    if (nrow(duplicates) > 0) { 
+      knitr::kable(duplicates, caption = "Possible name duplicates")
+    } else {
+      cat("No name duplicates detected")
+    }
   } else {
-    cat("No exact name duplicates detected")
+    cat("N/A")
   }
-  duplicates <- res[[2]]
-  if (nrow(duplicates) > 0) { 
-       knitr::kable(duplicates, caption = "Switched first and last names")
-  } else {
-    cat("No switched first and last names detected")
-  }
+}
+```
+```{r export-duplicates}
+if (!is.null(day0_qc)) {
+  fn <- timci::export_df2xlsx(day0_qc, params$rctls_dir, "07_data_quality_checks")
 }
 ```
 
@@ -370,9 +418,10 @@ if (!is.null(raw_day7fu_data)) {
 
 ```{r check-RCT-LS-ODK-fu-day7-data, results='asis'}
 if (!is.null(day7fu_data)) {
-  day7fu_duplicates <- timci::detect_id_duplicates(day7fu_data)
+  day7fu_qc <- timci::detect_id_duplicates(day7fu_data)
+  day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
   if (length(day7fu_duplicates) > 0) { 
-       knitr::kable(day7fu_duplicates, caption = "ID duplicates")
+       knitr::kable(day7fu_duplicates, caption = "ID duplicates", row.names = FALSE)
   } else {
     cat("No ID duplicates detected")
   }
@@ -426,7 +475,7 @@ if (!is.null(hospit_data)) {
 ## 1.3. Day 28 follow-up
 
 ```{r load-RCT-LS-ODK-fu-day28-data}
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   if (!is.null(raw_day28fu_data)) {
     fn <- timci::export_df2xlsx(raw_day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")
     fn <- timci::export_df2rds(raw_day28fu_data, params$rctls_dir, "06_timci_followup_day28_data")

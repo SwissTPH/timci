@@ -7,8 +7,10 @@
 
 detect_id_duplicates <- function(df) {
 
-  vec <- df$child_id
-  vec[duplicated(vec)]
+  df1 <- data.frame(table(df$child_id))
+  df1 <- df1 %>%
+    dplyr::rename(child_id = Var1,
+                  id_fq = Freq)
 
 }
 
@@ -22,19 +24,28 @@ detect_id_duplicates <- function(df) {
 detect_name_duplicates <- function(df) {
 
   # Exact (case-insensitive) duplicates
-  df <- dplyr::mutate(df,
-                      full_name = paste(fs_name, ls_name, sep = ' '))
-  df1 <- df[c("child_id", "full_name")]
-  qc1 <- df1[duplicated(tolower(df1$full_name)),]
+  df <- dplyr::mutate(df, exact_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  df1 <- df[c("child_id", "exact_name")]
+  qc1 <- data.frame(table(df1$exact_name))
+  qc1 <- qc1 %>%
+    dplyr::rename(exact_name = Var1,
+                  ex_name_fq = Freq)
+  qc <- merge(df1, qc1, by = 'exact_name')
 
   # Switched (case-insensitive) names
-  df2 <- dplyr::mutate(df,
-                      full_name = paste(ls_name, fs_name, sep = ' '))
-  df2 <- df2[c("child_id", "full_name")]
-  df2 <- rbind(df1, df2)
-  qc2 <- df2[duplicated(tolower(df2$full_name)),]
-
-  list(qc1, qc2)
+  df <- dplyr::mutate(df, switched_name = tolower(paste(ls_name, fs_name, sep = ' ')))
+  df2 <- df[c("child_id", "exact_name", "switched_name")]
+  df2a <- df2[c("child_id", "exact_name")] %>%
+    dplyr::rename(name = exact_name)
+  df2b <- df2[c("child_id", "switched_name")] %>%
+    dplyr::rename(name = switched_name)
+  df2 <- rbind(df2a, df2b)
+  qc2 <- data.frame(table(df2$name))
+  qc2 <- qc2 %>%
+    dplyr::rename(switched_name = Var1,
+                  sw_name_fq = Freq)
+  qc <- merge(qc, qc2, by.x = 'exact_name', by.y = 'switched_name')
+  qc %>% dplyr::select(child_id, ex_name_fq, sw_name_fq)
 
 }
 

@@ -76,7 +76,7 @@ if (!is.null(params$facility_data)) {
   print(crf_facility_fid)
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
 
@@ -112,7 +112,7 @@ if (!is.null(params$facility_data)) {
 
   # Load day 28 follow-up data
   raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     print("Load day 28 follow-up data")
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
@@ -129,15 +129,6 @@ if (!is.null(params$facility_data)) {
   }
   
 }
-```
-
-```{r load-RCT-LS-environment-variables}
-crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
-  crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
-}
-wd_fid <- Sys.getenv("TIMCI_WD_FID")
-form_list <- ruODK::form_list()$fid
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -217,7 +208,7 @@ if (!is.null(raw_withdrawal_data)) {
   n_total <- n_total + n_withdrawal
 }
 
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   if (!is.null(raw_day28fu_data)) {
     n_day28fu <- nrow(raw_day28fu_data)
     visit_names <- c(visit_names, "Day 28 phone call")
@@ -318,7 +309,7 @@ if (!is.null(raw_hospit_data)) {
 ```
 
 ```{r, results='asis'}
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat('### Day 28 phone call\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
@@ -572,7 +563,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
-if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat('# 6. Day 28 follow-up\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {

@@ -4,10 +4,12 @@
 \alias{send_email}
 \title{Send email}
 \usage{
-send_email(dest, attachment_list)
+send_email(study_type, dest, attachment_list)
 }
 \arguments{
-\item{dest}{vector of strings containing email addresses}
+\item{study_type}{String containing the type of study to specific the email subject}
+
+\item{dest}{Vector of strings containing email addresses}
 
 \item{attachment_list}{Vector containing the paths to the files to be attached to the email}
 }

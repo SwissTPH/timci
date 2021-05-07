@@ -81,7 +81,7 @@ run_rmarkdown <- function(rctls_pid,
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
@@ -157,7 +157,7 @@ run_rmarkdown <- function(rctls_pid,
 
   # Load day 28 follow-up data
   raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_IS_RCT') == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     print("Load day 28 follow-up data")
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -206,7 +206,8 @@ run_rmarkdown <- function(rctls_pid,
     # Load SPA caregiver exit interview data
     print("Load SPA caregiver exit interview data")
     if (cgei_fid %in% spa_form_list) {
-      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid, fid = cgei_fid,
+      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                       fid = cgei_fid,
                                                        download = FALSE)
       spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
     }
@@ -214,7 +215,8 @@ run_rmarkdown <- function(rctls_pid,
     # Load SPA facility assessment data
     print("Load SPA facility assessment data")
     if (fa_fid %in% spa_form_list) {
-      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid, fid = fa_fid,
+      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                     fid = fa_fid,
                                                      download = FALSE)
       spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
     }
@@ -222,7 +224,8 @@ run_rmarkdown <- function(rctls_pid,
     # Load SPA healthcare provider interview data
     print("Load SPA healthcare provider interview data")
     if (hcpi_fid %in% spa_form_list) {
-      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid, fid = hcpi_fid,
+      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                       fid = hcpi_fid,
                                                        download = FALSE)
       spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
     }
@@ -230,7 +233,8 @@ run_rmarkdown <- function(rctls_pid,
     # Load SPA sick child observation protocol data
     print("Load SPA sick child observation protocol data")
     if (sco_fid %in% spa_form_list) {
-      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid, fid = sco_fid,
+      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                      fid = sco_fid,
                                                       download = FALSE)
       spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
     }
@@ -238,7 +242,8 @@ run_rmarkdown <- function(rctls_pid,
     # Load time-flow data
     print("Load time-flow data")
     if (tf_fid %in% spa_form_list) {
-      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid, fid = tf_fid,
+      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid,
+                                                 fid = tf_fid,
                                                  download = TRUE,
                                                  local_dir = file.path(spa_db_dir, "timeflow_media"))
       tf_data <- format_odk_metadata(raw_tf_data)
@@ -359,10 +364,9 @@ run_rmarkdown <- function(rctls_pid,
   # Day 28 follow-up log #
   #######################
 
-  # Day 28 follow-up log is only generated if
-  is_rct <- Sys.getenv("TIMCI_IS_RCT")
+  # Day 28 follow-up log is only generated for India and Tanzania
 
-  if (is_rct == 1) {
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     day28fu_week_dir <- file.path(fu_dir, "day28_log")
     dir.create(day28fu_week_dir, showWarnings = FALSE)
 
