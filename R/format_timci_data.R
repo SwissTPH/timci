@@ -11,17 +11,17 @@ process_facility_data <- function(df) {
 
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
-    df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m-01"), ''))
+    df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
     # Format the date of birth
     df$'a3-a3_a_7' <- ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m-%d"), '')
   }
 
   # Format the dates of birth collected with a month and year accuracy
   if ('a3-a3_a_4' %in% cols) {
-    df$'a3-a3_a_4' <- ifelse(!is.na(df$'a3-a3_a_4'), strftime(df$'a3-a3_a_4',"%Y-%m-%d"), '')
+    df$'a3-a3_a_4' <- ifelse(!is.na(df$'a3-a3_a_4'), strftime(df$'a3-a3_a_4',"%Y-%m"), '')
   }
   if ('a3-yob' %in% cols) {
-    df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y-%m-%d"), '')
+    df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y"), '')
   }
 
   # Combine exact and approximate options to get the age in years
