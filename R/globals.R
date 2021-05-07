@@ -25,4 +25,11 @@ utils::globalVariables(c("Group.1",
                          "label",
                          "title",
                          "type",
-                         "fid"))
+                         "fid",
+                         "Var1",
+                         "Freq",
+                         "exact_name",
+                         "switched_name",
+                         "child_id",
+                         "ex_name_fq",
+                         "sw_name_fq"))

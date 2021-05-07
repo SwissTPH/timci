@@ -35,6 +35,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r setup-variables, echo = FALSE}
 
+deidentification_on <- 0
+
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
@@ -325,14 +327,16 @@ if (!is.null(facility_data)) {
   day0_data <- res[[1]]
   n_enrolled <- nrow(day0_data)
   
-  #fn <- timci::export_df2xlsx(day0_data, params$rctls_dir, "02_timci_day0_data")
-  #fn <- timci::export_df2rds(day0_data, params$rctls_dir, "02_timci_day0_data")
-  #fn <- timci::export_df2csv(day0_data, params$rctls_dir, "02_timci_day0_data")
-  
-  deidentified_day0_data <- timci::deidentify_data(day0_data)
-  fn <- timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
-  fn <- timci::export_df2rds(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
-  fn <- timci::export_df2csv(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+  if (deidentification_on == 1) {
+    deidentified_day0_data <- timci::deidentify_data(day0_data)
+    fn <- timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+    fn <- timci::export_df2rds(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+    fn <- timci::export_df2csv(deidentified_day0_data, params$rctls_dir, "02_timci_day0_data")
+  } else {
+    fn <- timci::export_df2xlsx(day0_data, params$rctls_dir, "02_timci_day0_data")
+    fn <- timci::export_df2rds(day0_data, params$rctls_dir, "02_timci_day0_data")
+    fn <- timci::export_df2csv(day0_data, params$rctls_dir, "02_timci_day0_data")
+  }
   
   pii <- res[[2]]
   xlsx_fname <- timci::export_df2xlsx(pii, tempdir(), "timci_contact_data")
@@ -346,14 +350,18 @@ if (!is.null(facility_data)) {
 ```{r export-visit-data}
 if (!is.null(facility_data)) {
   study_data <- timci::extract_all_visits(facility_data)
-  deidentified_facility_data <- timci::deidentify_data(study_data)
-  fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
-  fn <- timci::export_df2rds(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
-  fn <- timci::export_df2csv(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
   
-  #fn <- timci::export_df2xlsx(study_data, params$rctls_dir, "03_timci_facility_visits_data")
-  #fn <- timci::export_df2rds(study_data, params$rctls_dir, "03_timci_facility_visits_data")
-  #fn <- timci::export_df2csv(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+  if (deidentification_on == 1) {
+    deidentified_facility_data <- timci::deidentify_data(study_data)
+    fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2rds(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2csv(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+  } else {
+    fn <- timci::export_df2xlsx(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2rds(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2csv(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+  }
+
 }
 ```
 
@@ -528,14 +536,16 @@ if (!is.null(spa_hcpi_data)) {
 
 ```{r sick-child-observation-export}
 if (!is.null(spa_sco_data)) {
-  #fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  #fn <- timci::export_df2rds(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  #fn <- timci::export_df2csv(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  
-  deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
-  fn <- timci::export_df2xlsx(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  fn <- timci::export_df2rds(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
-  fn <- timci::export_df2csv(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+  if (deidentification_on == 1) {
+    deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
+    fn <- timci::export_df2xlsx(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+    fn <- timci::export_df2rds(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+    fn <- timci::export_df2csv(deidentified_spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+  } else {
+    fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+    fn <- timci::export_df2rds(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+    fn <- timci::export_df2csv(spa_sco_data, params$spa_dir, "04_timci_spa_consultation_obs_data")
+  }
   
 }
 ```
