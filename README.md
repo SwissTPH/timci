@@ -33,6 +33,7 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 ### Installation of timci from GitHub
 To install the `timci` package on your workstation, you can
 * either download the `master` branch as a ZIP and build the package locally
+
 ![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
 
 * or install the latest released version  
