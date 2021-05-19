@@ -175,7 +175,9 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
 
-Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_run.R`. An example of the R script is available [here](https://github.com/SwissTPH/timci/wiki/TIMCI-report-generation-R-script).
+Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_run.R`.
+
+An example is provided [here](https://github.com/SwissTPH/timci/wiki/TIMCI-report-generation-R-script).
 
 ![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
 
