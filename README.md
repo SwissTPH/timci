@@ -175,11 +175,9 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
 
-Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_run.R`. An example is provided [here](https://github.com/SwissTPH/timci/wiki/TIMCI-report-generation-R-script).
+`timci_run.R` contains the R script to generate R Markdown reports for TIMCI. An example is provided [here](https://github.com/SwissTPH/timci/wiki/TIMCI-report-generation-R-script). /!\ The `run_rmarkdown` function requests an internet access to a TIMCI ODK Central server to work correctly.
 
 ![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
-
-NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
 
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
