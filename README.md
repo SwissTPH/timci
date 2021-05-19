@@ -24,7 +24,7 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 
 ### Installation of timci from GitHub
 To install the `timci` package on your workstation, you can
-* either download the `master` branch as a ZIP.  
+* either download the `master` branch as a ZIP and build the package locally
 ![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
 
 * or install the latest released version  
@@ -34,6 +34,11 @@ install.packages("devtools")
 ```r
 library(devtools)
 devtools::install_github("thaliehln/timci")
+```
+
+An index of available documentation for the `timci` is displayed using the `help()` function
+```r
+help(package="timci")
 ```
 
 ### Prerequisites 
@@ -184,7 +189,9 @@ output_dir <- file.path(getwd(),"timci_exports")
 research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
 
 # Create the structure of the folder and subfolders that are created everyday to store the reports and exports
-subdir <- paste0("export_", Sys.Date())
+subdir <- file.path(output_dir, paste0("export_", Sys.Date()))
+
+pilot_dirname <- paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_pilot")
 
 rctls_dirname <- paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_rct_ls")
 spa_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_spa")
@@ -193,29 +200,151 @@ cost_dirname <- paste0("04_", Sys.getenv('TIMCI_COUNTRY'), "_cost")
 report_dirname <- paste0("05_", Sys.getenv('TIMCI_COUNTRY'), "_reports")
 path_dirname <- paste0("06_", Sys.getenv('TIMCI_COUNTRY'), "_path")
 
-dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname, "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname, "02_followup"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, spa_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, spa_dirname, "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname, "02_provider_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, cost_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, report_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, path_dirname), showWarnings = FALSE)
+dir.create(subdir, showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname), showWarnings = FALSE)
 
-# Run several Rmarkdown files to generate standardised automated reports
-timci::run_rmarkdown(research_facilities,
-                     file.path(output_dir,subdir, report_dirname),
-                     file.path(output_dir, subdir, rctls_dirname, "participants.zip"),
-                     file.path(output_dir, subdir, rctls_dirname, "01_database"),
-                     file.path(output_dir, subdir, rctls_dirname, "02_followup"),
-                     file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"),
-                     file.path(output_dir, subdir, qual_dirname, "01_provider_idis"),
-                     file.path(output_dir, subdir, spa_dirname, "01_database"),
-                     file.path(output_dir,subdir, path_dirname))
+# RCT / LS pilot folders
+dir.create(file.path(subdir, pilot_dirname, rctls_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")), showWarnings = FALSE)
+# SPA / time-flow pilot folders
+dir.create(file.path(subdir, pilot_dirname, spa_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+# Pilot qualitative folders
+dir.create(file.path(subdir, pilot_dirname, qual_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")), showWarnings = FALSE)
+
+dir.create(file.path(subdir, pilot_dirname, cost_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, report_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, pilot_dirname, path_dirname), showWarnings = FALSE)
+
+rctls_pilot_pid <- Sys.getenv("TIMCI_PILOT_RCTLS_PID")
+rctls_pilot_pp <- Sys.getenv("TIMCI_PILOT_RCTLS_PP")
+spa_pilot_pid <- Sys.getenv("TIMCI_PILOT_SPA_PID")
+qual_pilot_pid <- Sys.getenv("TIMCI_PILOT_QUAL_PID")
+qual_pilot_pp <- Sys.getenv("TIMCI_PILOT_QUAL_PP")
+
+# Run several Rmarkdown files to generate standardised automated reports for the pilot phase
+timci::run_rmarkdown(rctls_pilot_pid,
+                     rctls_pilot_pp,
+                     spa_pilot_pid,
+                     qual_pilot_pid,
+                     qual_pilot_pp,
+                     research_facilities,
+                     file.path(subdir, pilot_dirname, report_dirname),
+                     file.path(subdir, pilot_dirname, rctls_dirname, "participants.zip"),
+                     file.path(subdir, pilot_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                     file.path(subdir, pilot_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")),
+                     file.path(subdir, pilot_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")),
+                     file.path(subdir, pilot_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")),
+                     file.path(subdir, pilot_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                     file.path(subdir, pilot_dirname, path_dirname))
+
+# Send emails
+attachment_list <- c(file.path(subdir, pilot_dirname, report_dirname, paste0("timci_rct_monitoring_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, pilot_dirname, report_dirname, paste0("timci_data_export_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, pilot_dirname, path_dirname, paste0("timci_path_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, pilot_dirname, path_dirname, paste0("path_data.xlsx")))
+timci::send_email("pilot",
+                  c("email@gmail.com"),
+                  attachment_list)
+
+study_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_main_study")
+dir.create(file.path(subdir, study_dirname), showWarnings = FALSE)
+
+# RCT / LS pilot folders
+dir.create(file.path(subdir, study_dirname, rctls_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")), showWarnings = FALSE)
+# SPA / time-flow pilot folders
+dir.create(file.path(subdir, study_dirname, spa_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+# Pilot qualitative folders
+dir.create(file.path(subdir, study_dirname, qual_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")), showWarnings = FALSE)
+
+dir.create(file.path(subdir, study_dirname, cost_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, report_dirname), showWarnings = FALSE)
+dir.create(file.path(subdir, study_dirname, path_dirname), showWarnings = FALSE)
+
+rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+qual_pid <- Sys.getenv("TIMCI_QUAL_PID")
+qual_pp <- Sys.getenv("TIMCI_QUAL_PP")
+
+# Run several Rmarkdown files to generate standardised automated reports for the main study
+timci::run_rmarkdown(rctls_pid,
+                     rctls_pp,
+                     spa_pid,
+                     qual_pid,
+                     qual_pp,
+                     research_facilities,
+                     file.path(subdir, study_dirname, report_dirname),
+                     file.path(subdir, study_dirname, rctls_dirname, "participants.zip"),
+                     file.path(subdir, study_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                     file.path(subdir, study_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")),
+                     file.path(subdir, study_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")),
+                     file.path(subdir, study_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")),
+                     file.path(subdir, study_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                     file.path(subdir, study_dirname, path_dirname))
+
+# Send emails
+attachment_list <- c(file.path(subdir, study_dirname, report_dirname, paste0("timci_rct_monitoring_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, study_dirname, report_dirname, paste0("timci_data_export_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, study_dirname, path_dirname, paste0("timci_path_report", '_',Sys.Date(),'.docx')),
+                     file.path(subdir, study_dirname, path_dirname, paste0("path_data.xlsx")))
+timci::send_email("main study",
+                  c("email@gmail.com"),
+                  attachment_list)
+
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){
+
+    baseline_dirname <- paste0("03_", Sys.getenv('TIMCI_COUNTRY'), "_baseline")
+
+    dir.create(file.path(subdir, baseline_dirname), showWarnings = FALSE)
+
+    # RCT / LS pilot folders
+    dir.create(file.path(subdir, baseline_dirname, rctls_dirname), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")), showWarnings = FALSE)
+    # SPA / time-flow pilot folders
+    dir.create(file.path(subdir, baseline_dirname, spa_dirname), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")), showWarnings = FALSE)
+    # Pilot qualitative folders
+    dir.create(file.path(subdir, baseline_dirname, qual_dirname), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")), showWarnings = FALSE)
+
+    dir.create(file.path(subdir, baseline_dirname, cost_dirname), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, report_dirname), showWarnings = FALSE)
+    dir.create(file.path(subdir, baseline_dirname, path_dirname), showWarnings = FALSE)
+
+    rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+    rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+    spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+    qual_pid <- Sys.getenv("TIMCI_QUAL_PID")
+    qual_pp <- Sys.getenv("TIMCI_QUAL_PP")
+
+    # Run several Rmarkdown files to generate standardised automated reports for the main study
+    timci::run_rmarkdown(rctls_pid,
+                        rctls_pp,
+                        spa_pid,
+                        qual_pid,
+                        qual_pp,
+                        research_facilities,
+                        file.path(subdir, baseline_dirname, report_dirname),
+                        file.path(subdir, baseline_dirname, rctls_dirname, "participants.zip"),
+                        file.path(subdir, baseline_dirname, rctls_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                        file.path(subdir, baseline_dirname, rctls_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_followup")),
+                        file.path(subdir, baseline_dirname, qual_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_caregiver_idis")),
+                        file.path(subdir, baseline_dirname, qual_dirname, paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_provider_idis")),
+                        file.path(subdir, baseline_dirname, spa_dirname, paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_database")),
+                        file.path(subdir, baseline_dirname, path_dirname))
+
+}
 ```
 NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
 
