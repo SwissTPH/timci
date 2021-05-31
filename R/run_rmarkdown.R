@@ -206,47 +206,51 @@ run_rmarkdown <- function(rctls_pid,
     # Load SPA caregiver exit interview data
     print("Load SPA caregiver exit interview data")
     if (cgei_fid %in% spa_form_list) {
-      raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid,
-                                                       fid = cgei_fid,
-                                                       download = FALSE)
-      spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
+      raw_spa_cgei_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                    pid = spa_pid,
+                                                    fid = cgei_fid,
+                                                    media = FALSE)
+      raw_spa_cgei_data <- timci::extract_data_from_odk_zip(raw_spa_cgei_zip, paste0(cgei_fid,".csv"))
     }
 
     # Load SPA facility assessment data
     print("Load SPA facility assessment data")
     if (fa_fid %in% spa_form_list) {
-      raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid,
-                                                     fid = fa_fid,
-                                                     download = FALSE)
-      spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
+      raw_spa_fa_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                 pid = spa_pid,
+                                                 fid = fa_fid,
+                                                 media = FALSE)
+      raw_spa_fa_data <- timci::extract_data_from_odk_zip(raw_spa_fa_zip, paste0(fa_fid,".csv"))
     }
 
     # Load SPA healthcare provider interview data
     print("Load SPA healthcare provider interview data")
     if (hcpi_fid %in% spa_form_list) {
-      raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid,
-                                                       fid = hcpi_fid,
-                                                       download = FALSE)
-      spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
+      raw_spa_hcpi_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = spa_pid,
+                                                   fid = hcpi_fid,
+                                                   media = FALSE)
+      raw_spa_hcpi_data <- timci::extract_data_from_odk_zip(raw_spa_hcpi_zip, paste0(hcpi_fid,".csv"))
     }
 
     # Load SPA sick child observation protocol data
     print("Load SPA sick child observation protocol data")
     if (sco_fid %in% spa_form_list) {
-      raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid,
-                                                      fid = sco_fid,
-                                                      download = FALSE)
-      spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+      raw_spa_sco_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                  pid = spa_pid,
+                                                  fid = sco_fid,
+                                                  media = FALSE)
+      raw_spa_sco_data <- timci::extract_data_from_odk_zip(raw_spa_sco_zip, paste0(sco_fid,".csv"))
     }
 
     # Load time-flow data
     print("Load time-flow data")
     if (tf_fid %in% spa_form_list) {
-      raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid,
-                                                 fid = tf_fid,
-                                                 download = TRUE,
-                                                 local_dir = file.path(spa_db_dir, "timeflow_media"))
-      tf_data <- format_odk_metadata(raw_tf_data)
+      raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                             pid = spa_pid,
+                                             fid = tf_fid,
+                                             media = FALSE)
+      raw_tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip, paste0(tf_fid,".csv"))
     }
 
   }
@@ -264,7 +268,7 @@ run_rmarkdown <- function(rctls_pid,
       raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
                                                                fid = cgidi1_fid,
                                                                download = FALSE)
-      cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+      cgidi_invitation_data <- timci::format_odk_metadata(raw_cgidi_invitation_data)
     }
 
     # Load caregiver IDI encryption list
@@ -273,7 +277,7 @@ run_rmarkdown <- function(rctls_pid,
       raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
                                                                fid = cgidi2_fid,
                                                                download = FALSE)
-      cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+      cgidi_encryption_data <- timci::format_odk_metadata(raw_cgidi_encryption_data)
     }
 
     # Load caregiver IDI interview data

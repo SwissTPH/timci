@@ -24,19 +24,19 @@ detect_id_duplicates <- function(df) {
 detect_name_duplicates <- function(df) {
 
   # Exact (case-insensitive) duplicates
-  df <- dplyr::mutate(df, exact_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-  df1 <- df[c("child_id", "exact_name")]
-  qc1 <- data.frame(table(df1$exact_name))
+  df <- dplyr::mutate(df, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  df1 <- df[c("child_id", "full_name")]
+  qc1 <- data.frame(table(df1$full_name))
   qc1 <- qc1 %>%
-    dplyr::rename(exact_name = Var1,
+    dplyr::rename(full_name = Var1,
                   ex_name_fq = Freq)
-  qc <- merge(df1, qc1, by = 'exact_name')
+  qc <- merge(df1, qc1, by = 'full_name')
 
   # Switched (case-insensitive) names
   df <- dplyr::mutate(df, switched_name = tolower(paste(ls_name, fs_name, sep = ' ')))
-  df2 <- df[c("child_id", "exact_name", "switched_name")]
-  df2a <- df2[c("child_id", "exact_name")] %>%
-    dplyr::rename(name = exact_name)
+  df2 <- df[c("child_id", "full_name", "switched_name")]
+  df2a <- df2[c("child_id", "full_name")] %>%
+    dplyr::rename(name = full_name)
   df2b <- df2[c("child_id", "switched_name")] %>%
     dplyr::rename(name = switched_name)
   df2 <- rbind(df2a, df2b)
@@ -44,7 +44,15 @@ detect_name_duplicates <- function(df) {
   qc2 <- qc2 %>%
     dplyr::rename(switched_name = Var1,
                   sw_name_fq = Freq)
-  qc <- merge(qc, qc2, by.x = 'exact_name', by.y = 'switched_name')
+  qc <- merge(qc, qc2, by.x = 'full_name', by.y = 'switched_name')
+
+  # Approximate String Matching (Fuzzy Matching)
+  #df3 <- df[c("child_id", "full_name")]
+  #qc3 <- df3[lapply(car.vins, agrep, x = vin.vins, max.distance = c(cost=2, all=2), value = TRUE)
+           #, .(NumTimesFound = .N)
+           #, by = df1$full_name]
+  #qc <- merge(qc, qc3, by.x = 'full_name', by.y = 'switched_name')
+
   qc %>% dplyr::select(child_id, ex_name_fq, sw_name_fq)
 
 }

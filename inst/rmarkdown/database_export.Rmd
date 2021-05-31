@@ -37,6 +37,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 deidentification_on <- 0
 
+spa_pid <- Sys.getenv("TIMCI_SPA_PID")
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
@@ -212,7 +213,7 @@ if (!is.null(params$facility_data)) {
       raw_spa_cgei_data <- ruODK::odata_submission_get(pid = spa_pid,
                                                        fid = cgei_fid,
                                                        download = FALSE)
-      spa_cgei_data <- format_odk_metadata(raw_spa_cgei_data)
+      spa_cgei_data <- timci::format_odk_metadata(raw_spa_cgei_data)
     }
 
     # Load SPA facility assessment data
@@ -221,7 +222,7 @@ if (!is.null(params$facility_data)) {
       raw_spa_fa_data <- ruODK::odata_submission_get(pid = spa_pid,
                                                      fid = fa_fid,
                                                      download = FALSE)
-      spa_fa_data <- format_odk_metadata(raw_spa_fa_data)
+      spa_fa_data <- timci::format_odk_metadata(raw_spa_fa_data)
     }
 
     # Load SPA healthcare provider interview data
@@ -230,7 +231,7 @@ if (!is.null(params$facility_data)) {
       raw_spa_hcpi_data <- ruODK::odata_submission_get(pid = spa_pid,
                                                        fid = hcpi_fid,
                                                        download = FALSE)
-      spa_hcpi_data <- format_odk_metadata(raw_spa_hcpi_data)
+      spa_hcpi_data <- timci::format_odk_metadata(raw_spa_hcpi_data)
     }
 
     # Load SPA sick child observation protocol data
@@ -239,7 +240,7 @@ if (!is.null(params$facility_data)) {
       raw_spa_sco_data <- ruODK::odata_submission_get(pid = spa_pid,
                                                       fid = sco_fid,
                                                       download = FALSE)
-      spa_sco_data <- format_odk_metadata(raw_spa_sco_data)
+      spa_sco_data <- timci::format_odk_metadata(raw_spa_sco_data)
     }
 
     # Load time-flow data
@@ -248,7 +249,7 @@ if (!is.null(params$facility_data)) {
       raw_tf_data <- ruODK::odata_submission_get(pid = spa_pid,
                                                  fid = tf_fid,
                                                  download = FALSE)
-      tf_data <- format_odk_metadata(raw_tf_data)
+      tf_data <- timci::format_odk_metadata(raw_tf_data)
     }
 
   }
@@ -266,7 +267,7 @@ if (!is.null(params$facility_data)) {
       raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
                                                                fid = cgidi1_fid,
                                                                download = FALSE)
-      cgidi_invitation_data <- format_odk_metadata(raw_cgidi_invitation_data)
+      cgidi_invitation_data <- timci::format_odk_metadata(raw_cgidi_invitation_data)
     }
 
     # Load caregiver IDI encryption list
@@ -275,7 +276,7 @@ if (!is.null(params$facility_data)) {
       raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
                                                                fid = cgidi2_fid,
                                                                download = FALSE)
-      cgidi_encryption_data <- format_odk_metadata(raw_cgidi_encryption_data)
+      cgidi_encryption_data <- timci::format_odk_metadata(raw_cgidi_encryption_data)
     }
 
     # Load caregiver IDI interview data
@@ -401,6 +402,12 @@ if (!is.null(facility_data)) {
     cat("N/A")
   }
 }
+
+# Approximate String Matching (Fuzzy Matching)
+df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+df3 <- df[c("child_id", "full_name")]
+qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+print(qc3)
 ```
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {

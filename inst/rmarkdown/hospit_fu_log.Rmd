@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r load-hospit-environment-variables}
 crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
 wd_fid <- Sys.getenv("TIMCI_WD_FID")
+rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
 form_list <- ruODK::form_list()$fid
 ```
 
@@ -30,7 +31,11 @@ dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FA
 
 raw_hospit_data <- NULL
 if (crf_hospit_fid %in% form_list) {
-  raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid)
+  raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                             fid = crf_hospit_fid,
+                                             pp = rctls_pp,
+                                             media = FALSE)
+  raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip, paste0(crf_hospit_fid,".csv"))
 }
 ```
 
