@@ -1,13 +1,21 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Last-changedate](https://img.shields.io/github/last-commit/Thaliehln/timci.svg)](https://github.com/Thaliehln/timci/commits/master)
+[![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/Thaliehln/timci/commits/master)
 
 # Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
-`timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by ODK for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
+`timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by [ODK](https://getodk.org/) for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
 The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by [PATH](https://www.path.org/), in partnership with the [Swiss Tropical and Public Health Institute (swiss TPH)](https://www.swisstph.ch/en/).
 
-The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and two Asian countries (the Indian state of Uttar Pradesh (UP) and Myanmar), in collaboration with University of Nairobi, Université Cheikh Anta Diop de Dakar, Ifakara Health Institute, King's College Medical University and Burnet Institute.
+The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and two Asian countries (the Indian state of Uttar Pradesh (UP) and Myanmar).
+
+|Country|Research partner|
+|-|-|
+|Kenya|University of Nairobi (UoN)|
+|India|King's College Medical University (KGMU)|
+|Myanmar|Burnet Institute (BI)|
+|Senegal|Université Cheikh Anta Diop de Dakar (UCAD)|
+|Tanzania|Ifakara Health Institute (IHI)|
 
 ## Table of contents
 * [Getting started](https://github.com/Thaliehln/timci#getting-started)
@@ -24,7 +32,8 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 
 ### Installation of timci from GitHub
 To install the `timci` package on your workstation, you can
-* either download the `master` branch as a ZIP.  
+* either download the `master` branch as a ZIP and build the package locally
+
 ![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
 
 * or install the latest released version  
@@ -34,6 +43,11 @@ install.packages("devtools")
 ```r
 library(devtools)
 devtools::install_github("thaliehln/timci")
+```
+
+An index of available documentation for the `timci` is displayed using the `help()` function
+```r
+help(package="timci")
 ```
 
 ### Prerequisites 
@@ -170,54 +184,9 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113838910-8573ac00-978f-11eb-8ddd-9238595b26df.png)
 
-Save the code needed to generate R Markdown reports for TIMCI (manual) in a R script, e.g. `timci_run.R`
+`timci_run.R` contains the R script to generate R Markdown reports for TIMCI. An example is provided [here](https://github.com/SwissTPH/timci/wiki/TIMCI-report-generation-R-script). /!\ The `run_rmarkdown` function requests an internet access to a TIMCI ODK Central server to work correctly.
 
 ![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
-
-```R
-library(timci)
-library(readxl)
-
-# Set the root directory for storing results
-output_dir <- file.path(getwd(),"timci_exports")
-# Import the mapping between the ODK Collect device identifiers and the health facilities where the research assistants are posted
-research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
-
-# Create the structure of the folder and subfolders that are created everyday to store the reports and exports
-subdir <- paste0("export_", Sys.Date())
-
-rctls_dirname <- paste0("01_", Sys.getenv('TIMCI_COUNTRY'), "_rct_ls")
-spa_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_spa")
-qual_dirname <- paste0("03_", Sys.getenv('TIMCI_COUNTRY'), "_qualitative")
-cost_dirname <- paste0("04_", Sys.getenv('TIMCI_COUNTRY'), "_cost")
-report_dirname <- paste0("05_", Sys.getenv('TIMCI_COUNTRY'), "_reports")
-path_dirname <- paste0("06_", Sys.getenv('TIMCI_COUNTRY'), "_path")
-
-dir.create(file.path(output_dir, subdir), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname, "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, rctls_dirname, "02_followup"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, spa_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, spa_dirname, "01_database"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, qual_dirname, "02_provider_idis"), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, cost_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, report_dirname), showWarnings = FALSE)
-dir.create(file.path(output_dir, subdir, path_dirname), showWarnings = FALSE)
-
-# Run several Rmarkdown files to generate standardised automated reports
-timci::run_rmarkdown(research_facilities,
-                     file.path(output_dir,subdir, report_dirname),
-                     file.path(output_dir, subdir, rctls_dirname, "participants.zip"),
-                     file.path(output_dir, subdir, rctls_dirname, "01_database"),
-                     file.path(output_dir, subdir, rctls_dirname, "02_followup"),
-                     file.path(output_dir, subdir, qual_dirname, "01_caregiver_idis"),
-                     file.path(output_dir, subdir, qual_dirname, "01_provider_idis"),
-                     file.path(output_dir, subdir, spa_dirname, "01_database"),
-                     file.path(output_dir,subdir, path_dirname))
-```
-NB: `run_rmarkdown` requests an internet access to a TIMCI ODK Central server to work correctly.
 
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
