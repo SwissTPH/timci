@@ -1,15 +1,41 @@
-#' Generate Rmarkdown file
+#' Generate a PDF report using Rmarkdown
 #'
-#' This function generates a standardised Rmarkdown report in two formats HTML and Microsoft Word DOCX
+#' This function generates a standardised Rmarkdown report in a PDF format
 #'
-#' @param report_dir Path to the folder where the generated HTML and Microsoft Word DOCX Rmarkdown reports are stored
+#' @param report_dir Path to the folder where the generated PDF Rmarkdown report is stored
 #' @param rmd_fn Filename of the Rmarkdown file
 #' @param report_fn Filename of the Rmarkdown rendered report
 #' @param rmd_params List of parameters
 #' @import rmarkdown
 #' @export
 
-generate_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
+generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
+
+  report <- system.file("rmarkdown", rmd_fn, package = "timci")
+  if (report == "") {
+    stop(paste("Could not find `", rmd_fn, "`. Try re-installing `timci`."), call. = FALSE)
+  }
+
+  rmarkdown::render(report,
+                    output_format = c("pdf_document"),
+                    output_file = c(paste0(report_fn, '_',Sys.Date(),'.pdf')),
+                    output_dir = report_dir,
+                    params = rmd_params)
+
+}
+
+#' Generate a Microsoft Word report using Rmarkdown
+#'
+#' This function generates a standardised Rmarkdown report in a DOCX format
+#'
+#' @param report_dir Path to the folder where the generated DOCX Rmarkdown report is stored
+#' @param rmd_fn Filename of the Rmarkdown file
+#' @param report_fn Filename of the Rmarkdown rendered report
+#' @param rmd_params List of parameters
+#' @import rmarkdown
+#' @export
+
+generate_word_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 
   report <- system.file("rmarkdown", rmd_fn, package = "timci")
   if (report == "") {
@@ -312,7 +338,7 @@ run_rmarkdown <- function(rctls_pid,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data)
-  generate_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
+  generate_pdf_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
 
   #########################
   # RCT monitoring report #
@@ -324,7 +350,7 @@ run_rmarkdown <- function(rctls_pid,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data)
-  generate_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
+  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
 
   #######################
   # Day 7 follow-up log #
@@ -344,7 +370,7 @@ run_rmarkdown <- function(rctls_pid,
                    facility_id = fid,
                    fu_start = 0,
                    fu_end = 9)
-    generate_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
+    generate_pdf_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
   }
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
@@ -354,7 +380,7 @@ run_rmarkdown <- function(rctls_pid,
                  raw_withdrawal_data = raw_withdrawal_data,
                  fu_start = 7,
                  fu_end = 9)
-  generate_report(day7fu_week_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
+  generate_pdf_report(day7fu_week_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -362,7 +388,7 @@ run_rmarkdown <- function(rctls_pid,
 
   params <- list(output_dir = fu_dir,
                  pii = pii)
-  generate_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+  generate_pdf_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
   # Day 28 follow-up log #
@@ -385,7 +411,7 @@ run_rmarkdown <- function(rctls_pid,
                      facility_id = fid,
                      fu_start = 0,
                      fu_end = 32)
-      generate_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
+      generate_pdf_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
     }
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
@@ -395,7 +421,7 @@ run_rmarkdown <- function(rctls_pid,
                    raw_withdrawal_data = raw_withdrawal_data,
                    fu_start = 28,
                    fu_end = 32)
-    generate_report(day28fu_week_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
+    generate_pdf_report(day28fu_week_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
   }
 
@@ -407,7 +433,7 @@ run_rmarkdown <- function(rctls_pid,
                  pii = pii,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_withdrawal_data = raw_withdrawal_data)
-  generate_report(qual1_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
+  generate_pdf_report(qual1_dir, "caregiver_selection.Rmd", "timci_caregiver_selection", params)
 
   ###################
   # PATH M&E report #
@@ -416,6 +442,6 @@ run_rmarkdown <- function(rctls_pid,
   params <- list(path_dir = path_dir,
                  facility_data = facility_data,
                  wfa_data = wfa_data)
-  generate_report(path_dir, "path_report.Rmd", "timci_path_report", params)
+  generate_pdf_report(path_dir, "path_report.Rmd", "timci_path_report", params)
 
 }
