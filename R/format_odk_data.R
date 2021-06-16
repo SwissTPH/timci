@@ -17,7 +17,7 @@ format_odk_metadata <- function(df) {
 
 }
 
-#' # Unzip and extract data from ODK zip
+#' # Unzip and extract ODK data from ODK zip
 #'
 #' @param odk_zip absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
 #' @param csv_name name of the .CSV file
@@ -33,6 +33,24 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name) {
   raw_odk_data <- file.path(t, csv_name) %>%
     readr::read_csv()
   format_odk_metadata(raw_odk_data)
+
+}
+
+#' # Unzip and extract additional data from ODK zip
+#'
+#' @param odk_zip absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
+#' @param csv_name name of the .CSV file
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import magrittr dplyr readr utils fs
+
+extract_additional_data_from_odk_zip <- function(odk_zip, csv_name) {
+
+  t <- tempdir()
+  utils::unzip(odk_zip, exdir = t)
+  fs::dir_ls(t)
+  raw_odk_data <- file.path(t, csv_name) %>%
+    readr::read_csv()
 
 }
 

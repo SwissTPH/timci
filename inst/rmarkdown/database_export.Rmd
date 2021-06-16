@@ -571,17 +571,35 @@ if (!is.null(spa_sco_data)) {
 ## 2.5. Time-flow
 
 ```{r time-flow-export}
-if (!is.null(tf_data)) {
-  fn <- timci::export_df2xlsx(tf_data, params$spa_dir,
-                              "05_timci_timeflow_data")
-  fn <- timci::export_df2csv(tf_data, params$spa_dir,
-                             "05_timci_timeflow_data")
+if (!is.null(tf_data[[1]])) {
+  fn <- timci::export_df2xlsx(tf_data[[1]], params$spa_dir,
+                              "05a_timci_timeflow_data")
+  fn <- timci::export_df2csv(tf_data[[1]], params$spa_dir,
+                             "05a_timci_timeflow_data")
+  fn <- timci::export_df2xlsx(tf_data[[2]], params$spa_dir,
+                              "05b_timci_timeflow_audit")
+  fn <- timci::export_df2csv(tf_data[[2]], params$spa_dir,
+                             "05b_timci_timeflow_audit")
+  fn <- timci::export_df2xlsx(tf_data[[3]], params$spa_dir,
+                              "05c_timci_timeflow_steps")
+  fn <- timci::export_df2csv(tf_data[[3]], params$spa_dir,
+                             "05c_timci_timeflow_steps")
 }
 ```
 
 # 3. Qualitative studies
 
 ## 3.1. Caregiver in-depth interview
+
+```{r cg-idi-potential-participants}
+if (!is.null(day0_data) && !is.null(day7fu_data)) {
+  cg_qual_export_data <- generate_cg_log(day0_data, day7fu_data)
+  fn <- timci::export_df2xlsx(cg_qual_export_data, qual1_dir,
+                              "cg_idi_participants")
+  fn <- timci::export_df2csv(cg_qual_export_data, qual1_dir,
+                             "cg_idi_participants")
+}
+```
 
 ```{r cg-idi-invitation-export}
 if (!is.null(cgidi_invitation_data)) {

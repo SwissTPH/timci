@@ -47,7 +47,7 @@ export_df2rds <- function(df, dirname, prefix) {
 
 }
 
-#' Extract and match variable names using a dictionary
+#' Anonymise a dataframe by hashing selected columns
 #'
 #' @param df Input dataframe
 #' @param cols_to_anon Columns to use for hash

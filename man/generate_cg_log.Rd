@@ -4,10 +4,10 @@
 \alias{generate_cg_log}
 \title{Generate caregiver recruitment log (TIMCI-specific function)}
 \usage{
-generate_cg_log(pii, day7fu)
+generate_cg_log(main_data, day7fu)
 }
 \arguments{
-\item{pii}{dataframe containing personally identifiable data}
+\item{main_data}{dataframe containing day 0 data (either personally deidentifiable data or deidentified facility data)}
 
 \item{day7fu}{dataframe containing day7 follow-up data}
 }

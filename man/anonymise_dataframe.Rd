@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{anonymise_dataframe}
 \alias{anonymise_dataframe}
-\title{Extract and match variable names using a dictionary}
+\title{Anonymise a dataframe by hashing selected columns}
 \usage{
 anonymise_dataframe(df, cols_to_anon, algo = "sha256")
 }
@@ -17,5 +17,5 @@ anonymise_dataframe(df, cols_to_anon, algo = "sha256")
 This function returns a vector
 }
 \description{
-Extract and match variable names using a dictionary
+Anonymise a dataframe by hashing selected columns
 }

@@ -15,6 +15,7 @@ output:
 
 ```{r setup-rmd, include=FALSE}
 library(qrcode)
+library(magrittr)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
@@ -114,14 +115,13 @@ if (!is.null(raw_day7fu_data)) {
     day7fu_data <- res[[1]]
     
     cg_selection <- timci::generate_cg_log(pii, day7fu_data)
-    tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_participants")
-    tmp <- timci::export_df2csv(cg_selection, file.path(params$qual1_dir, "odk_external_files"), "cg_idi_participants")
+    tmp <- timci::export_df2xlsx(cg_selection, params$qual1_dir, "cg_idi_contact")
+    tmp <- timci::export_df2csv(cg_selection, file.path(params$qual1_dir, "odk_external_files"), "cg_idi_contact")
   }
 }
 ```
 
 ```{r}
-library(magrittr)
 if (!is.null(cg_selection)) {
   
   for (i in 1:nrow(cg_selection)) {
@@ -139,11 +139,13 @@ if (!is.null(cg_selection)) {
     dplyr::select('code', dplyr::everything())
   
   # Order columns
+  df$cg_name <- paste0(df$cg_fs_name, " ", df$cg_ls_name)
+  tmp <- timci::export_df2csv(df, file.path(params$qual1_dir, "odk_external_files"), "test")
   col_order <- c('code',
                  'child_id',
                  'cg_name',
-                 'main_cg.x',
-                 'phone_nb.y')
+                 'main_cg',
+                 'phone_nb')
   df <- df[, col_order]
 
   df %>% knitr::kable()

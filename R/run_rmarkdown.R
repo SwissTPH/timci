@@ -236,7 +236,7 @@ run_rmarkdown <- function(rctls_pid,
                                                     pid = spa_pid,
                                                     fid = cgei_fid,
                                                     media = FALSE)
-      raw_spa_cgei_data <- timci::extract_data_from_odk_zip(raw_spa_cgei_zip, paste0(cgei_fid,".csv"))
+      spa_cgei_data <- timci::extract_data_from_odk_zip(raw_spa_cgei_zip, paste0(cgei_fid,".csv"))
     }
 
     # Load SPA facility assessment data
@@ -246,7 +246,7 @@ run_rmarkdown <- function(rctls_pid,
                                                  pid = spa_pid,
                                                  fid = fa_fid,
                                                  media = FALSE)
-      raw_spa_fa_data <- timci::extract_data_from_odk_zip(raw_spa_fa_zip, paste0(fa_fid,".csv"))
+      spa_fa_data <- timci::extract_data_from_odk_zip(raw_spa_fa_zip, paste0(fa_fid,".csv"))
     }
 
     # Load SPA healthcare provider interview data
@@ -256,7 +256,7 @@ run_rmarkdown <- function(rctls_pid,
                                                    pid = spa_pid,
                                                    fid = hcpi_fid,
                                                    media = FALSE)
-      raw_spa_hcpi_data <- timci::extract_data_from_odk_zip(raw_spa_hcpi_zip, paste0(hcpi_fid,".csv"))
+      spa_hcpi_data <- timci::extract_data_from_odk_zip(raw_spa_hcpi_zip, paste0(hcpi_fid,".csv"))
     }
 
     # Load SPA sick child observation protocol data
@@ -266,7 +266,7 @@ run_rmarkdown <- function(rctls_pid,
                                                   pid = spa_pid,
                                                   fid = sco_fid,
                                                   media = FALSE)
-      raw_spa_sco_data <- timci::extract_data_from_odk_zip(raw_spa_sco_zip, paste0(sco_fid,".csv"))
+      spa_sco_data <- timci::extract_data_from_odk_zip(raw_spa_sco_zip, paste0(sco_fid,".csv"))
     }
 
     # Load time-flow data
@@ -275,8 +275,10 @@ run_rmarkdown <- function(rctls_pid,
       raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
                                              pid = spa_pid,
                                              fid = tf_fid,
-                                             media = FALSE)
-      raw_tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip, paste0(tf_fid,".csv"))
+                                             media = TRUE)
+      tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip, paste0(tf_fid,".csv"))
+      tf_data_audit <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, " - audit", ".csv"))
+      tf_data_steps <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, "-steps", ".csv"))
     }
 
   }
@@ -334,7 +336,7 @@ run_rmarkdown <- function(rctls_pid,
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,
                  spa_sco_data = spa_sco_data,
-                 tf_data = tf_data,
+                 tf_data = list(tf_data, tf_data_audit, tf_data_steps),
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data)
