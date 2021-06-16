@@ -53,8 +53,10 @@ help(package="timci")
 ### Prerequisites 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `emayili`, `tinytex`.
 
+#### ruODK
 To install `ruODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
 
+#### TinyTex LaTeX distribution
 `TinyTeX` is a custom LaTeX distribution. It is needed to compile R Markdown documents to PDF.
 To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 ```r
