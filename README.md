@@ -30,26 +30,6 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 * [CRAN mirrors to download R and RTools](https://cran.r-project.org/mirrors.html)
 * [Link to download RStudio](https://rstudio.com/products/rstudio/download/#download)
 
-### Installation of timci from GitHub
-To install the `timci` package on your workstation, you can
-* either download the `master` branch as a ZIP and build the package locally
-
-![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
-
-* or install the latest released version  
-```r
-install.packages("devtools")
-```
-```r
-library(devtools)
-devtools::install_github("thaliehln/timci")
-```
-
-An index of available documentation for the `timci` is displayed using the `help()` function
-```r
-help(package="timci")
-```
-
 ### Prerequisites 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `shiny`, `magrittr`, `utils`, `scales`, `grDevices`, `stats`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `emayili`, `tinytex`.
 
@@ -73,6 +53,26 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 ```r
 install.packages("tinytex")
 tinytex::install_tinytex()
+```
+
+### Installation of timci from GitHub
+To install the `timci` package on your workstation, you can
+* either download the `master` branch as a ZIP and build the package locally
+
+![image](https://user-images.githubusercontent.com/71643277/111299284-0d164100-8650-11eb-8688-8bd152214d56.png)
+
+* or install the latest released version (preferred option)  
+```r
+install.packages("devtools")
+```
+```r
+library(devtools)
+devtools::install_github("thaliehln/timci")
+```
+
+An index of available documentation for the `timci` is displayed using the `help()` function
+```r
+help(package="timci")
 ```
 
 ### Setup of the connection to ODK Central
