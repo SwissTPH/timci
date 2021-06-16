@@ -271,14 +271,19 @@ run_rmarkdown <- function(rctls_pid,
 
     # Load time-flow data
     print("Load time-flow data")
+    tf_data_full <- NULL
     if (tf_fid %in% spa_form_list) {
       raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
                                              pid = spa_pid,
                                              fid = tf_fid,
-                                             media = TRUE)
+                                             media = FALSE)
       tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip, paste0(tf_fid,".csv"))
+      # To improve with a constraint of no submission
+      tf_data_audit <- NULL
       tf_data_audit <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, " - audit", ".csv"))
+      tf_data_steps <- NULL
       tf_data_steps <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, "-steps", ".csv"))
+      tf_data_full <- list(tf_data, tf_data_audit, tf_data_steps)
     }
 
   }
@@ -336,7 +341,7 @@ run_rmarkdown <- function(rctls_pid,
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,
                  spa_sco_data = spa_sco_data,
-                 tf_data = list(tf_data, tf_data_audit, tf_data_steps),
+                 tf_data = tf_data_full,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data)

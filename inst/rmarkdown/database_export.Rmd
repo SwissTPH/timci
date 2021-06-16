@@ -1,30 +1,31 @@
 ---
 title: "TIMCI Data Export Report"
-author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'UniversitÃ© Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
-params:
-  rctls_dir: !r tempdir()
-  participant_zip: "."
-  spa_dir: !r tempdir()
-  qual1_dir: !r tempdir()
-  facility_data: NULL
-  raw_day7fu_data: NULL
-  raw_hospit_data: NULL
-  raw_day28fu_data: NULL
-  raw_withdrawal_data: NULL
-  spa_cgei_data: NULL
-  spa_fa_data: NULL
-  spa_hcpi_data: NULL
-  spa_sco_data: NULL
-  tf_data: NULL
-  cgidi_invitation_data: NULL
-  cgidi_encryption_data: NULL
-  cgidi_interview_data: NULL
 output:
-  html_document: default
+  pdf_document: default
   word_document:
     reference_docx: word_styles1.docx
     fig_width: 7.5
+  html_document: default
+params:
+  rctls_dir: !r tempdir()
+  participant_zip: '.'
+  spa_dir: !r tempdir()
+  qual1_dir: !r tempdir()
+  facility_data: null
+  raw_day7fu_data: null
+  raw_hospit_data: null
+  raw_day28fu_data: null
+  raw_withdrawal_data: null
+  spa_cgei_data: null
+  spa_fa_data: null
+  spa_hcpi_data: null
+  spa_sco_data: null
+  tf_data: null
+  cgidi_invitation_data: null
+  cgidi_encryption_data: null
+  cgidi_interview_data: null
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -464,7 +465,7 @@ if (!is.null(day7fu_data)) {
 ```{r load-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
 if (!is.null(raw_hospit_data)) {
-  hospit_data <- process_hospital_data(raw_hospit_data)
+  hospit_data <- timci::process_hospital_data(raw_hospit_data)
 }
 ```
 
@@ -472,7 +473,7 @@ if (!is.null(raw_hospit_data)) {
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
 if (!is.null(hospit_data)) {
-  hospit_data_duplicates <- detect_id_duplicates(hospit_data)
+  hospit_data_duplicates <- timci::detect_id_duplicates(hospit_data)
   if (length(hospit_data_duplicates) > 0) { 
        knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
   } else {
@@ -571,19 +572,25 @@ if (!is.null(spa_sco_data)) {
 ## 2.5. Time-flow
 
 ```{r time-flow-export}
-if (!is.null(tf_data[[1]])) {
-  fn <- timci::export_df2xlsx(tf_data[[1]], params$spa_dir,
-                              "05a_timci_timeflow_data")
-  fn <- timci::export_df2csv(tf_data[[1]], params$spa_dir,
-                             "05a_timci_timeflow_data")
-  fn <- timci::export_df2xlsx(tf_data[[2]], params$spa_dir,
-                              "05b_timci_timeflow_audit")
-  fn <- timci::export_df2csv(tf_data[[2]], params$spa_dir,
-                             "05b_timci_timeflow_audit")
-  fn <- timci::export_df2xlsx(tf_data[[3]], params$spa_dir,
-                              "05c_timci_timeflow_steps")
-  fn <- timci::export_df2csv(tf_data[[3]], params$spa_dir,
-                             "05c_timci_timeflow_steps")
+if (!is.null(tf_data)) {
+  if (!is.null(tf_data[[1]])) {
+    fn <- timci::export_df2xlsx(tf_data[[1]], params$spa_dir,
+                                "05a_timci_timeflow_data")
+    fn <- timci::export_df2csv(tf_data[[1]], params$spa_dir,
+                               "05a_timci_timeflow_data")
+  }
+  if (!is.null(tf_data[[2]])) {
+    fn <- timci::export_df2xlsx(tf_data[[2]], params$spa_dir,
+                                "05b_timci_timeflow_audit")
+    fn <- timci::export_df2csv(tf_data[[2]], params$spa_dir,
+                               "05b_timci_timeflow_audit")
+  }
+  if (!is.null(tf_data[[3]])) {
+    fn <- timci::export_df2xlsx(tf_data[[3]], params$spa_dir,
+                                "05c_timci_timeflow_steps")
+    fn <- timci::export_df2csv(tf_data[[3]], params$spa_dir,
+                               "05c_timci_timeflow_steps")
+  }
 }
 ```
 
@@ -593,7 +600,7 @@ if (!is.null(tf_data[[1]])) {
 
 ```{r cg-idi-potential-participants}
 if (!is.null(day0_data) && !is.null(day7fu_data)) {
-  cg_qual_export_data <- generate_cg_log(day0_data, day7fu_data)
+  cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
   fn <- timci::export_df2xlsx(cg_qual_export_data, qual1_dir,
                               "cg_idi_participants")
   fn <- timci::export_df2csv(cg_qual_export_data, qual1_dir,

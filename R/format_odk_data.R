@@ -49,8 +49,13 @@ extract_additional_data_from_odk_zip <- function(odk_zip, csv_name) {
   t <- tempdir()
   utils::unzip(odk_zip, exdir = t)
   fs::dir_ls(t)
-  raw_odk_data <- file.path(t, csv_name) %>%
-    readr::read_csv()
+  fn <- file.path(t, csv_name)
+  df <- NULL
+  if ( file.exists(fn) ) {
+    df <- fn %>%
+      readr::read_csv()
+  }
+  df
 
 }
 

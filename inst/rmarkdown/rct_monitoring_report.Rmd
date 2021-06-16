@@ -151,11 +151,6 @@ if (nrow(facility_data) > 0) {
 }
 ```
 
-\begin{equation} 
-  f\left(k\right) = \binom{n}{k} p^k\left(1-p\right)^{n-k}
-  (\#eq:binom)
-\end{equation}
-
 ```{r submissions-1, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# 1. Soumissions\n\n"))
@@ -395,7 +390,7 @@ print(cbind(st, st1))
 ```
 
 ```{r}
-deidentified_facility_data <- timci::deidentify_data(study_data)
+deidentified_facility_data <- study_data
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -477,7 +472,7 @@ if (nrow(baseline_data) > 0) {
 
 ```{r}
 if (nrow(baseline_data) > 0) {
-  referral_data <- timci::extract_referrals(deidentified_facility_data)
+  referral_data <- timci::extract_referrals(study_data)
   n_referrals <- nrow(referral_data)
   referral_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Referred at Day 0", "Not referred at Day 0"), value = c(n_referrals, n_enrolled - n_referrals)))
   plot(referral_pie_chart)
