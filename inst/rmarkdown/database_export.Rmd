@@ -510,7 +510,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r load-RCT-LS-ODK-withdrawal}
 if (!is.null(raw_withdrawal_data)) {
-  withdrawal_data <- raw_withdrawal_data
+  fn <- timci::export_df2xlsx(raw_withdrawal_data, params$rctls_dir,
+                              "99_withdrawal_data")
+  fn <- timci::export_df2csv(raw_withdrawal_data, params$rctls_dir,
+                             "99_withdrawal_data")
 }
 ```
 

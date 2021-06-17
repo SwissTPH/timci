@@ -94,25 +94,28 @@ if (!is.null(params$pii)) {
 ```
 
 ```{r}
-fu <- NULL
+fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end)
+```
+
+```{r}
 if (!is.null(raw_fu_data)) {
   if (nrow(raw_fu_data) > 0) {
-    
-    fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end)
     failed_fu_data <- timci::format_day7_data(raw_fu_data)[[2]]
     if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
       tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day7_unsuccessful_calls")
     } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
       tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day28_unsuccessful_calls")
     }
-    ltfu <- timci::generate_fu_log(pii, raw_fu_data, fu_end + 1, 100000)
-    if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
-      tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
-    } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
-      tmp <- timci::export_df2xlsx(ltfu, output_dir, "day28_lost_to_followup")
-    }
-    
   }
+}
+```
+
+```{r}
+ltfu <- timci::generate_fu_log(pii, raw_fu_data, fu_end + 1, 100000)
+if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
+  tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
+} else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
+  tmp <- timci::export_df2xlsx(ltfu, output_dir, "day28_lost_to_followup")
 }
 ```
 

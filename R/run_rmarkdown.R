@@ -298,19 +298,21 @@ run_rmarkdown <- function(rctls_pid,
     # Load caregiver IDI invitation data
     print("Load caregiver IDI invitation data")
     if (cgidi1_fid %in% qual_form_list) {
-      raw_cgidi_invitation_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi1_fid,
-                                                               download = FALSE)
-      cgidi_invitation_data <- timci::format_odk_metadata(raw_cgidi_invitation_data)
+      raw_cgidi_invitation_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                           pid = qpid,
+                                                           fid = cgidi1_fid,
+                                                           pp = qual_pp)
+      cgidi_invitation_data <- timci::extract_data_from_odk_zip(raw_cgidi_invitation_zip, paste0(cgidi1_fid,".csv"))
     }
 
     # Load caregiver IDI encryption list
     print("Load caregiver IDI encryption list")
     if (cgidi2_fid %in% qual_form_list) {
-      raw_cgidi_encryption_data <- ruODK::odata_submission_get(pid = qpid,
-                                                               fid = cgidi2_fid,
-                                                               download = FALSE)
-      cgidi_encryption_data <- timci::format_odk_metadata(raw_cgidi_encryption_data)
+      raw_cgidi_encryption_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                          pid = qpid,
+                                                          fid = cgidi2_fid,
+                                                          pp = qual_pp)
+      cgidi_encryption_data <- timci::extract_data_from_odk_zip(raw_cgidi_encryption_zip, paste0(cgidi2_fid,".csv"))
     }
 
     # Load caregiver IDI interview data
@@ -318,7 +320,8 @@ run_rmarkdown <- function(rctls_pid,
     if (cgidi3_fid %in% qual_form_list) {
       raw_cgidi_interview_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                           pid = qpid,
-                                                          fid = cgidi3_fid)
+                                                          fid = cgidi3_fid,
+                                                          pp = qual_pp)
       cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip, paste0(cgidi3_fid,".csv"))
     }
 
@@ -363,11 +366,11 @@ run_rmarkdown <- function(rctls_pid,
   # Day 7 follow-up log #
   #######################
 
-  day7fu_week_dir <- file.path(fu_dir, "day7_log")
-  dir.create(day7fu_week_dir, showWarnings = FALSE)
+  day7fu_dir <- file.path(fu_dir, "day7_log")
+  dir.create(day7fu_dir, showWarnings = FALSE)
 
   fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
-  timci::export_df2xlsx(fu7all, day7fu_week_dir, "02_timci_day7_fu_weekly_log_all")
+  timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
 
   for (fid in research_facilities$facility_id) {
     params <- list(pii = pii,
@@ -377,7 +380,7 @@ run_rmarkdown <- function(rctls_pid,
                    facility_id = fid,
                    fu_start = 0,
                    fu_end = 9)
-    generate_word_report(day7fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
+    generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
   }
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
@@ -387,7 +390,7 @@ run_rmarkdown <- function(rctls_pid,
                  raw_withdrawal_data = raw_withdrawal_data,
                  fu_start = 7,
                  fu_end = 9)
-  generate_word_report(day7fu_week_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
+  generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -404,11 +407,11 @@ run_rmarkdown <- function(rctls_pid,
   # Day 28 follow-up log is only generated for India and Tanzania
 
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    day28fu_week_dir <- file.path(fu_dir, "day28_log")
-    dir.create(day28fu_week_dir, showWarnings = FALSE)
+    day28fu_dir <- file.path(fu_dir, "day28_log")
+    dir.create(day28fu_dir, showWarnings = FALSE)
 
     fu28all <- timci::generate_fu_log(pii, raw_day28fu_data, 0, 32)
-    timci::export_df2xlsx(fu28all, day28fu_week_dir, "02_timci_day28_fu_weekly_log_all")
+    timci::export_df2xlsx(fu28all, day28fu_dir, "02_timci_day28_fu_weekly_log_all")
 
     for (fid in research_facilities$facility_id) {
       params <- list(pii = pii,
@@ -418,7 +421,7 @@ run_rmarkdown <- function(rctls_pid,
                      facility_id = fid,
                      fu_start = 0,
                      fu_end = 32)
-      generate_word_report(day28fu_week_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
+      generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
     }
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
@@ -428,7 +431,7 @@ run_rmarkdown <- function(rctls_pid,
                    raw_withdrawal_data = raw_withdrawal_data,
                    fu_start = 28,
                    fu_end = 32)
-    generate_word_report(day28fu_week_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
+    generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
   }
 

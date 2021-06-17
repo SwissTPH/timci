@@ -276,7 +276,9 @@ generate_fu_log <- function(pii,
 
   # Exclude children who already underwent follow-up
   if (!is.null(fudf)) {
-    fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+    if (nrow(fudf) > 0) {
+      fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+    }
   }
 
   # Exclude children who are outside of the follow-up window period
