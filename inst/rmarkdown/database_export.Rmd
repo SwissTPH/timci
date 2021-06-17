@@ -410,7 +410,7 @@ if (!is.null(facility_data)) {
 df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
 df3 <- df[c("child_id", "full_name")]
 qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
-print(qc3)
+#print(qc3)
 ```
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {

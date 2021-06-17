@@ -123,7 +123,10 @@ if (!is.null(fu)) {
     dplyr::rename('id' = 'name',
                   'child' = 'label',
                   'date' = 'enroldate',
-                  'contact' = 'phonenb')
+                  'phone nb #1' = 'phonenb1',
+                  'phone nb #2' = 'phonenb2',
+                  'phone nb #3' = 'phonenb3',
+                  'contact' = 'balozi')
   
   df$caregiver <- paste(df$caregiver,
                         paste0('(',df$relationship,')'))

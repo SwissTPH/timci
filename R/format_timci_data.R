@@ -292,7 +292,10 @@ generate_fu_log <- function(pii,
                  'main_cg_lbl',
                  'mother',
                  'location_name',
-                 'phone_nb')
+                 'phone_nb',
+                 'phone_nb2',
+                 'phone_nb3',
+                 'cmty_contact')
   fu_log <- fu_log[, col_order]
 
   # Add a first generic row
@@ -305,14 +308,20 @@ generate_fu_log <- function(pii,
                              'main_cg_lbl' = '[RELATIONSHIP]',
                              'mother' = '[MOTHER NAME]',
                              'location_name' = '[LOCATION]',
-                             'phone_nb' = '[PHONE NB]'),
+                             'phone_nb' = '[PHONE NB]',
+                             'phone_nb2' = '[PHONE NB]',
+                             'phone_nb3' = '[PHONE NB]',
+                             'cmty_contact' = '[CONTACT]'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',
                            'enroldate' = 'date_visit',
                            'relationship' = 'main_cg_lbl',
                            'location' = 'location_name',
-                           'phonenb' = 'phone_nb')
+                           'phonenb1' = 'phone_nb',
+                           'phonenb2' = 'phone_nb2',
+                           'phonenb3' = 'phone_nb3',
+                           'balozi' = 'cmty_contact',)
 
 }
 

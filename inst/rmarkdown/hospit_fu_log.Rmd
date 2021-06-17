@@ -74,7 +74,7 @@ if (!is.null(day7fu)) {
     dplyr::rename('id' = 'name',
                   'child' = 'label',
                   'date' = 'enroldate',
-                  'contact' = 'phonenb')
+                  'contact' = 'phonenb1')
   
   df$caregiver <- paste(df$caregiver,
                         paste0('(',df$relationship,')'))

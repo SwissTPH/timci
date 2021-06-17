@@ -139,7 +139,9 @@ if (fu_fid %in% rct_ls_form_list) {
     un = ruODK::get_default_un(),
     pw = ruODK::get_default_pw(),
   )
-  current_version <- as.numeric(cform$version)
+  version_no_bracket <- strsplit(cform$version, "[[]")[[1]][1]
+  encryption_version <- strsplit(cform$version, "[[]")[[1]][2]
+  current_version <- as.numeric(version_no_bracket)
 }
 ```
 
@@ -158,6 +160,11 @@ if (fu_fid %in% rct_ls_form_list) {
   csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv_filename)
   # Publish a draft form
   new_version <- as.character(current_version + 0.000001)
+  # Reintegrate the encryption number if necessary
+  if (!is.na(encryption_version)) {
+    new_version <- paste0(new_version, "[", encryption_version)
+  }
+  
   publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)
 }
 ```

@@ -357,7 +357,7 @@ run_rmarkdown <- function(rctls_pid,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data)
-  generate_word_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
+  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
 
   #######################
   # Day 7 follow-up log #
@@ -449,6 +449,6 @@ run_rmarkdown <- function(rctls_pid,
   params <- list(path_dir = path_dir,
                  facility_data = facility_data,
                  wfa_data = wfa_data)
-  generate_word_report(path_dir, "path_report.Rmd", "timci_path_report", params)
+  generate_pdf_report(path_dir, "path_report.Rmd", "timci_path_report", params)
 
 }

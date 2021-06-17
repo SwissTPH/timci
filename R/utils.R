@@ -9,7 +9,7 @@ export_df2xlsx <- function(df, dirname, prefix) {
 
   #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
   fname <- file.path(dirname, paste0(prefix, ".xlsx"))
-  openxlsx::write.xlsx(df, fname, row.names = FALSE)
+  openxlsx::write.xlsx(df, fname, row.names = FALSE, overwrite = TRUE)
   fname
 
 }
