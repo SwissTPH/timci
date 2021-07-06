@@ -4,10 +4,14 @@
 \alias{format_odk_metadata}
 \title{Format ODK metadata}
 \usage{
-format_odk_metadata(df)
+format_odk_metadata(df, start_date = NULL, end_date = NULL)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.}
+
+\item{start_date}{start date}
+
+\item{end_date}{end date}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

@@ -7,10 +7,13 @@
 
 detect_id_duplicates <- function(df) {
 
-  df1 <- data.frame(table(df$child_id))
-  df1 <- df1 %>%
-    dplyr::rename(child_id = Var1,
-                  id_fq = Freq)
+  res <- data.frame(table(df$child_id))
+  rescols <- colnames(res)
+  if ('Var1' %in% rescols) {
+    res <- res %>%
+      dplyr::rename(child_id = Var1,
+                    id_fq = Freq)
+  }
 
 }
 

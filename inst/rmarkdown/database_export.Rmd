@@ -473,11 +473,13 @@ if (!is.null(raw_hospit_data)) {
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
 if (!is.null(hospit_data)) {
-  hospit_data_duplicates <- timci::detect_id_duplicates(hospit_data)
-  if (length(hospit_data_duplicates) > 0) { 
-       knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
-  } else {
-    cat("No ID duplicates detected")
+  if (length(hospit_data) > 0) { 
+    hospit_data_duplicates <- timci::detect_id_duplicates(hospit_data)
+    if (length(hospit_data_duplicates) > 0) { 
+         knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
+    } else {
+      cat("No ID duplicates detected")
+    }
   }
 }
 ```

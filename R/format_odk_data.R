@@ -2,17 +2,29 @@
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.
 #' @return This function returns a formatted dataframe for future display and analysis.
+#' @param start_date start date
+#' @param end_date end date
 #' @export
 #' @import magrittr dplyr
 
-format_odk_metadata <- function(df) {
+format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
 
   if (dim(df)[1] > 0) {
     df$today <- strftime(df$today,"%Y-%m-%d")
     df$duration <- as.integer(round(df$end - df$start, digits = 0))
     df$start <- strftime(df$start,"%T")
     df$end <- strftime(df$end,"%T")
-    df %>% dplyr::rename('date' = 'today')
+    df <- df %>% dplyr::rename('date' = 'today')
+    if (!is.null(start_date)) {
+      df <- df %>%
+        dplyr::filter(date >= as.Date(start_date, "%Y-%m-%d"))
+      print(df)
+    }
+    if (!is.null(end_date)) {
+      df <- df %>%
+        dplyr::filter(date <= as.Date(end_date, "%Y-%m-%d"))
+    }
+    df
   }
 
 }
@@ -21,18 +33,20 @@ format_odk_metadata <- function(df) {
 #'
 #' @param odk_zip absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
 #' @param csv_name name of the .CSV file
+#' @param start_date start date
+#' @param end_date end date
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import magrittr dplyr readr utils fs
 
-extract_data_from_odk_zip <- function(odk_zip, csv_name) {
+extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL) {
 
   t <- tempdir()
   utils::unzip(odk_zip, exdir = t)
   fs::dir_ls(t)
   raw_odk_data <- file.path(t, csv_name) %>%
     readr::read_csv()
-  format_odk_metadata(raw_odk_data)
+  format_odk_metadata(raw_odk_data, start_date, end_date)
 
 }
 

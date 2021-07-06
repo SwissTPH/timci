@@ -18,7 +18,9 @@ run_rmarkdown_reportonly(
   qual1_dir,
   qual2_dir,
   spa_db_dir,
-  path_dir
+  path_dir,
+  start_date = NULL,
+  end_date = NULL
 )
 }
 \arguments{
@@ -49,6 +51,10 @@ run_rmarkdown_reportonly(
 \item{spa_db_dir}{Path to the output folder for the SPA database exports}
 
 \item{path_dir}{Path to the output folder for the M&E exports to be shared with PATH}
+
+\item{start_date}{start date}
+
+\item{end_date}{end date}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

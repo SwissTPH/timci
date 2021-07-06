@@ -4,12 +4,21 @@
 \alias{extract_data_from_odk_zip}
 \title{# Unzip and extract ODK data from ODK zip}
 \usage{
-extract_data_from_odk_zip(odk_zip, csv_name)
+extract_data_from_odk_zip(
+  odk_zip,
+  csv_name,
+  start_date = NULL,
+  end_date = NULL
+)
 }
 \arguments{
 \item{odk_zip}{absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`}
 
 \item{csv_name}{name of the .CSV file}
+
+\item{start_date}{start date}
+
+\item{end_date}{end date}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.
