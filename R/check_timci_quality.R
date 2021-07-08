@@ -1,7 +1,20 @@
+#' Detect submission not submitted on the day they were started (ODK function)
+#'
+#' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
+#' @return This function returns a dataframe containing the duration between start and end
+#' @export
+#' @import dplyr magrittr
+
+detect_submission_duration <- function(df) {
+
+  # To be defined
+
+}
+
 #' Detect ID duplicates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
-#' @return This function returns a vector containing IDs of duplicate IDs
+#' @return This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
 #' @export
 #' @import dplyr magrittr
 
@@ -18,9 +31,10 @@ detect_id_duplicates <- function(df) {
 }
 
 #' Detect name duplicates (TIMCI-specific function)
+#' Search for exact matches and switches
 #'
 #' @param df dataframe containing the processed facility data
-#' @return This function returns a vector containing IDs and names of duplicate names
+#' @return This function returns a dataframe containing IDs and names of duplicate names
 #' @export
 #' @import dplyr magrittr
 
@@ -57,6 +71,19 @@ detect_name_duplicates <- function(df) {
   #qc <- merge(qc, qc3, by.x = 'full_name', by.y = 'switched_name')
 
   qc %>% dplyr::select(child_id, ex_name_fq, sw_name_fq)
+
+}
+
+#' Detect name and date of birth duplicates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a vector containing IDs of duplicate name
+#' @export
+#' @import dplyr magrittr
+
+detect_namedob_duplicates <- function(df) {
+
+  #To be defined
 
 }
 

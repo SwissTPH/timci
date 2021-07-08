@@ -25,6 +25,14 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
+```{r notice-text, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche.}\\end{center}")
+} else {
+  cat("\\begin{center}\\textbf{For internal use only. Do not share outside research teams.}\\end{center}")
+}
+```
+
 ```{r introduction-text, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international.")
@@ -98,8 +106,6 @@ if (!is.null(params$facility_data)) {
   raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
   facility_data <- timci::process_facility_data(raw_facility_data)
 
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
@@ -135,6 +141,9 @@ if (!is.null(params$facility_data)) {
   }
   
 }
+
+# Extract personally identifiable data
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -348,6 +357,27 @@ if (nrow(baseline_data) > 0) {
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Délais de soumission\n\n"))
+} else {
+  cat(paste0("## Submission timeliness\n\n"))
+}
+```
+
+To be completed
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Proportion de mères adolescentes\n\n"))
+} else {
+  cat(paste0("## Proportion of underaged mothers\n\n"))
+}
+```
+
+To be completed
+
+```{r, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# 2. Participants\n\n"))
 } else {
   cat(paste0("# 2. Participants\n\n"))
@@ -440,14 +470,15 @@ plot(nec_pie_chart)
 ```
 
 ```{r, results = "asis"}
+cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# 3. Visite de base\n\n"))
   cat(paste0("## Présentation clinique\n\n"))
-  cat(paste0("### Orientation vers un centre de référence\n\n"))
+  cat(paste0("## Orientation vers un centre de référence\n\n"))
 } else {
   cat(paste0("# 3. Baseline visit\n\n"))
   cat(paste0("## Clinical presentation\n\n"))
-  cat(paste0("### Referrals\n\n"))
+  cat(paste0("## Referrals\n\n"))
 }
 
 options(qwraps2_markup = 'markdown')
@@ -479,10 +510,47 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
+```{r contact-details-title, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Informations de contact")
+} else {
+  cat("## Contact details")
+}
+```
+
+```{r, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+if (!is.null(pii)) {
+  if (nrow(pii) > 0) {
+    
+    all <- data.frame(pii)
+    all$phone_nb[!is.na(all$phone_nb)] <- 1
+    all$phone_nb[is.na(all$phone_nb)] <- 0
+    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
+    all$phone_nb2[is.na(all$phone_nb2)] <- 0
+    all$cmty[!is.na(all$cmty)] <- 1
+    all$cmty[is.na(all$cmty)] <- 0
+    
+    contact_details_stats <- list(
+      "Contact details" = list(
+        "Participant with 0 phone number" = ~qwraps2::n_perc(phone_nb == 0, 2),
+        "Participant with 1 phone number" = ~qwraps2::n_perc(phone_nb == 1, 2),
+        "Participant with 2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
+        "Participant with a community contact" = ~qwraps2::n_perc(cmty == 1, 2)
+        )
+    )
+    print(qwraps2::summary_table(all, contact_details_stats))
+    
+  }
+}
+```
+
 ```{r, results = "asis"}
 wmin <- 7
 wmax <- 10
 
+cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# 4. Suivi à Jour 7\n\n"))
   cat(paste0("La période valable pour le suivi à Jour 7 est de **", wmin, "** à **", wmax, "** jours."))
@@ -519,6 +587,14 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
+```{r day7-data-monitoring-title, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Contrôle des données du suivi à jour 7")
+} else {
+  cat("## Monitoring of data collected during the Day 7 follow-up")
+}
+```
+
 ```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
@@ -531,14 +607,14 @@ if (!is.null(day7fu_data)) {
     all$cure_day7[is.na(all$cure_day7)] <- 0
     all$cure_day7[is.na(all$cure_day7)] <- 0
     
-    day7_call_ss <- list(
+    day7_call_stats <- list(
       "Call outcome" = list(
         "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
         "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
         "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
         )
     )
-    print(qwraps2::summary_table(all, day7_call_ss))
+    print(qwraps2::summary_table(all, day7_call_stats))
     
     day7_outcome_ss <- list(
       "Cure" = list(
@@ -554,6 +630,7 @@ if (!is.null(day7fu_data)) {
 ```
 
 ```{r, results = "asis"}
+cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# 5. Suivi des visites à l'hôpital\n\n"))
 } else {
@@ -565,6 +642,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 options(qwraps2_markup = 'markdown')
 
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  cat("\\newpage")
   cat('# 6. Day 28 follow-up\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {

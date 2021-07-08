@@ -10,7 +10,7 @@
 format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
 
   if (dim(df)[1] > 0) {
-    df$today <- strftime(df$today,"%Y-%m-%d")
+    df$today <- strftime(df$start,"%Y-%m-%d")
     df$duration <- as.integer(round(df$end - df$start, digits = 0))
     df$start <- strftime(df$start,"%T")
     df$end <- strftime(df$end,"%T")

@@ -2,7 +2,8 @@
 % Please edit documentation in R/check_timci_quality.R
 \name{detect_name_duplicates}
 \alias{detect_name_duplicates}
-\title{Detect name duplicates (TIMCI-specific function)}
+\title{Detect name duplicates (TIMCI-specific function)
+Search for exact matches and switches}
 \usage{
 detect_name_duplicates(df)
 }
@@ -10,8 +11,9 @@ detect_name_duplicates(df)
 \item{df}{dataframe containing the processed facility data}
 }
 \value{
-This function returns a vector containing IDs and names of duplicate names
+This function returns a dataframe containing IDs and names of duplicate names
 }
 \description{
 Detect name duplicates (TIMCI-specific function)
+Search for exact matches and switches
 }

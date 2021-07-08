@@ -10,7 +10,7 @@ detect_id_duplicates(df)
 \item{df}{dataframe containing the processed facility data}
 }
 \value{
-This function returns a vector containing IDs of duplicate IDs
+This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
 }
 \description{
 Detect ID duplicates (TIMCI-specific function)
