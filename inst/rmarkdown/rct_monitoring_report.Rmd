@@ -13,7 +13,10 @@ output:
   word_document:
     reference_docx: word_styles1.docx
     fig_width: 7.5
-  html_document: default
+  html_document:
+    number_sections: true
+  pdf_document:
+    number_sections: true
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -162,10 +165,10 @@ if (nrow(facility_data) > 0) {
 
 ```{r submissions-1, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# 1. Soumissions\n\n"))
+  cat(paste0("# Soumissions\n\n"))
   cat(paste0("## Nombre total de soumissions par formulaire\n\n"))
 } else {
-  cat(paste0("# 1. Submissions\n\n"))
+  cat(paste0("# Submissions\n\n"))
   cat(paste0("## Total number of submissions per form\n\n"))
 }
 
@@ -260,7 +263,7 @@ if (nrow(facility_data) > 0) {
 w <- 30
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Visites de base et de suivi\n\n"))
+  cat(paste0("### Visites primaires et secondaires\n\n"))
 } else {
   cat(paste0("### Baseline and repeat visits\n\n"))
 }
@@ -363,24 +366,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-To be completed
-
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Proportion de mères adolescentes\n\n"))
-} else {
-  cat(paste0("## Proportion of underaged mothers\n\n"))
-}
-```
-
-To be completed
+To be completed (track submissions that are not submitted on the same day)
 
 ```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# 2. Participants\n\n"))
+  cat(paste0("# Participants\n\n"))
 } else {
-  cat(paste0("# 2. Participants\n\n"))
+  cat(paste0("# Participants\n\n"))
 }
 
 options(qwraps2_markup = 'markdown')
@@ -470,17 +463,90 @@ plot(nec_pie_chart)
 ```
 
 ```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Proportion de mères adolescentes\n\n"))
+} else {
+  cat(paste0("## Proportion of underaged mothers\n\n"))
+}
+```
+
+To be completed
+
+```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# 3. Visite de base\n\n"))
-  cat(paste0("## Présentation clinique\n\n"))
-  cat(paste0("## Orientation vers un centre de référence\n\n"))
+  cat(paste0("# Visite primaire\n\n"))
 } else {
-  cat(paste0("# 3. Baseline visit\n\n"))
-  cat(paste0("## Clinical presentation\n\n"))
-  cat(paste0("## Referrals\n\n"))
+  cat(paste0("# Baseline visit\n\n"))
+}
+```
+
+```{r contact-details-title, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Informations de contact")
+} else {
+  cat("## Contact details")
+}
+```
+
+```{r, results = "asis"}
+options(qwraps2_markup = 'markdown')
+
+if (!is.null(facility_data)) {
+  if (nrow(facility_data) > 0) {
+    
+    all <- data.frame(facility_data)
+    all$phone_nb[!is.na(all$phone_nb)] <- 1
+    all$phone_nb[is.na(all$phone_nb)] <- 0
+    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
+    all$phone_nb2[is.na(all$phone_nb2)] <- 0
+    all$phone_nb3[!is.na(all$phone_nb3)] <- 1
+    all$phone_nb3[is.na(all$phone_nb3)] <- 0
+    all$cmty[!is.na(all$cmty)] <- 1
+    all$cmty[is.na(all$cmty)] <- 0
+    all$location[!is.na(all$location)] <- 1
+    all$location[is.na(all$location)] <- 0
+    
+    contact_details_stats <- list(
+      "Phone number" = list(
+        "No" = ~qwraps2::n_perc(phone_nb == 0, 2),
+        "1" = ~qwraps2::n_perc(phone_nb == 1, 2),
+        "2" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
+        "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
+        ),
+      "No phone number" = list(
+        "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
+        "Community contact" = ~qwraps2::n_perc((cmty == 1) & (phone_nb == 0), 2),
+        "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2),
+        "Known residence" = ~qwraps2::n_perc((location == 1) & (phone_nb == 0), 2)
+        )
+    )
+    print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
+    
+  }
 }
 
+```
+
+```{r header-clinical-presentation, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Présentation clinique\n\n"))
+} else {
+  cat(paste0("## Clinical presentation\n\n"))
+}
+```
+
+```{r header-referrals, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Orientation vers un centre de référence\n\n"))
+} else {
+  cat(paste0("## Referrals\n\n"))
+}
+```
+
+```{r, results = "asis"}
 options(qwraps2_markup = 'markdown')
 
 if (nrow(baseline_data) > 0) {
@@ -510,52 +576,16 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
-```{r contact-details-title, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Informations de contact")
-} else {
-  cat("## Contact details")
-}
-```
-
-```{r, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
-if (!is.null(pii)) {
-  if (nrow(pii) > 0) {
-    
-    all <- data.frame(pii)
-    all$phone_nb[!is.na(all$phone_nb)] <- 1
-    all$phone_nb[is.na(all$phone_nb)] <- 0
-    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
-    all$phone_nb2[is.na(all$phone_nb2)] <- 0
-    all$cmty[!is.na(all$cmty)] <- 1
-    all$cmty[is.na(all$cmty)] <- 0
-    
-    contact_details_stats <- list(
-      "Contact details" = list(
-        "Participant with 0 phone number" = ~qwraps2::n_perc(phone_nb == 0, 2),
-        "Participant with 1 phone number" = ~qwraps2::n_perc(phone_nb == 1, 2),
-        "Participant with 2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
-        "Participant with a community contact" = ~qwraps2::n_perc(cmty == 1, 2)
-        )
-    )
-    print(qwraps2::summary_table(all, contact_details_stats))
-    
-  }
-}
-```
-
 ```{r, results = "asis"}
 wmin <- 7
 wmax <- 10
 
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# 4. Suivi à Jour 7\n\n"))
+  cat(paste0("# Suivi à Jour 7\n\n"))
   cat(paste0("La période valable pour le suivi à Jour 7 est de **", wmin, "** à **", wmax, "** jours."))
 } else {
-  cat(paste0("# 4. Day 7 follow-up\n\n"))
+  cat(paste0("# Day 7 follow-up\n\n"))
   cat(paste0("The valid Day 7 follow-up period is **", wmin, "** to **", wmax, "** days."))
 }
 
@@ -632,9 +662,9 @@ if (!is.null(day7fu_data)) {
 ```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# 5. Suivi des visites à l'hôpital\n\n"))
+  cat(paste0("# Suivi des visites à l'hôpital\n\n"))
 } else {
-  cat(paste0("# 5. Hospital follow-up\n\n"))
+  cat(paste0("# Hospital follow-up\n\n"))
 }
 ```
 
@@ -643,7 +673,7 @@ options(qwraps2_markup = 'markdown')
 
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat("\\newpage")
-  cat('# 6. Day 28 follow-up\n\n')
+  cat('# Day 28 follow-up\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       
