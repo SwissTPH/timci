@@ -198,16 +198,14 @@ run_rmarkdown <- function(rctls_pid,
   # Load widthdrawal data
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
-  if (is.null(raw_withdrawal_data)) {
-    if (wd_fid %in% rct_ls_form_list) {
-      raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                     pid = rctls_pid,
-                                                     fid = wd_fid,
-                                                     pp = rctls_pp,
-                                                     media = FALSE)
-      raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                              paste0(wd_fid,".csv"))
-    }
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
+                                                            paste0(wd_fid,".csv"))
   }
 
   # Load weekly facility assessment data
@@ -621,19 +619,16 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Load widthdrawal data
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
-  if (is.null(raw_withdrawal_data)) {
-    if (wd_fid %in% rct_ls_form_list) {
-      raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                     pid = rctls_pid,
-                                                     fid = wd_fid,
-                                                     pp = rctls_pp,
-                                                     media = FALSE)
-      raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                              paste0(wd_fid,".csv"),
-                                                              start_date,
-                                                              end_date)
-  }
-
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
+                                                            paste0(wd_fid,".csv"),
+                                                            start_date,
+                                                            end_date)
   }
 
   # Load weekly facility assessment data
@@ -834,7 +829,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 #' @param rctls_pid numeric ID of the RCT/LS ODK Central project (mandatory parameter)
 #' @param rctls_pp passphrase (mandatory parameter)
 #' @param research_facilities dataframe that contains the research facilities (mandatory parameter)
-#' @param mdb_dir path to the output folder for the RCT / LS database exports (mandatory parameter)
 #' @param fu_dir path to the output folder for the follow-up exports (mandatory parameter)
 #' @param start_date start date (optional parameter)
 #' @param end_date end date (optional parameter)
@@ -844,7 +838,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 generate_fu_logs <- function(rctls_pid,
                              rctls_pp,
                              research_facilities,
-                             mdb_dir,
                              fu_dir,
                              start_date = NULL,
                              end_date = NULL) {
@@ -896,9 +889,6 @@ generate_fu_logs <- function(rctls_pid,
   facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
-  #To do copy audit trail in folder
-  # local_dir = file.path(mdb_dir, "facility_crf_media")
-
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
   raw_day7fu_data <- NULL
@@ -949,18 +939,16 @@ generate_fu_logs <- function(rctls_pid,
   # Load widthdrawal data
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
-  if (is.null(raw_withdrawal_data)) {
-    if (wd_fid %in% rct_ls_form_list) {
-      raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                     pid = rctls_pid,
-                                                     fid = wd_fid,
-                                                     pp = rctls_pp,
-                                                     media = FALSE)
-      raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                              paste0(wd_fid,".csv"),
-                                                              start_date,
-                                                              end_date)
-    }
+  if (wd_fid %in% rct_ls_form_list) {
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
+                                                            paste0(wd_fid,".csv"),
+                                                            start_date,
+                                                            end_date)
   }
 
   # Load weekly facility assessment data
@@ -986,18 +974,23 @@ generate_fu_logs <- function(rctls_pid,
   day7fu_dir <- file.path(fu_dir, "day7_log")
   dir.create(day7fu_dir, showWarnings = FALSE)
 
-  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 9)
+  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10)
   timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
 
-  for (fid in research_facilities$facility_id) {
+  for (i in 1:nrow(research_facilities)) {
+    fid <- research_facilities[[i, 'facility_id']]
+    fname <- research_facilities[[i, 'facility_label']]
     params <- list(pii = pii,
                    fu_fid = crf_day7_fid,
                    raw_fu_data = raw_day7fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
                    facility_id = fid,
+                   facility_label = fname,
                    fu_start = 0,
-                   fu_end = 9)
-    generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day7_fu_weekly_log"), params)
+                   fu_end = 12,
+                   fu_vstart = 7,
+                   fu_vend = 10)
+    generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
   }
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
@@ -1005,9 +998,11 @@ generate_fu_logs <- function(rctls_pid,
                  fu_fid = crf_day7_fid,
                  raw_fu_data = raw_day7fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
-                 fu_start = 7,
-                 fu_end = 9)
-  generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
+                 fu_start = 6,
+                 fu_end = 12,
+                 fu_vstart = 7,
+                 fu_vend = 10)
+  #generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -1027,18 +1022,23 @@ generate_fu_logs <- function(rctls_pid,
     day28fu_dir <- file.path(fu_dir, "day28_log")
     dir.create(day28fu_dir, showWarnings = FALSE)
 
-    fu28all <- timci::generate_fu_log(pii, raw_day28fu_data, 0, 32)
+    fu28all <- timci::generate_fu_log(pii, raw_day28fu_data, 0, 32, 28, 32)
     timci::export_df2xlsx(fu28all, day28fu_dir, "02_timci_day28_fu_weekly_log_all")
 
-    for (fid in research_facilities$facility_id) {
+    for (i in 1:nrow(research_facilities)) {
+      fid <- research_facilities[[i, 'facility_id']]
+      fname <- research_facilities[[i, 'facility_label']]
       params <- list(pii = pii,
                      fu_fid = crf_day28_fid,
                      raw_fu_data = raw_day28fu_data,
                      raw_withdrawal_data = raw_withdrawal_data,
                      facility_id = fid,
+                     facility_label = fname,
                      fu_start = 0,
-                     fu_end = 32)
-      generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_timci_day28_fu_weekly_log"), params)
+                     fu_end = 32,
+                     fu_vstart = 28,
+                     fu_vend = 32)
+      generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day28_fu_weekly_log"), params)
     }
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
@@ -1048,7 +1048,7 @@ generate_fu_logs <- function(rctls_pid,
                    raw_withdrawal_data = raw_withdrawal_data,
                    fu_start = 28,
                    fu_end = 32)
-    generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
+    #generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
   }
 

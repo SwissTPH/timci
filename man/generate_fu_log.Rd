@@ -4,7 +4,7 @@
 \alias{generate_fu_log}
 \title{Generate follow-up log (TIMCI-specific function)}
 \usage{
-generate_fu_log(pii, fudf, wmin, wmax)
+generate_fu_log(pii, fudf, wmin, wmax, vwmin, vwmax)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
@@ -14,6 +14,10 @@ generate_fu_log(pii, fudf, wmin, wmax)
 \item{wmin}{numerical, start of the follow-up period (in days)}
 
 \item{wmax}{numerical, end of the follow-up period (in days)}
+
+\item{vwmin}{numerical, start of the follow-up period valid for the statistical analysis (in days)}
+
+\item{vwmax}{numerical, end of the follow-up period valid for the statistical analysis (in days)}
 }
 \value{
 This function returns a dataframe.

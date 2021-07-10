@@ -1,5 +1,5 @@
 ---
-title: "TIMCI `r if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')){'Day 7'} else if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')){'Day 28'}` follow-up - `r params$facility_id` Weekly log"
+title: "TIMCI `r if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')){'Day 7'} else if(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')){'Day 28'}` follow-up - `r params$facility_id` `r params$facility_label` - Weekly log"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
@@ -8,8 +8,11 @@ params:
   raw_fu_data: NULL
   raw_withdrawal_data: NULL
   facility_id: "F0000"
+  facility_label: ""
   fu_start: 0
-  fu_end: 9
+  fu_end: 10
+  fu_vstart: 7
+  fu_vend: 10
 output:
   html_document: default
   word_document:
@@ -28,9 +31,12 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r setup-variables}
 
 facility_id <- params$facility_id
+facility_label <- params$facility_label
 fu_fid <- params$fu_fid
 fu_start <- params$fu_start
 fu_end <- params$fu_end
+fu_vstart <- params$fu_vstart
+fu_vend <- params$fu_vend
 
 if (!is.null(params$pii)) {
   
@@ -92,7 +98,7 @@ if (!is.null(params$pii)) {
 ```
 
 ```{r}
-fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end)
+fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end, fu_vstart, fu_vend)
 fu <- fu %>%
   dplyr::filter(fid == facility_id | fid == "F0000")
 ```
@@ -115,14 +121,12 @@ if (!is.null(fu)) {
     dplyr::select('code', dplyr::everything()) %>%
     dplyr::rename('id' = 'name',
                   'child' = 'label',
-                  'date' = 'enroldate')
+                  'valid window [enrolment date ]' = 'enroldate')
   
   df$caregiver <- paste(df$caregiver,
                         paste0('(',df$relationship,')'))
   df$child <- paste(df$child,
                     paste0('(',df$sex,')'))
-  df$contact <- paste(df$contact,
-                    paste0('(',df$location,')'))
   drops <- c("mother", "relationship", "sex", "fid")
   df <- df[ , !(names(df) %in% drops)]
   

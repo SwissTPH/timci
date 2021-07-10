@@ -50,6 +50,36 @@ process_facility_data <- function(df) {
     df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
   }
 
+  if ('a3-a3_a_5' %in% cols) {
+    df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
+  }
+
+  if ('crfs-t02b-a4_c_4' %in% cols) {
+    if ('crfs-t02b-a4_c_4a' %in% cols) {
+      if ('crfs-t02b-a4_c_4b' %in% cols) {
+        df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4') | df$'crfs-t02b-a4_c_4' != 98,
+                                        ifelse(!is.na(df$'crfs-t02b-a4_c_4a') | df$'crfs-t02b-a4_c_4a' != 98,
+                                               ifelse(!is.na(df$'crfs-t02b-a4_c_4b') | df$'crfs-t02b-a4_c_4b' != '98',
+                                                      paste0(df$'crfs-t02b-a4_c_4b', " (", df$'crfs-t02b-a4_c_4a', ", ", df$'crfs-t02b-a4_c_4', ")"),
+                                                      paste0(df$'crfs-t02b-a4_c_4a', " (", df$'crfs-t02b-a4_c_4', ")")),
+                                               df$'crfs-t02b-a4_c_4'),
+                                        '')
+      } else {
+        df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4'),
+                                        ifelse(!is.na(df$'crfs-t02b-a4_c_4a') | df$'crfs-t02b-a4_c_4a' != 98,
+                                               paste0(df$'crfs-t02b-a4_c_4a', " (", df$'crfs-t02b-a4_c_4', ")"),
+                                               df$'crfs-t02b-a4_c_4'),
+                                        '')
+      }
+    } else {
+      df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4') | df$'crfs-t02b-a4_c_4' != 98,
+                                      ifelse(df$'crfs-t02b-a4_c_4' == 96,
+                                             "Outside the district",
+                                             df$'crfs-t02b-a4_c_4'),
+                                      '')
+    }
+  }
+
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols = c("visit_reason-a3_c_1",
@@ -257,6 +287,8 @@ get_summary_by_facility <- function(df) {
 #' @param fudf dataframe containing the processed follow-up data
 #' @param wmin numerical, start of the follow-up period (in days)
 #' @param wmax numerical, end of the follow-up period (in days)
+#' @param vwmin numerical, start of the follow-up period valid for the statistical analysis (in days)
+#' @param vwmax numerical, end of the follow-up period valid for the statistical analysis (in days)
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
@@ -264,7 +296,9 @@ get_summary_by_facility <- function(df) {
 generate_fu_log <- function(pii,
                             fudf,
                             wmin,
-                            wmax) {
+                            wmax,
+                            vwmin,
+                            vwmax) {
 
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
@@ -293,37 +327,43 @@ generate_fu_log <- function(pii,
                  'caregiver',
                  'main_cg_lbl',
                  'mother',
-                 'location_name',
                  'phone_nb',
                  'phone_nb2',
                  'phone_nb3',
+                 'location',
                  'cmty_contact')
   fu_log <- fu_log[, col_order]
+
+  # Order entries by date
+  fu_log <- fu_log %>%
+    dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+
+  # Add valid window in export
+  fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on", fu_log$date_visit, "]")
 
   # Add a first generic row
   fu_log <- rbind(data.frame('fid' = 'F0000',
                              'child_id' = 'X-F0000-P0000',
-                             'label' = '[CHILD NAME]',
-                             'sex' = '[SEX]',
-                             'date_visit' = '[DATE OF ENROLMENT]',
-                             'caregiver' = '[CAREGIVER NAME]',
-                             'main_cg_lbl' = '[RELATIONSHIP]',
-                             'mother' = '[MOTHER NAME]',
-                             'location_name' = '[LOCATION]',
-                             'phone_nb' = '[PHONE NB]',
-                             'phone_nb2' = '[PHONE NB]',
-                             'phone_nb3' = '[PHONE NB]',
-                             'cmty_contact' = '[CONTACT]'),
+                             'label' = 'CHILD NAME',
+                             'sex' = 'SEX',
+                             'date_visit' = 'VALID WINDOW [ENROLMENT DATE]',
+                             'caregiver' = 'CAREGIVER NAME',
+                             'main_cg_lbl' = 'RELATIONSHIP',
+                             'mother' = 'MOTHER NAME',
+                             'phone_nb' = 'PHONE NB 1',
+                             'phone_nb2' = 'PHONE NB 2',
+                             'phone_nb3' = 'PHONE NB 3',
+                             'location' = 'LOCATION',
+                             'cmty_contact' = 'CONTACT'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',
                            'enroldate' = 'date_visit',
                            'relationship' = 'main_cg_lbl',
-                           'location' = 'location_name',
                            'phonenb1' = 'phone_nb',
                            'phonenb2' = 'phone_nb2',
                            'phonenb3' = 'phone_nb3',
-                           'balozi' = 'cmty_contact',)
+                           'contact' = 'cmty_contact')
 
 }
 

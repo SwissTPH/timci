@@ -94,7 +94,7 @@ if (!is.null(params$pii)) {
 ```
 
 ```{r}
-fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end)
+fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end, fu_start, fu_end)
 ```
 
 ```{r}
@@ -111,7 +111,7 @@ if (!is.null(raw_fu_data)) {
 ```
 
 ```{r}
-ltfu <- timci::generate_fu_log(pii, raw_fu_data, fu_end + 1, 100000)
+ltfu <- timci::generate_fu_log(pii, raw_fu_data, fu_end + 1, 100000, fu_end + 1, 100000)
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {

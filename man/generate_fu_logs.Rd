@@ -8,7 +8,6 @@ generate_fu_logs(
   rctls_pid,
   rctls_pp,
   research_facilities,
-  mdb_dir,
   fu_dir,
   start_date = NULL,
   end_date = NULL
@@ -20,8 +19,6 @@ generate_fu_logs(
 \item{rctls_pp}{passphrase (mandatory parameter)}
 
 \item{research_facilities}{dataframe that contains the research facilities (mandatory parameter)}
-
-\item{mdb_dir}{path to the output folder for the RCT / LS database exports (mandatory parameter)}
 
 \item{fu_dir}{path to the output folder for the follow-up exports (mandatory parameter)}
 
