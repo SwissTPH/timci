@@ -5,6 +5,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   pdf_document: default
   word_document:
+    toc: true
     reference_docx: word_styles1.docx
     fig_width: 7.5
   html_document: default
@@ -13,19 +14,20 @@ params:
   participant_zip: '.'
   spa_dir: !r tempdir()
   qual1_dir: !r tempdir()
-  facility_data: null
-  raw_day7fu_data: null
-  raw_hospit_data: null
-  raw_day28fu_data: null
-  raw_withdrawal_data: null
-  spa_cgei_data: null
-  spa_fa_data: null
-  spa_hcpi_data: null
-  spa_sco_data: null
-  tf_data: null
-  cgidi_invitation_data: null
-  cgidi_encryption_data: null
-  cgidi_interview_data: null
+  facility_data: NULL
+  facility_data_audit: NULL
+  raw_day7fu_data: NULL
+  raw_hospit_data: NULL
+  raw_day28fu_data: NULL
+  raw_withdrawal_data: NULL
+  spa_cgei_data: NULL
+  spa_fa_data: NULL
+  spa_hcpi_data: NULL
+  spa_sco_data: NULL
+  tf_data: NULL
+  cgidi_invitation_data: NULL
+  cgidi_encryption_data: NULL
+  cgidi_interview_data: NULL
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -47,6 +49,7 @@ qual1_dir <- params$qual1_dir
 if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
+  facility_data_audit <- params$facility_data_audit
   raw_day7fu_data <- params$raw_day7fu_data
   raw_hospit_data <- params$raw_hospit_data
   raw_day28fu_data <- params$raw_day28fu_data
@@ -311,7 +314,7 @@ This report covers the period from **`r start_date`** to **`r end_date`**.
 
 ## 1.1. Facility data
 
-### Load data
+### Export data
 
 ```{r export-screening-data}
 if (!is.null(facility_data)) { 
@@ -320,6 +323,13 @@ if (!is.null(facility_data)) {
                               "01_timci_screening_data")
   fn <- timci::export_df2csv(screening_data, params$rctls_dir,
                              "01_timci_screening_data")
+}
+```
+
+```{r export-facility-audit}
+if (!is.null(facility_data_audit)) { 
+  fn <- timci::export_df2csv(facility_data_audit, params$rctls_dir,
+                             "00_facility_audit_data")
 }
 ```
 

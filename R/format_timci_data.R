@@ -339,7 +339,7 @@ generate_fu_log <- function(pii,
     dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
 
   # Add valid window in export
-  fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on", fu_log$date_visit, "]")
+  fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on ", fu_log$date_visit, "]")
 
   # Add a first generic row
   fu_log <- rbind(data.frame('fid' = 'F0000',

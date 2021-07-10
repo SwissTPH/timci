@@ -17,6 +17,8 @@ output:
     number_sections: true
   pdf_document:
     number_sections: true
+    toc: true
+    toc_depth: 3
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -26,9 +28,11 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
+options(qwraps2_markup = 'markdown')
 ```
 
 ```{r notice-text, results='asis'}
+cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche.}\\end{center}")
 } else {
@@ -348,13 +352,25 @@ timci::generate_calendar_heatmap(facility_data, date_visit)
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Recrutement\n\n"))
+  cat(paste0("### Visites primaires\n\n"))
 } else {
-  cat(paste0("### Enrolment\n\n"))
+  cat(paste0("### Baseline visits\n\n"))
 }
 
 if (nrow(baseline_data) > 0) {
   timci::generate_calendar_heatmap(baseline_data, date_visit)
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Appel téléphonique à Jour 7\n\n"))
+} else {
+  cat(paste0("### Day 7 phone call\n\n"))
+}
+
+if (nrow(raw_day7fu_data) > 0) {
+  timci::generate_calendar_heatmap(raw_day7fu_data, date)
 }
 ```
 
@@ -371,17 +387,45 @@ To be completed (track submissions that are not submitted on the same day)
 ```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Soumissions par poste de santé\n\n"))
+} else {
+  cat(paste0("## Submissions by facility\n\n"))
+}
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Screening par poste de santé\n\n"))
+} else {
+  cat(paste0("### Screening by facility\n\n"))
+}
+
+stats <- timci::get_summary_by_facility(facility_data)
+stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
+```
+
+```{r, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Participants\n\n"))
 } else {
   cat(paste0("# Participants\n\n"))
 }
+```
 
-options(qwraps2_markup = 'markdown')
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Eligibilité\n\n"))
+} else {
+  cat(paste0("## Eligibility\n\n"))
+}
 
 all <- data.frame(facility_data)
 all$sickness[is.na(all$sickness)] <- 0
 all$inpatient[is.na(all$inpatient)] <- 0
 all$consult_reason[is.na(all$consult_reason)] <- 0
+all$cg_eligibility[is.na(all$cg_eligibility)] <- 0
 all$prev_enrl[is.na(all$prev_enrl)] <- 0
 all$repeat_consult[is.na(all$repeat_consult)] <- 0
 all$consent[is.na(all$consent)] <- 0
@@ -399,6 +443,9 @@ summary_statistics <- list(
     "Immunisation" = ~qwraps2::n_perc(consult_reason == 3, 2),
     "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2)
     ),
+  "Caregiver eligibility" = list(
+    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1, 2)
+    ),
   "Multiple enrolments" = list(
     "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
     "Last enrolment < 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
@@ -412,20 +459,23 @@ st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistic
 print(cbind(st, st1))
 ```
 
-```{r}
-deidentified_facility_data <- study_data
-```
-
-```{r fig.height=8, results='asis'}
+```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Screening par poste de santé\n\n"))
+  cat(paste0("## Proportion de mères adolescentes\n\n"))
 } else {
-  cat(paste0("## Screening by facility\n\n"))
+  cat(paste0("## Proportion of underaged mothers\n\n"))
 }
 
-stats <- timci::get_summary_by_facility(facility_data)
-stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
-timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
+all <- data.frame(facility_data)
+all$underaged_mother[is.na(all$underaged_mother)] <- 0
+
+mother_statistics <- list(
+  "Mother age" = list(
+    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1, 2),
+    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0, 2)
+    )
+)
+print(qwraps2::summary_table(all, mother_statistics))
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -463,16 +513,6 @@ plot(nec_pie_chart)
 ```
 
 ```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Proportion de mères adolescentes\n\n"))
-} else {
-  cat(paste0("## Proportion of underaged mothers\n\n"))
-}
-```
-
-To be completed
-
-```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Visite primaire\n\n"))
@@ -490,8 +530,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
 if (!is.null(facility_data)) {
   if (nrow(facility_data) > 0) {
     
@@ -507,13 +545,17 @@ if (!is.null(facility_data)) {
     all$location[!is.na(all$location)] <- 1
     all$location[is.na(all$location)] <- 0
     
-    contact_details_stats <- list(
+    phone_stats <- list(
       "Phone number" = list(
-        "No" = ~qwraps2::n_perc(phone_nb == 0, 2),
+        "0" = ~qwraps2::n_perc(phone_nb == 0, 2),
         "1" = ~qwraps2::n_perc(phone_nb == 1, 2),
         "2" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
         "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
-        ),
+        )
+    )
+    print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+    
+    contact_details_stats <- list(
       "No phone number" = list(
         "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
         "Community contact" = ~qwraps2::n_perc((cmty == 1) & (phone_nb == 0), 2),
@@ -547,8 +589,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
 if (nrow(baseline_data) > 0) {
   all <- data.frame(study_data)
   all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
@@ -626,8 +666,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
@@ -669,8 +707,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-options(qwraps2_markup = 'markdown')
-
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat("\\newpage")
   cat('# Day 28 follow-up\n\n')

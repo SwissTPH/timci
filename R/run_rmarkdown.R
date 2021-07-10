@@ -564,10 +564,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                         start_date,
                                                         end_date)
   facility_data <- timci::process_facility_data(raw_facility_data)
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
-  #To do copy audit trail in folder
-  # local_dir = file.path(mdb_dir, "facility_crf_media")
+  # Copy audit trail in folder
+  facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid, " - audit.csv"))
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
@@ -785,6 +784,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  spa_dir = spa_db_dir,
                  qual1_dir = qual1_dir,
                  facility_data = facility_data,
+                 facility_data_audit = facility_data_audit,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,
