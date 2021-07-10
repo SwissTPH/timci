@@ -59,7 +59,7 @@ process_facility_data <- function(df) {
       if ('crfs-t02b-a4_c_4b' %in% cols) {
         df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4') | df$'crfs-t02b-a4_c_4' != 98,
                                         ifelse(!is.na(df$'crfs-t02b-a4_c_4a') | df$'crfs-t02b-a4_c_4a' != 98,
-                                               ifelse(!is.na(df$'crfs-t02b-a4_c_4b') | df$'crfs-t02b-a4_c_4b' != '98',
+                                               ifelse(!is.na(df$'crfs-t02b-a4_c_4b') | df$'crfs-t02b-a4_c_4b' != 98,
                                                       paste0(df$'crfs-t02b-a4_c_4b', " (", df$'crfs-t02b-a4_c_4a', ", ", df$'crfs-t02b-a4_c_4', ")"),
                                                       paste0(df$'crfs-t02b-a4_c_4a', " (", df$'crfs-t02b-a4_c_4', ")")),
                                                df$'crfs-t02b-a4_c_4'),
@@ -458,19 +458,30 @@ count_screening <- function(df) {
                              'repeat_consult',
                              'consent')
 
+  # Above 5 years
   n_incl1 <- sum(cp$'age_incl' == 0)
+
+  # First day of life
   cp <- cp %>%
     dplyr::filter(cp$'age_incl' == 1)
   n_excl1 <- sum(cp$'age_excl'  == 1)
+
+  # Inpatient admission
   cp <- cp %>%
     dplyr::filter(cp$'age_excl' == 0)
   n_excl3 <- sum(cp$'inpatient' == 1)
+
+  # No illness
   cp <- cp %>%
     dplyr::filter(cp$'inpatient' == 0)
   n_incl2 <- sum(cp$'sickness' == 0)
+
+  # Repeat visit
   cp <- cp %>%
     dplyr::filter(cp$'sickness' == 1)
   n_rep <- sum(cp$'repeat_consult' == 1)
+
+  # Consent withdrawal
   cp <- cp %>%
     dplyr::filter(cp$'repeat_consult' == 0)
   n_con <- sum(cp$'consent' == 0)
@@ -483,8 +494,8 @@ count_screening <- function(df) {
                        "Consent withdrawal"),
              value = c(n_incl1,
                        n_excl1,
-                       n_incl2,
                        n_excl3,
+                       n_incl2,
                        n_rep,
                        n_con))
 
