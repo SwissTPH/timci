@@ -322,6 +322,8 @@ if (!is.null(raw_hospit_data)) {
   } else{
     cat('0 submissions since the start of the study.\n\n')
   }
+} else{
+  cat('N/A\n\n')
 }
 ```
 
@@ -334,6 +336,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
     } else {
       cat('0 submissions since the start of the study.\n\n')
     }
+  } else{
+    cat('N/A\n\n')
   }
 }
 ```
@@ -371,6 +375,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (nrow(raw_day7fu_data) > 0) {
   timci::generate_calendar_heatmap(raw_day7fu_data, date)
+} else{
+  cat('N/A\n\n')
 }
 ```
 
@@ -432,19 +438,25 @@ all$consent[is.na(all$consent)] <- 0
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 summary_statistics <- list(
-  "Age eligibility" = list(
+  "Age" = list(
     "0 - 59 months" = ~qwraps2::n_perc(age_incl == 1, 2),
     "First day of life" = ~qwraps2::n_perc(age_excl == 1, 2)
     ),
-  "Visit eligibility" = list(
-    "Sick child" = ~qwraps2::n_perc(sickness == 1, 2),
-    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2),
+  "Primary reason for consultation" = list(
+    "Sickness" = ~qwraps2::n_perc(consult_reason == 1, 2),
     "Trauma" = ~qwraps2::n_perc(consult_reason == 2, 2),
     "Immunisation" = ~qwraps2::n_perc(consult_reason == 3, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2)
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2),
+    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2)
     ),
-  "Caregiver eligibility" = list(
-    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1, 2)
+  "No illness" = list(
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, 2),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, 2),
+    "Monitoring + sickness (secondary)" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2)
+    ),
+  "Caregiver's age" = list(
+    "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0 & sickness == 1, 2),
+    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1 & sickness == 1, 2)
     ),
   "Multiple enrolments" = list(
     "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
@@ -471,11 +483,11 @@ all$underaged_mother[is.na(all$underaged_mother)] <- 0
 
 mother_statistics <- list(
   "Mother age" = list(
-    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1, 2),
-    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0, 2)
+    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0 & sickness == 1), 2),
+    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1 & sickness == 1), 2)
     )
 )
-print(qwraps2::summary_table(all, mother_statistics))
+print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -501,9 +513,11 @@ timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("### Recrutement par rapport à l'objectif hebdomadaire\n\n"))
+  cat("N/A\n\n")
   cat(paste0("### Causes de non-recrutement\n\n"))
 } else {
   cat(paste0("### Enrolment versus weekly target\n\n"))
+  cat("N/A\n\n")
   cat(paste0("### Non-enrolment causes\n\n"))
 }
 
@@ -554,6 +568,9 @@ if (!is.null(facility_data)) {
         )
     )
     print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+    
+    all <- all %>%
+      dplyr::filter(all$phone_nb == 0)
     
     contact_details_stats <- list(
       "No phone number" = list(
