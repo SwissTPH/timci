@@ -32,4 +32,5 @@ utils::globalVariables(c("Group.1",
                          "switched_name",
                          "child_id",
                          "ex_name_fq",
-                         "sw_name_fq"))
+                         "sw_name_fq",
+                         "proceed"))

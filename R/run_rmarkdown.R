@@ -1002,7 +1002,7 @@ generate_fu_logs <- function(rctls_pid,
                  fu_end = 12,
                  fu_vstart = 7,
                  fu_vend = 10)
-  #generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
+  generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
   #################################
   # Hospitalisation follow-up log #
@@ -1047,8 +1047,10 @@ generate_fu_logs <- function(rctls_pid,
                    raw_fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
                    fu_start = 28,
-                   fu_end = 32)
-    #generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
+                   fu_end = 32,
+                   fu_vstart = 28,
+                   fu_vend = 32)
+    generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
   }
 

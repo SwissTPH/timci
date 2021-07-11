@@ -60,7 +60,7 @@ process_facility_data <- function(df) {
         df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4') | df$'crfs-t02b-a4_c_4' != 98,
                                         ifelse(!is.na(df$'crfs-t02b-a4_c_4a') | df$'crfs-t02b-a4_c_4a' != 98,
                                                ifelse(!is.na(df$'crfs-t02b-a4_c_4b') | df$'crfs-t02b-a4_c_4b' != 98,
-                                                      paste0(df$'crfs-t02b-a4_c_4b', " (", df$'crfs-t02b-a4_c_4a', ", ", df$'crfs-t02b-a4_c_4', ")"),
+                                                      paste0(df$'crfs-t02b-a4_c_4b', " (", df$'crfs-t02b-a4_c_4a', " / ", df$'crfs-t02b-a4_c_4', ")"),
                                                       paste0(df$'crfs-t02b-a4_c_4a', " (", df$'crfs-t02b-a4_c_4', ")")),
                                                df$'crfs-t02b-a4_c_4'),
                                         '')
@@ -308,7 +308,8 @@ generate_fu_log <- function(pii,
   fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
 
-  # Exclude children who already underwent follow-up
+  # Exclude children who already underwent successful follow-up
+  fudf <- fudf %>% dplyr::filter(proceed == 1)
   if (!is.null(fudf)) {
     if (nrow(fudf) > 0) {
       fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
@@ -355,6 +356,102 @@ generate_fu_log <- function(pii,
                              'phone_nb3' = 'PHONE NB 3',
                              'location' = 'LOCATION',
                              'cmty_contact' = 'CONTACT'),
+                  fu_log)
+
+  fu_log %>% dplyr::rename('name' = 'child_id',
+                           'enroldate' = 'date_visit',
+                           'relationship' = 'main_cg_lbl',
+                           'phonenb1' = 'phone_nb',
+                           'phonenb2' = 'phone_nb2',
+                           'phonenb3' = 'phone_nb3',
+                           'contact' = 'cmty_contact')
+
+}
+
+#' Generate follow-up log 2 (TIMCI-specific function)
+#'
+#' Generate a list of participants to be called in a time window after baseline between wmin and wmax
+#' @param pii dataframe containing personally identifiable data
+#' @param fudf dataframe containing the processed follow-up data
+#' @param wmin numerical, start of the follow-up period (in days)
+#' @param wmax numerical, end of the follow-up period (in days)
+#' @param vwmin numerical, start of the follow-up period valid for the statistical analysis (in days)
+#' @param vwmax numerical, end of the follow-up period valid for the statistical analysis (in days)
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+generate_fu_log2 <- function(pii,
+                             fudf,
+                             wmin,
+                             wmax,
+                             vwmin,
+                             vwmax) {
+
+  fu_log <- pii
+  fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
+  fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
+  fu_log$child_name <- paste(fu_log$fs_name, fu_log$ls_name)
+  fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
+  fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
+  fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
+  fu_log$label <- paste0(fu_log$child_name,
+                         " (",
+                         as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmin,
+                         " to ",
+                         as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmax,
+                         " )")
+
+
+  # Exclude children who already underwent successful follow-up
+  fudf <- fudf %>% dplyr::filter(proceed == 1)
+  if (!is.null(fudf)) {
+    if (nrow(fudf) > 0) {
+      fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+    }
+  }
+
+  # Exclude children who are outside of the follow-up window period
+  fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
+
+  # Order columns
+  col_order <- c('fid',
+                 'device_id',
+                 'child_id',
+                 'child_name',
+                 'sex',
+                 'date_visit',
+                 'caregiver',
+                 'main_cg_lbl',
+                 'mother',
+                 'phone_nb',
+                 'phone_nb2',
+                 'phone_nb3',
+                 'location',
+                 'cmty_contact',
+                 'label')
+  fu_log <- fu_log[, col_order]
+
+  # Order entries by date
+  fu_log <- fu_log %>%
+    dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+
+  # Add a first generic row
+  fu_log <- rbind(data.frame('fid' = 'F0000',
+                             'device_id' = 'none',
+                             'child_id' = 'X-F0000-P0000',
+                             'child_name' = 'CHILD NAME',
+                             'sex' = 'SEX',
+                             'date_visit' = 'ENROLMENT DATE',
+                             'caregiver' = 'CAREGIVER NAME',
+                             'main_cg_lbl' = 'RELATIONSHIP',
+                             'mother' = 'MOTHER NAME',
+                             'phone_nb' = 'PHONE NB 1',
+                             'phone_nb2' = 'PHONE NB 2',
+                             'phone_nb3' = 'PHONE NB 3',
+                             'location' = 'LOCATION',
+                             'cmty_contact' = 'CONTACT',
+                             'label' = 'CHILD NAME (VALID WINDOW)'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',

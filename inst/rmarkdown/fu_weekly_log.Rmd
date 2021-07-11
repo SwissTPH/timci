@@ -10,7 +10,7 @@ params:
   facility_id: "F0000"
   facility_label: ""
   fu_start: 0
-  fu_end: 10
+  fu_end: 12
   fu_vstart: 7
   fu_vend: 10
 output:
