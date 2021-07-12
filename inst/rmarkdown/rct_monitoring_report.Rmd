@@ -318,7 +318,7 @@ if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
     plot(timci::generate_day_bar_plot(raw_hospit_data$date, as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
-                                      "Submissions"))
+                                      submission_str))
   } else{
     cat('0 submissions since the start of the study.\n\n')
   }
@@ -332,7 +332,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   cat('### Day 28 phone call\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
-      plot(timci::generate_day_bar_plot(raw_day28fu_data$date, as.Date(Sys.Date() - w), as.Date(Sys.Date() + 1), "Submissions"))
+      plot(timci::generate_day_bar_plot(raw_day28fu_data$date, as.Date(Sys.Date() - w),
+                                        as.Date(Sys.Date() + 1),
+                                        submission_str))
     } else {
       cat('0 submissions since the start of the study.\n\n')
     }
@@ -434,7 +436,6 @@ all$consult_reason[is.na(all$consult_reason)] <- 0
 all$cg_eligibility[is.na(all$cg_eligibility)] <- 0
 all$prev_enrl[is.na(all$prev_enrl)] <- 0
 all$repeat_consult[is.na(all$repeat_consult)] <- 0
-all$consent[is.na(all$consent)] <- 0
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 summary_statistics <- list(
@@ -452,7 +453,7 @@ summary_statistics <- list(
   "No illness" = list(
     "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, 2),
     "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, 2),
-    "Monitoring + sickness (secondary)" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2)
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2)
     ),
   "Caregiver's age" = list(
     "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0 & sickness == 1, 2),
@@ -461,13 +462,31 @@ summary_statistics <- list(
   "Multiple enrolments" = list(
     "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
     "Last enrolment < 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
-    ),
-  "Consenting process outcome" = list(
-    "Enrolled" = ~qwraps2::n_perc(consent == 1, 2)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
+print(cbind(st, st1))
+```
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Consentement\n\n"))
+} else {
+  cat(paste0("## Consent\n\n"))
+}
+
+all <- data.frame(facility_data)
+all <- all %>% dplyr::filter(!is.na(all$consent))
+all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+
+consent_statistics <- list(
+  "Consenting process outcome" = list(
+    "Enrolled" = ~qwraps2::n_perc(consent == 1, 2)
+    )
+)
+st <- qwraps2::summary_table(all, consent_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), consent_statistics)
 print(cbind(st, st1))
 ```
 
@@ -554,8 +573,9 @@ if (!is.null(facility_data)) {
     all$phone_nb2[is.na(all$phone_nb2)] <- 0
     all$phone_nb3[!is.na(all$phone_nb3)] <- 1
     all$phone_nb3[is.na(all$phone_nb3)] <- 0
-    all$cmty[!is.na(all$cmty)] <- 1
     all$cmty[is.na(all$cmty)] <- 0
+    all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
+    all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
     all$location[!is.na(all$location)] <- 1
     all$location[is.na(all$location)] <- 0
     
@@ -659,6 +679,7 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r}
+n_due_day7fu <- sum(!is.na(demog_data$date_visit) & ((as.Date(demog_data$date_visit, "%Y-%m-%d") + 7) <= Sys.Date()))
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     n_reached_day7fu <- sum(!is.na(day7fu_data$cg_ok) & (day7fu_data$cg_ok == 1))
@@ -668,9 +689,15 @@ if (!is.null(day7fu_data)) {
     n_valid_day7fu <- 0
   }
   
-  # gauge plots
-  timci::plot_enrolment_gauge(n_reached_day7fu/n_enrolled, "Day 7 follow-up rate", 100, 80, 90)
-  timci::plot_enrolment_gauge(n_valid_day7fu/n_enrolled, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
+  if (n_due_day7fu > 0)
+  {
+    # gauge plots
+    timci::plot_enrolment_gauge(n_reached_day7fu/n_due_day7fu, "Day 7 follow-up rate", 100, 80, 90)
+    timci::plot_enrolment_gauge(n_valid_day7fu/n_due_day7fu, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
+  } else{
+    cat('N/A\n\n')
+  }
+  
 }
 ```
 
@@ -706,7 +733,7 @@ if (!is.null(day7fu_data)) {
         "Known" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2 | cure_day7 == 3 | cure_day7 == 4, 2)
         ),
       "Hospitalisation" = list(
-        "Reported" = ~qwraps2::n_perc(status_day7 == 2 | cure_day7 == 1, 2)
+        "Reported" = ~qwraps2::n_perc(hf_visit_day7 == 1, 2)
         )
     )
     print(qwraps2::summary_table(all, day7_outcome_ss))

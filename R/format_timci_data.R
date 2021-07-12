@@ -309,10 +309,10 @@ generate_fu_log <- function(pii,
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
 
   # Exclude children who already underwent successful follow-up
-  fudf <- fudf %>% dplyr::filter(proceed == 1)
   if (!is.null(fudf)) {
     if (nrow(fudf) > 0) {
-      fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+      fudf <- fudf %>% dplyr::filter(proceed == 1)
+      fu_log <- fu_log[!(fu_log$child_id %in% fudf$"a1-pid"),]
     }
   }
 
@@ -404,10 +404,10 @@ generate_fu_log2 <- function(pii,
 
 
   # Exclude children who already underwent successful follow-up
-  fudf <- fudf %>% dplyr::filter(proceed == 1)
   if (!is.null(fudf)) {
     if (nrow(fudf) > 0) {
-      fu_log <- fu_log[!(fu_log$child_id %in% fudf$a1_pid),]
+      fudf <- fudf %>% dplyr::filter(proceed == 1)
+      fu_log <- fu_log[!(fu_log$child_id %in% fudf$"a1-pid"),]
     }
   }
 

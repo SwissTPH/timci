@@ -45,11 +45,11 @@ if (!is.null(params$pii)) {
   rct_ls_form_list <- params$rct_ls_form_list
   
 } else {
-  
+
   ################
   # Set up ruODK #
   ################
-  
+
   ruODK::ru_setup(
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
@@ -62,36 +62,61 @@ if (!is.null(params$pii)) {
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
+
+  # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  rctls_pid <- Sys.getenv("TIMCI_PILOT_RCTLS_PID")
+  rctls_pp <- Sys.getenv("TIMCI_PILOT_RCTLS_PP")
 
   #######################
   # Load TIMCI ODK data #
   #######################
 
   # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list()$fid
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
   # Load facility data
   print("Load facility data")
-  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
-  facility_data <- timci::process_facility_data(raw_facility_data)
 
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp)
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
+                                                        paste0(crf_facility_fid,".csv"),
+                                                        start_date = as.Date("2021-07-05"),
+                                                        end_date = NULL)
+  facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
-  # Load follow-up data
-  print("Load follow-up data")
+  # Load day 7 follow-up data
+  print("Load day 7 follow-up data")
   raw_fu_data <- NULL
   if (fu_fid %in% rct_ls_form_list) {
-    raw_fu_data <- ruODK::odata_submission_get(fid = fu_fid,
-                                                   download = FALSE)
+    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = fu_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+    raw_fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip,
+                                                        paste0(fu_fid,".csv"),
+                                                        start_date = as.Date("2021-07-05"),
+                                                        end_date = NULL)
   }
 
   # Load widthdrawal data
   print("Load withdrawal data")
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
-                                                       download = FALSE)
+    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                   pid = rctls_pid,
+                                                   fid = wd_fid,
+                                                   pp = rctls_pp,
+                                                   media = FALSE)
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
+                                                            paste0(wd_fid,".csv"),
+                                                            start_date = as.Date("2021-07-05"),
+                                                            end_date = NULL)
   }
   
 }
