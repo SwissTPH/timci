@@ -485,10 +485,11 @@ format_day7_data <- function(df) {
   fail_df <- df[df$proceed == 0,]
 
   # Match column names with names from dictionary
+  df <- match_from_xls_dict(df, "day7_dict.xlsx")
   day7_df <- match_from_xls_dict(day7_df, "day7_dict.xlsx")
   fail_df <- match_from_xls_dict(fail_df, "day7_dict.xlsx")
 
-  list(day7_df, fail_df)
+  list(day7_df, fail_df, df)
 
 }
 

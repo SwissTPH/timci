@@ -413,6 +413,26 @@ stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by
 timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
 ```
 
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Recrutement par poste de santé\n\n"))
+} else {
+  cat(paste0("## Enrolment by facility\n\n"))
+}
+timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Appels téléphoniques à jour 7 par poste de santé\n\n"))
+  cat(paste0("N/A\n\n"))
+} else {
+  cat(paste0("## Day 7 phone calls by facility\n\n"))
+  cat(paste0("N/A\n\n"))
+}
+#timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
+```
+
 ```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -507,15 +527,6 @@ mother_statistics <- list(
     )
 )
 print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
-```
-
-```{r fig.height=8, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Recrutement par poste de santé\n\n"))
-} else {
-  cat(paste0("## Enrolment by facility\n\n"))
-}
-timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
 ```
 
 ```{r, results='asis'}
@@ -670,7 +681,8 @@ day7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
 
-    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
+    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
+    succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
     
     day7fu_data <- day7fu_data %>%
       dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
@@ -714,10 +726,11 @@ if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all <- data.frame(day7fu_data)
+    all$cg_reached[is.na(all$cg_reached)] <- 0
     all$cg_ok[is.na(all$cg_ok)] <- 0
     all$status_day7[is.na(all$status_day7)] <- 0
     all$cure_day7[is.na(all$cure_day7)] <- 0
-    all$cure_day7[is.na(all$cure_day7)] <- 0
+    
     
     day7_call_stats <- list(
       "Call outcome" = list(
@@ -726,8 +739,19 @@ if (!is.null(day7fu_data)) {
         "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
         )
     )
-    print(qwraps2::summary_table(all, day7_call_stats))
     
+    st <- qwraps2::summary_table(all, day7_call_stats)
+    st1 <- qwraps2::summary_table(dplyr::group_by(all, district), day7_call_stats)
+    print(cbind(st, st1))
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(succ_day7fu_data)
     day7_outcome_ss <- list(
       "Cure" = list(
         "Known" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2 | cure_day7 == 3 | cure_day7 == 4, 2)
