@@ -238,7 +238,7 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
     counts <- c1
   }
 
-  ggplot(counts, aes(x = names, y = x, fill = factor(type, levels=c(lbl2, lbl1)))) +
+  ggplot(counts, aes(x = names, y = x, fill = factor(type, levels = c(lbl2, lbl1)))) +
     geom_bar(stat = "identity", width = 1) +
     ylab(ylbl) +
     xlab("Date") +
@@ -252,6 +252,6 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
           axis.line = element_blank(),
           legend.title = element_blank(),
           panel.background = element_blank(),
-          legend.position="bottom")
+          legend.position = "bottom")
 
 }
