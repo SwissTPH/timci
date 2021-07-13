@@ -951,22 +951,6 @@ generate_fu_logs <- function(rctls_pid,
                                                             end_date)
   }
 
-  # Load weekly facility assessment data
-  print("Load weekly facility assessment data")
-  wfa_data <- NULL
-  if (crf_wfa_fid %in% rct_ls_form_list) {
-    raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                            pid = rctls_pid,
-                                            fid = crf_wfa_fid,
-                                            pp = rctls_pp,
-                                            media = FALSE)
-    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip,
-                                                     paste0(crf_wfa_fid,".csv"),
-                                                     start_date,
-                                                     end_date)
-    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-  }
-
   #######################
   # Day 7 follow-up log #
   #######################
@@ -1010,7 +994,7 @@ generate_fu_logs <- function(rctls_pid,
 
   params <- list(output_dir = fu_dir,
                  pii = pii)
-  generate_word_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+  #generate_word_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
   # Day 28 follow-up log #
