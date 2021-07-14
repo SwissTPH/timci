@@ -375,11 +375,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("### Day 7 phone call\n\n"))
 }
 
-if (nrow(raw_day7fu_data) > 0) {
-  timci::generate_calendar_heatmap(raw_day7fu_data, date)
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    timci::generate_calendar_heatmap(raw_day7fu_data, date)
+  } else{
+    cat('N/A\n\n')
+  }
 } else{
-  cat('N/A\n\n')
-}
+    cat('N/A\n\n')
+  }
 ```
 
 ```{r, results = "asis"}
@@ -480,8 +484,9 @@ summary_statistics <- list(
     "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1 & sickness == 1, 2)
     ),
   "Multiple enrolments" = list(
+    "First enrolment" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, 2),
     "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
-    "Last enrolment < 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
+    "Last enrolment <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
@@ -491,9 +496,9 @@ print(cbind(st, st1))
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Consentement\n\n"))
+  cat(paste0("## Consentement éclairé\n\n"))
 } else {
-  cat(paste0("## Consent\n\n"))
+  cat(paste0("## Informed consent\n\n"))
 }
 
 all <- data.frame(facility_data)
@@ -501,8 +506,9 @@ all <- all %>% dplyr::filter(!is.na(all$consent))
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 consent_statistics <- list(
-  "Consenting process outcome" = list(
-    "Enrolled" = ~qwraps2::n_perc(consent == 1, 2)
+  "Consent outcome" = list(
+    "Consented" = ~qwraps2::n_perc(consent == 1, 2),
+    "Not consented" = ~qwraps2::n_perc(consent == 0, 2)
     )
 )
 st <- qwraps2::summary_table(all, consent_statistics)
@@ -521,12 +527,15 @@ all <- data.frame(facility_data)
 all$underaged_mother[is.na(all$underaged_mother)] <- 0
 
 mother_statistics <- list(
-  "Mother age" = list(
+  "Mother's age" = list(
     "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0 & sickness == 1), 2),
     "Above 18" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1 & sickness == 1), 2)
     )
 )
-print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
+
+#print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
+print(qwraps2::summary_table(all, mother_statistics))
+
 ```
 
 ```{r, results='asis'}
@@ -598,7 +607,8 @@ if (!is.null(facility_data)) {
         "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
         )
     )
-    print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+    #print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+    print(qwraps2::summary_table(all, phone_stats))
     
     all <- all %>%
       dplyr::filter(all$phone_nb == 0)
@@ -611,7 +621,8 @@ if (!is.null(facility_data)) {
         "Known residence" = ~qwraps2::n_perc((location == 1) & (phone_nb == 0), 2)
         )
     )
-    print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
+    #print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
+    print(qwraps2::summary_table(all, contact_details_stats))
     
   }
 }
@@ -741,8 +752,9 @@ if (!is.null(day7fu_data)) {
     )
     
     st <- qwraps2::summary_table(all, day7_call_stats)
-    st1 <- qwraps2::summary_table(dplyr::group_by(all, district), day7_call_stats)
-    print(cbind(st, st1))
+    #st1 <- qwraps2::summary_table(dplyr::group_by(all, district), day7_call_stats)
+    #print(cbind(st, st1))
+    print(st)
   }
 }
 ```

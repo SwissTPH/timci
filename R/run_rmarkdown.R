@@ -102,6 +102,7 @@ run_rmarkdown <- function(rctls_pid,
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
@@ -153,9 +154,6 @@ run_rmarkdown <- function(rctls_pid,
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
   facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-
-  #To do copy audit trail in folder
-  # local_dir = file.path(mdb_dir, "facility_crf_media")
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")
@@ -217,8 +215,22 @@ run_rmarkdown <- function(rctls_pid,
                                             fid = crf_wfa_fid,
                                             pp = rctls_pp,
                                             media = FALSE)
-    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip, paste0(crf_wfa_fid,".csv"))
+    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip,
+                                                     paste0(crf_wfa_fid,".csv"))
     wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+  }
+
+  # Load problem report data
+  print("Load problem report data")
+  problem_data <- NULL
+  if (problem_fid %in% rct_ls_form_list) {
+    raw_problem_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                            pid = rctls_pid,
+                                            fid = problem_fid,
+                                            pp = rctls_pp,
+                                            media = FALSE)
+    raw_problem_data <- timci::extract_data_from_odk_zip(raw_problem_zip,
+                                                         paste0(problem_fid,".csv"))
   }
 
   # Load SPA data
@@ -339,6 +351,7 @@ run_rmarkdown <- function(rctls_pid,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
+                 raw_problem_data = raw_problem_data,
                  spa_cgei_data = spa_cgei_data,
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,
@@ -511,6 +524,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
@@ -644,6 +658,21 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                      start_date,
                                                      end_date)
     wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+  }
+
+  # Load problem report data
+  print("Load problem report data")
+  problem_data <- NULL
+  if (problem_fid %in% rct_ls_form_list) {
+    raw_problem_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                pid = rctls_pid,
+                                                fid = problem_fid,
+                                                pp = rctls_pp,
+                                                media = FALSE)
+    raw_problem_data <- timci::extract_data_from_odk_zip(raw_problem_zip,
+                                                         paste0(problem_fid,".csv"),
+                                                         start_date,
+                                                         end_date)
   }
 
   # Load SPA data
@@ -789,6 +818,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
+                 raw_problem_data = raw_problem_data,
                  spa_cgei_data = spa_cgei_data,
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,

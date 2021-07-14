@@ -30,7 +30,6 @@ export_df2csv <- function(df, dirname, prefix) {
 
 }
 
-
 #' Write dataframe to an RDS file format, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.

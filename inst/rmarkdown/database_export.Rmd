@@ -20,6 +20,7 @@ params:
   raw_hospit_data: NULL
   raw_day28fu_data: NULL
   raw_withdrawal_data: NULL
+  raw_problem_data: NULL
   spa_cgei_data: NULL
   spa_fa_data: NULL
   spa_hcpi_data: NULL
@@ -54,6 +55,7 @@ if (!is.null(params$facility_data)) {
   raw_hospit_data <- params$raw_hospit_data
   raw_day28fu_data <- params$raw_day28fu_data
   raw_withdrawal_data <- params$raw_withdrawal_data
+  raw_problem_data <- params$raw_problem_data
   spa_cgei_data <- params$spa_cgei_data
   spa_fa_data <- params$spa_fa_data
   spa_hcpi_data <- params$spa_hcpi_data
@@ -84,6 +86,7 @@ if (!is.null(params$facility_data)) {
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
@@ -520,12 +523,23 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ## 1.4. Withdrawal data
 
-```{r load-RCT-LS-ODK-withdrawal}
+```{r export-RCT-LS-ODK-withdrawal}
 if (!is.null(raw_withdrawal_data)) {
   fn <- timci::export_df2xlsx(raw_withdrawal_data, params$rctls_dir,
                               "99_withdrawal_data")
   fn <- timci::export_df2csv(raw_withdrawal_data, params$rctls_dir,
                              "99_withdrawal_data")
+}
+```
+
+## 1.5. Problem report data
+
+```{r export-RCT-LS-ODK-problem}
+if (!is.null(raw_problem_data)) {
+  fn <- timci::export_df2xlsx(raw_problem_data, params$rctls_dir,
+                              "98_problem_data")
+  fn <- timci::export_df2csv(raw_withdrawal_data, params$rctls_dir,
+                             "98_problem_data")
 }
 ```
 

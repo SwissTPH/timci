@@ -17,6 +17,12 @@ generate_cg_log <- function(main_data, day7fu) {
   # Merge cg_selection with participant contact information
   cg_selection <- merge(cg_selection, main_data, by = "child_id", no.dups = TRUE)
 
-  cg_selection
+  # Merge dictionaries
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+
+  # Extract data for caregiver IDIs
+  sub <- subset(dictionary, qual == 1)
+  cg_subselection <- cg_selection[sub$new]
+  cg_subselection
 
 }

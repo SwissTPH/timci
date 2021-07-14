@@ -218,7 +218,7 @@ extract_repeat_visits <- function(df) {
 
 extract_referrals <- function(df) {
 
-  df %>% dplyr::filter(referral_hf == 1)
+  df %>% dplyr::filter(referral_hf == 1 | referral_cg == 1)
 
 }
 
