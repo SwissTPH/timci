@@ -48,10 +48,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r traductions}
+```{r translations}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  baseline_str <- "Visite de base"
-  repeat_str <- "Visite de suivi"
+  baseline_str <- "Visite primaire"
+  repeat_str <- "Visite secondaire"
   submission_str <- "Soumissions"
   screening_str <- "Screening"
   withdrawal_str <- "Désistement"
@@ -159,6 +159,7 @@ end_date <- NULL
 if (nrow(facility_data) > 0) {
   start_date <- min(facility_data$date_visit)
   end_date <- max(facility_data$date_visit)
+  days_nb <- sum(!weekdays(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("Saturday", "Sunday"))
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     cat(paste0("Ce rapport couvre la période du **", start_date, "** au **", end_date, "** pour le **Sénégal**."))
   } else {
@@ -167,15 +168,7 @@ if (nrow(facility_data) > 0) {
 }
 ```
 
-```{r submissions-1, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# Soumissions\n\n"))
-  cat(paste0("## Nombre total de soumissions par formulaire\n\n"))
-} else {
-  cat(paste0("# Submissions\n\n"))
-  cat(paste0("## Total number of submissions per form\n\n"))
-}
-
+```{r, results = "asis"}
 n_total <- 0
 
 # Screening data
@@ -233,7 +226,48 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
     n_total <- n_total + n_day28fu
   }
 }
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("# Indicateurs clés de performance\n\n"))
+  cat(paste0("## Taux de recrutement\n\n"))
+} else {
+  cat(paste0("# Key performance indicators\n\n"))
+  cat(paste0("## Enrolment rate\n\n"))
+}
+timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\n(excl. repeat visits)", 100, 60, 85)
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Recrutement par rapport à l'objectif global\n\n"))
+} else {
+  cat(paste0("## Enrolment versus global target\n\n"))
+}
+timci::plot_enrolment_gauge(n_enrolled/(days_nb*3.8*9), "Enrolment versus global target", 100, 60, 85)
+```
   
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Recrutement par rapport à l'objectif hebdomadaire\n\n"))
+  cat("A compléter\n\n")
+} else {
+  cat(paste0("## Enrolment versus weekly target\n\n"))
+  cat("To be completed\n\n")
+}
+```
+
+```{r submissions-1, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("# Soumissions\n\n")
+  cat("## Nombre total de soumissions par formulaire\n\n")
+} else {
+  cat("# Submissions\n\n")
+  cat("## Total number of submissions per form\n\n")
+}
+
 visit_names <- c(visit_names, "All")
 submissions <- c(submissions, n_total)
 
@@ -245,11 +279,11 @@ knitr::kable(visits, col.names = c("Visit", "N"))
 w <- 30
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Nombre de soumissions au cours des 30 derniers jours\n\n"))
-  cat(paste0("### Screening\n\n"))
+  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
+  cat("### Screening\n\n")
 } else {
-  cat(paste0("## Number of submissions during the last 30 days\n\n"))
-  cat(paste0("### Screening\n\n"))
+  cat("## Number of submissions during the last 30 days\n\n")
+  cat("### Screening\n\n")
 }
 
 if (nrow(facility_data) > 0) {
@@ -302,9 +336,11 @@ if (!is.null(raw_day7fu_data)) {
                                       as.Date(Sys.Date() + 1),
                                       submission_str))
   } else{
-    cat('N/A\n\n')
+    cat('0 submissions since the start of the study.\n\n')
   }
-}
+} else {
+  cat('0 submissions since the start of the study.\n\n')
+  }
 ```
 
 ```{r, results='asis'}
@@ -323,7 +359,7 @@ if (!is.null(raw_hospit_data)) {
     cat('0 submissions since the start of the study.\n\n')
   }
 } else{
-  cat('N/A\n\n')
+  cat('0 submissions since the start of the study.\n\n')
 }
 ```
 
@@ -339,18 +375,18 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       cat('0 submissions since the start of the study.\n\n')
     }
   } else{
-    cat('N/A\n\n')
+    cat('0 submissions since the start of the study.\n\n')
   }
 }
 ```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Cartes thermiques calendaires\n\n"))
-  cat(paste0("### Screening\n\n"))
+  cat("## Cartes thermiques calendaires\n\n")
+  cat("### Screening\n\n")
 } else {
-  cat(paste0("## Calendar heatmaps\n\n"))
-  cat(paste0("### Screening\n\n"))
+  cat("## Calendar heatmaps\n\n")
+  cat("### Screening\n\n")
 }
 
 timci::generate_calendar_heatmap(facility_data, date_visit)
@@ -358,9 +394,9 @@ timci::generate_calendar_heatmap(facility_data, date_visit)
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Visites primaires\n\n"))
+  cat("### Visites primaires\n\n")
 } else {
-  cat(paste0("### Baseline visits\n\n"))
+  cat("### Baseline visits\n\n")
 }
 
 if (nrow(baseline_data) > 0) {
@@ -370,9 +406,9 @@ if (nrow(baseline_data) > 0) {
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Appel téléphonique à Jour 7\n\n"))
+  cat("### Appel téléphonique à Jour 7\n\n")
 } else {
-  cat(paste0("### Day 7 phone call\n\n"))
+  cat("### Day 7 phone call\n\n")
 }
 
 if (!is.null(raw_day7fu_data)) {
@@ -388,9 +424,9 @@ if (!is.null(raw_day7fu_data)) {
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Délais de soumission\n\n"))
+  cat("## Délais de soumission\n\n")
 } else {
-  cat(paste0("## Submission timeliness\n\n"))
+  cat("## Submission timeliness\n\n")
 }
 ```
 
@@ -399,40 +435,52 @@ To be completed (track submissions that are not submitted on the same day)
 ```{r, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Soumissions par poste de santé\n\n"))
+  cat("## Soumissions par poste de santé\n\n")
 } else {
-  cat(paste0("## Submissions by facility\n\n"))
+  cat("## Submissions by facility\n\n")
 }
 ```
 
 ```{r fig.height=8, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Screening par poste de santé\n\n"))
-} else {
-  cat(paste0("### Screening by facility\n\n"))
-}
-
 stats <- timci::get_summary_by_facility(facility_data)
 stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
-timci::generate_enrolment_hist(stats, facility_label, screened, 5, 15, "Number of children screened", "facilities")
-```
+stats$screened <- stats$screened / days_nb
+stats$children <- stats$children / days_nb
 
-```{r fig.height=8, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Recrutement par poste de santé\n\n"))
+if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  min_target_day <- 3
+  max_target_day <- 6
 } else {
-  cat(paste0("## Enrolment by facility\n\n"))
+  min_target_day <- 3
+  max_target_day <- 6
 }
-timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Appels téléphoniques à jour 7 par poste de santé\n\n"))
-  cat(paste0("N/A\n\n"))
+  cat(paste0("### Moyenne quotidienne de screenings par poste de santé\n\n"))
+} else {
+  cat(paste0("### Screening daily average by facility\n\n"))
+}
+timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Moyenne quotidienne de recrutements par poste de santé\n\n"))
+} else {
+  cat(paste0("## Enrolment daily average by facility\n\n"))
+}
+timci::generate_enrolment_hist(stats, facility_label, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Moyenne quotidienne d'appels téléphoniques à jour 7 par poste de santé\n\n"))
+  cat(paste0("A compléter\n\n"))
 } else {
   cat(paste0("## Day 7 phone calls by facility\n\n"))
-  cat(paste0("N/A\n\n"))
+  cat(paste0("To be completed\n\n"))
 }
 #timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
 ```
@@ -543,22 +591,17 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("## Carte thermique des recrutements par poste de santé\n\n"))
-  cat(paste0("### Recrutement par rapport à l'objectif global\n\n"))
+  cat("A compléter\n\n")
 } else {
   cat(paste0("## Enrolment heatmap by facility\n\n"))
-  cat(paste0("### Enrolment versus global target\n\n"))
+  cat("To be completed\n\n")
 }
-timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\n(excl. repeat visits)", 100, 60, 85)
 ```
   
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Recrutement par rapport à l'objectif hebdomadaire\n\n"))
-  cat("N/A\n\n")
   cat(paste0("### Causes de non-recrutement\n\n"))
 } else {
-  cat(paste0("### Enrolment versus weekly target\n\n"))
-  cat("N/A\n\n")
   cat(paste0("### Non-enrolment causes\n\n"))
 }
 
@@ -701,8 +744,6 @@ if (!is.null(raw_day7fu_data)) {
     day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
     succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
     
-    day7fu_data <- day7fu_data %>%
-      dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
   }
 }
 ```
@@ -752,8 +793,8 @@ if (!is.null(day7fu_data)) {
     day7_call_stats <- list(
       "Call outcome" = list(
         "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
-        "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
-        "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= wmin) & (days <= wmax), 2),
+        "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > wmax)), 2)
         )
     )
     
@@ -775,6 +816,9 @@ if (!is.null(day7fu_data)) {
     
     all <- data.frame(succ_day7fu_data)
     day7_outcome_ss <- list(
+      "Time" = list(
+        "Mean (SD)" = ~qwraps2::mean_sd(days)
+        ),
       "Cure" = list(
         "Known" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2 | cure_day7 == 3 | cure_day7 == 4, 2)
         ),
@@ -819,8 +863,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       day28_call_ss <- list(
         "Call outcome" = list(
           "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
-          "Valid time window" = ~qwraps2::n_perc((days >= wmin) & (days < wmax), 2),
-          "Lost to follow-up" = ~qwraps2::n_perc(cg_ok == 0, 2)
+          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= wmin) & (days <= wmax), 2),
+          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > wmax)), 2)
           )
       )
       print(qwraps2::summary_table(all, day28_call_ss))

@@ -490,8 +490,14 @@ format_day7_data <- function(df) {
 
   day7_df <- match_from_xls_dict(df, "day7_dict.xlsx")
   day7_df <- day7_df[sub$new]
+  day7_df <- day7_df %>%
+    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+
   successful_day7_df <- match_from_xls_dict(successful_day7_df, "day7_dict.xlsx")
   successful_day7_df <- successful_day7_df[sub$new]
+  successful_day7_df <- successful_day7_df %>%
+    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+
   fail_day7_df <- match_from_xls_dict(fail_day7_df, "day7_dict.xlsx")
 
   list(successful_day7_df, fail_day7_df, day7_df)
