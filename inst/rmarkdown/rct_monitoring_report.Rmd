@@ -533,9 +533,11 @@ mother_statistics <- list(
     )
 )
 
-#print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
-print(qwraps2::summary_table(all, mother_statistics))
-
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+  print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
+} else{
+  print(qwraps2::summary_table(all, mother_statistics))
+}
 ```
 
 ```{r, results='asis'}
@@ -621,8 +623,12 @@ if (!is.null(facility_data)) {
         "Known residence" = ~qwraps2::n_perc((location == 1) & (phone_nb == 0), 2)
         )
     )
-    #print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
-    print(qwraps2::summary_table(all, contact_details_stats))
+
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+      print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
+    } else{
+      print(qwraps2::summary_table(all, contact_details_stats))
+    }
     
   }
 }
@@ -752,9 +758,13 @@ if (!is.null(day7fu_data)) {
     )
     
     st <- qwraps2::summary_table(all, day7_call_stats)
-    #st1 <- qwraps2::summary_table(dplyr::group_by(all, district), day7_call_stats)
-    #print(cbind(st, st1))
-    print(st)
+    
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+      st1 <- qwraps2::summary_table(dplyr::group_by(all, district), day7_call_stats)
+      print(cbind(st, st1))
+    } else{
+      print(st)
+    }
   }
 }
 ```
@@ -768,8 +778,8 @@ if (!is.null(day7fu_data)) {
       "Cure" = list(
         "Known" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2 | cure_day7 == 3 | cure_day7 == 4, 2)
         ),
-      "Hospitalisation" = list(
-        "Reported" = ~qwraps2::n_perc(hf_visit_day7 == 1, 2)
+      "Higher level visit" = list(
+        "Reported" = ~qwraps2::n_perc(hf_visit_day7 == 1 & hf_visit_type == 1, 2)
         )
     )
     print(qwraps2::summary_table(all, day7_outcome_ss))

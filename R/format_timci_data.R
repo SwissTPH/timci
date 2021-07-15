@@ -481,15 +481,20 @@ format_day7_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
-  day7_df <- df[df$proceed == 1,]
-  fail_df <- df[df$proceed == 0,]
+  successful_day7_df <- df[df$proceed == 1,]
+  fail_day7_df <- df[df$proceed == 0,]
 
   # Match column names with names from dictionary
-  df <- match_from_xls_dict(df, "day7_dict.xlsx")
-  day7_df <- match_from_xls_dict(day7_df, "day7_dict.xlsx")
-  fail_df <- match_from_xls_dict(fail_df, "day7_dict.xlsx")
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "day7_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, deidentified == 1)
 
-  list(day7_df, fail_df, df)
+  day7_df <- match_from_xls_dict(df, "day7_dict.xlsx")
+  day7_df <- day7_df[sub$new]
+  successful_day7_df <- match_from_xls_dict(successful_day7_df, "day7_dict.xlsx")
+  successful_day7_df <- successful_day7_df[sub$new]
+  fail_day7_df <- match_from_xls_dict(fail_day7_df, "day7_dict.xlsx")
+
+  list(successful_day7_df, fail_day7_df, day7_df)
 
 }
 

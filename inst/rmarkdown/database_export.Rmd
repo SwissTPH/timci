@@ -438,10 +438,12 @@ if (!is.null(day0_qc)) {
 
 ```{r load-RCT-LS-ODK-fu-day7-data}
 day7fu_data <- NULL
+allday7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     res <- timci::format_day7_data(raw_day7fu_data)
     day7fu_data <- res[[1]]
+    allday7fu_data <- res[[3]]
   }
 }
 ```
@@ -466,8 +468,12 @@ if (!is.null(day7fu_data)) {
 
 ```{r export-RCT-LS-ODK-fu-day7-data}
 if (!is.null(day7fu_data)) {
-  fn <- timci::export_df2xlsx(day7fu_data, params$rctls_dir, "04_timci_followup_day7_data")
-  fn <- timci::export_df2csv(day7fu_data, params$rctls_dir, "04_timci_followup_day7_data")
+  fn <- timci::export_df2xlsx(day7fu_data, params$rctls_dir, "04b_timci_followup_successful_day7_data")
+  fn <- timci::export_df2csv(day7fu_data, params$rctls_dir, "04b_timci_followup_successful_day7_data")
+}
+if (!is.null(allday7fu_data)) {
+  fn <- timci::export_df2xlsx(allday7fu_data, params$rctls_dir, "04a_timci_followup_day7_data")
+  fn <- timci::export_df2csv(allday7fu_data, params$rctls_dir, "04a_timci_followup_day7_data")
 }
 ```
 
