@@ -230,31 +230,67 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# Indicateurs clés de performance\n\n"))
-  cat(paste0("## Taux de recrutement\n\n"))
+  title_str <- "# Indicateurs clés de performance\n\n"
+  plot1_str <- "Taux de recrutement\n(hors visites secondaires)"
+  plot2_str <- "Recrutement\nvs.\ncible globale"
 } else {
-  cat(paste0("# Key performance indicators\n\n"))
-  cat(paste0("## Enrolment rate\n\n"))
+  title_str <- "# Key performance indicators\n\n"
+  plot1_str <- "Enrolment rate\n(excl. repeat visits)"
+  plot2_str <- "Enrolment\nvs.\nglobal target"
 }
-timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), "Enrolment rate\n(excl. repeat visits)", 100, 60, 85)
-```
 
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Recrutement par rapport à l'objectif global\n\n"))
-} else {
-  cat(paste0("## Enrolment versus global target\n\n"))
-}
-timci::plot_enrolment_gauge(n_enrolled/(days_nb*3.8*9), "Enrolment versus global target", 100, 60, 85)
+cat(title_str)
+plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 60, 85)
+plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*3.8*9), plot2_str, 100, 60, 85)
 ```
   
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Recrutement par rapport à l'objectif hebdomadaire\n\n"))
+  cat(paste0("Recrutement par rapport à l'objectif hebdomadaire\n\n"))
   cat("A compléter\n\n")
 } else {
-  cat(paste0("## Enrolment versus weekly target\n\n"))
+  cat(paste0("Enrolment versus weekly target\n\n"))
   cat("To be completed\n\n")
+}
+```
+
+```{r, results='asis'}
+day7_wmin <- 7
+day7_wmax <- 10
+day7_expandedwmax <- 12
+day28_wmin <- 28
+day28_wmax <- 32
+
+day7fu_data <- NULL
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
+    succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
+    n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date()) 
+    n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax)) 
+  } else {
+    n_completed_day7fu <- 0
+    n_valid_day7fu <- 0
+  }
+} else {
+  n_completed_day7fu <- 0
+  n_valid_day7fu <- 0
+}
+```
+
+```{r}
+n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date())
+```
+
+```{r, results='asis'}
+require(gridExtra)
+gridExtra::grid.arrange(plot1, plot2, ncol = 2)
+if (n_due_day7fu > 0)
+{
+  # gauge plots
+  plot3 <- timci::plot_enrolment_gauge(n_completed_day7fu/n_due_day7fu, "Day 7 follow-up rate", 100, 80, 90)
+  plot4 <- timci::plot_enrolment_gauge(n_valid_day7fu/n_due_day7fu, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
+  gridExtra::grid.arrange(plot3, plot4, ncol = 2)
 }
 ```
 
@@ -442,7 +478,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r fig.height=8, results='asis'}
-stats <- timci::get_summary_by_facility(facility_data)
+stats <- timci::get_summary_by_deviceid(facility_data)
 stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
 stats$screened <- stats$screened / days_nb
 stats$children <- stats$children / days_nb
@@ -467,19 +503,19 @@ timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1
 
 ```{r fig.height=8, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Moyenne quotidienne de recrutements par poste de santé\n\n"))
+  cat(paste0("### Moyenne quotidienne de recrutements par poste de santé\n\n"))
 } else {
-  cat(paste0("## Enrolment daily average by facility\n\n"))
+  cat(paste0("### Enrolment daily average by facility\n\n"))
 }
 timci::generate_enrolment_hist(stats, facility_label, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Moyenne quotidienne d'appels téléphoniques à jour 7 par poste de santé\n\n"))
+  cat(paste0("### Moyenne quotidienne d'appels téléphoniques à jour 7 par poste de santé\n\n"))
   cat(paste0("A compléter\n\n"))
 } else {
-  cat(paste0("## Day 7 phone calls by facility\n\n"))
+  cat(paste0("### Day 7 phone calls by facility\n\n"))
   cat(paste0("To be completed\n\n"))
 }
 #timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
@@ -725,49 +761,19 @@ if (nrow(baseline_data) > 0) {
 ```
 
 ```{r, results = "asis"}
-wmin <- 7
-wmax <- 10
-
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Suivi à Jour 7\n\n"))
-  cat(paste0("La période valable pour le suivi à Jour 7 est de **", wmin, "** à **", wmax, "** jours."))
+  cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
+  if (n_due_day7fu > 0) {
+    cat(paste0("Il y a **", n_due_day7fu, "** suivis à Jour 7 attendus aujourd'hui."))
+  }
 } else {
   cat(paste0("# Day 7 follow-up\n\n"))
-  cat(paste0("The valid Day 7 follow-up period is **", wmin, "** to **", wmax, "** days."))
-}
-
-day7fu_data <- NULL
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-
-    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
-    succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
-    
+  cat(paste0("The valid Day 7 follow-up period is **", day7_wmin, "** to **", day7_wmax, "** days.\n\n"))
+  if (n_due_day7fu > 0) {
+    cat(paste0("There are **", n_due_day7fu, "** Day 7 follow-ups expected today."))
   }
-}
-```
-
-```{r}
-n_due_day7fu <- sum(!is.na(demog_data$date_visit) & ((as.Date(demog_data$date_visit, "%Y-%m-%d") + 7) <= Sys.Date()))
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    n_reached_day7fu <- sum(!is.na(day7fu_data$cg_ok) & (day7fu_data$cg_ok == 1))
-    n_valid_day7fu <- sum((day7fu_data$days >= wmin) & (day7fu_data$days < wmax))
-  } else {
-    n_reached_day7fu <- 0
-    n_valid_day7fu <- 0
-  }
-  
-  if (n_due_day7fu > 0)
-  {
-    # gauge plots
-    timci::plot_enrolment_gauge(n_reached_day7fu/n_due_day7fu, "Day 7 follow-up rate", 100, 80, 90)
-    timci::plot_enrolment_gauge(n_valid_day7fu/n_due_day7fu, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
-  } else{
-    cat('N/A\n\n')
-  }
-  
 }
 ```
 
@@ -775,7 +781,7 @@ if (!is.null(day7fu_data)) {
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Contrôle des données du suivi à jour 7")
 } else {
-  cat("## Monitoring of data collected during the Day 7 follow-up")
+  cat("## Data")
 }
 ```
 
@@ -793,8 +799,8 @@ if (!is.null(day7fu_data)) {
     day7_call_stats <- list(
       "Call outcome" = list(
         "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
-        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= wmin) & (days <= wmax), 2),
-        "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > wmax)), 2)
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day7_wmin) & (days <= day7_wmax), 2),
+        "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day7_wmax)), 2)
         )
     )
     
@@ -847,9 +853,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       
-      wmin <- 28
-      wmax <- 32
-      
       day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
       day28fu_data <- day28fu_data %>%
         dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
@@ -863,8 +866,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       day28_call_ss <- list(
         "Call outcome" = list(
           "Participant reached" = ~qwraps2::n_perc(cg_reached == 1, 2),
-          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= wmin) & (days <= wmax), 2),
-          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > wmax)), 2)
+          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), 2),
+          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day28_wmax)), 2)
           )
       )
       print(qwraps2::summary_table(all, day28_call_ss))

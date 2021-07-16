@@ -4,6 +4,7 @@ author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Inst
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   path_dir: !r tempdir()
+  research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
   wfa_data: NULL
 output:
@@ -11,6 +12,10 @@ output:
   word_document:
     reference_docx: word_styles1.docx
     fig_width: 7.5
+  pdf_document:
+    number_sections: true
+    toc: true
+    toc_depth: 2
 ---
 
 ```{r setup-rmd, include=FALSE, warning=FALSE}
@@ -103,7 +108,17 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r}
-stats <- timci::get_summary_by_facility(facility_data)
+stats <- timci::get_summary_by_deviceid(facility_data)
+stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+stats <- stats %>%
+  dplyr::group_by(facility_id) %>%
+  dplyr::summarise(recruitment_start = min(recruitment_start),
+                   recruitment_last = max(recruitment_last),
+                   screened = sum(screened),
+                   children = sum(children),
+                   female = sum(female),
+                   yg_infant = sum(yg_infant),
+                   yg_female = sum(yg_female))
 ```
 
 ```{r, results = "asis"}
@@ -111,7 +126,7 @@ if (!is.null(wfa_data)) {
   
   if (nrow(wfa_data) > 0) {
     
-    last_data <- extract_last_fa_data(wfa_data, stats)
+    last_data <- timci::extract_last_fa_data(wfa_data, stats)
     soc_data <- last_data[last_data$arm == 0,]
     pox_data <- last_data[last_data$arm == 1,]
     cdsa_data <- last_data[last_data$arm == 2,]
@@ -125,7 +140,8 @@ if (!is.null(wfa_data)) {
       display_weekly_fa_data_per_facility(cdsa_data, wfa_data)
     }
     
-    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data), path_dir, "path_data")
+    last_data2 <- timci::extract_last_fa_data2(wfa_data, stats)
+    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data2), path_dir, paste0("path_M&E_RA_data_", Sys.Date()))
     
   }
   

@@ -97,6 +97,8 @@ process_facility_data <- function(df) {
                  "crfs-t05b-c3_6")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
+  df$'crfs-t09a1-h2_2o' <- stringr::str_replace_all(df$'crfs-t09a1-h2_2o',",",";")
+
   # Match column names with names from dictionary
   df <- match_from_xls_dict(df, "main_dict.xlsx")
 
@@ -235,14 +237,14 @@ extract_hypoxaemia <- function(df) {
 
 }
 
-#' Get summary statistics grouped by facility (TIMCI-specific function)
+#' Get summary statistics grouped by device ID (TIMCI-specific function)
 #'
 #' @param df Dataframe containing the processed facility data
-#' @return This function returns a dataframe containing summary statistics grouped by health facility
+#' @return This function returns a dataframe containing summary statistics grouped by device IDs
 #' @export
 #' @import dplyr magrittr
 
-get_summary_by_facility <- function(df) {
+get_summary_by_deviceid <- function(df) {
 
   df1 <- df %>%
     dplyr::group_by(device_id) %>%

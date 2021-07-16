@@ -652,7 +652,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                             pid = rctls_pid,
                                             fid = crf_wfa_fid,
                                             pp = rctls_pp,
-                                            media = FALSE)
+                                            media = TRUE)
     raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip,
                                                      paste0(crf_wfa_fid,".csv"),
                                                      start_date,
@@ -847,6 +847,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   params <- list(path_dir = path_dir,
                  facility_data = facility_data,
+                 research_facilities = research_facilities,
                  wfa_data = wfa_data)
   generate_pdf_report(path_dir, "path_report.Rmd", "timci_path_report", params)
 

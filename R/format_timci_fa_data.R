@@ -28,7 +28,7 @@ extract_last_fa_data <- function(df, stats) {
 
   # Retrieve last assessment
   res <- plyr::ddply(df, 'fcode', head, 1)
-  res <- merge(x = res, y = stats, by = 'device_id', all.x = TRUE)
+  res <- merge(x = res, y = stats, by.x = 'fcode', by.y = 'facility_id', all.x = TRUE)
 
   # Retrieve previous assessment
   prev <- plyr::ddply(df, 'fcode', head, 2)
@@ -36,6 +36,31 @@ extract_last_fa_data <- function(df, stats) {
 
   # Add the date of the last assessment
   res <- merge(x = res, y = prev[,c('date','fcode')], by = 'fcode', all.x = TRUE)
+  res %>% dplyr::rename('date' = 'date.x',
+                        'prev' = 'date.y')
+
+}
+
+#' Extract last available facility assessment data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility assessment data
+#' @param stats dataframe containing summary statistics for each facility
+#' @return This function returns a dataframe that only contains the last available assessment for each facility.
+#' @export
+#' @import dplyr magrittr
+
+extract_last_fa_data2 <- function(df, stats) {
+
+  # Retrieve last assessment
+  res <- plyr::ddply(df, 'fcode', head, 1)
+  res <- merge(x = res, y = stats, by.x = 'fcode', by.y = 'facility_id', all = TRUE)
+
+  # Retrieve previous assessment
+  prev <- plyr::ddply(df, 'fcode', head, 2)
+  prev <- plyr::ddply(prev, 'fcode', tail, 1)
+
+  # Add the date of the last assessment
+  res <- merge(x = res, y = prev[,c('date','fcode')], by = 'fcode', all = TRUE)
   res %>% dplyr::rename('date' = 'date.x',
                         'prev' = 'date.y')
 
@@ -125,10 +150,9 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
 format_weekly_fa_data_for_export <- function(df) {
 
   # Order columns
-  col_order <- c('date',
-                 'device_id',
-                 'district',
+  col_order <- c('fcode',
                  'facility',
+                 'district',
                  'recruitment_start',
                  'recruitment_last',
                  'screened',
@@ -136,10 +160,13 @@ format_weekly_fa_data_for_export <- function(df) {
                  'female',
                  'yg_infant',
                  'yg_female',
+                 'date',
                  'pox_in_use',
                  'hcp_arrival',
                  'hcp_departure',
                  'drug_stockout')
   df <- df[, col_order]
+  df %>% dplyr::rename('facility_id' = 'fcode',
+                       'last_weekly_report' = 'date')
 
 }

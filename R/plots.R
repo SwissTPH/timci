@@ -126,16 +126,16 @@ plot_enrolment_gauge <- function(val, lbl, m, lthres, uthres){
   lthres <- lthres / m
   uthres <- uthres / m
 
-  df <- df %>% dplyr::mutate(group=ifelse(percentage < lthres, "red", ifelse(percentage >= lthres & percentage < uthres, "orange","green")),
-                             label=paste0(format(round(percentage * 100, 1), nsmall = 1), "%"),
-                             title=lbl)
+  df <- df %>% dplyr::mutate(group = ifelse(percentage < lthres, "red", ifelse(percentage >= lthres & percentage < uthres, "orange","green")),
+                             label = paste0(format(round(percentage * 100, 1), nsmall = 1), "%"),
+                             title = lbl)
 
   ggplot(df, aes(fill = group, ymax = percentage, ymin = 0, xmax = 2, xmin = 1)) +
     geom_rect(aes(ymax = 1, ymin = 0, xmax = 2, xmin = 1), fill = "#dcdcdc") +
     geom_rect() +
     coord_polar(theta = "y", start = -pi/2) + xlim(c(0, 2)) + ylim(c(0,2)) +
     geom_text(aes(x = 0, y = 0, label = label, colour = group), size = 10) +
-    geom_text(aes(x = 0.5, y = 1.5, label = title), size = 4.2) +
+    geom_text(aes(x = 0.9, y = 1.5, label = title), size = 4.2) +
     theme_void() +
     scale_fill_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
     scale_colour_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
