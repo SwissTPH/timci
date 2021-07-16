@@ -849,7 +849,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  facility_data = facility_data,
                  research_facilities = research_facilities,
                  wfa_data = wfa_data)
-  generate_pdf_report(path_dir, "path_report.Rmd", "timci_path_report", params)
+  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
 
 }
 

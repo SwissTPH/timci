@@ -141,7 +141,7 @@ if (!is.null(wfa_data)) {
     }
     
     last_data2 <- timci::extract_last_fa_data2(wfa_data, stats)
-    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data2), path_dir, paste0("path_M&E_RA_data_", Sys.Date()))
+    tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data2), path_dir, paste0("TIMCI_M&E_RA_data_for_PATH", Sys.Date()))
     
   }
   
