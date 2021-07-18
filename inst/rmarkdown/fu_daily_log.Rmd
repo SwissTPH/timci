@@ -191,7 +191,7 @@ if (fu_fid %in% rct_ls_form_list) {
   # Upload the new CSV created as a form attachment
   csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv_filename)
   # Publish a draft form
-  new_version <- as.character(current_version + 0.000001)
+  new_version <- as.character(current_version + 0.000000001)
   # Reintegrate the encryption number if necessary
   if (!is.na(encryption_version)) {
     new_version <- paste0(new_version, "[", encryption_version)
