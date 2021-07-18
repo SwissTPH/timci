@@ -241,7 +241,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 cat(title_str)
 plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
-plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 60, 85)
+plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 85, 100)
 ```
   
 ```{r, results='asis'}
@@ -484,11 +484,11 @@ stats$screened <- stats$screened / days_nb
 stats$children <- stats$children / days_nb
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-  min_target_day <- 3
-  max_target_day <- 6
+  min_target_day <- 4
+  max_target_day <- 8
 } else {
-  min_target_day <- 3
-  max_target_day <- 6
+  min_target_day <- 4
+  max_target_day <- 8
 }
 ```
 
