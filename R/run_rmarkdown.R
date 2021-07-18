@@ -1049,8 +1049,8 @@ generate_fu_logs <- function(rctls_pid,
                      raw_withdrawal_data = raw_withdrawal_data,
                      facility_id = fid,
                      facility_label = fname,
-                     fu_start = 0,
-                     fu_end = 32,
+                     fu_start = 21,
+                     fu_end = 35,
                      fu_vstart = 28,
                      fu_vend = 32)
       generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day28_fu_weekly_log"), params)
@@ -1061,8 +1061,8 @@ generate_fu_logs <- function(rctls_pid,
                    fu_fid = crf_day28_fid,
                    raw_fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
-                   fu_start = 28,
-                   fu_end = 32,
+                   fu_start = 21,
+                   fu_end = 35,
                    fu_vstart = 28,
                    fu_vend = 32)
     generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
