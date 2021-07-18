@@ -1,5 +1,5 @@
 ---
-title: "TIMCI M&E report"
+title: "TIMCI M&E research assistants' report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
@@ -119,6 +119,9 @@ stats <- stats %>%
                    female = sum(female),
                    yg_infant = sum(yg_infant),
                    yg_female = sum(yg_female))
+stats <- merge(x = stats, y = params$research_facilities %>% select(facility_id, facility_name, lvl2), by.x = 'facility_id', by.y = 'facility_id', all.x = TRUE)
+stats <- stats[!duplicated(stats$facility_id), ]
+tmp <- timci::export_df2xlsx(stats, path_dir, paste0("facility_stats_", Sys.Date()))
 ```
 
 ```{r, results = "asis"}
@@ -126,21 +129,25 @@ if (!is.null(wfa_data)) {
   
   if (nrow(wfa_data) > 0) {
     
+    tmp <- timci::export_df2xlsx(wfa_data, path_dir, paste0("weekly_facility_assessment_", Sys.Date()))
+    
     last_data <- timci::extract_last_fa_data(wfa_data, stats)
     soc_data <- last_data[last_data$arm == 0,]
     pox_data <- last_data[last_data$arm == 1,]
     cdsa_data <- last_data[last_data$arm == 2,]
     
     if (nrow(pox_data) > 0) {
+      cat("\\newpage")
       cat('# Facilities with pulse oximetry alone\n\n')
       display_weekly_fa_data_per_facility(pox_data, wfa_data)
     }
     if (nrow(cdsa_data) > 0) {
+      cat("\\newpage")
       cat('# Facilities with pulse oximetry and CDSA\n\n')
       display_weekly_fa_data_per_facility(cdsa_data, wfa_data)
     }
     
-    last_data2 <- timci::extract_last_fa_data2(wfa_data, stats)
+    last_data2 <- timci::extract_last_fa_data(wfa_data, stats)
     tmp <- timci::export_df2xlsx(format_weekly_fa_data_for_export(last_data2), path_dir, paste0("TIMCI_M&E_RA_data_for_PATH", Sys.Date()))
     
   }

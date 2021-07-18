@@ -717,9 +717,25 @@ if (!is.null(facility_data)) {
 ```{r header-clinical-presentation, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Présentation clinique\n\n"))
+  cat(paste0("## Oxymètre de pouls\n\n"))
 } else {
-  cat(paste0("## Clinical presentation\n\n"))
+  cat(paste0("## Pulse oximetry\n\n"))
+}
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  all <- data.frame(study_data)
+  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+  
+  summary_statistics <- list(
+    "Pulse oximetry" = list(
+      "Reported" = ~qwraps2::n_perc(spo2 == 1, 2)
+      )
+  )
+  pox_summary1 <- qwraps2::summary_table(all, summary_statistics)
+  pox_summary2 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
+  print(cbind(pox_summary1, pox_summary2))
 }
 ```
 
@@ -738,11 +754,15 @@ if (nrow(baseline_data) > 0) {
   all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
   
   summary_statistics <- list(
-    "Referral" = list(
-      "Reported (caregiver)" = ~qwraps2::n_perc(referral_cg == 1 | referral_cg == 2, 2),
-      "Declined (caregiver)" = ~qwraps2::n_perc(referral_cg == 97, 2),
-      "Reported (registry)" = ~qwraps2::n_perc(referral_hf == 1 | referral_hf == 2 | referral_hf == 3, 2),
-      "Inpatient admission (registry)" = ~qwraps2::n_perc(referral_hf == 4, 2)
+    "Referral (caregiver)" = list(
+      "No" = ~qwraps2::n_perc(referral_cg == 0, 2),
+      "Yes" = ~qwraps2::n_perc(referral_cg == 1, 2),
+      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, 2),
+      "Declined" = ~qwraps2::n_perc(referral_cg == 97, 2)
+      ),
+    "Referral (registry)" = list(
+      "No" = ~qwraps2::n_perc(referral_hf == 0, 2),
+      "Yes" = ~qwraps2::n_perc(referral_hf == 1, 2)
       )
   )
   referral_summary <- qwraps2::summary_table(all, summary_statistics)
