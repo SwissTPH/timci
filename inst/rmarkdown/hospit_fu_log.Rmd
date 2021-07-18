@@ -101,7 +101,9 @@ if (crf_hospit_fid %in% form_list) {
     un = ruODK::get_default_un(),
     pw = ruODK::get_default_pw(),
   )
-  current_version <- as.numeric(cform$version)
+  version_no_bracket <- strsplit(cform$version, "[[]")[[1]][1]
+  encryption_version <- strsplit(cform$version, "[[]")[[1]][2]
+  current_version <- as.numeric(version_no_bracket)
 }
 ```
 
@@ -118,7 +120,7 @@ if (crf_hospit_fid %in% form_list) {
   # Upload the new CSV created as a form attachment
   csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csvh_fname)
   # Publish a draft form
-  new_version <- as.character(current_version + 0.000001)
+  new_version <- as.character(current_version + 0.000000001)
   publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)
 }
 ```
