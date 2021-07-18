@@ -240,8 +240,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 
 cat(title_str)
-plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 60, 85)
-plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*3.8*9), plot2_str, 100, 60, 85)
+plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
+plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 60, 85)
 ```
   
 ```{r, results='asis'}
@@ -288,7 +288,7 @@ gridExtra::grid.arrange(plot1, plot2, ncol = 2)
 if (n_due_day7fu > 0)
 {
   # gauge plots
-  plot3 <- timci::plot_enrolment_gauge(n_completed_day7fu/n_due_day7fu, "Day 7 follow-up rate", 100, 80, 90)
+  plot3 <- timci::plot_enrolment_gauge(n_completed_day7fu/n_due_day7fu, "Day 7 follow-up rate", 100, 85, 95)
   plot4 <- timci::plot_enrolment_gauge(n_valid_day7fu/n_due_day7fu, "Day 7 follow-up rate\nwithin the time window", 100, 80, 90)
   gridExtra::grid.arrange(plot3, plot4, ncol = 2)
 }
