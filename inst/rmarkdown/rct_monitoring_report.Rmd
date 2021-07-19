@@ -688,8 +688,13 @@ if (!is.null(facility_data)) {
         "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
         )
     )
-    #print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
-    print(qwraps2::summary_table(all, phone_stats))
+    
+    cols <- colnames(all)
+    if ('district' %in% cols) {
+      print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+    } else{
+      print(qwraps2::summary_table(all, phone_stats))
+    }
     
     all <- all %>%
       dplyr::filter(all$phone_nb == 0)
@@ -703,11 +708,15 @@ if (!is.null(facility_data)) {
         )
     )
 
-    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+    "
+    cols <- colnames(all)
+    if ('district' %in% cols) {
       print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
     } else{
       print(qwraps2::summary_table(all, contact_details_stats))
     }
+    "
+    print(qwraps2::summary_table(all, contact_details_stats))
     
   }
 }
