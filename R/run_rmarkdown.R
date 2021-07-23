@@ -1024,8 +1024,13 @@ generate_fu_logs <- function(rctls_pid,
   #################################
 
   params <- list(output_dir = fu_dir,
-                 pii = pii)
-  #generate_word_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+                 rct_ls_form_list = rct_ls_form_list,
+                 pii = pii,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 fu_end = 12)
+  generate_word_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
   # Day 28 follow-up log #

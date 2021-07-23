@@ -38,4 +38,6 @@ utils::globalVariables(c("Group.1",
                          "deidentified",
                          "date_call",
                          "date_day0",
-                         "qual"))
+                         "qual",
+                         "hf_visit_day7",
+                         "hf_visit_type"))
