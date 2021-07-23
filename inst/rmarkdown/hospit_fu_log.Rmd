@@ -150,10 +150,14 @@ if (!is.null(raw_hospit_data)) {
 ```
 
 ```{r}
-dir.create(file.path(params$output_dir, "odk_external_files"), showWarnings = FALSE)
-csvh_fname <- file.path(params$output_dir, "odk_external_files", "higher_level_visits.csv")
+dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
+csvh_fname <- file.path(output_dir, "odk_external_files", "higher_level_visits.csv")
 write.csv(hospit_fu, csvh_fname, row.names = FALSE, quote = FALSE)
-tmp <- timci::export_df2xlsx(hospit_fu, params$output_dir, "timci_hospit_fu_log_all")
+if (!is.null(hospit_fu)) {
+  if (nrow(hospit_fu) > 0) {
+    tmp <- timci::export_df2xlsx(hospit_fu, output_dir, "timci_hospit_fu_log_all")
+  }
+}
 ```
 
 ```{r}
