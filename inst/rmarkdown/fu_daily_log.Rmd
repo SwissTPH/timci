@@ -6,6 +6,7 @@ params:
   output_dir: !r tempdir()
   rct_ls_form_list: NULL
   pii: NULL
+  rctls_pid: NULL
   fu_fid: !r Sys.getenv('TIMCI_CRF_DAY7_FID')
   raw_fu_data: NULL
   raw_withdrawal_data: NULL
@@ -31,6 +32,7 @@ fu_start <- params$fu_start
 fu_end <- params$fu_end
 fu_vstart <- params$fu_vstart
 fu_vend <- params$fu_vend
+rctls_pid <- params$rctls_pid
 fu_fid <- params$fu_fid
 output_dir <- params$output_dir
 
@@ -165,7 +167,7 @@ current_version <- "N/A"
 if (fu_fid %in% rct_ls_form_list) {
   # Get form details
   cform <- ruODK::form_detail(
-    pid = ruODK::get_default_pid(),
+    pid = rctls_pid,
     fid = fu_fid,
     url = ruODK::get_default_url(),
     un = ruODK::get_default_un(),
@@ -185,7 +187,7 @@ new_version <- "N/A"
 publication_response <- NULL
 
 if (fu_fid %in% rct_ls_form_list) {
-  form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", fu_fid)
+  form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", rctls_pid, "/forms/", fu_fid)
   # Create a new draft of the form
   draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
   # Upload the new CSV created as a form attachment

@@ -6,6 +6,7 @@ params:
   output_dir: !r tempdir()
   rct_ls_form_list: NULL
   pii: NULL
+  rctls_pid: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
   raw_withdrawal_data: NULL
@@ -34,6 +35,7 @@ crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
 if (!is.null(params$raw_day7fu_data)) {
   
   pii <- params$pii
+  rctls_pid <- params$rctls_pid
   rct_ls_form_list <- params$rct_ls_form_list
   raw_day7fu_data <- params$raw_day7fu_data
   raw_hospit_data <- params$raw_hospit_data
@@ -194,7 +196,7 @@ current_version <- "N/A"
 if (crf_hospit_fid %in% rct_ls_form_list) {
   # Get form details
   cform <- ruODK::form_detail(
-    pid = ruODK::get_default_pid(),
+    pid = rctls_pid,
     fid = crf_hospit_fid,
     url = ruODK::get_default_url(),
     un = ruODK::get_default_un(),
@@ -213,7 +215,7 @@ csv_upload_response <- NULL
 new_version <- "N/A"
 publication_response <- NULL
 if (crf_hospit_fid %in% rct_ls_form_list) {
-  form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", ruODK::get_default_pid(), "/forms/", crf_hospit_fid)
+  form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", rctls_pid, "/forms/", crf_hospit_fid)
   # Create a draft form
   draft_response <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
   # Upload the new CSV created as a form attachment

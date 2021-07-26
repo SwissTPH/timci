@@ -992,6 +992,7 @@ generate_fu_logs <- function(rctls_pid,
   fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10)
   timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
 
+  # Weekly log
   for (i in 1:nrow(research_facilities)) {
     fid <- research_facilities[[i, 'facility_id']]
     fname <- research_facilities[[i, 'facility_label']]
@@ -1007,9 +1008,12 @@ generate_fu_logs <- function(rctls_pid,
                    fu_vend = 10)
     generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
   }
+
+  # Daily log
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  pii = pii,
+                 rctls_pid = rctls_pid,
                  fu_fid = crf_day7_fid,
                  raw_fu_data = raw_day7fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
@@ -1026,6 +1030,7 @@ generate_fu_logs <- function(rctls_pid,
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  pii = pii,
+                 rctls_pid = rctls_pid,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
                  raw_withdrawal_data = raw_withdrawal_data,
@@ -1063,6 +1068,7 @@ generate_fu_logs <- function(rctls_pid,
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
                    pii = pii,
+                   rctls_pid = rctls_pid,
                    fu_fid = crf_day28_fid,
                    raw_fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
