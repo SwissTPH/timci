@@ -82,7 +82,7 @@ process_facility_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("visit_reason-a3_c_1",
+  multi_cols <- c("visit_reason-a3_c_1",
                  "crfs-t05a-c1_a_11",
                  "crfs-t04a-b1_2",
                  "crfs-t04a-b1_2a",
@@ -97,7 +97,11 @@ process_facility_data <- function(df) {
                  "crfs-t05b-c3_6")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
-  df$'crfs-t09a1-h2_2o' <- stringr::str_replace_all(df$'crfs-t09a1-h2_2o',",",";")
+  text_field_cols <- c('visit_reason-a3_c_1o',
+                       'visit_reason-main_cg_name',
+                       'crfs-t09a1-h2_2o',
+                       'crfs-t09a2-h2_2ao')
+  df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
   df <- match_from_xls_dict(df, "main_dict.xlsx")

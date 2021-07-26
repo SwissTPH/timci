@@ -96,3 +96,25 @@ format_multiselect_asws <- function(df, cols, sep) {
 
 }
 
+#' Replace commas by semicolons in text fields for CSV export
+#'
+#' @param df dataframe containing ODK data
+#' @param cols list of column names
+#' @return This function returns a dataframe with multiple answers separated by `sep`.
+#' @export
+#' @import stringr
+
+format_text_fields <- function(df, cols) {
+
+  dfcols <- colnames(df)
+
+  # Replace the space between different answers by `sep` in multiple select questions
+  for (c in cols) {
+    if (c %in% dfcols) {
+      df[[c]] <- stringr::str_replace_all(df[[c]], ",", ";")
+      df[[c]] <- stringr::str_replace_all(df[[c]], "\n", "")
+    }
+  }
+  df
+
+}

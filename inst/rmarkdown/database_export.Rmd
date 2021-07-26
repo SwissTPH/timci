@@ -420,9 +420,9 @@ if (!is.null(facility_data)) {
 }
 
 # Approximate String Matching (Fuzzy Matching)
-df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-df3 <- df[c("child_id", "full_name")]
-qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+#df3 <- df[c("child_id", "full_name")]
+#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
 #print(qc3)
 ```
 ```{r export-duplicates}
