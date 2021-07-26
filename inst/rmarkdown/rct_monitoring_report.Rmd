@@ -151,6 +151,9 @@ if (!is.null(params$facility_data)) {
 
 # Extract personally identifiable data
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+# Merge facility generic info with facility data
+facility_data <- merge(facility_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid')
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -159,12 +162,58 @@ end_date <- NULL
 if (nrow(facility_data) > 0) {
   start_date <- min(facility_data$date_visit)
   end_date <- max(facility_data$date_visit)
+  week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
   days_nb <- sum(!weekdays(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("Saturday", "Sunday"))
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    cat(paste0("Ce rapport couvre la période du **", start_date, "** au **", end_date, "** pour le **Sénégal**."))
+    cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** (semaine **", week_nb, "** de l'étude) pour le **Sénégal**."))
   } else {
-    cat(paste0("This report covers the period from **", start_date, "** to **", end_date, "** for **", Sys.getenv('TIMCI_COUNTRY'), "**."))
+    cat(paste0("This report covers the period from **", start_date, "** (study start) to **", end_date, "** (week **", week_nb,"** of the study) for **", Sys.getenv('TIMCI_COUNTRY'), "**."))
   }
+}
+```
+
+```{r context, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  title_str <- "# Contexte\n\n"
+} else {
+  title_str <- "# Context\n\n"
+}
+cat(title_str)
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name")]
+  facilities <- facilities[!duplicated(facilities$facility_id), ]
+  # Sort by district and rename columns
+  facilities <- facilities %>%
+    dplyr::arrange(lvl2) %>%
+    dplyr::rename('District sanitaire' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Poste de santé' = 'facility_name')
+} else{
+  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name", "type")]
+  facilities <- facilities[!duplicated(facilities$facility_id), ]
+  # Sort by district then type of facility
+  facilities <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('District' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+  
+}
+facilities %>% knitr::kable()
+```
+
+```{r, results='asis'}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  title_str <- "# Indicateurs clés de performance\n\n"
+  plot1_str <- "Taux de recrutement\n(hors visites secondaires)"
+  plot2_str <- "Recrutement\nvs.\ncible globale"
+} else {
+  title_str <- "# Key performance indicators\n\n"
+  plot1_str <- "Enrolment rate\n(excl. repeat visits)"
+  plot2_str <- "Enrolment\nvs.\nglobal target"
 }
 ```
 
@@ -229,16 +278,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 ```
 
 ```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title_str <- "# Indicateurs clés de performance\n\n"
-  plot1_str <- "Taux de recrutement\n(hors visites secondaires)"
-  plot2_str <- "Recrutement\nvs.\ncible globale"
-} else {
-  title_str <- "# Key performance indicators\n\n"
-  plot1_str <- "Enrolment rate\n(excl. repeat visits)"
-  plot2_str <- "Enrolment\nvs.\nglobal target"
-}
-
 cat(title_str)
 plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
 plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 85, 100)
@@ -308,7 +347,7 @@ visit_names <- c(visit_names, "All")
 submissions <- c(submissions, n_total)
 
 visits <- data.frame(visit_names, submissions) 
-knitr::kable(visits, col.names = c("Visit", "N"))
+visits %>% knitr::kable(col.names = c("Visit", "N"))
 ```
 
 ```{r, results='asis'}
@@ -546,23 +585,74 @@ all$prev_enrl[is.na(all$prev_enrl)] <- 0
 all$repeat_consult[is.na(all$repeat_consult)] <- 0
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
-summary_statistics <- list(
-  "Age" = list(
-    "0 - 59 months" = ~qwraps2::n_perc(age_incl == 1, 2),
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Âge\n\n")
+} else {
+  cat("### Age\n\n")
+}
+
+age_statistics <- list(
+  "Facility" = list(
+    "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, 2),
+    "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", 2),
+    "0 - 2 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "0-2m", 2),
     "First day of life" = ~qwraps2::n_perc(age_excl == 1, 2)
-    ),
-  "Primary reason for consultation" = list(
+    )
+)
+st <- qwraps2::summary_table(all, age_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), age_statistics)
+print(t(cbind(st, st1)))
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Enfants malades\n\n")
+} else {
+  cat("### Sick children\n\n")
+}
+sickness_statistics <- list(
+  "Facility" = list(
+    "Sick children" = ~qwraps2::n_perc(sickness == 1, 2),
+    "Other children" = ~qwraps2::n_perc(sickness == 0, 2)
+    )
+)
+st <- qwraps2::summary_table(all, sickness_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sickness_statistics)
+print(t(cbind(st, st1)))
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("#### Principal motif de consultation pour les enfants malades\n\n")
+} else {
+  cat("#### Primary reason for consultation for sick children\n\n")
+}
+sick_reason_statistics <- list(
+  "Facility" = list(
     "Sickness" = ~qwraps2::n_perc(consult_reason == 1, 2),
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2, 2),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4, 2),
-    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2)
-    ),
-  "No illness" = list(
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 1, 2),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 1, 2),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, 2)
+    )
+)
+st <- qwraps2::summary_table(all, sick_reason_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sick_reason_statistics)
+print(t(cbind(st, st1)))
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("#### Principal motif de consultation pour les autres enfants\n\n")
+} else {
+  cat("#### Primary reason for consultation for other children\n\n")
+}
+reason_statistics <- list(
+  "Facility" = list(
     "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, 2),
     "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2)
-    ),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2),
+    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2)
+    )
+)
+st <- qwraps2::summary_table(all, reason_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), reason_statistics)
+print(t(cbind(st, st1)))
+
+summary_statistics <- list(
   "Caregiver's age" = list(
     "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0 & sickness == 1, 2),
     "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1 & sickness == 1, 2)
@@ -587,17 +677,16 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 all <- data.frame(facility_data)
 all <- all %>% dplyr::filter(!is.na(all$consent))
-all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 consent_statistics <- list(
-  "Consent outcome" = list(
+  "Facility" = list(
     "Consented" = ~qwraps2::n_perc(consent == 1, 2),
     "Not consented" = ~qwraps2::n_perc(consent == 0, 2)
     )
 )
 st <- qwraps2::summary_table(all, consent_statistics)
-st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), consent_statistics)
-print(cbind(st, st1))
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), consent_statistics)
+print(t(cbind(st, st1)))
 ```
 
 ```{r, results = "asis"}
