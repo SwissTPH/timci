@@ -537,7 +537,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat(paste0("### Screening daily average by facility\n\n"))
 }
-timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
+timci::generate_enrolment_hist(stats, device_id, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -546,7 +546,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat(paste0("### Enrolment daily average by facility\n\n"))
 }
-timci::generate_enrolment_hist(stats, facility_label, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
+timci::generate_enrolment_hist(stats, device_id, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -590,7 +590,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat("### Age\n\n")
 }
-
 age_statistics <- list(
   "Facility" = list(
     "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, 2),
@@ -602,6 +601,8 @@ age_statistics <- list(
 st <- qwraps2::summary_table(all, age_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), age_statistics)
 print(t(cbind(st, st1)))
+
+all <- all %>% filter(age_incl == 1 & age_excl == 0)
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("### Enfants malades\n\n")
@@ -618,6 +619,9 @@ st <- qwraps2::summary_table(all, sickness_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sickness_statistics)
 print(t(cbind(st, st1)))
 
+sick <- all %>% filter(sickness == 1)
+nonsick <- all %>% filter(sickness == 0)
+all <- sick
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("#### Principal motif de consultation pour les enfants malades\n\n")
 } else {
@@ -635,6 +639,7 @@ st <- qwraps2::summary_table(all, sick_reason_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sick_reason_statistics)
 print(t(cbind(st, st1)))
 
+all <- nonsick
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("#### Principal motif de consultation pour les autres enfants\n\n")
 } else {
@@ -652,20 +657,39 @@ st <- qwraps2::summary_table(all, reason_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), reason_statistics)
 print(t(cbind(st, st1)))
 
+all <- sick
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("#### Âge de l'accompagnant principal\n\n")
+} else {
+  cat("#### Caregiver's age\n\n")
+}
 summary_statistics <- list(
-  "Caregiver's age" = list(
+  "Facility" = list(
     "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0 & sickness == 1, 2),
     "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1 & sickness == 1, 2)
-    ),
-  "Multiple enrolments" = list(
-    "First enrolment" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, 2),
-    "Previous enrolment" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
-    "Last enrolment <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
-st1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
-print(cbind(st, st1))
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), summary_statistics)
+print(t(cbind(st, st1)))
+
+all <- all %>% filter(cg_eligibility == 1)
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("#### Recrutements multiples\n\n")
+} else {
+  cat("#### Multiple enrolments\n\n")
+}
+summary_statistics <- list(
+  "Facility" = list(
+    "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, 2),
+    "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
+    "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2),
+    "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, 2)
+    )
+)
+st <- qwraps2::summary_table(all, summary_statistics)
+st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), summary_statistics)
+print(t(cbind(st, st1)))
 ```
 
 ```{r, results = "asis"}
