@@ -153,7 +153,7 @@ if (!is.null(params$facility_data)) {
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
 # Merge facility generic info with facility data
-facility_data <- merge(facility_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid')
+facility_data <- merge(facility_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -537,7 +537,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat(paste0("### Screening daily average by facility\n\n"))
 }
-timci::generate_enrolment_hist(stats, device_id, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
+timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}
@@ -546,7 +546,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat(paste0("### Enrolment daily average by facility\n\n"))
 }
-timci::generate_enrolment_hist(stats, device_id, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
+timci::generate_enrolment_hist(stats, facility_label, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
 ```
 
 ```{r fig.height=8, results='asis'}

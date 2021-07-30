@@ -335,7 +335,7 @@ count_screening <- function(df) {
                        "Inpatient admission",
                        "No illness",
                        "Repeat visit",
-                       "Consent withdrawal"),
+                       "Not willing to give consent"),
              value = c(n_incl1,
                        n_excl1,
                        n_excl3,
