@@ -296,31 +296,35 @@ generate_hospital_log <- function(pii,
       rpii <- pii[, col_order]
 
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
-      hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
-      hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " - ", hospit_log$rhf_loc_name, ")")
-      hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
+      if (!is.null(hospit_log)) {
+        if (nrow(hospit_log) > 0) {
+          hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
+          hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " - ", hospit_log$rhf_loc_name, ")")
+          hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
 
-      # Order columns
-      col_order <- c('device_id',
-                     'district',
-                     'rhf_loc_id',
-                     'rhf_loc_name',
-                     'rhf_loc_oth',
-                     'rhf_id',
-                     'rhf_oth',
-                     'date_hosp_day7',
-                     'child_id',
-                     'label',
-                     'sex',
-                     'fid',
-                     'date_day0',
-                     'date_call')
-      hospit_log <- hospit_log[, col_order]
+          # Order columns
+          col_order <- c('device_id',
+                         'district',
+                         'rhf_loc_id',
+                         'rhf_loc_name',
+                         'rhf_loc_oth',
+                         'rhf_id',
+                         'rhf_oth',
+                         'date_hosp_day7',
+                         'child_id',
+                         'label',
+                         'sex',
+                         'fid',
+                         'date_day0',
+                         'date_call')
+          hospit_log <- hospit_log[, col_order]
 
-      hospit_log <- hospit_log %>% dplyr::rename('name' = 'child_id',
-                                                 'enroldate' = 'date_day0',
-                                                 'hvisitdate' = 'date_hosp_day7',
-                                                 'day7fudate' = 'date_call')
+          hospit_log <- hospit_log %>% dplyr::rename('name' = 'child_id',
+                                                     'enroldate' = 'date_day0',
+                                                     'hvisitdate' = 'date_hosp_day7',
+                                                     'day7fudate' = 'date_call')
+        }
+      }
 
     }
   }

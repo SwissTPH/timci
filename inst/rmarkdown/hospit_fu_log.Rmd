@@ -164,28 +164,30 @@ if (!is.null(hospit_fu)) {
 
 ```{r}
 if (!is.null(hospit_fu)) {
-  for (i in 1:nrow(hospit_fu)) {
-    pid <- toString(hospit_fu[i,'name'])
-    png_file <- file.path(tempdir(), paste0(pid,".png"))
-    png(png_file)
-    qrcode::qrcode_gen(pid)
-    dev.off()
-    }
-  
-  df <- hospit_fu %>%
-    dplyr::mutate(
-      code = paste0('![](', file.path(tempdir(), paste0(hospit_fu$name,".png")), ')', '{width=0.75in}')
-      ) %>%
-    dplyr::select('code', dplyr::everything()) %>%
-    dplyr::rename('id' = 'name',
-                  'child' = 'label',
-                  'enrolment date' = 'enroldate',
-                  'day 7 call date' = 'day7fudate')
-  
-  drops <- c("sex", "device_id", "rhf_loc_id")
-  df <- df[ , !(names(df) %in% drops)]
-  
-  df %>% knitr::kable()
+  if (nrow(hospit_fu) > 0) {
+    for (i in 1:nrow(hospit_fu)) {
+      pid <- toString(hospit_fu[i,'name'])
+      png_file <- file.path(tempdir(), paste0(pid,".png"))
+      png(png_file)
+      qrcode::qrcode_gen(pid)
+      dev.off()
+      }
+    
+    df <- hospit_fu %>%
+      dplyr::mutate(
+        code = paste0('![](', file.path(tempdir(), paste0(hospit_fu$name,".png")), ')', '{width=0.75in}')
+        ) %>%
+      dplyr::select('code', dplyr::everything()) %>%
+      dplyr::rename('id' = 'name',
+                    'child' = 'label',
+                    'enrolment date' = 'enroldate',
+                    'day 7 call date' = 'day7fudate')
+    
+    drops <- c("sex", "device_id", "rhf_loc_id")
+    df <- df[ , !(names(df) %in% drops)]
+    
+    df %>% knitr::kable()
+  }
 }
 ```
 
