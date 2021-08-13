@@ -238,15 +238,27 @@ format_day28_data <- function(df) {
                  "n1_o3_2b")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
-  # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
-  day28_df <- df[df$proceed == 1,]
-  fail_df <- df[df$proceed == 0,]
+  # Separate submissions that relate to complete Day 28 follow-up and unsuccessful attempts
+  successful_day28_df <- df[df$proceed == 1,]
+  fail_day28_df <- df[df$proceed == 0,]
 
   # Match column names with names from dictionary
-  day28_df <- match_from_xls_dict(day28_df, "day28_dict.xlsx")
-  fail_df <- match_from_xls_dict(fail_df, "day28_dict.xlsx")
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "day28_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, deidentified == 1)
 
-  list(day28_df, fail_df)
+  day28_df <- match_from_xls_dict(df, "day28_dict.xlsx")
+  day28_df <- day28_df[sub$new]
+  day28_df <- day28_df %>%
+    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+
+  successful_day28_df <- match_from_xls_dict(successful_day28_df, "day28_dict.xlsx")
+  successful_day28_df <- successful_day28_df[sub$new]
+  successful_day28_df <- successful_day28_df %>%
+    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+
+  fail_day28_df <- match_from_xls_dict(fail_day28_df, "day28_dict.xlsx")
+
+  list(successful_day28_df, fail_day28_df, day28_df)
 
 }
 

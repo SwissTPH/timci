@@ -436,7 +436,7 @@ if (!is.null(day0_qc)) {
 
 ### Load data
 
-```{r load-RCT-LS-ODK-fu-day7-data}
+```{r format-RCT-LS-ODK-fu-day7-data}
 day7fu_data <- NULL
 allday7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
@@ -481,7 +481,7 @@ if (!is.null(allday7fu_data)) {
 
 ### Load data
 
-```{r load-RCT-LS-ODK-fu-hospit-data}
+```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
 if (!is.null(raw_hospit_data)) {
   hospit_data <- timci::process_hospital_data(raw_hospit_data)
@@ -516,13 +516,49 @@ if (!is.null(hospit_data)) {
 
 ## 1.3. Day 28 follow-up
 
-```{r load-RCT-LS-ODK-fu-day28-data}
+```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  day28fu_data <- NULL
+  allday28fu_data <- NULL
   if (!is.null(raw_day28fu_data)) {
-    fn <- timci::export_df2xlsx(raw_day28fu_data, params$rctls_dir,
-                                "06_timci_followup_day28_data")
-    fn <- timci::export_df2csv(raw_day28fu_data, params$rctls_dir,
-                               "06_timci_followup_day28_data")
+    if (nrow(raw_day28fu_data) > 0) {
+      res <- timci::format_day28_data(raw_day28fu_data)
+      day28fu_data <- res[[1]]
+      allday28fu_data <- res[[3]]
+    }
+  }
+}
+```
+
+### Quality checks
+
+```{r check-RCT-LS-ODK-fu-day28-data, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (!is.null(day28fu_data)) {
+    day28fu_qc <- timci::detect_id_duplicates(day28fu_data)
+    day28fu_duplicates <- day28fu_qc[day28fu_qc$id_fq > 1,]
+    if (length(day28fu_duplicates) > 0) { 
+         knitr::kable(day28fu_duplicates,
+                      caption = "ID duplicates",
+                      row.names = FALSE)
+    } else {
+      cat("No ID duplicates detected")
+    }
+  }
+}
+```
+
+```{r export-RCT-LS-ODK-fu-day28-data}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (!is.null(day28fu_data)) {
+    fn <- timci::export_df2xlsx(day28fu_data, params$rctls_dir,
+                                "06_timci_followup_successful_day28_data")
+    fn <- timci::export_df2csv(day28fu_data, params$rctls_dir,
+                               "06_timci_followup_successful_day28_data")
+  }
+  if (!is.null(allday28fu_data)) {
+    fn <- timci::export_df2xlsx(allday28fu_data, params$rctls_dir, "06a_timci_followup_day28_data")
+    fn <- timci::export_df2csv(allday28fu_data, params$rctls_dir, "06a_timci_followup_day28_data")
   }
 }
 ```

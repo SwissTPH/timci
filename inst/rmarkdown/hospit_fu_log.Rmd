@@ -141,14 +141,16 @@ hospit_fu <- timci::generate_hospital_log(pii, raw_day7fu_data)
 ```
 
 ```{r}
+"
 day7fu <- NULL
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
     day7fu <- timci::generate_fu_log(params$pii, raw_hospit_data, 7, 9)
     day7lost <- timci::generate_fu_log(params$pii, raw_hospit_data, 10, 2000)
-    tmp <- timci::export_df2xlsx(day7lost, params$output_dir, "hospit_lost_to_followup")
+    tmp <- timci::export_df2xlsx(day7lost, params$output_dir, 'hospit_lost_to_followup')
   }
 }
+"
 ```
 
 ```{r}

@@ -222,7 +222,7 @@ run_rmarkdown <- function(rctls_pid,
 
   # Load problem report data
   print("Load problem report data")
-  problem_data <- NULL
+  raw_problem_data <- NULL
   if (problem_fid %in% rct_ls_form_list) {
     raw_problem_zip <- ruODK::submission_export(local_dir = tempdir(),
                                             pid = rctls_pid,
@@ -238,7 +238,7 @@ run_rmarkdown <- function(rctls_pid,
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
-  tf_data <- NULL
+  tf_data_full <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
@@ -284,7 +284,6 @@ run_rmarkdown <- function(rctls_pid,
 
     # Load time-flow data
     print("Load time-flow data")
-    tf_data_full <- NULL
     if (tf_fid %in% spa_form_list) {
       raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
                                              pid = spa_pid,
@@ -657,12 +656,14 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                      paste0(crf_wfa_fid,".csv"),
                                                      start_date,
                                                      end_date)
-    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+    if (!is.null(raw_wfa_data)) {
+      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+    }
   }
 
   # Load problem report data
   print("Load problem report data")
-  problem_data <- NULL
+  raw_problem_data <- NULL
   if (problem_fid %in% rct_ls_form_list) {
     raw_problem_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                 pid = rctls_pid,
@@ -680,7 +681,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
-  tf_data <- NULL
+  tf_data_full <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
@@ -738,7 +739,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
     # Load time-flow data
     print("Load time-flow data")
-    tf_data_full <- NULL
     if (tf_fid %in% spa_form_list) {
       raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
                                              pid = spa_pid,

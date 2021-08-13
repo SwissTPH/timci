@@ -279,8 +279,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 cat(title_str)
-plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
-plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 85, 100)
+if (nrow(facility_data) > 0) {
+  plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
+  plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 85, 100)
+}
 ```
   
 ```{r, results='asis'}
@@ -517,10 +519,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r fig.height=8, results='asis'}
-stats <- timci::get_summary_by_deviceid(facility_data)
-stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
-stats$screened <- stats$screened / days_nb
-stats$children <- stats$children / days_nb
+if (nrow(facility_data) > 0) {
+  stats <- timci::get_summary_by_deviceid(facility_data)
+  stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+  stats$screened <- stats$screened / days_nb
+  stats$children <- stats$children / days_nb
+}
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
   min_target_day <- 4
@@ -601,7 +605,9 @@ age_statistics <- list(
 st <- qwraps2::summary_table(all, age_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), age_statistics)
 print(t(cbind(st, st1)))
+```
 
+```{r, results = "asis"}
 all <- all %>% filter(age_incl == 1 & age_excl == 0)
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -618,7 +624,9 @@ sickness_statistics <- list(
 st <- qwraps2::summary_table(all, sickness_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sickness_statistics)
 print(t(cbind(st, st1)))
+```
 
+```{r, results = "asis"}
 sick <- all %>% filter(sickness == 1)
 nonsick <- all %>% filter(sickness == 0)
 all <- sick
@@ -638,7 +646,9 @@ sick_reason_statistics <- list(
 st <- qwraps2::summary_table(all, sick_reason_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), sick_reason_statistics)
 print(t(cbind(st, st1)))
+```
 
+```{r, results = "asis"}
 all <- nonsick
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("#### Principal motif de consultation pour les autres enfants\n\n")
@@ -656,7 +666,9 @@ reason_statistics <- list(
 st <- qwraps2::summary_table(all, reason_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), reason_statistics)
 print(t(cbind(st, st1)))
+```
 
+```{r, results = "asis"}
 all <- sick
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("#### Âge de l'accompagnant principal\n\n")
@@ -672,7 +684,9 @@ summary_statistics <- list(
 st <- qwraps2::summary_table(all, summary_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), summary_statistics)
 print(t(cbind(st, st1)))
+```
 
+```{r, results = "asis"}
 all <- all %>% filter(cg_eligibility == 1)
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("#### Recrutements multiples\n\n")
