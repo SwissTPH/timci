@@ -269,7 +269,7 @@ format_day28_data <- function(df) {
 #' @export
 #' @import dplyr magrittr
 
-process_hospital_data <- function(df) {
+format_hospital_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
@@ -277,7 +277,10 @@ process_hospital_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
-  df %>% match_from_xls_dict("hospit_dict.xlsx")
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', "hospit_dict.xlsx"), package = 'timci'))
+  sub <- subset(dictionary, deidentified == 1)
+  df <- match_from_xls_dict(df, "hospit_dict.xlsx")
+  df <- df[sub$new]
 
 }
 

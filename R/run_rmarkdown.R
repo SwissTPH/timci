@@ -572,7 +572,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
                                                pp = rctls_pp)
-  raw_facility_data <- timci::extract_data_from_odk_zip(normalizePath(raw_facility_zip),
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
                                                         end_date)
@@ -590,7 +590,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                fid = crf_day7_fid,
                                                pp = rctls_pp,
                                                media = FALSE)
-    raw_day7fu_data <- timci::extract_data_from_odk_zip(normalizePath(raw_day7fu_zip),
+    raw_day7fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip,
                                                         paste0(crf_day7_fid,".csv"),
                                                         start_date,
                                                         end_date)
@@ -605,7 +605,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                fid = crf_hospit_fid,
                                                pp = rctls_pp,
                                                media = FALSE)
-    raw_hospit_data <- timci::extract_data_from_odk_zip(normalizePath(raw_hospit_zip),
+    raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip,
                                                         paste0(crf_hospit_fid,".csv"),
                                                         start_date,
                                                         end_date)
@@ -621,7 +621,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   fid = crf_day28_fid,
                                                   pp = rctls_pp,
                                                   media = FALSE)
-      raw_day28fu_data <- timci::extract_data_from_odk_zip(normalizePath(raw_day28fu_zip),
+      raw_day28fu_data <- timci::extract_data_from_odk_zip(raw_day28fu_zip,
                                                            paste0(crf_day28_fid,".csv"),
                                                            start_date,
                                                            end_date)
@@ -637,7 +637,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                    fid = wd_fid,
                                                    pp = rctls_pp,
                                                    media = FALSE)
-    raw_withdrawal_data <- timci::extract_data_from_odk_zip(normalizePath(raw_withdrawal_zip),
+    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
                                                             paste0(wd_fid,".csv"),
                                                             start_date,
                                                             end_date)
@@ -652,7 +652,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                             fid = crf_wfa_fid,
                                             pp = rctls_pp,
                                             media = TRUE)
-    raw_wfa_data <- timci::extract_data_from_odk_zip(normalizePath(raw_wfa_zip),
+    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip,
                                                      paste0(crf_wfa_fid,".csv"),
                                                      start_date,
                                                      end_date)
@@ -670,7 +670,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                 fid = problem_fid,
                                                 pp = rctls_pp,
                                                 media = FALSE)
-    raw_problem_data <- timci::extract_data_from_odk_zip(normalizePath(raw_problem_zip),
+    raw_problem_data <- timci::extract_data_from_odk_zip(raw_problem_zip,
                                                          paste0(problem_fid,".csv"),
                                                          start_date,
                                                          end_date)

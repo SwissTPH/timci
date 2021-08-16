@@ -484,7 +484,7 @@ if (!is.null(allday7fu_data)) {
 ```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
 if (!is.null(raw_hospit_data)) {
-  hospit_data <- timci::process_hospital_data(raw_hospit_data)
+  hospit_data <- timci::format_hospital_data(raw_hospit_data)
 }
 ```
 
@@ -623,6 +623,7 @@ if (!is.null(spa_hcpi_data)) {
 ## 2.4. Sick child observation protocol
 
 ```{r sick-child-observation-export}
+print("Sick child observation protocol data export")
 if (!is.null(spa_sco_data)) {
   if (deidentification_on == 1) {
     deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
