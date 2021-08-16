@@ -43,9 +43,11 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
 
   t <- tempdir()
   utils::unzip(odk_zip, exdir = t)
+  #fn <- fs::dir_ls(t, glob=paste0("*", csv_name))
+  #print(fn)
+  #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(t)
-  raw_odk_data <- file.path(t, csv_name) %>%
-    readr::read_csv()
+  raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name)))
   format_odk_metadata(raw_odk_data, start_date, end_date)
 
 }
@@ -66,8 +68,7 @@ extract_additional_data_from_odk_zip <- function(odk_zip, csv_name) {
   fn <- file.path(t, csv_name)
   df <- NULL
   if ( file.exists(fn) ) {
-    df <- fn %>%
-      readr::read_csv()
+    df <- raw_odk_data <- readr::with_edition(1, readr::read_csv(fn))
   }
   df
 

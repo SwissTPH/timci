@@ -75,10 +75,6 @@ if (!is.null(params$facility_data)) {
   
 } else {
   
-  ################
-  # Set up ruODK #
-  ################
-  
   ruODK::ru_setup(
     svc = Sys.getenv("ODKC_SVC"),
     un = Sys.getenv("ODKC_UN"),
@@ -90,62 +86,40 @@ if (!is.null(params$facility_data)) {
   # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
   odkc_project_list <- ruODK::project_list()$id
 
+  rctls_pid <- Sys.getenv("TIMCI_PILOT_RCTLS_PID")
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
+  
+  rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+  
 
   # RCT / LS environment variables
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  print(crf_facility_fid)
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
+  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
   #######################
   # Load TIMCI ODK data #
   #######################
 
   # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list()$fid
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
   # Load facility data
   print("Load facility data")
-  raw_facility_data <- ruODK::odata_submission_get(fid = crf_facility_fid)
+
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp)
+  print(raw_facility_zip)
+  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
   facility_data <- timci::process_facility_data(raw_facility_data)
-
-  # Load day 7 follow-up data
-  print("Load day 7 follow-up data")
-  raw_day7fu_data <- NULL
-  if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_data <- ruODK::odata_submission_get(fid = crf_day7_fid,
-                                                   download = FALSE)
-  }
-
-  # Load hospital visit follow-up data
-  print("Load hospital visit data")
-  raw_hospit_data <- NULL
-  if (crf_hospit_fid %in% rct_ls_form_list) {
-    raw_hospit_data <- ruODK::odata_submission_get(fid = crf_hospit_fid,
-                                                   download = FALSE)
-  }
-
-  # Load day 28 follow-up data
-  raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    print("Load day 28 follow-up data")
-    if (crf_day28_fid %in% rct_ls_form_list) {
-      raw_day28fu_data <- ruODK::odata_submission_get(fid = crf_day28_fid,
-                                                      download = FALSE)
-    }
-  }
-
-  # Load widthdrawal data
-  print("Load withdrawal data")
-  raw_withdrawal_data <- NULL
-  if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_data <- ruODK::odata_submission_get(fid = wd_fid,
-                                                       download = FALSE)
-  }
+  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
   
 }
 
