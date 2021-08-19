@@ -206,6 +206,7 @@ res <- timci::extract_enrolled_participants(facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
+baseline_data <- merge(baseline_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
 demog_data <- res[[1]]
 n_enrolled <- nrow(demog_data)
 visit_names <- c(visit_names, baseline_str)
@@ -834,17 +835,41 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results = "asis"}
 if (nrow(baseline_data) > 0) {
-  all <- data.frame(study_data)
-  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
   
-  summary_statistics <- list(
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    cat(paste0("### 2-59 months\n\n"))
+  } else {
+    cat(paste0("### 2-59 months\n\n"))
+  }
+  
+  all <- data.frame(baseline_data) %>% filter(yg_infant == 0)
+  
+  pox_statistics <- list(
     "Pulse oximetry" = list(
       "Reported" = ~qwraps2::n_perc(spo2 == 1, 2)
       )
   )
-  pox_summary1 <- qwraps2::summary_table(all, summary_statistics)
-  pox_summary2 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
-  print(cbind(pox_summary1, pox_summary2))
+  pox_summary1 <- qwraps2::summary_table(all, pox_statistics)
+  pox_summary2 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), pox_statistics)
+  print(t(cbind(pox_summary1, pox_summary2)))
+  
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    cat(paste0("### 0-2 months\n\n"))
+  } else {
+    cat(paste0("### 0-2 months\n\n"))
+  }
+  
+  all <- data.frame(baseline_data) %>% filter(yg_infant == 1)
+  
+  pox_statistics <- list(
+    "Pulse oximetry" = list(
+      "Reported" = ~qwraps2::n_perc(spo2 == 1, 2)
+      )
+  )
+  pox_summary1 <- qwraps2::summary_table(all, pox_statistics)
+  pox_summary2 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), pox_statistics)
+  print(t(cbind(pox_summary1, pox_summary2)))
+
 }
 ```
 
@@ -923,7 +948,6 @@ if (!is.null(day7fu_data)) {
     all$cg_ok[is.na(all$cg_ok)] <- 0
     all$status_day7[is.na(all$status_day7)] <- 0
     all$cure_day7[is.na(all$cure_day7)] <- 0
-    
     
     day7_call_stats <- list(
       "Call outcome" = list(

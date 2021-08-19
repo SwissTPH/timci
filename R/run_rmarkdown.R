@@ -9,7 +9,7 @@
 #' @import rmarkdown
 #' @export
 
-generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
+generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()) {
 
   report <- system.file("rmarkdown", rmd_fn, package = "timci")
   if (report == "") {
@@ -35,7 +35,7 @@ generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
 #' @import rmarkdown
 #' @export
 
-generate_word_report <- function(report_dir, rmd_fn, report_fn, rmd_params="") {
+generate_word_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()) {
 
   report <- system.file("rmarkdown", rmd_fn, package = "timci")
   if (report == "") {
@@ -1072,7 +1072,7 @@ generate_fu_logs <- function(rctls_pid,
                    fu_fid = crf_day28_fid,
                    raw_fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
-                   fu_start = 21,
+                   fu_start = 27,
                    fu_end = 35,
                    fu_vstart = 28,
                    fu_vend = 32)

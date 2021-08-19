@@ -40,4 +40,6 @@ utils::globalVariables(c("Group.1",
                          "date_day0",
                          "qual",
                          "hf_visit_day7",
-                         "hf_visit_type"))
+                         "hf_visit_type",
+                         "status_day7",
+                         "found"))

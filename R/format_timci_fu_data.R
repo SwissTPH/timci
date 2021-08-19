@@ -284,28 +284,32 @@ format_hospital_data <- function(df) {
 
 }
 
-#' Generate hsopital follow-up log (TIMCI-specific function)
+#' Generate hospital follow-up log (TIMCI-specific function)
 #'
 #' Generate a list of participants to be searched for at hospital level
 #' @param pii dataframe containing personally identifiable data
 #' @param fu7df dataframe containing day 7 follow-up data
+#' @param hospitdf dataframe containing hospital follow-up data
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
 #' @export
 #' @import magrittr dplyr
 
 generate_hospital_log <- function(pii,
-                                  fu7df) {
+                                  fu7df,
+                                  hospitdf) {
 
   hospit_log <- NULL
   if (!is.null(fu7df)) {
     if (nrow(fu7df) > 0) {
 
       day7fu_data <- timci::format_day7_data(fu7df)[[3]]
-      hospit_log <- day7fu_data %>% dplyr::filter(hf_visit_day7 == 1 & hf_visit_type == 1)
+      hospit_log <- day7fu_data %>% dplyr::filter( (hf_visit_day7 == 1 & hf_visit_type == 1) | (status_day7 == 2) )
 
       col_order <- c('child_id',
                      'sex',
                      'date_visit',
+                     'dob',
+                     'age_mo',
                      'fs_name',
                      'ls_name')
       rpii <- pii[, col_order]
@@ -314,21 +318,25 @@ generate_hospital_log <- function(pii,
       if (!is.null(hospit_log)) {
         if (nrow(hospit_log) > 0) {
           hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
-          hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " - ", hospit_log$rhf_loc_name, ")")
+          hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " ", hospit_log$rhf_name, " - ", hospit_log$rhf_loc_name, ")")
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
 
           # Order columns
           col_order <- c('device_id',
                          'district',
                          'rhf_loc_id',
-                         'rhf_loc_name',
                          'rhf_loc_oth',
+                         'rhf_loc_name',
                          'rhf_id',
                          'rhf_oth',
+                         'rhf_name',
                          'date_hosp_day7',
                          'child_id',
                          'label',
+                         'child_name',
                          'sex',
+                         'dob',
+                         'age_mo',
                          'fid',
                          'date_day0',
                          'date_call')
@@ -338,6 +346,16 @@ generate_hospital_log <- function(pii,
                                                      'enroldate' = 'date_day0',
                                                      'hvisitdate' = 'date_hosp_day7',
                                                      'day7fudate' = 'date_call')
+        }
+      }
+
+
+      # Exclude children who already underwent successful hospital follow-up
+      if (!is.null(hospitdf)) {
+        if (nrow(hospitdf) > 0) {
+          hospit_data <- timci::format_hospital_data(hospitdf)
+          hospit_data <- hospit_data %>% dplyr::filter(found == 1)
+          hospit_log <- hospit_log[!(hospit_log$name %in% hospit_data$child_id),]
         }
       }
 

@@ -2,14 +2,16 @@
 % Please edit documentation in R/format_timci_fu_data.R
 \name{generate_hospital_log}
 \alias{generate_hospital_log}
-\title{Generate hsopital follow-up log (TIMCI-specific function)}
+\title{Generate hospital follow-up log (TIMCI-specific function)}
 \usage{
-generate_hospital_log(pii, fu7df)
+generate_hospital_log(pii, fu7df, hospitdf)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
 
 \item{fu7df}{dataframe containing day 7 follow-up data}
+
+\item{hospitdf}{dataframe containing hospital follow-up data}
 }
 \value{
 This function returns a dataframe that contains the list of participants to be searched for at hospital level.
