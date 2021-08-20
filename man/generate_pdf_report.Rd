@@ -4,7 +4,7 @@
 \alias{generate_pdf_report}
 \title{Generate a PDF report using Rmarkdown}
 \usage{
-generate_pdf_report(report_dir, rmd_fn, report_fn, rmd_params = "")
+generate_pdf_report(report_dir, rmd_fn, report_fn, rmd_params = list())
 }
 \arguments{
 \item{report_dir}{Path to the folder where the generated PDF Rmarkdown report is stored}

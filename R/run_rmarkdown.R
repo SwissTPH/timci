@@ -485,8 +485,9 @@ run_rmarkdown <- function(rctls_pid,
 #' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
 #' @param spa_db_dir Path to the output folder for the SPA database exports
 #' @param path_dir Path to the output folder for the M&E exports to be shared with PATH
-#' @param start_date start date
-#' @param end_date end date
+#' @param start_date RCT/LS data collection start date
+#' @param end_date RCT/LS data collection end date
+#' @param spa_start_date SPA data collection start date
 #' @import rmarkdown ruODK
 #' @export
 
@@ -505,7 +506,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      spa_db_dir,
                                      path_dir,
                                      start_date = NULL,
-                                     end_date = NULL) {
+                                     end_date = NULL,
+                                     spa_start_date = NULL) {
+
+  if (is.null(spa_start_date)){
+    spa_start_date = start_date
+  }
 
   ################
   # Set up ruODK #
@@ -694,7 +700,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                    media = FALSE)
       spa_cgei_data <- timci::extract_data_from_odk_zip(raw_spa_cgei_zip,
                                                         paste0(cgei_fid,".csv"),
-                                                        start_date,
+                                                        spa_start_date,
                                                         end_date)
     }
 
@@ -707,7 +713,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  media = FALSE)
       spa_fa_data <- timci::extract_data_from_odk_zip(raw_spa_fa_zip,
                                                       paste0(fa_fid,".csv"),
-                                                      start_date,
+                                                      spa_start_date,
                                                       end_date)
     }
 
@@ -720,7 +726,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                    media = FALSE)
       spa_hcpi_data <- timci::extract_data_from_odk_zip(raw_spa_hcpi_zip,
                                                         paste0(hcpi_fid,".csv"),
-                                                        start_date,
+                                                        spa_start_date,
                                                         end_date)
     }
 
@@ -733,7 +739,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   media = FALSE)
       spa_sco_data <- timci::extract_data_from_odk_zip(raw_spa_sco_zip,
                                                        paste0(sco_fid,".csv"),
-                                                       start_date,
+                                                       spa_start_date,
                                                        end_date)
     }
 
@@ -746,7 +752,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                              media = FALSE)
       tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip,
                                                   paste0(tf_fid,".csv"),
-                                                  start_date,
+                                                  spa_start_date,
                                                   end_date)
       # To improve with a constraint of no submission
       tf_data_audit <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, " - audit.csv"))

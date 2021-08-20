@@ -29,6 +29,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
 options(qwraps2_markup = 'markdown')
+dec_pres <- 1
 ```
 
 ```{r notice-text, results='asis'}
@@ -474,12 +475,33 @@ if (!is.null(raw_day7fu_data)) {
   }
 ```
 
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  cat("### Day 28 phone call\n\n")
+  if (!is.null(raw_day28fu_data)) {
+    if (nrow(raw_day28fu_data) > 0) {
+      timci::generate_calendar_heatmap(raw_day28fu_data, date)
+    } else{
+      cat('N/A\n\n')
+    }
+  } else{
+    cat('N/A\n\n')
+  }
+}
+```
+
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Délais de soumission\n\n")
+  cat("## Heure du screening\n\n")
 } else {
-  cat("## Submission timeliness\n\n")
+  cat("## Screening times\n\n")
 }
+```
+
+```{r, results = "asis"}
+facility_data$timestamp <- strptime(facility_data$start, format = "%H:%M:%S")
+facility_data$hours <-  as.numeric(format(facility_data$timestamp, format = "%H"))
+hist(facility_data$hours)
 ```
 
 To be completed (track submissions that are not submitted on the same day)
@@ -571,10 +593,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 age_statistics <- list(
   "Facility" = list(
-    "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, 2),
-    "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", 2),
-    "0 - 2 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "0-2m", 2),
-    "First day of life" = ~qwraps2::n_perc(age_excl == 1, 2)
+    "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, dec_pres),
+    "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", dec_pres),
+    "0 - 2 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "0-2m", dec_pres),
+    "First day of life" = ~qwraps2::n_perc(age_excl == 1, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, age_statistics)
@@ -592,8 +614,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 sickness_statistics <- list(
   "Facility" = list(
-    "Sick children" = ~qwraps2::n_perc(sickness == 1, 2),
-    "Other children" = ~qwraps2::n_perc(sickness == 0, 2)
+    "Sick children" = ~qwraps2::n_perc(sickness == 1, dec_pres),
+    "Other children" = ~qwraps2::n_perc(sickness == 0, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, sickness_statistics)
@@ -612,10 +634,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 sick_reason_statistics <- list(
   "Facility" = list(
-    "Sickness" = ~qwraps2::n_perc(consult_reason == 1, 2),
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 1, 2),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 1, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, 2)
+    "Sickness" = ~qwraps2::n_perc(consult_reason == 1, dec_pres),
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 1, dec_pres),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 1, dec_pres),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, sick_reason_statistics)
@@ -632,10 +654,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 reason_statistics <- list(
   "Facility" = list(
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, 2),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, 2),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, 2),
-    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, 2)
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, dec_pres),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, dec_pres),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, dec_pres),
+    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, reason_statistics)
@@ -652,13 +674,38 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 summary_statistics <- list(
   "Facility" = list(
-    "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0 & sickness == 1, 2),
-    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1 & sickness == 1, 2)
+    "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0, dec_pres),
+    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), summary_statistics)
 print(t(cbind(st, st1)))
+```
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("##### Proportion de mères adolescentes\n\n"))
+} else {
+  cat(paste0("##### Proportion of underaged mothers\n\n"))
+}
+
+all$underaged_mother[is.na(all$underaged_mother)] <- 0
+
+mother_statistics <- list(
+  "Mother's age" = list(
+    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0), dec_pres),
+    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1), dec_pres)
+    )
+)
+
+st <- qwraps2::summary_table(all, mother_statistics)
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+  st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), mother_statistics)
+  print(t(cbind(st, st1)))
+} else{
+  print(t(st))
+}
 ```
 
 ```{r, results = "asis"}
@@ -670,10 +717,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 summary_statistics <- list(
   "Facility" = list(
-    "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, 2),
-    "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, 2),
-    "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, 2),
-    "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, 2)
+    "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, dec_pres),
+    "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, dec_pres),
+    "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, dec_pres),
+    "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
@@ -692,37 +739,13 @@ all <- all %>% filter(prev_enrl == 3 | prev_enrl == 98)
 
 consent_statistics <- list(
   "Facility" = list(
-    "Consented" = ~qwraps2::n_perc(consent == 1, 2),
-    "Not consented" = ~qwraps2::n_perc(consent == 0, 2)
+    "Consented" = ~qwraps2::n_perc(consent == 1, dec_pres),
+    "Not consented" = ~qwraps2::n_perc(consent == 0, dec_pres)
     )
 )
 st <- qwraps2::summary_table(all, consent_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), consent_statistics)
 print(t(cbind(st, st1)))
-```
-
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Proportion de mères adolescentes\n\n"))
-} else {
-  cat(paste0("## Proportion of underaged mothers\n\n"))
-}
-
-all <- data.frame(facility_data)
-all$underaged_mother[is.na(all$underaged_mother)] <- 0
-
-mother_statistics <- list(
-  "Mother's age" = list(
-    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0 & sickness == 1), 2),
-    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1 & sickness == 1), 2)
-    )
-)
-
-if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
-  print(qwraps2::summary_table(dplyr::group_by(all, district), mother_statistics))
-} else{
-  print(qwraps2::summary_table(all, mother_statistics))
-}
 ```
 
 ```{r, results='asis'}
@@ -778,8 +801,8 @@ if (!is.null(facility_data)) {
     all$cmty[is.na(all$cmty)] <- 0
     all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
     all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
-    all$location[!is.na(all$location)] <- 1
-    all$location[is.na(all$location)] <- 0
+    all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
+    all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
     
     phone_stats <- list(
       "Phone number" = list(

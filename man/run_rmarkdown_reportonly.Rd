@@ -20,7 +20,8 @@ run_rmarkdown_reportonly(
   spa_db_dir,
   path_dir,
   start_date = NULL,
-  end_date = NULL
+  end_date = NULL,
+  spa_start_date = NULL
 )
 }
 \arguments{
@@ -52,9 +53,11 @@ run_rmarkdown_reportonly(
 
 \item{path_dir}{Path to the output folder for the M&E exports to be shared with PATH}
 
-\item{start_date}{start date}
+\item{start_date}{RCT/LS data collection start date}
 
-\item{end_date}{end date}
+\item{end_date}{RCT/LS data collection end date}
+
+\item{spa_start_date}{SPA data collection start date}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

@@ -4,7 +4,7 @@
 \alias{generate_word_report}
 \title{Generate a Microsoft Word report using Rmarkdown}
 \usage{
-generate_word_report(report_dir, rmd_fn, report_fn, rmd_params = "")
+generate_word_report(report_dir, rmd_fn, report_fn, rmd_params = list())
 }
 \arguments{
 \item{report_dir}{Path to the folder where the generated DOCX Rmarkdown report is stored}
