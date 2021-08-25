@@ -176,6 +176,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
                   'Type' = 'type')
   
 }
+nb_facilities <- nrow(facilities)
 facilities %>% knitr::kable()
 ```
 
@@ -257,7 +258,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 cat(title_str)
 if (nrow(facility_data) > 0) {
   plot1 <- timci::plot_enrolment_gauge(n_enrolled/(n_screened - n_repeat), plot1_str, 100, 70, 80)
-  plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*9), plot2_str, 100, 85, 100)
+  plot2 <- timci::plot_enrolment_gauge(n_enrolled/(days_nb*8*nb_facilities), plot2_str, 100, 62.5, 100)
 }
 ```
   
@@ -501,7 +502,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 facility_data$timestamp <- strptime(facility_data$start, format = "%H:%M:%S")
 facility_data$hours <-  as.numeric(format(facility_data$timestamp, format = "%H"))
-hist(facility_data$hours)
+hist(facility_data$hours,
+     main = "Screening times", 
+     xlab = "Times", 
+     border = "black", 
+     col = "blue",
+     xlim = c(5,24),
+     las = 1, 
+     breaks = 20)
 ```
 
 To be completed (track submissions that are not submitted on the same day)
@@ -524,10 +532,10 @@ if (nrow(facility_data) > 0) {
 }
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-  min_target_day <- 4
+  min_target_day <- 5
   max_target_day <- 8
 } else {
-  min_target_day <- 4
+  min_target_day <- 5
   max_target_day <- 8
 }
 ```
