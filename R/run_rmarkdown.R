@@ -488,6 +488,7 @@ run_rmarkdown <- function(rctls_pid,
 #' @param start_date RCT/LS data collection start date
 #' @param end_date RCT/LS data collection end date
 #' @param spa_start_date SPA data collection start date
+#' @param lock_date RCT/LS data collection cleaning end date (for database lock)
 #' @import rmarkdown ruODK
 #' @export
 
@@ -507,7 +508,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      path_dir,
                                      start_date = NULL,
                                      end_date = NULL,
-                                     spa_start_date = NULL) {
+                                     spa_start_date = NULL,
+                                     lock_date = NULL) {
 
   if (is.null(spa_start_date)){
     spa_start_date = start_date
@@ -819,6 +821,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  spa_dir = spa_db_dir,
                  qual1_dir = qual1_dir,
                  facility_data = facility_data,
+                 lock_date = lock_date,
                  facility_data_audit = facility_data_audit,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
@@ -832,7 +835,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  tf_data = tf_data_full,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
-                 cgidi_interview_data = cgidi_interview_data)
+                 cgidi_interview_data = cgidi_interview_data,
+                 lock_date = lock_date)
   generate_word_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
 
   #########################

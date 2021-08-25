@@ -21,7 +21,8 @@ run_rmarkdown_reportonly(
   path_dir,
   start_date = NULL,
   end_date = NULL,
-  spa_start_date = NULL
+  spa_start_date = NULL,
+  lock_date = NULL
 )
 }
 \arguments{
@@ -58,6 +59,8 @@ run_rmarkdown_reportonly(
 \item{end_date}{RCT/LS data collection end date}
 
 \item{spa_start_date}{SPA data collection start date}
+
+\item{lock_date}{RCT/LS data collection cleaning end date (for database lock)}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
