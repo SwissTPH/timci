@@ -1036,8 +1036,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   cat('# Day 28 follow-up\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
-      
       day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
+      #day28fu_data <- merge(baseline_data, day28fu_data, by = 'child_id', all.x = TRUE)
       day28fu_data <- day28fu_data %>%
         dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
       

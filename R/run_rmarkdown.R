@@ -511,7 +511,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      spa_start_date = NULL,
                                      lock_date = NULL) {
 
-  if (is.null(spa_start_date)){
+  if (is.null(spa_start_date)) {
     spa_start_date = start_date
   }
 
