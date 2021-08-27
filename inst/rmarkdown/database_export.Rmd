@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Data Quality Report"
-author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'UniversitÃ© Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   pdf_document:
@@ -153,10 +153,11 @@ pii <- res[[2]]
 n_enrolled <- nrow(day0_data)
 ```
 
-```{r}
+```{r, results = 'asis'}
 locked_screening_data <- screening_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 locked_day0_data <- day0_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 locked_pii <- pii %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
+cat(paste0("There are ", nrow(locked_day0_data), " submissions at Day 0 in the raw facility data."))
 ```
 
 ### Duplicate management
@@ -207,7 +208,6 @@ if (!is.null(facility_data)) {
     duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
     if (nrow(duplicates) > 0) { 
       knitr::kable(duplicates, caption = "Possible name duplicates")
-      cat("Information - no action taken at this stage.")
     }
   }
 }
@@ -236,6 +236,7 @@ if (!is.null(day0_qc)) {
                               "07_data_quality_checks")
 }
 ```
+
 ### Withdrawal management
 
 ```{r, results='asis'}
@@ -257,31 +258,38 @@ if (!is.null(facility_data)) {
 }
 ```
 
-### Export data
+### Summary
+
+```{r, results = 'asis'}
+cat(paste0("There are ", nrow(locked_day0_data), " submissions at Day 0 in the cleaned facility data."))
+```
+
+### Data export
 
 ```{r export-screening-data, results = 'asis'}
+screening_export_name <- "01_timci_screening_data"
 if (!is.null(facility_data)) { 
-  fn <- timci::export_df2xlsx(screening_data, params$rctls_dir,
-                              "01_timci_screening_data")
-  fn <- timci::export_df2csv(screening_data, params$rctls_dir,
-                             "01_timci_screening_data")
+  fn <- timci::export_df2csvxlsx(screening_data,
+                                 params$rctls_dir,
+                                 screening_export_name)
 }
+cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 ```
 
 ```{r export-locked-screening-data, results = 'asis'}
 if (!is.null(facility_data)) {
-  fn <- timci::export_df2xlsx(locked_screening_data, lock_rctls_dir,
-                              "01_timci_screening_data")
-  fn <- timci::export_df2csv(locked_screening_data, lock_rctls_dir,
-                             "01_timci_screening_data")
+  fn <- timci::export_df2csvxlsx(locked_screening_data,
+                                 lock_rctls_dir,
+                                 screening_export_name)
 }
-cat(paste0("* Screening data are exported in ", "01_timci_screening_data", ".csv and ", "01_timci_screening_data", ".xslx in the ", params$rctls_dir, " folder"))
+cat(paste0("* Locked screening data are exported in ", screening_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 ```
 
 ```{r export-facility-audit}
 if (!is.null(facility_data_audit)) { 
-  fn <- timci::export_df2csv(facility_data_audit, params$rctls_dir,
-                             "00_facility_audit_data")
+  fn <- timci::export_df2csvxlsx(facility_data_audit,
+                                 params$rctls_dir,
+                                 "00_facility_audit_data")
 }
 ```
 
@@ -290,38 +298,31 @@ if (!is.null(facility_data)) {
   
   if (deidentification_on == 1) {
     deidentified_day0_data <- timci::deidentify_data(day0_data)
-    fn <- timci::export_df2xlsx(deidentified_day0_data, params$rctls_dir,
-                                "02_timci_day0_data")
-    fn <- timci::export_df2csv(deidentified_day0_data, params$rctls_dir,
-                               "02_timci_day0_data")
+    fn <- timci::export_df2csvxlsx(deidentified_day0_data,
+                                   params$rctls_dir,
+                                   "02_timci_day0_data")
     
     locked_day0_data <- timci::deidentify_data(locked_day0_data)
-    fn <- timci::export_df2xlsx(locked_day0_data, lock_rctls_dir,
-                                "02_timci_day0_data")
-    fn <- timci::export_df2csv(locked_day0_data, lock_rctls_dir,
-                               "02_timci_day0_data")
+    fn <- timci::export_df2csvxlsx(locked_day0_data,
+                                   lock_rctls_dir,
+                                   "02_timci_day0_data")
     
     deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
-    fn <- timci::export_df2xlsx(deidentified_day0_data_id_duplicates, lock_rctls_dir,
-                                "02a_timci_day0_data_id_duplicates")
-    fn <- timci::export_df2csv(deidentified_day0_data_id_duplicates, lock_rctls_dir,
-                               "02a_timci_day0_data_id_duplicates")
-    
+    fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
+                                   lock_rctls_dir,
+                                   "02a_timci_day0_data_id_duplicates")
   } else {
-    fn <- timci::export_df2xlsx(day0_data, params$rctls_dir,
-                                "02_timci_day0_data")
-    fn <- timci::export_df2csv(day0_data, params$rctls_dir,
-                               "02_timci_day0_data")
+    fn <- timci::export_df2csvxlsx(day0_data,
+                                   params$rctls_dir,
+                                   "02_timci_day0_data")
     
-    fn <- timci::export_df2xlsx(locked_day0_data, lock_rctls_dir,
-                                "02_timci_day0_data")
-    fn <- timci::export_df2csv(locked_day0_data, lock_rctls_dir,
-                               "02_timci_day0_data")
+    fn <- timci::export_df2csvxlsx(locked_day0_data,
+                                   lock_rctls_dir,
+                                   "02_timci_day0_data")
     
-    fn <- timci::export_df2xlsx(day0_data_id_duplicates, lock_rctls_dir,
-                                "02a_timci_day0_data_id_duplicates")
-    fn <- timci::export_df2csv(day0_data_id_duplicates, lock_rctls_dir,
-                               "02a_timci_day0_data_id_duplicates")
+    fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
+                                   lock_rctls_dir,
+                                   "02a_timci_day0_data_id_duplicates")
   }
   
   xlsx_fname <- timci::export_df2xlsx(pii, tempdir(),
@@ -340,32 +341,29 @@ if (!is.null(facility_data)) {
   
   if (deidentification_on == 1) {
     deidentified_facility_data <- timci::deidentify_data(study_data)
-    fn <- timci::export_df2xlsx(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
-    fn <- timci::export_df2csv(deidentified_facility_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2csvxlsx(deidentified_facility_data,
+                                  params$rctls_dir,
+                                  "03_timci_facility_visits_data")
   } else {
-    fn <- timci::export_df2xlsx(study_data, params$rctls_dir, "03_timci_facility_visits_data")
-    fn <- timci::export_df2csv(study_data, params$rctls_dir, "03_timci_facility_visits_data")
+    fn <- timci::export_df2csvxlsx(study_data,
+                                  params$rctls_dir,
+                                  "03_timci_facility_visits_data")
   }
-  cat(paste0("* Raw facility visit data are exported in ", facility_data_name, ".csv and ", facility_data_name, ".xslx in the ", params$rctls_dir, " folder"))
+  cat(paste0("* Raw facility visit data are exported in ", facility_data_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 }
 ```
 
 ```{r export-RCT-LS-ODK-withdrawal, results = 'asis'}
 withdrawal_export_name <- "99_withdrawal_data"
 if (!is.null(raw_withdrawal_data)) {
-  fn <- timci::export_df2xlsx(raw_withdrawal_data,
-                              params$rctls_dir,
-                              withdrawal_export_name)
-  fn <- timci::export_df2csv(raw_withdrawal_data,
-                             params$rctls_dir,
-                             withdrawal_export_name)
-  cat(paste0("* Raw withdrawal data are exported in ", withdrawal_export_name, ".csv and ", withdrawal_export_name, ".xslx in the ", params$rctls_dir, " folder"))
+  fn <- timci::export_df2csvxlsx(raw_withdrawal_data,
+                                params$rctls_dir,
+                                withdrawal_export_name)
+  cat(paste0("* Raw withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 }
 ```
 
-## Day 7 follow-up
-
-### Load data
+## Day 7 data quality checks
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
 day7fu_data <- NULL
@@ -379,7 +377,7 @@ if (!is.null(raw_day7fu_data)) {
 }
 ```
 
-### Quality checks
+### Duplicate management
 
 #### Successful follow-up duplicates  
 
@@ -392,7 +390,6 @@ if (!is.null(day7fu_data)) {
   day7fu_qc <- timci::detect_id_duplicates(day7fu_data)
   day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
   if (length(day7fu_duplicates) > 0) { 
-    cat(paste0(nrow(day7fu_duplicates), "duplicated successful follow-ups detected."))
     knitr::kable(day7fu_duplicates,
                  caption = "ID duplicates",
                  row.names = FALSE)
@@ -401,13 +398,15 @@ if (!is.null(day7fu_data)) {
 
 if (!is.null(day7fu_data)) {
   if (length(day7fu_duplicates) > 0) { 
-    cat(paste0(nrow(day7fu_duplicates), "duplicated successful follow-ups detected."))
+    cat(paste0(nrow(day7fu_duplicates), " duplicated successful follow-ups detected."))
   }
 }
 
 ```
 
-#### Follow-up of enrolled children only
+### Valid IDs
+
+Rule: keep only IDs of children who are enrolled in the cleaned database.
 
 ```{r}
 # All follow-ups
@@ -427,55 +426,38 @@ locked_day7fu_data <- locked_day7fu_data[!locked_day7fu_data$child_id %in% day7f
 locked_day7fu_data <- rbind(locked_day7fu_data, day7fu_data_duplicates)
 ```
 
-### Export data
+### Data export
 
-```{r export-RCT-LS-ODK-fu-day7-data}
+```{r export-RCT-LS-ODK-fu-day7-data, results = 'asis'}
+day7_export_name <- "04b_timci_followup_successful_day7_data"
 if (!is.null(day7fu_data)) {
   
-  fn <- timci::export_df2xlsx(day7fu_data,
-                              params$rctls_dir,
-                              "04b_timci_followup_successful_day7_data")
-  fn <- timci::export_df2csv(day7fu_data,
-                             params$rctls_dir,
-                             "04b_timci_followup_successful_day7_data")
-  
-  fn <- timci::export_df2xlsx(locked_day7fu_data,
-                              lock_rctls_dir,
-                              "04b_timci_followup_successful_day7_data")
-  fn <- timci::export_df2csv(locked_day7fu_data,
-                             lock_rctls_dir,
-                             "04b_timci_followup_successful_day7_data")
-  
+  fn <- timci::export_df2csvxlsx(day7fu_data,
+                                 params$rctls_dir,
+                                 day7_export_name)
+  fn <- timci::export_df2csvxlsx(locked_day7fu_data,
+                                lock_rctls_dir,
+                                day7_export_name)
 }
 if (!is.null(allday7fu_data)) {
   
-  fn <- timci::export_df2xlsx(allday7fu_data,
-                              params$rctls_dir,
-                              "04a_timci_followup_day7_data")
-  fn <- timci::export_df2csv(allday7fu_data,
-                             params$rctls_dir,
-                             "04a_timci_followup_day7_data")
-  
-  fn <- timci::export_df2xlsx(locked_allday7fu_data,
-                              lock_rctls_dir,
-                              "04a_timci_followup_day7_data")
-  fn <- timci::export_df2csv(locked_allday7fu_data,
-                             lock_rctls_dir,
-                             "04a_timci_followup_day7_data")
-  
-  fn <- timci::export_df2xlsx(allday7fu_data_uids,
-                              lock_rctls_dir,
-                              "04c_timci_followup_day7_data_unknown_ids")
-  fn <- timci::export_df2csv(allday7fu_data_uids,
-                             lock_rctls_dir,
-                             "04c_timci_followup_day7_data_unknown_ids")
-  
+  fn <- timci::export_df2csvxlsx(allday7fu_data,
+                                 params$rctls_dir,
+                                 "04a_timci_followup_day7_data")
+  fn <- timci::export_df2csvxlsx(locked_allday7fu_data,
+                                lock_rctls_dir,
+                                "04a_timci_followup_day7_data")
+  fn <- timci::export_df2csvxlsx(allday7fu_data_uids,
+                                lock_rctls_dir,
+                                "04c_timci_followup_day7_data_unknown_ids")
 }
 ```
 
-## Hospitalisation follow-up
+```{r, results = 'asis'}
+cat(paste0("* Raw Day 7 data are exported in ", day7_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+```
 
-### Load data
+## Hospitalisation data quality checks
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
@@ -484,7 +466,7 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
-### Quality checks
+### Duplicate management
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
 if (!is.null(hospit_data)) {
@@ -499,18 +481,30 @@ if (!is.null(hospit_data)) {
 }
 ```
 
-### Export data
+### Valid IDs
+
+Rule: keep only IDs of children who are enrolled in the cleaned database.
+
+```{r}
+# All follow-ups
+locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
+```
+
+### Data export
 
 ```{r export-RCT-LS-ODK-fu-hospit-data}
+hospit_export_name <- "05_timci_followup_hospit_data"
 if (!is.null(hospit_data)) {
-  fn <- timci::export_df2xlsx(hospit_data, params$rctls_dir,
-                              "05_timci_followup_hospit_data")
-  fn <- timci::export_df2csv(hospit_data, params$rctls_dir,
-                             "05_timci_followup_hospit_data")
+  fn <- timci::export_df2csvxlsx(hospit_data,
+                                 params$rctls_dir,
+                                 hospit_export_name)
+  fn <- timci::export_df2csvxlsx(locked_hospit_data,
+                                 lock_rctls_dir,
+                                 hospit_export_name)
 }
 ```
 
-## Day 28 follow-up
+## Day 28 data quality checks
 
 ```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -526,7 +520,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
-### Quality checks
+### Duplicate management
 
 ```{r check-RCT-LS-ODK-fu-day28-data, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -544,7 +538,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
-#### Follow-up of enrolled children only
+### Valid IDs
+
+Rule: keep only IDs of children who are enrolled in the cleaned database.
 
 ```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -568,17 +564,30 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
+### Data export
+
 ```{r export-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   if (!is.null(day28fu_data)) {
-    fn <- timci::export_df2xlsx(day28fu_data, params$rctls_dir,
-                                "06_timci_followup_successful_day28_data")
-    fn <- timci::export_df2csv(day28fu_data, params$rctls_dir,
-                               "06_timci_followup_successful_day28_data")
+    
+    fn <- timci::export_df2csvxlsx(day28fu_data,
+                                   params$rctls_dir,
+                                   "06_timci_followup_successful_day28_data")
+    fn <- timci::export_df2csvxlsx(locked_day28fu_data,
+                                   lock_rctls_dir,
+                                   "06_timci_followup_successful_day28_data")
   }
-  if (!is.null(allday28fu_data)) {
-    fn <- timci::export_df2xlsx(allday28fu_data, params$rctls_dir, "06a_timci_followup_day28_data")
-    fn <- timci::export_df2csv(allday28fu_data, params$rctls_dir, "06a_timci_followup_day28_data")
+  if (!is.null(allday7fu_data)) {
+    
+    fn <- timci::export_df2csvxlsx(allday28fu_data,
+                                   params$rctls_dir,
+                                   "06a_timci_followup_day28_data")
+    fn <- timci::export_df2csvxlsx(locked_allday28fu_data,
+                                   lock_rctls_dir,
+                                   "06a_timci_followup_day28_data")
+    fn <- timci::export_df2csvxlsx(allday28fu_data_uids,
+                                   lock_rctls_dir,
+                                   "06c_timci_followup_day28_data_unknown_ids")
   }
 }
 ```
@@ -587,10 +596,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r export-RCT-LS-ODK-problem}
 if (!is.null(raw_problem_data)) {
-  fn <- timci::export_df2xlsx(raw_problem_data, params$rctls_dir,
-                              "98_problem_data")
-  fn <- timci::export_df2csv(raw_withdrawal_data, params$rctls_dir,
-                             "98_problem_data")
+  fn <- timci::export_df2csvxlsx(raw_problem_data,
+                                 params$rctls_dir,
+                                 "98_problem_data")
 }
 ```
 
@@ -600,10 +608,9 @@ if (!is.null(raw_problem_data)) {
 
 ```{r cg-exit-interview-export}
 if (!is.null(spa_cgei_data)) {
-  fn <- timci::export_df2xlsx(spa_cgei_data, params$spa_dir,
-                              "03_timci_spa_exit_interview_data")
-  fn <- timci::export_df2csv(spa_cgei_data, params$spa_dir,
-                             "03_timci_spa_exit_interview_data")
+  fn <- timci::export_df2csvxlsx(spa_cgei_data,
+                                 params$spa_dir,
+                                 "03_timci_spa_exit_interview_data")
 }
 ```
 
@@ -611,10 +618,9 @@ if (!is.null(spa_cgei_data)) {
 
 ```{r facility-assessment-export}
 if (!is.null(spa_fa_data)) {
-  fn <- timci::export_df2xlsx(spa_fa_data, params$spa_dir,
-                              "01_timci_spa_facility_assessment_data")
-  fn <- timci::export_df2csv(spa_fa_data, params$spa_dir,
-                             "01_timci_spa_facility_assessment_data")
+  fn <- timci::export_df2csvxlsx(spa_fa_data,
+                                 params$spa_dir,
+                                 "01_timci_spa_facility_assessment_data")
 }
 ```
 
@@ -623,65 +629,55 @@ if (!is.null(spa_fa_data)) {
 ```{r hcp-interview-export}
 if (!is.null(spa_hcpi_data)) {
   spa_hcpi_data <- process_spa_hcpi_data(spa_hcpi_data)
-  fn <- timci::export_df2xlsx(spa_hcpi_data, params$spa_dir,
-                              "02_timci_spa_provider_interview_data")
-  fn <- timci::export_df2csv(spa_hcpi_data, params$spa_dir,
-                             "02_timci_spa_provider_interview_data")
+  fn <- timci::export_df2csvxlsx(spa_hcpi_data,
+                                 params$spa_dir,
+                                 "02_timci_spa_provider_interview_data")
 }
 ```
 
 ## Sick child observation protocol
 
 ```{r}
+locked_spa_sco_data <- spa_sco_data %>% dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
 # Extract entries of child IDs enrolled in the Day 0 database
-locked_spa_sco_data <- spa_sco_data[spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
-spa_sco_data_uids <- spa_sco_data[!spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
+spa_sco_data_uids <- locked_spa_sco_data[!locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
+locked_spa_sco_data <- locked_spa_sco_data[locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
 ```
 
 ```{r sick-child-observation-export}
-print("Sick child observation protocol data export")
+spa_sco_export_name <- "04_timci_spa_consultation_obs_data"
 if (!is.null(spa_sco_data)) {
   if (deidentification_on == 1) {
     deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
-    fn <- timci::export_df2xlsx(deidentified_spa_sco_data, params$spa_dir,
-                                "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2csv(deidentified_spa_sco_data, params$spa_dir,
-                               "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2xlsx(locked_spa_sco_data,
-                              lock_rctls_dir,
-                              "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2csv(locked_spa_sco_data,
-                               lock_rctls_dir,
-                               "04_timci_spa_consultation_obs_data")
+    fn <- timci::export_df2csvxlsx(deidentified_spa_sco_data,
+                                   params$spa_dir,
+                                   spa_sco_export_name)
+    fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
+                                   lock_rctls_dir,
+                                   spa_sco_export_name)
     
-    fn <- timci::export_df2xlsx(spa_sco_data_uids,
-                                lock_rctls_dir,
-                                "04_timci_spa_consultation_obs_data_unknown_ids")
-    fn <- timci::export_df2csv(spa_sco_data_uids,
-                               lock_rctls_dir,
-                               "04_timci_spa_consultation_obs_data_unknown_ids")
+    fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
+                                   lock_rctls_dir,
+                                   "04_timci_spa_consultation_obs_data_unknown_ids")
   } else {
-    fn <- timci::export_df2xlsx(spa_sco_data, params$spa_dir,
-                                "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2csv(spa_sco_data, params$spa_dir,
-                               "04_timci_spa_consultation_obs_data")
-    
-    fn <- timci::export_df2xlsx(locked_spa_sco_data,
-                              lock_rctls_dir,
-                              "04_timci_spa_consultation_obs_data")
-    fn <- timci::export_df2csv(locked_spa_sco_data,
-                               lock_rctls_dir,
-                               "04_timci_spa_consultation_obs_data")
-    
-    fn <- timci::export_df2xlsx(spa_sco_data_uids,
-                                lock_rctls_dir,
-                                "04_timci_spa_consultation_obs_data_unknown_ids")
-    fn <- timci::export_df2csv(spa_sco_data_uids,
-                               lock_rctls_dir,
-                               "04_timci_spa_consultation_obs_data_unknown_ids")
+    fn <- timci::export_df2csvxlsx(spa_sco_data,
+                                   params$spa_dir,
+                                   spa_sco_export_name)
+    fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
+                                   lock_rctls_dir,
+                                   spa_sco_export_name)
+    fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
+                                   lock_rctls_dir,
+                                   "04_timci_spa_consultation_obs_data_unknown_ids")
   }
   
 }
+```
+
+### Data export
+
+```{r, results = 'asis'}
+cat(paste0("* Raw sick child observation data are exported in ", spa_sco_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
 ```
 
 ## Time-flow
@@ -689,22 +685,19 @@ if (!is.null(spa_sco_data)) {
 ```{r time-flow-export}
 if (!is.null(tf_data)) {
   if (!is.null(tf_data[[1]])) {
-    fn <- timci::export_df2xlsx(tf_data[[1]], params$spa_dir,
-                                "05a_timci_timeflow_data")
-    fn <- timci::export_df2csv(tf_data[[1]], params$spa_dir,
-                               "05a_timci_timeflow_data")
+    fn <- timci::export_df2csvxlsx(tf_data[[1]],
+                                   params$spa_dir,
+                                   "05a_timci_timeflow_data")
   }
   if (!is.null(tf_data[[2]])) {
-    fn <- timci::export_df2xlsx(tf_data[[2]], params$spa_dir,
-                                "05b_timci_timeflow_audit")
-    fn <- timci::export_df2csv(tf_data[[2]], params$spa_dir,
-                               "05b_timci_timeflow_audit")
+    fn <- timci::export_df2csvxlsx(tf_data[[2]],
+                                   params$spa_dir,
+                                   "05b_timci_timeflow_audit")
   }
   if (!is.null(tf_data[[3]])) {
-    fn <- timci::export_df2xlsx(tf_data[[3]], params$spa_dir,
-                                "05c_timci_timeflow_steps")
-    fn <- timci::export_df2csv(tf_data[[3]], params$spa_dir,
-                               "05c_timci_timeflow_steps")
+    fn <- timci::export_df2csvxlsx(tf_data[[3]],
+                                   params$spa_dir,
+                                   "05c_timci_timeflow_steps")
   }
 }
 ```
@@ -716,31 +709,33 @@ if (!is.null(tf_data)) {
 ```{r cg-idi-potential-participants}
 if (!is.null(day0_data) && !is.null(day7fu_data)) {
   cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
-  fn <- timci::export_df2xlsx(cg_qual_export_data, qual1_dir,
-                              "cg_idi_participants")
-  fn <- timci::export_df2csv(cg_qual_export_data, qual1_dir,
-                             "cg_idi_participants")
+  fn <- timci::export_df2csvxlsx(cg_qual_export_data,
+                                 qual1_dir,
+                                 "cg_idi_participants")
 }
 ```
 
 ```{r cg-idi-invitation-export}
 if (!is.null(cgidi_invitation_data)) {
-  fn <- timci::export_df2xlsx(cgidi_invitation_data, qual1_dir,
-                              "01_timci_cg_invitation_data")
+  fn <- timci::export_df2csvxlsx(cgidi_invitation_data,
+                                 qual1_dir,
+                                 "01_timci_cg_invitation_data")
 }
 ```
 
 ```{r cg-idi-encryption-export}
 if (!is.null(cgidi_encryption_data)) {
-  fn <- timci::export_df2xlsx(cgidi_encryption_data, qual1_dir,
-                              "02_timci_cg_encryption_data")
+  fn <- timci::export_df2csvxlsx(cgidi_encryption_data,
+                                 qual1_dir,
+                                 "02_timci_cg_encryption_data")
 }
 ```
 
 ```{r cg-idi-interview-export}
 if (!is.null(cgidi_interview_data)) {
-  fn <- timci::export_df2xlsx(cgidi_interview_data, qual1_dir,
-                              "03_timci_cg_interview_data")
+  fn <- timci::export_df2csvxlsx(cgidi_interview_data,
+                                 qual1_dir,
+                                 "03_timci_cg_interview_data")
 
   sl <- ruODK::submission_list(pid = qpid,
                                fid = cgidi3_fid)

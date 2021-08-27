@@ -20,7 +20,8 @@ generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()
                     output_format = c("pdf_document"),
                     output_file = c(paste0(report_fn, '_',Sys.Date(),'.pdf')),
                     output_dir = report_dir,
-                    params = rmd_params)
+                    params = rmd_params,
+                    encoding = "UTF-8")
 
 }
 
@@ -46,7 +47,8 @@ generate_word_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list(
                     output_format = c("word_document"),
                     output_file = c(paste0(report_fn, '_',Sys.Date(),'.docx')),
                     output_dir = report_dir,
-                    params = rmd_params)
+                    params = rmd_params,
+                    encoding = "UTF-8")
 
 }
 

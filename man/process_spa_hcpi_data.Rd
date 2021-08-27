@@ -7,7 +7,7 @@
 process_spa_hcpi_data(df)
 }
 \arguments{
-\item{df}{dataframe containing the (raw) ODK data collected in the healthcare provider interview}
+\item{df}{dataframe containing the (raw) ODK data collected in the SPA healthcare provider interview form}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.
