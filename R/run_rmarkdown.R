@@ -819,6 +819,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   ###########################
 
   params <- list(rctls_dir = mdb_dir,
+                 research_facilities = research_facilities,
                  participant_zip = participant_zip,
                  spa_dir = spa_db_dir,
                  qual1_dir = qual1_dir,

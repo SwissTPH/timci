@@ -13,6 +13,7 @@ output:
     fig_width: 7.5
   html_document: default
 params:
+  research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   rctls_dir: !r tempdir()
   participant_zip: !r file.path(tempdir(),"participants.zip")
   spa_dir: !r tempdir()
@@ -54,6 +55,8 @@ lock_rctls_dir <- file.path(params$rctls_dir, "locked")
 dir.create(lock_rctls_dir, showWarnings = FALSE)
 
 qual1_dir <- params$qual1_dir
+
+research_facilities <- params$research_facilities
 
 if (!is.null(params$facility_data)) {
   
@@ -108,7 +111,9 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
-# Dates
+# Context
+
+## Dates
 
 ```{r load-RCT-LS-ODK-facility-data, results='asis'}
 start_date <- NULL
@@ -129,6 +134,7 @@ if (!is.null(facility_data)) {
   }
 }
 ```
+
 ```{r, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(facility_data) > 0) {
@@ -139,6 +145,33 @@ if (!is.null(facility_data)) {
     }
   }
 }
+```
+
+## Study facilities
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name")]
+  research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
+  # Sort by district and rename columns
+  facilities <- research_facilities %>%
+    dplyr::arrange(lvl2) %>%
+    dplyr::rename('District sanitaire' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Poste de santé' = 'facility_name')
+} else{
+  research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name", "type")]
+  research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
+  # Sort by district then type of facility
+  facilities <- research_facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('District' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+  
+}
+facilities %>% knitr::kable()
 ```
 
 # `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
@@ -157,7 +190,19 @@ n_enrolled <- nrow(day0_data)
 locked_screening_data <- screening_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 locked_day0_data <- day0_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 locked_pii <- pii %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
-cat(paste0("There are ", nrow(locked_day0_data), " submissions at Day 0 in the raw facility data."))
+cat(paste0("There are ", nrow(locked_day0_data), " records between ", start_date, " and ", lock_date, " in the raw Day 0 database."))
+```
+
+### Valid enrolment facilities
+
+```{r, results='asis'}
+cat("Rule: records from facilities different from the ones listed in the first section of this report are removed from the locked database.")
+```
+
+```{r, results='asis'}
+invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
+locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_facilities$facility_id, ]
+cat(paste0(nrow(invalid_facilities), " records with non-valid enrolment facilities were found and removed in the locked Day 0 database."))
 ```
 
 ### Duplicate management
@@ -200,6 +245,10 @@ if (!is.null(facility_data)) {
 
 #### Name duplicates
 
+```{r, results='asis'}
+cat("Rule: no specific action at the moment.")
+```
+
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(locked_pii) > 0) {
@@ -207,7 +256,7 @@ if (!is.null(facility_data)) {
     day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
     duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
     if (nrow(duplicates) > 0) { 
-      knitr::kable(duplicates, caption = "Possible name duplicates")
+      duplicates %>% knitr::kable(caption = "Possible name duplicates")
     }
   }
 }
@@ -215,7 +264,7 @@ if (!is.null(facility_data)) {
 if (!is.null(facility_data)) {
   if (nrow(locked_pii) > 0) {
     if (nrow(duplicates) > 0) { 
-      cat("Information - no action taken at this stage.")
+      cat(paste0("", nrow(duplicates), " possible duplicated names were detected. No specific action was taken."))
     } else {
       cat("No duplicated names detected")
     }
@@ -240,6 +289,10 @@ if (!is.null(day0_qc)) {
 ### Withdrawal management
 
 ```{r, results='asis'}
+cat("Rule: withdrawals with documented child IDs are removed from the locked database.")
+```
+
+```{r, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (nrow(raw_withdrawal_data) > 0) { 
@@ -248,7 +301,17 @@ if (!is.null(facility_data)) {
       # Remove withdrawn participants from the clean database
       locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
       day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-      cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported and ", nrow(day0_data_id_withdrawal), " participants were found and removed in the locked Day 0 database."))
+      withdrawal_data2$child_id %>%  knitr::kable(col.names = c("child_id"))
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (nrow(raw_withdrawal_data) > 0) { 
+      cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were found and removed in the locked Day 0 database."))
     } else {
       cat("No withdrawal reported.")
     }
@@ -258,10 +321,10 @@ if (!is.null(facility_data)) {
 }
 ```
 
-### Summary
+### Data cleaning summary
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_day0_data), " submissions at Day 0 in the cleaned facility data."))
+cat(paste0("There are ", nrow(locked_day0_data), " records in the locked Day 0 database."))
 ```
 
 ### Data export
@@ -377,6 +440,10 @@ if (!is.null(raw_day7fu_data)) {
 }
 ```
 
+```{r, results = 'asis'}
+cat(paste0("There are ", nrow(allday7fu_data), " records in the raw Day 7 follow-up database, among which ", nrow(day7fu_data), " records documenting successful follow-ups"))
+```
+
 ### Duplicate management
 
 #### Successful follow-up duplicates  
@@ -406,7 +473,7 @@ if (!is.null(day7fu_data)) {
 
 ### Valid IDs
 
-Rule: keep only IDs of children who are enrolled in the cleaned database.
+Rule: keep only IDs of children who are enrolled in the locked database.
 
 ```{r}
 # All follow-ups
@@ -483,7 +550,7 @@ if (!is.null(hospit_data)) {
 
 ### Valid IDs
 
-Rule: keep only IDs of children who are enrolled in the cleaned database.
+Rule: keep only IDs of children who are enrolled in the locked database.
 
 ```{r}
 # All follow-ups
@@ -520,6 +587,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
+```{r, results = 'asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  cat(paste0("There are ", nrow(allday28fu_data), " records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups"))
+}
+```
+
 ### Duplicate management
 
 ```{r check-RCT-LS-ODK-fu-day28-data, results='asis'}
@@ -540,7 +613,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ### Valid IDs
 
-Rule: keep only IDs of children who are enrolled in the cleaned database.
+Rule: keep only IDs of children who are enrolled in the locked database.
 
 ```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
