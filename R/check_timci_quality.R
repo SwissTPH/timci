@@ -30,6 +30,25 @@ detect_id_duplicates <- function(df) {
 
 }
 
+#' Detect ID duplicates (TIMCI-specific function)
+#'
+#' @param vec vector containing a column of the processed facility data
+#' @return This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
+#' @export
+#' @import dplyr magrittr
+
+detect_id_duplicates2 <- function(vec) {
+
+  res <- data.frame(table(vec))
+  rescols <- colnames(res)
+  if ('Var1' %in% rescols) {
+    res <- res %>%
+      dplyr::rename(child_id = Var1,
+                    id_fq = Freq)
+  }
+
+}
+
 #' Detect name duplicates (TIMCI-specific function)
 #' Search for exact matches and switches
 #'
