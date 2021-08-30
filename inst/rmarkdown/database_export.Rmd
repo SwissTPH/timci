@@ -250,6 +250,7 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results='asis'}
+day0_data_id_duplicates <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (nrow(id_duplicates) > 0) { 
@@ -318,13 +319,15 @@ cat("Rule: withdrawals with documented child IDs are removed from the locked dat
 ```{r, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    if (nrow(raw_withdrawal_data) > 0) { 
-      raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
-      withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
-      # Remove withdrawn participants from the clean database
-      locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-      day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-      withdrawal_data2$child_id %>%  knitr::kable(col.names = c("child_id"))
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
+        withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
+        # Remove withdrawn participants from the clean database
+        locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        withdrawal_data2$child_id %>%  knitr::kable(col.names = c("child_id"))
+      }
     }
   }
 }
@@ -333,10 +336,12 @@ if (!is.null(facility_data)) {
 ```{r, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    if (nrow(raw_withdrawal_data) > 0) { 
-      cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were automatically detected and removed in the locked Day 0 database."))
-    } else {
-      cat("No withdrawal reported.")
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were automatically detected and removed in the locked Day 0 database."))
+      } else {
+        cat("No withdrawal reported.")
+      }
     }
   } else {
     cat("N/A")
@@ -393,10 +398,12 @@ if (!is.null(facility_data)) {
                                    lock_rctls_dir,
                                    "02_timci_day0_data")
     
-    deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
-    fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
-                                   lock_rctls_dir,
-                                   "02a_timci_day0_data_id_duplicates")
+    if (!is.null(day0_data_id_duplicates)) {
+      deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
+      fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
+                                     lock_rctls_dir,
+                                     "02a_timci_day0_data_id_duplicates")
+    }
   } else {
     fn <- timci::export_df2csvxlsx(day0_data,
                                    params$rctls_dir,
@@ -406,9 +413,11 @@ if (!is.null(facility_data)) {
                                    lock_rctls_dir,
                                    "02_timci_day0_data")
     
-    fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
-                                   lock_rctls_dir,
-                                   "02a_timci_day0_data_id_duplicates")
+    if (!is.null(day0_data_id_duplicates)) {
+      fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
+                                     lock_rctls_dir,
+                                     "02a_timci_day0_data_id_duplicates")
+    }
   }
   
   xlsx_fname <- timci::export_df2xlsx(pii, tempdir(),
@@ -480,23 +489,35 @@ cat(paste0("There are ", nrow(allday7fu_data), " records in the raw Day 7 follow
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
 
 ```{r}
-# All follow-ups
-locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
-allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
-# Successful follow-ups
-locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
-day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
-locked_day7fu_data <- locked_day7fu_data %>% dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
-
-allday7fu_data_uids$child_id %>% knitr::kable(col.names = c("child_id"))
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    # All follow-ups
+    locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+    allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+    # Successful follow-ups
+    locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
+    day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
+    locked_day7fu_data <- locked_day7fu_data %>% dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
+    
+    allday7fu_data_uids$child_id %>% knitr::kable(col.names = c("child_id"))
+  }
+}
 ```
 
 ```{r, results='asis'}
-cat(paste0(nrow(allday7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database."))
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    cat(paste0(nrow(allday7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database."))
+  }
+}
 ```
 
 ```{r, results='asis'}
-cat(paste0(nrow(day7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database."))
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    cat(paste0(nrow(day7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database."))
+  }
+}
 ```
 
 ### Duplicate management
@@ -527,31 +548,39 @@ if (!is.null(day7fu_data)) {
 ```
 
 ```{r}
-# Process duplicates separately
-day7fu_data_duplicates <- locked_day7fu_data[locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
-# Remove all duplicates from the dataframe
-locked_day7fu_data <- locked_day7fu_data[!locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
-# Process duplicates
-processed_day7fu_data_duplicates <- day7fu_data_duplicates %>%
-  dplyr::group_by(child_id) %>%
-  dplyr::slice_max(order_by = window) %>%
-  dplyr::slice_min(order_by = days)
-# Concatenate with processed duplicates
-locked_day7fu_data <- rbind(locked_day7fu_data, processed_day7fu_data_duplicates)
+if (!is.null(day7fu_data)) {
+  # Process duplicates separately
+  day7fu_data_duplicates <- locked_day7fu_data[locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
+  # Remove all duplicates from the dataframe
+  locked_day7fu_data <- locked_day7fu_data[!locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
+  # Process duplicates
+  processed_day7fu_data_duplicates <- day7fu_data_duplicates %>%
+    dplyr::group_by(child_id) %>%
+    dplyr::slice_max(order_by = window) %>%
+    dplyr::slice_min(order_by = days)
+  # Concatenate with processed duplicates
+  locked_day7fu_data <- rbind(locked_day7fu_data, processed_day7fu_data_duplicates)
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0(nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), " records were removed in the locked successful Day 7 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
+if (!is.null(day7fu_data)) {
+  cat(paste0(nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), " records were removed in the locked successful Day 7 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
+}
 ```
 
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_allday7fu_data), " records in the locked Day 7 follow-up database."))
+if (!is.null(day7fu_data)) {
+  cat(paste0("There are ", nrow(locked_allday7fu_data), " records in the locked Day 7 follow-up database."))
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_day7fu_data), " records in the locked successful Day 7 follow-up database."))
+if (!is.null(day7fu_data)) {
+  cat(paste0("There are ", nrow(locked_day7fu_data), " records in the locked successful Day 7 follow-up database."))
+}
 ```
 
 ### Data export
@@ -582,19 +611,27 @@ if (!is.null(allday7fu_data)) {
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", params$rctls_dir, " folder"))
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Raw Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", lock_rctls_dir, " folder"))
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Locked Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", lock_rctls_dir, " folder"))
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Raw successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+}
 ```
 
 ## Hospitalisation data quality checks
@@ -611,18 +648,24 @@ if (!is.null(raw_hospit_data)) {
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
 
 ```{r}
-hospit_data_uids <- hospit_data[!hospit_data$child_id %in% locked_day0_data$child_id, ]
-locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
+if (!is.null(hospit_data)) {
+  hospit_data_uids <- hospit_data[!hospit_data$child_id %in% locked_day0_data$child_id, ]
+  locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
+}
 ```
 
 ```{r, results='asis'}
-cat(paste0(nrow(hospit_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked hospitalisation database."))
+if (!is.null(hospit_data)) {
+  cat(paste0(nrow(hospit_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked hospitalisation database."))
+}
 ```
 
 ### Duplicate management
 
 ```{r, results='asis'}
-cat("Rule: keep duplicated records if they correspond to different hospitalisations")
+if (!is.null(hospit_data)) {
+  cat("Rule: keep duplicated records if they correspond to different hospitalisations")
+}
 ```
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
@@ -640,7 +683,9 @@ if (!is.null(hospit_data)) {
 ```
 
 ```{r, results='asis'}
-cat(paste0("", nrow(hospit_data_duplicates), " duplicated IDs were automatically detected and removed in the locked hospitalisation database."))
+if (!is.null(hospit_data)) {
+  cat(paste0("", nrow(hospit_data_duplicates), " duplicated IDs were automatically detected and removed in the locked hospitalisation database."))
+}
 ```
 
 ### Data export
@@ -883,8 +928,11 @@ cat(paste0("* Raw SPA caregiver exit interview data are exported in ", spa_cgei_
 ## Sick child observation data quality checks
 
 ```{r, results = 'asis'}
-locked_spa_sco_data <- spa_sco_data %>% dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
-cat(paste0("There are ", nrow(locked_spa_sco_data), " records between ", spa_start_date, " and ", lock_date, " in the raw SPA sick child observation database."))
+locked_spa_sco_data <- NULL
+if (!is.null(spa_sco_data)) {
+  locked_spa_sco_data <- spa_sco_data %>% dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
+  cat(paste0("There are ", nrow(locked_spa_sco_data), " records between ", spa_start_date, " and ", lock_date, " in the raw SPA sick child observation database."))
+}
 ```
 
 ### Non-valid participant IDs
@@ -892,21 +940,26 @@ cat(paste0("There are ", nrow(locked_spa_sco_data), " records between ", spa_sta
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
 
 ```{r}
-# Extract entries of child IDs enrolled in the Day 0 database
-spa_sco_data_uids <- locked_spa_sco_data[!locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
-locked_spa_sco_data <- locked_spa_sco_data[locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
-
-spa_sco_data_uids$'child_identification-pid' %>% knitr::kable(col.names = c("child_id"))
+spa_sco_data_uids <- NULL
+if (!is.null(spa_sco_data)) {
+  # Extract entries of child IDs enrolled in the Day 0 database
+  spa_sco_data_uids <- locked_spa_sco_data[!locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
+  locked_spa_sco_data <- locked_spa_sco_data[locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
+  
+  spa_sco_data_uids$'child_identification-pid' %>% knitr::kable(col.names = c("child_id"))
+}
 ```
 
 ```{r, results='asis'}
-n <- nrow(spa_sco_data_uids)
-if (n > 1) {
-  cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA sick child observation database."))
-} else if (n == 1) {
-  cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA sick child observation database."))
-} else{
-  cat("No records with non-valid participant IDs were automatically detected.")
+if (!is.null(spa_sco_data_uids)) {
+  n <- nrow(spa_sco_data_uids)
+  if (n > 1) {
+    cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA sick child observation database."))
+  } else if (n == 1) {
+    cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA sick child observation database."))
+  } else{
+    cat("No records with non-valid participant IDs were automatically detected.")
+  }
 }
 ```
 
@@ -931,17 +984,21 @@ if (!is.null(spa_sco_data)) {
 ```
 
 ```{r, results='asis'}
-if (length(spa_sco_data_duplicates) > 0) { 
-  cat(paste0(nrow(spa_sco_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
-} else {
-  cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
+if (!is.null(spa_sco_data)) {
+  if (length(spa_sco_data_duplicates) > 0) { 
+    cat(paste0(nrow(spa_sco_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
+  } else {
+    cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
+  }
 }
 ```
 
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_spa_sco_data), " records in the locked SPA sick child observation database."))
+if (!is.null(spa_sco_data)) {
+  cat(paste0("There are ", nrow(locked_spa_sco_data), " records in the locked SPA sick child observation database."))
+}
 ```
 
 ### Data export
@@ -1000,20 +1057,24 @@ Rule: keep only IDs of healthcare providers who are observed in the locked SPA s
 
 ```{r}
 # Extract entries of child IDs enrolled in the Day 0 database
-spa_hcpi_data_uids <- spa_hcpi_data[!spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
-locked_spa_hcpi_data <- spa_hcpi_data[spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
-
-spa_hcpi_data_uids$hcp_id %>% knitr::kable(col.names = c("hcp_id"))
+if (!is.null(spa_hcpi_data)) {
+  spa_hcpi_data_uids <- spa_hcpi_data[!spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
+  locked_spa_hcpi_data <- spa_hcpi_data[spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
+  
+  spa_hcpi_data_uids$hcp_id %>% knitr::kable(col.names = c("hcp_id"))
+}
 ```
 
 ```{r, results='asis'}
-n <- nrow(spa_hcpi_data_uids)
-if (n > 1) {
-  cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA healthcare provider interview database."))
-} else if (n == 1) {
-  cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA healthcare provider interview database."))
-} else{
-  cat("No records with non-valid participant IDs were automatically detected.")
+if (!is.null(spa_hcpi_data)) {
+  n <- nrow(spa_hcpi_data_uids)
+  if (n > 1) {
+    cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA healthcare provider interview database."))
+  } else if (n == 1) {
+    cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA healthcare provider interview database."))
+  } else{
+    cat("No records with non-valid participant IDs were automatically detected.")
+  }
 }
 ```
 
@@ -1038,17 +1099,21 @@ if (!is.null(spa_hcpi_data)) {
 ```
 
 ```{r, results='asis'}
-if (length(spa_hcpi_data_duplicates) > 0) { 
-  cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
-} else {
-  cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
+if (!is.null(spa_hcpi_data)) {
+  if (length(spa_hcpi_data_duplicates) > 0) { 
+    cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
+  } else {
+    cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
+  }
 }
 ```
 
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_spa_hcpi_data), " records in the locked SPA healthcare provider interview database."))
+if (!is.null(spa_hcpi_data)) {
+  cat(paste0("There are ", nrow(locked_spa_hcpi_data), " records in the locked SPA healthcare provider interview database."))
+}
 ```
 
 ### Data export
@@ -1067,11 +1132,15 @@ if (!is.null(spa_hcpi_data)) {
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+if (!is.null(spa_hcpi_data)) {
+  cat(paste0("* Raw SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+if (!is.null(spa_hcpi_data)) {
+  cat(paste0("* Locked SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+}
 ```
 
 \newpage
@@ -1099,7 +1168,9 @@ if (!is.null(tf_data)) {
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw time-flow data are exported in ", "05a_timci_timeflow_data", ".csv/xslx in the ", params$spa_dir, " folder"))
+if (!is.null(spa_hcpi_data)) {
+  cat(paste0("* Raw time-flow data are exported in ", "05a_timci_timeflow_data", ".csv/xslx in the ", params$spa_dir, " folder"))
+}
 ```
 
 \newpage

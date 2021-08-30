@@ -43,8 +43,8 @@ detect_id_duplicates2 <- function(vec) {
   rescols <- colnames(res)
   if ('Var1' %in% rescols) {
     res <- res %>%
-      dplyr::rename(child_id = Var1,
-                    id_fq = Freq)
+      dplyr::rename(id = Var1,
+                    fq = Freq)
   }
 
 }
