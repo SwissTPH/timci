@@ -55,59 +55,61 @@ process_facility_data <- function(df) {
   }
 
   # Format the location
-  if ('crfs-t02b-a4_c_4' %in% cols) {
-    df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4'),
-                                     ifelse(df$'crfs-t02b-a4_c_4' != 99,
-                                            ifelse(df$'crfs-t02b-a4_c_4' != 98,
-                                                   ifelse(df$'crfs-t02b-a4_c_4' != 96,
-                                                          df$'crfs-t02b-a4_c_4',
-                                                          'Outside the region'),
-                                                   ''),
-                                            df$'crfs-t02b-a4_c_4_oth'),
-                                     '')
-  } else{
-    df$'crfs-t02b-a4_c_4' <- ''
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    if ('crfs-t02b-a4_c_4' %in% cols) {
+      df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4'),
+                                       ifelse(df$'crfs-t02b-a4_c_4' != 99,
+                                              ifelse(df$'crfs-t02b-a4_c_4' != 98,
+                                                     ifelse(df$'crfs-t02b-a4_c_4' != 96,
+                                                            df$'crfs-t02b-a4_c_4',
+                                                            'Outside the region'),
+                                                     ''),
+                                              df$'crfs-t02b-a4_c_4_oth'),
+                                       '')
+    } else{
+      df$'crfs-t02b-a4_c_4' <- ''
+    }
+    if ('crfs-t02b-a4_c_4a' %in% cols) {
+      df$'crfs-t02b-a4_c_4a' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4a'),
+                                       ifelse(df$'crfs-t02b-a4_c_4a' != 99,
+                                              ifelse(df$'crfs-t02b-a4_c_4a' != 98,
+                                                     df$'crfs-t02b-a4_c_4a',
+                                                     ''),
+                                              df$'crfs-t02b-a4_c_4a_oth'),
+                                       '')
+    } else{
+      df$'crfs-t02b-a4_c_4a' <- ''
+    }
+    if ('crfs-t02b-a4_c_4b' %in% cols) {
+      df$'crfs-t02b-a4_c_4b' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4b'),
+                                       ifelse(df$'crfs-t02b-a4_c_4b' != 99,
+                                              ifelse(df$'crfs-t02b-a4_c_4b' != 98,
+                                                     df$'crfs-t02b-a4_c_4b',
+                                                     ''),
+                                              df$'crfs-t02b-a4_c_4b_oth'),
+                                       '')
+    } else{
+      df$'crfs-t02b-a4_c_4b' <- ''
+    }
+    if ('crfs-t02b-a4_c_4c' %in% cols) {
+      df$'crfs-t02b-a4_c_4c' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4c'),
+                                       ifelse(df$'crfs-t02b-a4_c_4c' != 99,
+                                              ifelse(df$'crfs-t02b-a4_c_4c' != 98,
+                                                     df$'crfs-t02b-a4_c_4c',
+                                                     ''),
+                                              df$'crfs-t02b-a4_c_4c_oth'),
+                                       '')
+    } else{
+      df$'crfs-t02b-a4_c_4c' <- ''
+    }
+    df$'crfs-t02b-a4_c_4' <- paste0(df$'crfs-t02b-a4_c_4',
+                                    ifelse(df$'crfs-t02b-a4_c_4' != '' & df$'crfs-t02b-a4_c_4a' != '', ' - ', ''),
+                                    df$'crfs-t02b-a4_c_4a',
+                                    ifelse(df$'crfs-t02b-a4_c_4a' != '' & df$'crfs-t02b-a4_c_4b' != '', ' - ', ''),
+                                    df$'crfs-t02b-a4_c_4b',
+                                    ifelse(df$'crfs-t02b-a4_c_4b' != '' & df$'crfs-t02b-a4_c_4c' != '', ' - ', ''),
+                                    df$'crfs-t02b-a4_c_4c')
   }
-  if ('crfs-t02b-a4_c_4a' %in% cols) {
-    df$'crfs-t02b-a4_c_4a' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4a'),
-                                     ifelse(df$'crfs-t02b-a4_c_4a' != 99,
-                                            ifelse(df$'crfs-t02b-a4_c_4a' != 98,
-                                                   df$'crfs-t02b-a4_c_4a',
-                                                   ''),
-                                            df$'crfs-t02b-a4_c_4a_oth'),
-                                     '')
-  } else{
-    df$'crfs-t02b-a4_c_4a' <- ''
-  }
-  if ('crfs-t02b-a4_c_4b' %in% cols) {
-    df$'crfs-t02b-a4_c_4b' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4b'),
-                                     ifelse(df$'crfs-t02b-a4_c_4b' != 99,
-                                            ifelse(df$'crfs-t02b-a4_c_4b' != 98,
-                                                   df$'crfs-t02b-a4_c_4b',
-                                                   ''),
-                                            df$'crfs-t02b-a4_c_4b_oth'),
-                                     '')
-  } else{
-    df$'crfs-t02b-a4_c_4b' <- ''
-  }
-  if ('crfs-t02b-a4_c_4c' %in% cols) {
-    df$'crfs-t02b-a4_c_4c' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4c'),
-                                     ifelse(df$'crfs-t02b-a4_c_4c' != 99,
-                                            ifelse(df$'crfs-t02b-a4_c_4c' != 98,
-                                                   df$'crfs-t02b-a4_c_4c',
-                                                   ''),
-                                            df$'crfs-t02b-a4_c_4c_oth'),
-                                     '')
-  } else{
-    df$'crfs-t02b-a4_c_4c' <- ''
-  }
-  df$'crfs-t02b-a4_c_4' <- paste0(df$'crfs-t02b-a4_c_4',
-                                  ifelse(df$'crfs-t02b-a4_c_4' != '' & df$'crfs-t02b-a4_c_4a' != '', ' - ', ''),
-                                  df$'crfs-t02b-a4_c_4a',
-                                  ifelse(df$'crfs-t02b-a4_c_4a' != '' & df$'crfs-t02b-a4_c_4b' != '', ' - ', ''),
-                                  df$'crfs-t02b-a4_c_4b',
-                                  ifelse(df$'crfs-t02b-a4_c_4b' != '' & df$'crfs-t02b-a4_c_4c' != '', ' - ', ''),
-                                  df$'crfs-t02b-a4_c_4c')
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"

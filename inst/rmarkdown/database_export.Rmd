@@ -124,12 +124,10 @@ if (!is.null(facility_data)) {
   if (nrow(facility_data) > 0) {
     start_date <- min(facility_data$date_visit)
     end_date <- max(facility_data$date_visit)
-    spa_start_date <- min(spa_sco_data$date)
     if (is.null(lock_date)) {
       lock_date <- end_date
     }
     week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
-    spa_week_nb <- ceiling(difftime(as.Date(spa_start_date), as.Date(start_date) - 1,units = "weeks"))
     if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
       cat(paste0("* Début de la collecte au niveau des postes de santé : **", start_date, "**"))
     } else {
@@ -141,6 +139,8 @@ if (!is.null(facility_data)) {
 ```{r, results='asis'}
 if (!is.null(spa_sco_data)) {
   if (nrow(spa_sco_data) > 0) {
+    spa_start_date <- min(spa_sco_data$date)
+    spa_week_nb <- ceiling(difftime(as.Date(spa_start_date), as.Date(start_date) - 1,units = "weeks"))
    if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
       cat(paste0("* Début de la collecte SPA : **", spa_start_date, "**"))
     } else {
@@ -274,34 +274,36 @@ cat("Rule: no specific action at the moment.")
 ```
 
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    day0_qc1 <- timci::detect_name_duplicates(locked_pii)
-    day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
-    duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
-    if (nrow(duplicates) > 0) { 
-      duplicates %>% knitr::kable(caption = "Possible name duplicates")
+if(Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+    if (!is.null(facility_data)) {
+    if (nrow(locked_pii) > 0) {
+      day0_qc1 <- timci::detect_name_duplicates(locked_pii)
+      day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
+      duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
+      if (nrow(duplicates) > 0) { 
+        duplicates %>% knitr::kable(caption = "Possible name duplicates")
+      }
     }
   }
-}
-
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    if (nrow(duplicates) > 0) { 
-      cat(paste0("", nrow(duplicates), " possible duplicated names were detected. No specific action was taken."))
+  
+  if (!is.null(facility_data)) {
+    if (nrow(locked_pii) > 0) {
+      if (nrow(duplicates) > 0) { 
+        cat(paste0("", nrow(duplicates), " possible duplicated names were detected. No specific action was taken."))
+      } else {
+        cat("No duplicated names detected")
+      }
     } else {
-      cat("No duplicated names detected")
+      cat("N/A")
     }
-  } else {
-    cat("N/A")
   }
+  
+  # Approximate String Matching (Fuzzy Matching)
+  #df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  #df3 <- df[c("child_id", "full_name")]
+  #qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+  #print(qc3)
 }
-
-# Approximate String Matching (Fuzzy Matching)
-#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-#df3 <- df[c("child_id", "full_name")]
-#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
-#print(qc3)
 ```
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {

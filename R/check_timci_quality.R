@@ -59,6 +59,8 @@ detect_id_duplicates2 <- function(vec) {
 
 detect_name_duplicates <- function(df) {
 
+  qc <- NULL
+
   # Exact (case-insensitive) duplicates
   df <- dplyr::mutate(df, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
   df1 <- df[c("child_id", "full_name")]

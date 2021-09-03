@@ -668,9 +668,11 @@ reason_statistics <- list(
     "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, dec_pres)
     )
 )
-st <- qwraps2::summary_table(all, reason_statistics)
-st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), reason_statistics)
-print(t(cbind(st, st1)))
+if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
+  st <- qwraps2::summary_table(all, reason_statistics)
+  st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), reason_statistics)
+  print(t(cbind(st, st1)))
+}
 ```
 
 ```{r, results = "asis"}
@@ -796,63 +798,68 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-if (!is.null(facility_data)) {
-  if (nrow(facility_data) > 0) {
-    
-    all <- data.frame(facility_data)
-    all$phone_nb[!is.na(all$phone_nb)] <- 1
-    all$phone_nb[is.na(all$phone_nb)] <- 0
-    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
-    all$phone_nb2[is.na(all$phone_nb2)] <- 0
-    all$phone_nb3[!is.na(all$phone_nb3)] <- 1
-    all$phone_nb3[is.na(all$phone_nb3)] <- 0
-    all$cmty[is.na(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
-    all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
-    all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
-    
-    phone_stats <- list(
-      "Phone number" = list(
-        "0" = ~qwraps2::n_perc(phone_nb == 0, 2),
-        "1" = ~qwraps2::n_perc(phone_nb == 1, 2),
-        "2" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
-        "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
-        )
-    )
-    
-    cols <- colnames(all)
-    if ('district' %in% cols) {
-      print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
-    } else{
-      print(qwraps2::summary_table(all, phone_stats))
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+  if (!is.null(facility_data)) {
+    if (nrow(facility_data) > 0) {
+      
+      all <- data.frame(facility_data)
+      all$phone_nb[!is.na(all$phone_nb)] <- 1
+      all$phone_nb[is.na(all$phone_nb)] <- 0
+      all$phone_nb2[!is.na(all$phone_nb2)] <- 1
+      all$phone_nb2[is.na(all$phone_nb2)] <- 0
+      all$phone_nb3[!is.na(all$phone_nb3)] <- 1
+      all$phone_nb3[is.na(all$phone_nb3)] <- 0
+      all$cmty[is.na(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
+      all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
+      all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
+      
+      phone_stats <- list(
+        "Phone number" = list(
+          "0" = ~qwraps2::n_perc(phone_nb == 0, 2),
+          "1" = ~qwraps2::n_perc(phone_nb == 1, 2),
+          "2" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2),
+          "3" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1) & (phone_nb3 == 1), 2)
+          )
+      )
+      
+      cols <- colnames(all)
+      if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
+        if ('district' %in% cols) {
+          print(qwraps2::summary_table(dplyr::group_by(all, district), phone_stats))
+        } else{
+          print(qwraps2::summary_table(all, phone_stats))
+        }
+      }
+      
+      all <- all %>%
+        dplyr::filter(all$phone_nb == 0)
+      
+      contact_details_stats <- list(
+        "No phone number" = list(
+          "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
+          "Community contact" = ~qwraps2::n_perc((cmty == 1) & (phone_nb == 0), 2),
+          "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2),
+          "Known residence" = ~qwraps2::n_perc((location == 1) & (phone_nb == 0), 2)
+          )
+      )
+  
+      "
+      cols <- colnames(all)
+      if ('district' %in% cols) {
+        print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
+      } else{
+        print(qwraps2::summary_table(all, contact_details_stats))
+      }
+      "
+      if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
+        print(qwraps2::summary_table(all, contact_details_stats))
+      }
+      
     }
-    
-    all <- all %>%
-      dplyr::filter(all$phone_nb == 0)
-    
-    contact_details_stats <- list(
-      "No phone number" = list(
-        "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
-        "Community contact" = ~qwraps2::n_perc((cmty == 1) & (phone_nb == 0), 2),
-        "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2),
-        "Known residence" = ~qwraps2::n_perc((location == 1) & (phone_nb == 0), 2)
-        )
-    )
-
-    "
-    cols <- colnames(all)
-    if ('district' %in% cols) {
-      print(qwraps2::summary_table(dplyr::group_by(all, district), contact_details_stats))
-    } else{
-      print(qwraps2::summary_table(all, contact_details_stats))
-    }
-    "
-    print(qwraps2::summary_table(all, contact_details_stats))
-    
   }
 }
-
 ```
 
 ```{r header-clinical-presentation, results = "asis"}
