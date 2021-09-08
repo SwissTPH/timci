@@ -131,7 +131,14 @@ process_facility_data <- function(df) {
   text_field_cols <- c('visit_reason-a3_c_1o',
                        'visit_reason-main_cg_name',
                        'crfs-t09a1-h2_2o',
-                       'crfs-t09a2-h2_2ao')
+                       'crfs-t09a2-h2_2ao',
+                       'crfs-t02b-a4_c_1',
+                       'crfs-t02b-a4_c_2',
+                       'crfs-t02a-a4_a_1',
+                       'crfs-t02a-a4_a_3',
+                       'crfs-t02a-a4_a_8_2',
+                       'crfs-t02a-a4_a_9_2',
+                       'crfs-t02b-a4_c_9')
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
