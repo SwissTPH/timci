@@ -153,9 +153,9 @@ if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
 ```{r}
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   csv_filename <- file.path(output_dir, "odk_external_files", "day7fu.csv")
-  write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE)
+  write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
-  csv_filename <- file.path(output_dir, "odk_external_files", "day28fu.csv")
+  csv_filename <- file.path(output_dir, "odk_external_files", "day28fu.csv", fileEncoding = "UTF-8")
   write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE)
 }
 ```
