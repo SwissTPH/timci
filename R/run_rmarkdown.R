@@ -152,7 +152,8 @@ run_rmarkdown <- function(rctls_pid,
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
-                                               pp = rctls_pp)
+                                               pp = rctls_pp,
+                                               media = FALSE)
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid,".csv"))
   facility_data <- timci::process_facility_data(raw_facility_data)
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
@@ -581,7 +582,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
-                                               pp = rctls_pp)
+                                               pp = rctls_pp,
+                                               media = FALSE)
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
@@ -925,7 +927,8 @@ generate_fu_logs <- function(rctls_pid,
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
-                                               pp = rctls_pp)
+                                               pp = rctls_pp,
+                                               media = FALSE)
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
