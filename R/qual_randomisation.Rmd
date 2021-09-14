@@ -1,0 +1,130 @@
+---
+title: "TIMCI caregiver random selection"
+author: "H. LANGET"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readxl)
+myxlsx <- "C:/Users/langhe/Documents/Senegal/timci_exports/export_2021-09-10/01_Senegal_pilot/03_Senegal_qualitative/01_Senegal_caregiver_idis/cg_idi_participants.xlsx"
+set.seed(1986)
+```
+
+## Loading data
+```{r, echo=TRUE, message=FALSE}
+df <- readxl::read_excel(myxlsx)
+df <- df %>%
+  mutate(month_category = ifelse(age_mo < 2, 1, ifelse(age_mo < 12, 2, ifelse(age_mo < 24, 3, 4))))
+df %>% 
+  head(10) %>%
+  knitr::kable()
+print(nrow(df))
+```
+## Filter data
+
+### Select only participants who have a SpO2 value
+```{r, echo=TRUE, message=FALSE}
+df <- df %>% dplyr::filter(spo2 == 1)
+df %>%
+  head(10) %>%
+  knitr::kable()
+print(nrow(df))
+```
+
+### Select only participants who have a phone number available
+```{r, echo=TRUE, message=FALSE}
+df <- df %>% dplyr::filter(phone_nb_avail == 1)
+df %>%
+  head(10) %>%
+  knitr::kable()
+print(nrow(df))
+```
+### Darou Salam
+```{r, echo=TRUE, message=FALSE}
+df1 <- df %>% dplyr::filter(fid == "F0014")
+print(nrow(df1))
+```
+### Santhie
+```{r, echo=TRUE, message=FALSE}
+df3 <- df %>% dplyr::filter(fid == "F0031")
+print(nrow(df3))
+```
+
+### Ndiaganiao
+```{r, echo=TRUE, message=FALSE}
+df2 <- df %>% dplyr::filter(fid == "F0038")
+print(nrow(df2))
+```
+
+## Random selection for Darou Salam
+```{r, echo=TRUE, message=FALSE}
+random_selection1 <- df1 %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df1a <- df1[!df1$child_id %in% random_selection1$child_id, ]
+random_selection1a <- df1a %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df1b <- df1a[!df1a$child_id %in% random_selection1a$child_id, ]
+random_selection1b <- df1b %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df1c <- df1b[!df1b$child_id %in% random_selection1b$child_id, ]
+random_selection1c <- df1c %>%
+  group_by(month_category) %>%
+  sample_n(1)
+random_selection1 <- rbind(random_selection1, random_selection1a, random_selection1b, random_selection1c)
+random_selection1
+```
+## Random selection for Santhie
+```{r, echo=TRUE, message=FALSE}
+random_selection3 <- df3 %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df3a <- df3[!df3$child_id %in% random_selection3$child_id, ]
+random_selection3a <- df3a %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df3b <- df3a[!df3a$child_id %in% random_selection3a$child_id, ]
+random_selection3b <- df3b %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df3c <- df3b[!df3b$child_id %in% random_selection3b$child_id, ]
+random_selection3c <- df3c %>%
+  group_by(month_category) %>%
+  sample_n(1)
+random_selection3 <- rbind(random_selection3, random_selection3a, random_selection3b, random_selection3c)
+random_selection3
+```
+
+## Random selection for Ndiaganiao
+```{r, echo=TRUE, message=FALSE}
+random_selection2 <- df2 %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df2a <- df2[!df2$child_id %in% random_selection2$child_id, ]
+random_selection2a <- df2a %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df2b <- df2a[!df2a$child_id %in% random_selection2a$child_id, ]
+random_selection2b <- df2b %>%
+  group_by(month_category) %>%
+  sample_n(1)
+df2c <- df2b[!df2b$child_id %in% random_selection2b$child_id, ]
+random_selection2c <- df2c %>%
+  group_by(month_category) %>%
+  sample_n(1)
+random_selection2 <- rbind(random_selection2, random_selection2a, random_selection2b, random_selection2c)
+random_selection2
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection1, "qual_selection_Darou_Salam.xlsx", row.names = FALSE, overwrite = TRUE)
+openxlsx::write.xlsx(random_selection2, "qual_selection_Ndiaganiao.xlsx", row.names = FALSE, overwrite = TRUE)
+openxlsx::write.xlsx(random_selection3, "qual_selection_Santhie.xlsx", row.names = FALSE, overwrite = TRUE)
+```

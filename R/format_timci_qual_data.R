@@ -18,7 +18,12 @@ generate_cg_log <- function(main_data, day7fu) {
   cg_selection <- merge(cg_selection, main_data, by = "child_id", no.dups = TRUE)
 
   # Merge dictionaries
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else{
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  }
+
 
   # Extract data for caregiver IDIs
   sub <- subset(dictionary, qual == 1)

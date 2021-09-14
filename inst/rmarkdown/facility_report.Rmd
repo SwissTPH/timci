@@ -1,0 +1,67 @@
+---
+title: "Untitled"
+author: "H. LANGET"
+date: "14 9 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+```{r, results = "asis"}
+cat("\\newpage")
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Soumissions par poste de santé\n\n")
+} else {
+  cat("## Submissions by facility\n\n")
+}
+```
+
+```{r fig.height=8, results='asis'}
+if (nrow(facility_data) > 0) {
+  stats <- timci::get_summary_by_deviceid(facility_data)
+  stats <- merge(x = stats, y = params$research_facilities, by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+  stats$screened <- stats$screened / days_nb
+  stats$children <- stats$children / days_nb
+}
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  min_target_day <- 5
+  max_target_day <- 8
+} else {
+  min_target_day <- 0.6 * enrolment_target
+  max_target_day <- enrolment_target
+}
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Moyenne quotidienne de screenings par poste de santé\n\n"))
+} else {
+  cat(paste0("### Screening daily average by facility\n\n"))
+}
+timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Moyenne quotidienne de recrutements par poste de santé\n\n"))
+} else {
+  cat(paste0("### Enrolment daily average by facility\n\n"))
+}
+timci::generate_enrolment_hist(stats, facility_label, children, min_target_day, max_target_day, "Daily average of children enrolled", "facilities")
+```
+
+```{r fig.height=8, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Moyenne quotidienne d'appels téléphoniques à jour 7 par poste de santé\n\n"))
+  cat(paste0("A compléter\n\n"))
+} else {
+  cat(paste0("### Day 7 phone calls by facility\n\n"))
+  cat(paste0("To be completed\n\n"))
+}
+#timci::generate_enrolment_hist(stats, facility_label, children, 5, 15, "Number of children enrolled", "facilities")
+```

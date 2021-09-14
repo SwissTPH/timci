@@ -4,7 +4,13 @@
 \alias{generate_day_bar_plot}
 \title{Create a daily bar plot}
 \usage{
-generate_day_bar_plot(date_vec, date_min, date_max, ylbl = "Frequencies")
+generate_day_bar_plot(
+  date_vec,
+  date_min,
+  date_max,
+  ylbl = "Frequencies",
+  rref = NULL
+)
 }
 \arguments{
 \item{date_vec}{Vector containing dates}
@@ -14,10 +20,12 @@ generate_day_bar_plot(date_vec, date_min, date_max, ylbl = "Frequencies")
 \item{date_max}{End date of the plot}
 
 \item{ylbl}{String of the y-axis}
+
+\item{rref}{reference value for relative plots}
 }
 \value{
 This function returns a ggplot object which contains a bar plot of frequencies by dates
 }
 \description{
-generate_day_bar_plot() creates a bar plot.
+generate_day_bar_plot() creates an absolute or a relative bar plot.
 }

@@ -173,25 +173,30 @@ generate_pie_chart <- function(df){
 
 #' Create a daily bar plot
 #'
-#' generate_day_bar_plot() creates a bar plot.
+#' generate_day_bar_plot() creates an absolute or a relative bar plot.
 #'
 #' @param date_vec Vector containing dates
 #' @param date_min Start date of the plot
 #' @param date_max End date of the plot
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
 #' @param ylbl String of the y-axis
+#' @param rref reference value for plotting relative plots
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
 #' @export
 #' @import ggplot2 scales
 #' @importFrom stats aggregate
 
-generate_day_bar_plot <- function(date_vec, date_min, date_max, ylbl = "Frequencies"){
+generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL){
 
   # Count elements
   counts <- aggregate(date_vec, by = list(date_vec), FUN = length)
+  if (!is.null(rref)) {
+    counts$x <- 100 * counts$x / rref
+  }
   counts$names <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
-  ggplot(counts, aes(x = names, y = x)) +
-    geom_bar(stat="identity", fill = "#7dbbd6", width=1) +
+  p <- ggplot(counts, aes(x = names, y = x)) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width=1) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
@@ -202,6 +207,12 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylbl = "Frequenc
           panel.grid.minor = element_blank(),
           axis.line = element_blank(),
           panel.background = element_blank())
+
+  if (!is.null(ylim)) {
+    p <- p + scale_y_continuous(limits = ylim)
+  }
+
+  p
 
 }
 

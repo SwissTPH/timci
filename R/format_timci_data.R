@@ -142,7 +142,11 @@ process_facility_data <- function(df) {
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
-  df <- match_from_xls_dict(df, "main_dict.xlsx")
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
+  } else{
+    df <- match_from_xls_dict(df, "main_dict.xlsx")
+  }
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
@@ -163,7 +167,11 @@ process_facility_data <- function(df) {
 
 extract_screening_data <- function(df) {
 
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else{
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  }
   sub <- subset(dictionary, screening == 1)
   df[sub$new]
 
@@ -195,7 +203,11 @@ extract_pii <- function(df) {
 
   # Extract de-identified baseline data
   # Merge dictionaries
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else{
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  }
   sub <- subset(dictionary, day0 == 1)
   demog <- df[sub$new]
 
@@ -217,7 +229,11 @@ extract_pii <- function(df) {
 
 extract_all_visits <- function(df) {
 
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else{
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  }
   sub <- subset(dictionary, visits == 1)
   df <- df[sub$new]
   df %>%
