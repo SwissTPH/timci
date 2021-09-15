@@ -8,6 +8,7 @@ generate_day_bar_plot(
   date_vec,
   date_min,
   date_max,
+  ylim = NULL,
   ylbl = "Frequencies",
   rref = NULL
 )
@@ -19,9 +20,11 @@ generate_day_bar_plot(
 
 \item{date_max}{End date of the plot}
 
+\item{ylim}{Numeric vector of length 2 that contains the min and max values of the y-axis}
+
 \item{ylbl}{String of the y-axis}
 
-\item{rref}{reference value for relative plots}
+\item{rref}{reference value for plotting relative plots}
 }
 \value{
 This function returns a ggplot object which contains a bar plot of frequencies by dates

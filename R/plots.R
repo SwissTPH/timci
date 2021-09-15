@@ -191,7 +191,7 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
   # Count elements
   counts <- aggregate(date_vec, by = list(date_vec), FUN = length)
   if (!is.null(rref)) {
-    counts$x <- 100 * counts$x / rref
+    counts$x <- counts$x / rref
   }
   counts$names <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
@@ -208,8 +208,18 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
           axis.line = element_blank(),
           panel.background = element_blank())
 
-  if (!is.null(ylim)) {
-    p <- p + scale_y_continuous(limits = ylim)
+  if (!is.null(rref)) {
+    if (!is.null(ylim)) {
+      p <- p + scale_y_continuous(labels = percent, limits = ylim)
+    } else{
+      p <- p + scale_y_continuous(labels = percent)
+    }
+    p <- p +
+      geom_hline(yintercept = 1, linetype = "dashed")
+  } else{
+    if (!is.null(ylim)) {
+      p <- p + scale_y_continuous(limits = ylim)
+    }
   }
 
   p
@@ -264,5 +274,56 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
           legend.title = element_blank(),
           panel.background = element_blank(),
           legend.position = "bottom")
+
+}
+
+#' Generate an histogram of day times
+#'
+#' @param df Dataframe
+#' @return This function returns an histogram of the distribution of data over day times
+#' @import ggplot2
+#' @export
+
+generate_time_hist_plot <- function(df){
+
+  df$timestamp <- strptime(df$start, format = "%H:%M:%S")
+  df$hours <-  as.numeric(format(df$timestamp, format = "%H"))
+  breaks <- seq(0,23,1)
+  hist(df$hours,
+       main = "Screening times",
+       xlab = "Times",
+       border = "#7dbbd6",
+       col = "#7dbbd6",
+       las = 1,
+       breaks = breaks)
+
+}
+
+#' Plot string in image
+#'
+#' @param string String to be converted to an image
+#' @return This function returns a plot
+#' @export
+
+text_2_plot <- function(string){
+
+  plot(c(0, 1), c(0, 1), ann = FALSE, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  text(x = 0.5, y = 0.5, paste(string), cex = 4, col = "black", family = "serif", font = 20, adj = 0.5)
+
+  # mo_plot <- shelters %>%
+  #   group_by(date) %>%
+  #   summarise(month_occupancy = sum(occupancy) / 1000) %>%
+  #   mutate(date = parse_date_time(date, "ym")) %>%
+  #   ggplot(aes(date, month_occupancy)) +
+  #   geom_point(size = 2, color = "#371206") +
+  #   geom_smooth(se = FALSE, color = "#F72C25", size = 1.5) +
+  #   labs(x = NULL, y = "Monthly Occupancy", subtitle = "**<span style='color:#F72C25;font-size:60px;'>50%</span><br>increase in monthly shelter occupancy<br>from Jan 2017 to Dec 2019.**") +
+  #   theme(text = element_text(family = my_font),
+  #         plot.subtitle = element_markdown(color = "#292929"),
+  #         plot.background = element_rect("#EBEBEB"),
+  #         panel.background = element_blank(),
+  #         axis.title = element_text(color = "#292929", face = "bold"),
+  #         axis.text = element_text(color = "#292929", face = "bold"),
+  #         panel.grid = element_blank())
 
 }

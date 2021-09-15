@@ -7,6 +7,8 @@
 summary_table_disp(all, varname, gname)
 }
 \arguments{
+\item{all}{dataframe}
+
 \item{varname}{variable name}
 
 \item{gname}{group name}

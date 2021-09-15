@@ -1,6 +1,6 @@
 #' Process weekly facility assessment data (TIMCI-specific function)
 #'
-#' @param all
+#' @param all dataframe
 #' @param varname variable name
 #' @param gname group name
 #' @return This function returns a summary table with.

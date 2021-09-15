@@ -29,7 +29,7 @@ print(nrow(df))
 
 ### Select only participants who have a SpO2 value
 ```{r, echo=TRUE, message=FALSE}
-df <- df %>% dplyr::filter(spo2 == 1)
+df1 <- df %>% dplyr::filter(spo2 == 1)
 df %>%
   head(10) %>%
   knitr::kable()
@@ -38,7 +38,7 @@ print(nrow(df))
 
 ### Select only participants who have a phone number available
 ```{r, echo=TRUE, message=FALSE}
-df <- df %>% dplyr::filter(phone_nb_avail == 1)
+df1 <- df %>% dplyr::filter(phone_nb_avail == 1)
 df %>%
   head(10) %>%
   knitr::kable()
