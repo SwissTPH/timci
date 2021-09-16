@@ -45,6 +45,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   screening_str <- "Screening"
   withdrawal_str <- "Désistement"
   appendix_title <- "# Annexe\n\n"
+  screening_times_str <- "Heures de screening"
 } else {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
@@ -55,6 +56,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   screening_str <- "Screening"
   withdrawal_str <- "Withdrawal"
   appendix_title <- "# Appendix\n\n"
+  screening_times_str <- "Screening times"
 }
 ```
 
@@ -494,7 +496,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-timci::generate_time_hist_plot(facility_data)
+timci::generate_time_hist_plot(facility_data, screening_times_str)
 ```
 
 To be completed (track submissions that are not submitted on the same day)
@@ -532,7 +534,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 age_statistics <- list(
   "Facility" = list(
     "First day of life" = ~qwraps2::n_perc(age_excl == 1, pres),
-    "0 - 2 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "0-2m", pres),
+    "1 - 59 days" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "0-2m", pres),
     "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", pres),
     "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, pres)
     )
@@ -1089,23 +1091,13 @@ cat("\\newpage")
 cat(appendix_title)
 ```
 
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Temps\n\n")
-} else {
-  cat("## Times\n\n")
-}
-```
-
-```{r, results = "asis", fig.height = 3}
-for (i in 1:nrow(facilities)) {
-  cfid <- facilities[[i, 'facility_id']]
-  fname <- facilities[[i, 'facility_name']]
-  facility_data_tmp <- facility_data %>% dplyr::filter(fid == cfid)
-  if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
-    timci::generate_time_hist_plot(facility_data_tmp)
-  }
-}
+```{r, results="asis"}
+out <- lapply(1:nrow(facilities), function(i) {
+  knitr::knit_child(
+    'facility_report1.Rmd', envir = environment(), quiet = TRUE
+  )
+})
+cat(unlist(out), sep = '\n')
 ```
 
 ```{r, results="asis"}

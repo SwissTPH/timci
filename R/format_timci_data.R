@@ -32,22 +32,21 @@ process_facility_data <- function(df) {
   }
 
   # Combine exact and approximate options to get the age in months
+  # a3-a3_a_6b corresponds to the minimal age a child can have if the date of birth is not accurately known
   if ('a3-a3_a_6' %in% cols) {
     df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6'),
                              df$'a3-a3_a_6',
                              ifelse(!is.na(df$'a3-a3_a_6b'),
                                     df$'a3-a3_a_6b',
-                                    ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)))
+                                    ifelse(df$'a3-a3_a_3' > 1,
+                                           12 * df$'a3-a3_a_3',
+                                           ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))))
   } else if ('a3-a3_a_6b' %in% cols) {
     df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6b'),
                              df$'a3-a3_a_6b',
                              ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
   } else if ('a3-a3_a_5' %in% cols) {
     df$'a3-a3_a_6' <- ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)
-  }
-
-  if ('a3-a3_a_5' %in% cols) {
-    df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
   }
 
   if ('a3-a3_a_5' %in% cols) {

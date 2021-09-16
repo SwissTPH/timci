@@ -226,6 +226,65 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
 
 }
 
+#' Create a weekly bar plot
+#'
+#' generate_week_bar_plot() creates an absolute or a relative bar plot.
+#'
+#' @param date_vec Vector containing dates
+#' @param date_min Start date of the plot
+#' @param date_max End date of the plot
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
+#' @param ylbl String of the y-axis
+#' @param rref reference value for plotting relative plots
+#' @return This function returns a ggplot object which contains a bar plot of frequencies by week
+#' @export
+#' @import ggplot2 scales
+#' @importFrom stats aggregate
+
+generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL){
+
+  # Convert to week
+  week_vec <- as.Date(cut(as.Date(date_vec),
+                          breaks = "week",
+                          start.on.monday = TRUE))
+  # Count elements
+  counts <- aggregate(week_vec, by = list(week_vec), FUN = length)
+  if (!is.null(rref)) {
+    counts$x <- counts$x / rref
+  }
+  counts$weeks <- as.Date(counts$Group.1, format = "%Y-%m-%d")
+
+  p <- ggplot(counts, aes(x = weeks, y = x)) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width=1) +
+    ylab(ylbl) +
+    xlab("Date") +
+    ggplot2::scale_x_date(limits = c(date_min, date_max),
+                          breaks = "1 week",
+                          date_labels = "%y-%m-%d") +
+    theme(panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_blank(),
+          panel.background = element_blank())
+
+  if (!is.null(rref)) {
+    if (!is.null(ylim)) {
+      p <- p + scale_y_continuous(labels = percent, limits = ylim)
+    } else{
+      p <- p + scale_y_continuous(labels = percent)
+    }
+    p <- p +
+      geom_hline(yintercept = 1, linetype = "dashed")
+  } else{
+    if (!is.null(ylim)) {
+      p <- p + scale_y_continuous(limits = ylim)
+    }
+  }
+
+  p
+
+}
+
 #' Create a cumulative daily bar plot
 #'
 #' generate_day_cumbar_plot() creates a bar plot.
@@ -280,22 +339,23 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
 #' Generate an histogram of day times
 #'
 #' @param df Dataframe
+#' @param title Title
 #' @return This function returns an histogram of the distribution of data over day times
-#' @import ggplot2
+#' @import ggplot2 graphics
 #' @export
 
-generate_time_hist_plot <- function(df){
+generate_time_hist_plot <- function(df, title){
 
   df$timestamp <- strptime(df$start, format = "%H:%M:%S")
   df$hours <-  as.numeric(format(df$timestamp, format = "%H"))
   breaks <- seq(0,23,1)
-  hist(df$hours,
-       main = "Screening times",
-       xlab = "Times",
-       border = "#7dbbd6",
-       col = "#7dbbd6",
-       las = 1,
-       breaks = breaks)
+  graphics::hist(df$hours,
+                 main = title,
+                 xlab = "Times",
+                 border = "#7dbbd6",
+                 col = "#7dbbd6",
+                 las = 1,
+                 breaks = breaks)
 
 }
 
@@ -303,12 +363,13 @@ generate_time_hist_plot <- function(df){
 #'
 #' @param string String to be converted to an image
 #' @return This function returns a plot
+#' @import graphics
 #' @export
 
 text_2_plot <- function(string){
 
   plot(c(0, 1), c(0, 1), ann = FALSE, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
-  text(x = 0.5, y = 0.5, paste(string), cex = 4, col = "black", family = "serif", font = 20, adj = 0.5)
+  graphics::text(x = 0.5, y = 0.5, paste(string), cex = 4, col = "black", family = "serif", font = 20, adj = 0.5)
 
   # mo_plot <- shelters %>%
   #   group_by(date) %>%

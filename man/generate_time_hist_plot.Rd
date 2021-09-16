@@ -4,10 +4,12 @@
 \alias{generate_time_hist_plot}
 \title{Generate an histogram of day times}
 \usage{
-generate_time_hist_plot(df)
+generate_time_hist_plot(df, title)
 }
 \arguments{
 \item{df}{Dataframe}
+
+\item{title}{Title}
 }
 \value{
 This function returns an histogram of the distribution of data over day times

@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Soumissions par poste de santé\n\n")
 } else {
@@ -53,34 +52,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("### Screening daily average by facility\n\n"))
 }
 timci::generate_enrolment_hist(stats, facility_label, screened, min_target_day+1, max_target_day, "Daily average of children screened", "facilities")
-```
-
-```{r, results = "asis"}
-w <- 30
-for (i in 1:nrow(facilities)) {
-  cfid <- facilities[[i, 'facility_id']]
-  fname <- facilities[[i, 'facility_name']]
-  ftype <- facilities[[i, 'type']]
-  baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
-  if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
-    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
-      if (ftype == "dispensary") {
-        val <- dispensary_enrolment_target
-      } else{
-        val <- hc_enrolment_target
-      }
-    } else{
-      val <- enrolment_target
-    }
-    p <- timci::generate_day_bar_plot(date_vec = baseline_data_tmp$date_visit,
-                                      date_min = as.Date(Sys.Date() - w),
-                                      date_max = as.Date(Sys.Date() + 1),
-                                      ylbl = paste0(enrolment_rate_str),
-                                      rref = val)
-    p <- p + ggplot2::ggtitle(fname)
-    plot(p)
-  }
-}
 ```
 
 ```{r fig.height=8, results='asis'}
