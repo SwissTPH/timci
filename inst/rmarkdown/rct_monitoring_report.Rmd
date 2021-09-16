@@ -42,6 +42,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   repeat_str <- "Visite secondaire"
   submission_str <- "Soumissions"
   enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
+  enrolment_str <- "Recrutement"
   screening_str <- "Screening"
   withdrawal_str <- "Désistement"
   appendix_title <- "# Annexe\n\n"
@@ -53,6 +54,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   repeat_str <- "Repeat visit"
   submission_str <- "Submissions"
   enrolment_rate_str <- "Enrolment rate vs. target"
+  enrolment_str <- "Enrolment"
   screening_str <- "Screening"
   withdrawal_str <- "Withdrawal"
   appendix_title <- "# Appendix\n\n"
@@ -227,6 +229,7 @@ n_total <- n_total + n_screened
 
 study_data <- timci::extract_all_visits(facility_data)
 res <- timci::extract_enrolled_participants(facility_data)
+noneligible <- timci::extract_noneligible(facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
@@ -396,19 +399,47 @@ visits %>% knitr::kable(col.names = c("Visit", "N"))
 ```
 
 ```{r, results='asis'}
-w <- 30
-
-if (nrow(facility_data) > 0) {
-  p <- timci::generate_day_bar_plot(facility_data$date_visit, as.Date(Sys.Date() - w),
-                                    as.Date(Sys.Date() + 1),
-                                    ylbl = submission_str)
-  ylim <- ggplot2::layer_scales(p)$y$get_limits()
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Recrutement hebdomadaire\n\n")
+} else {
+  cat("## Weekly enrolment\n\n")
 }
+```
 
+```{r, results = "asis"}
+if (!is.null(baseline_data) & length(baseline_data) > 0 & nrow(baseline_data) > 0) {
+  val <- day_target * 5
+  p <- timci::generate_week_bar_plot(date_vec = baseline_data$date_visit,
+                                     date_min = as.Date(start_date),
+                                     date_max = as.Date(Sys.Date() + 1),
+                                     ylbl = paste0(enrolment_str),
+                                     rref = val,
+                                     relative = FALSE)
+  plot(p)
+}
+```
+
+```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
 } else {
   cat("## Number of submissions during the last 30 days\n\n")
+}
+```
+
+```{r, results='asis'}
+w <- 30
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Recrutement quotidien\n\n"))
+} else {
+  cat(paste0("### Daily enrolment\n\n"))
+}
+if (nrow(baseline_data) > 0) {
+  timci::generate_day_bar_plot(date_vec = baseline_data$date_visit,
+                               date_min = as.Date(Sys.Date() - w),
+                               date_max = as.Date(Sys.Date() + 1),
+                               ylbl = enrolment_str,
+                               rref = day_target)
 }
 ```
 
@@ -421,43 +452,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 # Frequency
 if (nrow(baseline_data) > 0) {
-  timci::generate_day_cumbar_plot(baseline_data$date_visit,
-                                  baseline_str,
-                                  repeat_data$date_visit,
-                                  repeat_str,
+  timci::generate_day_cumbar_plot(list(noneligible$date_visit,
+                                       baseline_data$date_visit,
+                                       repeat_data$date_visit),
+                                  c("Non-eligible", baseline_str, repeat_str),
                                   as.Date(Sys.Date() - w),
                                   as.Date(Sys.Date() + 1),
-                                  ylim,
-                                  submission_str)
-} else{
-  cat('N/A\n\n')
-}
-```
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Taux de recrutement quotidien\n\n"))
-} else {
-  cat(paste0("### Daily enrolment rate\n\n"))
-}
-if (nrow(baseline_data) > 0) {
-  timci::generate_day_bar_plot(date_vec = baseline_data$date_visit,
-                               date_min = as.Date(Sys.Date() - w),
-                               date_max = as.Date(Sys.Date() + 1),
-                               ylbl = enrolment_rate_str,
-                               rref = day_target)
-}
-```
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Screening\n\n")
-} else {
-  cat("### Screening\n\n")
-}
-
-if (nrow(facility_data) > 0) {
-  plot(p)
+                                  ylbl = submission_str)
 } else{
   cat('N/A\n\n')
 }
@@ -804,12 +805,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (nrow(baseline_data) > 0) {
   
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    cat(paste0("### 2-59 months\n\n"))
+    cat(paste0("### 1 - 59 jours\n\n"))
   } else {
-    cat(paste0("### 2-59 months\n\n"))
+    cat(paste0("### 1 - 59 days\n\n"))
   }
   
-  all <- data.frame(baseline_data) %>% filter(yg_infant == 0)
+  all <- data.frame(baseline_data) %>% filter(yg_infant == 1)
   
   pox_statistics <- list(
     "Pulse oximetry" = list(
@@ -821,12 +822,12 @@ if (nrow(baseline_data) > 0) {
   print(t(cbind(pox_summary1, pox_summary2)))
   
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    cat(paste0("### 0-2 months\n\n"))
+    cat(paste0("### 2-59 months\n\n"))
   } else {
-    cat(paste0("### 0-2 months\n\n"))
+    cat(paste0("### 2-59 months\n\n"))
   }
   
-  all <- data.frame(baseline_data) %>% filter(yg_infant == 1)
+  all <- data.frame(baseline_data) %>% filter(yg_infant == 0)
   
   pox_statistics <- list(
     "Pulse oximetry" = list(
@@ -852,7 +853,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 if (nrow(baseline_data) > 0) {
   all <- data.frame(study_data)
-  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
   
   summary_statistics <- list(
     "Referral (caregiver)" = list(

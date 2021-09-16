@@ -10,7 +10,8 @@ generate_week_bar_plot(
   date_max,
   ylim = NULL,
   ylbl = "Frequencies",
-  rref = NULL
+  rref = NULL,
+  relative = FALSE
 )
 }
 \arguments{
@@ -24,7 +25,9 @@ generate_week_bar_plot(
 
 \item{ylbl}{String of the y-axis}
 
-\item{rref}{reference value for plotting relative plots}
+\item{rref}{reference value}
+
+\item{relative}{Boolean for plotting relative/absolute plots}
 }
 \value{
 This function returns a ggplot object which contains a bar plot of frequencies by week

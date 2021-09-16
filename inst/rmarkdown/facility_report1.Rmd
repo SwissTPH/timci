@@ -15,20 +15,23 @@ knitr::opts_chunk$set(echo = FALSE,
 cfid <- facilities[[i, 'facility_id']]
 fname <- facilities[[i, 'facility_name']]
 ftype <- facilities[[i, 'type']]
+
+noneligible_tmp <- noneligible %>% dplyr::filter(fid == cfid)
+baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
+repeat_data_tmp <- repeat_data %>% dplyr::filter(fid == cfid)
 ```
 
 ## `r fname`
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Taux de recrutement hebdomadaire\n\n")
+  cat("### Recrutement hebdomadaire\n\n")
 } else {
-  cat("### Weekly enrolment rate\n\n")
+  cat("### Weekly enrolment\n\n")
 }
 ```
 
-```{r, results = "asis"}
-baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
+```{r, results = "asis", fig.height = 3}
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
     if (ftype == "dispensary") {
@@ -42,23 +45,24 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
   p <- timci::generate_week_bar_plot(date_vec = baseline_data_tmp$date_visit,
                                      date_min = as.Date(start_date),
                                      date_max = as.Date(Sys.Date() + 1),
-                                     ylbl = paste0(enrolment_rate_str),
-                                     rref = val)
+                                     ylbl = paste0(enrolment_str),
+                                     rref = val,
+                                     relative = FALSE)
   plot(p)
 }
 ```
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Taux de recrutement quotidien\n\n")
+  cat("### Recrutement quotidien\n\n")
 } else {
-  cat("### Daily enrolment rate\n\n")
+  cat("### Daily enrolment\n\n")
 }
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", fig.height = 3}
 w <- 30
-baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
+
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
     if (ftype == "dispensary") {
@@ -72,17 +76,29 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
   p <- timci::generate_day_bar_plot(date_vec = baseline_data_tmp$date_visit,
                                     date_min = as.Date(Sys.Date() - w),
                                     date_max = as.Date(Sys.Date() + 1),
-                                    ylbl = paste0(enrolment_rate_str),
+                                    ylbl = paste0(enrolment_str),
                                     rref = val)
   plot(p)
 }
 ```
 
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Cartes thermiques calendaires\n\n")
+} else {
+  cat("### Calendar heatmaps\n\n")
+}
+
+if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
+  timci::generate_calendar_heatmap(baseline_data_tmp, date_visit)
+}
+```
+
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Temps\n\n")
+  cat("### Heures de screening\n\n")
 } else {
-  cat("### Times\n\n")
+  cat("### Screening times\n\n")
 }
 ```
 

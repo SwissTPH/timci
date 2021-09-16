@@ -5,24 +5,18 @@
 \title{Create a cumulative daily bar plot}
 \usage{
 generate_day_cumbar_plot(
-  date_vec1,
-  lbl1,
-  date_vec2,
-  lbl2,
+  date_vec_list,
+  lbl_vec,
   date_min,
   date_max,
-  ylim,
+  ylim = NULL,
   ylbl = "Frequencies"
 )
 }
 \arguments{
-\item{date_vec1}{Vector #1 containing dates}
+\item{date_vec_list}{List of vectors containing dates}
 
-\item{lbl1}{Name of vector #1}
-
-\item{date_vec2}{Vector #2 containing dates}
-
-\item{lbl2}{Name of vector #1}
+\item{lbl_vec}{Vector of strings containing the name of each group}
 
 \item{date_min}{Start date of the plot}
 

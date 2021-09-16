@@ -191,6 +191,19 @@ extract_enrolled_participants <- function(df) {
 
 }
 
+#' Extract non-enrolled participants (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing data of enrolled participants only
+#' @export
+#' @import dplyr magrittr
+
+extract_noneligible <- function(df) {
+
+  df %>% dplyr::filter((is.na(enrolled) & is.na(repeat_consult)) | enrolled == 0)
+
+}
+
 #' Extract personally identifiable information (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data

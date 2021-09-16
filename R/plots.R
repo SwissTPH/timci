@@ -180,23 +180,23 @@ generate_pie_chart <- function(df){
 #' @param date_max End date of the plot
 #' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
 #' @param ylbl String of the y-axis
-#' @param rref reference value for plotting relative plots
+#' @param rref reference value
+#' @param relative Boolean for plotting relative/absolute plots
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
 #' @export
 #' @import ggplot2 scales
-#' @importFrom stats aggregate
 
-generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL){
+generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL, relative = FALSE){
 
   # Count elements
   counts <- aggregate(date_vec, by = list(date_vec), FUN = length)
-  if (!is.null(rref)) {
+  if (relative) {
     counts$x <- counts$x / rref
   }
   counts$names <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
   p <- ggplot(counts, aes(x = names, y = x)) +
-    geom_bar(stat = "identity", fill = "#7dbbd6", width=1) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width = 1) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
@@ -208,17 +208,25 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
           axis.line = element_blank(),
           panel.background = element_blank())
 
-  if (!is.null(rref)) {
+  if (relative) {
     if (!is.null(ylim)) {
       p <- p + scale_y_continuous(labels = percent, limits = ylim)
     } else{
       p <- p + scale_y_continuous(labels = percent)
     }
-    p <- p +
-      geom_hline(yintercept = 1, linetype = "dashed")
+    p <- p + geom_hline(yintercept = 1, linetype = "dashed")
   } else{
     if (!is.null(ylim)) {
       p <- p + scale_y_continuous(limits = ylim)
+    }
+    if (!is.null(rref)) {
+      p <- p +
+        geom_hline(yintercept = rref, linetype = "dashed") +
+        annotate("text",
+                 x = as.Date(date_max),
+                 y = 1.05 * rref,
+                 label = rref,
+                 fontface = "bold")
     }
   }
 
@@ -235,13 +243,13 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
 #' @param date_max End date of the plot
 #' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
 #' @param ylbl String of the y-axis
-#' @param rref reference value for plotting relative plots
+#' @param rref reference value
+#' @param relative Boolean for plotting relative/absolute plots
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by week
 #' @export
 #' @import ggplot2 scales
-#' @importFrom stats aggregate
 
-generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL){
+generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL, relative = FALSE){
 
   # Convert to week
   week_vec <- as.Date(cut(as.Date(date_vec),
@@ -249,13 +257,13 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
                           start.on.monday = TRUE))
   # Count elements
   counts <- aggregate(week_vec, by = list(week_vec), FUN = length)
-  if (!is.null(rref)) {
+  if (relative) {
     counts$x <- counts$x / rref
   }
   counts$weeks <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
   p <- ggplot(counts, aes(x = weeks, y = x)) +
-    geom_bar(stat = "identity", fill = "#7dbbd6", width=1) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
@@ -267,17 +275,25 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
           axis.line = element_blank(),
           panel.background = element_blank())
 
-  if (!is.null(rref)) {
+  if (relative) {
     if (!is.null(ylim)) {
       p <- p + scale_y_continuous(labels = percent, limits = ylim)
     } else{
       p <- p + scale_y_continuous(labels = percent)
     }
-    p <- p +
-      geom_hline(yintercept = 1, linetype = "dashed")
+    p <- p + geom_hline(yintercept = 1, linetype = "dashed")
   } else{
     if (!is.null(ylim)) {
       p <- p + scale_y_continuous(limits = ylim)
+    }
+    if (!is.null(rref)) {
+      p <- p +
+        geom_hline(yintercept = rref, linetype = "dashed") +
+        annotate("text",
+                 x = as.Date(date_max),
+                 y = 1.05 * rref,
+                 label = rref,
+                 fontface = "bold")
     }
   }
 
@@ -289,40 +305,37 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
 #'
 #' generate_day_cumbar_plot() creates a bar plot.
 #'
-#' @param date_vec1 Vector #1 containing dates
-#' @param lbl1 Name of vector #1
-#' @param date_vec2 Vector #2 containing dates
-#' @param lbl2 Name of vector #1
+#' @param date_vec_list List of vectors containing dates
+#' @param lbl_vec Vector of strings containing the name of each group
 #' @param date_min Start date of the plot
 #' @param date_max End date of the plot
 #' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
 #' @param ylbl String of the y-axis
 #' @return This function returns a ggplot object which contains a cumulative bar plot of frequencies by dates
 #' @export
-#' @import ggplot2 scales
+#' @import ggplot2 scales dplyr
 #' @importFrom stats aggregate
 
-generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min, date_max, ylim, ylbl = "Frequencies"){
+generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies"){
 
-  # Count elements
-  c1 <- aggregate(date_vec1, by = list(date_vec1), FUN = length)
-  c1$names <- as.Date(c1$Group.1, format = "%Y-%m-%d")
-  c1$type <- lbl1
+  tmp = list()
+  for (i in 1:length(date_vec_list)) {
+    vec <- date_vec_list[[i]]
 
-  if (length(date_vec2) > 0) {
-    c2 <- aggregate(date_vec2, by = list(date_vec2), FUN = length)
-    c2$names <- as.Date(c2$Group.1, format = "%Y-%m-%d")
-    c2$type <- lbl2
-    counts <- rbind(c1, c2)
-  } else {
-    counts <- c1
+    # Count elements
+    c <- aggregate(vec, by = list(vec), FUN = length)
+    c$names <- as.Date(c$Group.1, format = "%Y-%m-%d")
+    c$type <- lbl_vec[i]
+
+    tmp[[i]] <- c
   }
 
-  ggplot(counts, aes(x = names, y = x, fill = factor(type, levels = c(lbl2, lbl1)))) +
+  counts <- dplyr::bind_rows(tmp)
+
+  p <- ggplot(counts, aes(x = names, y = x, fill = factor(type, levels = lbl_vec))) +
     geom_bar(stat = "identity", width = 1) +
     ylab(ylbl) +
     xlab("Date") +
-    scale_y_continuous(limits = ylim) +
     scale_x_date(limits = c(date_min, date_max),
                  breaks = waiver(),
                  date_labels = "%y-%m-%d") +
@@ -333,6 +346,12 @@ generate_day_cumbar_plot <- function(date_vec1, lbl1, date_vec2, lbl2, date_min,
           legend.title = element_blank(),
           panel.background = element_blank(),
           legend.position = "bottom")
+
+  if (!is.null(ylim)) {
+    p <- p + scale_y_continuous(limits = ylim)
+  }
+
+  p
 
 }
 
