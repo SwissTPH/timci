@@ -19,6 +19,7 @@ ftype <- facilities[[i, 'type']]
 noneligible_tmp <- noneligible %>% dplyr::filter(fid == cfid)
 baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
 repeat_data_tmp <- repeat_data %>% dplyr::filter(fid == cfid)
+wfa_data_tmp <- wfa_data %>% dplyr::filter(fcode == cfid)
 ```
 
 ## `r fname`
@@ -54,6 +55,32 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Fréquentation hebdomadaire de la clinique\n\n")
+} else {
+  cat("### Clinic weekly attendance\n\n")
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(wfa_data_tmp) & length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
+  wfa_data_tmp$week <- as.Date(cut(as.Date(wfa_data_tmp$date),
+                          breaks = "week",
+                          start.on.monday = TRUE))
+  ggplot2::ggplot(wfa_data_tmp, aes(x = week, y = nb_children_seen)) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
+    ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
+                          breaks = "1 week",
+                          date_labels = "%y-%m-%d") +
+    theme(panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_blank(),
+          panel.background = element_blank())
+}
+```
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("### Recrutement quotidien\n\n")
 } else {
   cat("### Daily enrolment\n\n")
@@ -61,7 +88,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis", fig.height = 3}
-w <- 30
+w <- 29
 
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
@@ -79,6 +106,27 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
                                     ylbl = paste0(enrolment_str),
                                     rref = val)
   plot(p)
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Visites primaires et secondaires\n\n"))
+} else {
+  cat(paste0("### Baseline and repeat visits\n\n"))
+}
+
+# Frequency
+if (nrow(baseline_data_tmp) > 0) {
+  timci::generate_day_cumbar_plot(list(noneligible_tmp$date_visit,
+                                       baseline_data_tmp$date_visit,
+                                       repeat_data_tmp$date_visit),
+                                  c("Non-eligible", baseline_str, repeat_str),
+                                  as.Date(Sys.Date() - w),
+                                  as.Date(Sys.Date() + 1),
+                                  ylbl = submission_str)
+} else{
+  cat('N/A\n\n')
 }
 ```
 

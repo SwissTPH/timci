@@ -143,6 +143,8 @@ process_facility_data <- function(df) {
   # Match column names with names from dictionary
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    df <- match_from_xls_dict(df, "main_dict_kenya.xlsx")
   } else{
     df <- match_from_xls_dict(df, "main_dict.xlsx")
   }
@@ -168,6 +170,8 @@ extract_screening_data <- function(df) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
   } else{
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
@@ -217,7 +221,9 @@ extract_pii <- function(df) {
   # Merge dictionaries
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
-  } else{
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
   sub <- subset(dictionary, day0 == 1)
@@ -243,6 +249,8 @@ extract_all_visits <- function(df) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
   } else{
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }

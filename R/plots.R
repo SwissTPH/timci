@@ -260,9 +260,9 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
   if (relative) {
     counts$x <- counts$x / rref
   }
-  counts$weeks <- as.Date(counts$Group.1, format = "%Y-%m-%d")
+  counts$week <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
-  p <- ggplot(counts, aes(x = weeks, y = x)) +
+  p <- ggplot(counts, aes(x = week, y = x)) +
     geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
     ylab(ylbl) +
     xlab("Date") +
@@ -319,17 +319,23 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
 generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies"){
 
   tmp = list()
+  lbl_idx <- numeric(0)
   for (i in 1:length(date_vec_list)) {
     vec <- date_vec_list[[i]]
-
     # Count elements
-    c <- aggregate(vec, by = list(vec), FUN = length)
-    c$names <- as.Date(c$Group.1, format = "%Y-%m-%d")
-    c$type <- lbl_vec[i]
-
-    tmp[[i]] <- c
+    if (length(vec) > 0) {
+      c <- aggregate(vec, by = list(vec), FUN = length)
+      c$names <- as.Date(c$Group.1, format = "%Y-%m-%d")
+      c$type <- lbl_vec[i]
+      tmp[[i]] <- c
+    } else{
+      lbl_idx <- c(lbl_idx, i)
+    }
   }
 
+  if (length(lbl_idx) > 0) {
+    lbl_vec <- lbl_vec[-lbl_idx]
+  }
   counts <- dplyr::bind_rows(tmp)
 
   p <- ggplot(counts, aes(x = names, y = x, fill = factor(type, levels = lbl_vec))) +

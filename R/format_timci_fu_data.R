@@ -354,7 +354,7 @@ generate_hospital_log <- function(pii,
       if (!is.null(hospitdf)) {
         if (nrow(hospitdf) > 0) {
           hospit_data <- timci::format_hospital_data(hospitdf)
-          hospit_data <- hospit_data %>% dplyr::filter(found == 1)
+          #hospit_data <- hospit_data %>% dplyr::filter(found == 1)
           hospit_log <- hospit_log[!(hospit_log$name %in% hospit_data$child_id),]
         }
       }

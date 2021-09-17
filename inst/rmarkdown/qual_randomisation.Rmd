@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(readxl)
 myxlsx <- "C:/Users/langhe/Documents/Senegal/timci_exports/export_2021-09-10/01_Senegal_pilot/03_Senegal_qualitative/01_Senegal_caregiver_idis/cg_idi_participants.xlsx"
-set.seed(1986)
+#set.seed(1986)
+set.seed(2021)
 ```
 
 ## Loading data
