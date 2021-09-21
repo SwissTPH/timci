@@ -3,13 +3,14 @@
 #' @param df dataframe.
 #' @param dirname directory where the Excel file will be created.
 #' @param prefix filename prefix
+#' @param rnames Row names
 #' @export
 
-export_df2xlsx <- function(df, dirname, prefix) {
+export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
   #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
   fname <- file.path(dirname, paste0(prefix, ".xlsx"))
-  openxlsx::write.xlsx(df, fname, row.names = FALSE, overwrite = TRUE, encoding = "UTF-8")
+  openxlsx::write.xlsx(df, fname, row.names = rnames, overwrite = TRUE, encoding = "UTF-8")
   fname
 
 }

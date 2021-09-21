@@ -14,38 +14,21 @@ detect_submission_duration <- function(df) {
 #' Detect ID duplicates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param col vector containing a column of the processed facility data
 #' @return This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
 #' @export
 #' @import dplyr magrittr
 
-detect_id_duplicates <- function(df) {
+detect_id_duplicates <- function(df, col = child_id) {
 
-  res <- data.frame(table(df$child_id))
-  rescols <- colnames(res)
-  if ('Var1' %in% rescols) {
-    res <- res %>%
-      dplyr::rename(child_id = Var1,
-                    id_fq = Freq)
-  }
+  # Quote the arguments that refer to data frame columns
+  col <- dplyr::enquo(col)
 
-}
-
-#' Detect ID duplicates (TIMCI-specific function)
-#'
-#' @param vec vector containing a column of the processed facility data
-#' @return This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
-#' @export
-#' @import dplyr magrittr
-
-detect_id_duplicates2 <- function(vec) {
-
-  res <- data.frame(table(vec))
-  rescols <- colnames(res)
-  if ('Var1' %in% rescols) {
-    res <- res %>%
-      dplyr::rename(id = Var1,
-                    fq = Freq)
-  }
+  res <- df %>%
+    group_by(!!col) %>%
+    count
+  res <- res %>%
+    dplyr::rename(id_fq = n)
 
 }
 
@@ -104,7 +87,42 @@ detect_name_duplicates <- function(df) {
 
 detect_namedob_duplicates <- function(df) {
 
-  #To be defined
+  qc <- NULL
+
+  # Exact (case-insensitive) duplicates
+  df <- dplyr::mutate(df, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  df1 <- df[c("child_id", "full_name", "dob")]
+  qc1 <- df1 %>%
+    group_by(full_name, dob) %>%
+    count
+  qc1 <- qc1 %>%
+    dplyr::rename(ex_name_fq = n)
+  qc <- merge(df1, qc1, by = c('full_name', 'dob'))
+
+  # Switched (case-insensitive) names
+  df <- dplyr::mutate(df, switched_name = tolower(paste(ls_name, fs_name, sep = ' ')))
+  df2 <- df[c("child_id", "full_name", "switched_name", "dob")]
+  df2a <- df2[c("child_id", "full_name", "dob")] %>%
+    dplyr::rename(name = full_name)
+  df2b <- df2[c("child_id", "switched_name", "dob")] %>%
+    dplyr::rename(name = switched_name)
+  df2 <- rbind(df2a, df2b)
+  qc2 <- df2 %>%
+    group_by(name, dob) %>%
+    count
+  qc2 <- qc2 %>%
+    dplyr::rename(sw_name_fq = n,
+                  switched_name = name)
+  qc <- merge(qc, qc2, by.x = c('full_name', 'dob'), by.y = c('switched_name', 'dob'))
+
+  # Approximate String Matching (Fuzzy Matching)
+  #df3 <- df[c("child_id", "full_name")]
+  #qc3 <- df3[lapply(car.vins, agrep, x = vin.vins, max.distance = c(cost=2, all=2), value = TRUE)
+  #, .(NumTimesFound = .N)
+  #, by = df1$full_name]
+  #qc <- merge(qc, qc3, by.x = 'full_name', by.y = 'switched_name')
+
+  qc %>% dplyr::select(child_id, ex_name_fq, sw_name_fq)
 
 }
 

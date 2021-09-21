@@ -37,7 +37,7 @@ pres <- 1
 
 ```{r translations}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche.}\\end{center}"
+  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
   baseline_str <- "Visite primaire"
   repeat_str <- "Visite secondaire"
@@ -49,7 +49,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   appendix_title <- "# Annexe\n\n"
   screening_times_str <- "Heures de screening"
 } else {
-  notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams.}\\end{center}"
+  notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
   baseline_str <- "Baseline visit"
   repeat_str <- "Repeat visit"
@@ -375,16 +375,6 @@ if (n_due_day7fu > 0)
 }
 ```
 
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("Recrutement par rapport à l'objectif hebdomadaire\n\n"))
-  cat("A compléter\n\n")
-} else {
-  cat(paste0("Enrolment versus weekly target\n\n"))
-  cat("To be completed\n\n")
-}
-```
-
 ```{r submissions-1, results = "asis"}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -440,11 +430,12 @@ if (!is.null(wfa_data) & length(wfa_data) > 0 & nrow(wfa_data) > 0) {
     geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
     ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
                           breaks = "1 week",
-                          date_labels = "%y-%m-%d") +
+                          date_labels = "%y.%m.%d") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.line = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
           panel.background = element_blank())
 }
 ```
@@ -931,9 +922,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Appel téléphonique à Jour 7\n\n"))
+  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
 } else {
-  cat(paste0("### Day 7 phone call\n\n"))
+  cat("## Number of submissions during the last 30 days\n\n")
 }
 
 if (!is.null(raw_day7fu_data)) {
@@ -951,9 +942,9 @@ if (!is.null(raw_day7fu_data)) {
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Appel téléphonique à Jour 7\n\n")
+  cat("## Cartes thermiques calendaires\n\n")
 } else {
-  cat("### Day 7 phone call\n\n")
+  cat("## Calendar heatmap\n\n")
 }
 
 if (!is.null(raw_day7fu_data)) {
@@ -1037,9 +1028,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Visite à l'hôpital\n\n"))
+  cat(paste0("## Visite à l'hôpital\n\n"))
 } else {
-  cat(paste0("### Hospital visit\n\n"))
+  cat(paste0("## Hospital visit\n\n"))
 }
 
 if (!is.null(raw_hospit_data)) {
@@ -1087,7 +1078,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat('### Day 28 phone call\n\n')
+  cat('## Number of submissions during the last 30 days\n\n')
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       plot(timci::generate_day_bar_plot(raw_day28fu_data$date, as.Date(Sys.Date() - w),
@@ -1104,7 +1095,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat("### Day 28 phone call\n\n")
+  cat("## Calendar heatmap\n\n")
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       timci::generate_calendar_heatmap(raw_day28fu_data, date)

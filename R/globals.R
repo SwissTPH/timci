@@ -44,4 +44,6 @@ utils::globalVariables(c("Group.1",
                          "status_day7",
                          "found",
                          "raw_day28fu_data",
-                         "var"))
+                         "var",
+                         "dob",
+                         "name"))

@@ -1,7 +1,7 @@
 ---
 title: "TIMCI Data Quality Report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
-date: "`r format(Sys.time(), '%Y-%m-%d')`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 output:
   pdf_document:
     number_sections: true
@@ -267,28 +267,31 @@ if (!is.null(facility_data)) {
 }
 ```
 
-#### Name duplicates
+#### Possible duplicates
 
 ```{r, results='asis'}
-cat("Rule: no specific action at the moment.")
+cat("Rule: possible duplicates are detected based on name and date of birth. No specific action at the moment.")
 ```
-
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
-if(Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
     if (!is.null(facility_data)) {
     if (nrow(locked_pii) > 0) {
-      day0_qc1 <- timci::detect_name_duplicates(locked_pii)
+      day0_qc1 <- timci::detect_namedob_duplicates(locked_pii)
       day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
       duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
-      if (nrow(duplicates) > 0) { 
-        duplicates %>% knitr::kable(caption = "Possible name duplicates")
+      if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
+        duplicates %>% knitr::kable(caption = "Possible duplicates are detected based on the exact name and date of birth")
       }
     }
   }
+}
+```
+```{r check-RCT-LS-ODK-facility-data-002-disp, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
   
   if (!is.null(facility_data)) {
     if (nrow(locked_pii) > 0) {
-      if (nrow(duplicates) > 0) { 
+      if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
         cat(paste0("", nrow(duplicates), " possible duplicated names were detected. No specific action was taken."))
       } else {
         cat("No duplicated names detected")
@@ -305,6 +308,7 @@ if(Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
   #print(qc3)
 }
 ```
+
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {
   fn <- timci::export_df2xlsx(day0_qc, params$rctls_dir,
@@ -315,7 +319,7 @@ if (!is.null(day0_qc)) {
 ### Withdrawal management
 
 ```{r, results='asis'}
-cat("Rule: withdrawals with documented child IDs are removed from the locked database.")
+cat("Rule: withdrawals with documented child IDs are kept in the locked Day 0 database, then removed from all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.")
 ```
 
 ```{r, results='asis'}
@@ -326,7 +330,7 @@ if (!is.null(facility_data)) {
         raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
         withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
         # Remove withdrawn participants from the clean database
-        locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        #locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
         day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
         withdrawal_data2$child_id %>%  knitr::kable(col.names = c("child_id"))
       }
@@ -340,7 +344,7 @@ if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (!is.null(raw_withdrawal_data)) {
       if (nrow(raw_withdrawal_data) > 0) { 
-        cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were automatically detected and removed in the locked Day 0 database."))
+        cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were automatically detected."))
       } else {
         cat("No withdrawal reported.")
       }
@@ -567,7 +571,7 @@ if (!is.null(day7fu_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
-  cat(paste0(nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), " records were removed in the locked successful Day 7 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
+  cat(paste0(nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), " records were removed in the locked successful Day 7 follow-up database. Note that records duplicated on the same day are kept - we need to define a rule for this."))
 }
 ```
 
@@ -645,6 +649,10 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
+```{r, results = 'asis'}
+cat(paste0("There are ", nrow(hospit_data), " records in the raw hospitalisation follow-up database."))
+```
+
 ### Non-valid participant IDs
 
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
@@ -675,8 +683,10 @@ if (!is.null(hospit_data)) {
   if (length(hospit_data) > 0) { 
     hospit_data_qc <- timci::detect_id_duplicates(locked_hospit_data)
     hospit_data_duplicates <- hospit_data_qc[hospit_data_qc$id_fq > 1,]
-    if (length(hospit_data_duplicates) > 0) { 
+    if (length(hospit_data_duplicates) > 0) {
+      if (nrow(hospit_data_duplicates) > 0) { 
          knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
+      }
     } else {
       cat("No ID duplicates detected")
     }
@@ -973,11 +983,13 @@ cat("Rule: keep duplicated records and investigate the reason for having duplica
 
 ```{r, results='asis'}
 if (!is.null(spa_sco_data)) {
-  if (length(spa_sco_data) > 0) { 
-    spa_sco_data_qc <- timci::detect_id_duplicates2(locked_spa_sco_data$'child_identification-pid')
+  if (length(spa_sco_data) > 0) {
+    spa_sco_data_qc <- timci::detect_id_duplicates(locked_spa_sco_data %>% dplyr::rename(child_id = 'child_identification-pid'))
     spa_sco_data_duplicates <- spa_sco_data_qc[spa_sco_data_qc$id_fq > 1,]
-    if (length(spa_sco_data_duplicates) > 0) { 
+    if (length(spa_sco_data_duplicates) > 0) {
+      if (nrow(spa_sco_data_duplicates) > 0) {
          knitr::kable(spa_sco_data_duplicates, caption = "ID duplicates")
+      }
     } else {
       cat("No ID duplicates detected")
     }
@@ -1089,10 +1101,12 @@ cat("Rule: keep duplicated records and investigate the reason for duplicates")
 ```{r check-SPA-hcp-interview-data, results='asis'}
 if (!is.null(spa_hcpi_data)) {
   if (length(spa_hcpi_data) > 0) { 
-    spa_hcpi_data_qc <- timci::detect_id_duplicates2(locked_spa_hcpi_data$hcp_id)
+    spa_hcpi_data_qc <- timci::detect_id_duplicates(locked_spa_hcpi_data, hcp_id)
     spa_hcpi_data_duplicates <- spa_hcpi_data_qc[spa_hcpi_data_qc$id_fq > 1,]
-    if (length(spa_hcpi_data_duplicates) > 0) { 
-         knitr::kable(spa_hcpi_data_duplicates, caption = "ID duplicates")
+    if (length(spa_hcpi_data_duplicates) > 0) {
+      if (nrow(spa_hcpi_data_duplicates) > 0) {
+        knitr::kable(spa_hcpi_data_duplicates, caption = "ID duplicates")
+      }
     } else {
       cat("No ID duplicates detected")
     }
@@ -1148,6 +1162,8 @@ if (!is.null(spa_hcpi_data)) {
 \newpage
 
 # Process mapping & Time-flow
+
+## Time-flow
 
 ```{r time-flow-export}
 if (!is.null(tf_data)) {
@@ -1210,6 +1226,15 @@ if (!is.null(cgidi_encryption_data)) {
 
 ```{r cg-idi-interview-export}
 if (!is.null(cgidi_interview_data)) {
+  
+  # Filter data
+  drops <- c("encryption-name",
+             "encryption-child_name",
+             "encryption-phonenb1",
+             "encryption-phonenb2",
+             "other_participant-cg2_name")
+  cgidi_interview_data <- cgidi_interview_data[, !(names(cgidi_interview_data) %in% drops)]
+  
   fn <- timci::export_df2csvxlsx(cgidi_interview_data,
                                  qual1_dir,
                                  "03_timci_cg_interview_data")
@@ -1221,14 +1246,13 @@ if (!is.null(cgidi_interview_data)) {
   for (i in 1:nrow(sl)) {
     crow <- cgidi_interview_data[i,]
     uuid <- crow$'meta-instanceID'
-    cpath <- file.path(qual1_dir, crow$'identification-idiidm')
-    print(paste0("Participant: ", crow$'identification-idiidm'))
+    cpath <- file.path(qual1_dir, crow$'encryption-participant')
+    print(paste0("Participant: ", crow$'encryption-participant'))
     dir.create(cpath, showWarnings = FALSE)
     # Create a new dataframe using the transpose of crow
     tcrow <- as.data.frame(t(as.matrix(crow)))
     names(tcrow)[names(tcrow) == "V1"] <- "values"
-    fname <- file.path(cpath, paste("data", "_", Sys.Date(), ".xlsx", sep = ""))
-    openxlsx::write.xlsx(tcrow, fname, row.names = TRUE)
+    fn <- export_df2xlsx(tcrow, cpath, "data")
     
     # Download attachments
     al <- ruODK::get_one_submission_attachment_list(pid = qpid,

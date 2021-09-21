@@ -201,12 +201,13 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
                           breaks = waiver(),
-                          date_labels = "%y-%m-%d") +
+                          date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.line = element_blank(),
-          panel.background = element_blank())
+          panel.background = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1))
 
   if (relative) {
     if (!is.null(ylim)) {
@@ -268,12 +269,13 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
                           breaks = "1 week",
-                          date_labels = "%y-%m-%d") +
+                          date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.line = element_blank(),
-          panel.background = element_blank())
+          panel.background = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1))
 
   if (relative) {
     if (!is.null(ylim)) {
@@ -344,13 +346,14 @@ generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max,
     xlab("Date") +
     scale_x_date(limits = c(date_min, date_max),
                  breaks = waiver(),
-                 date_labels = "%y-%m-%d") +
+                 date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.line = element_blank(),
           legend.title = element_blank(),
           panel.background = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
           legend.position = "bottom")
 
   if (!is.null(ylim)) {
