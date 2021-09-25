@@ -78,42 +78,43 @@ detect_name_duplicates <- function(df) {
 
 }
 
-#' Detect name and date of birth duplicates (TIMCI-specific function)
+#' Detect participant duplicates (TIMCI-specific function)
+#' Detection based on name, sex and date of birth
 #'
 #' @param df dataframe containing the processed facility data
 #' @return This function returns a vector containing IDs of duplicate name
 #' @export
 #' @import dplyr magrittr
 
-detect_namedob_duplicates <- function(df) {
+detect_participant_duplicates <- function(df) {
 
   qc <- NULL
 
   # Exact (case-insensitive) duplicates
   df <- dplyr::mutate(df, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-  df1 <- df[c("child_id", "full_name", "dob")]
+  df1 <- df[c("child_id", "full_name", "dob", "sex")]
   qc1 <- df1 %>%
-    group_by(full_name, dob) %>%
+    group_by(full_name, dob, sex) %>%
     count
   qc1 <- qc1 %>%
     dplyr::rename(ex_name_fq = n)
-  qc <- merge(df1, qc1, by = c('full_name', 'dob'))
+  qc <- merge(df1, qc1, by = c('full_name', 'dob', "sex"))
 
   # Switched (case-insensitive) names
   df <- dplyr::mutate(df, switched_name = tolower(paste(ls_name, fs_name, sep = ' ')))
-  df2 <- df[c("child_id", "full_name", "switched_name", "dob")]
-  df2a <- df2[c("child_id", "full_name", "dob")] %>%
+  df2 <- df[c("child_id", "full_name", "switched_name", "dob", "sex")]
+  df2a <- df2[c("child_id", "full_name", "dob", "sex")] %>%
     dplyr::rename(name = full_name)
-  df2b <- df2[c("child_id", "switched_name", "dob")] %>%
+  df2b <- df2[c("child_id", "switched_name", "dob", "sex")] %>%
     dplyr::rename(name = switched_name)
   df2 <- rbind(df2a, df2b)
   qc2 <- df2 %>%
-    group_by(name, dob) %>%
+    group_by(name, dob, sex) %>%
     count
   qc2 <- qc2 %>%
     dplyr::rename(sw_name_fq = n,
                   switched_name = name)
-  qc <- merge(qc, qc2, by.x = c('full_name', 'dob'), by.y = c('switched_name', 'dob'))
+  qc <- merge(qc, qc2, by.x = c('full_name', 'dob', 'sex'), by.y = c('switched_name', 'dob', 'sex'))
 
   # Approximate String Matching (Fuzzy Matching)
   #df3 <- df[c("child_id", "full_name")]

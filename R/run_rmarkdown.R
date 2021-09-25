@@ -112,10 +112,75 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                fid = crf_facility_fid,
                                                pp = rctls_pp,
                                                media = FALSE)
+  col_specs <- list(
+    'a4_c_10a' = col_integer(),
+    'crfs-t04a-b2_3' = col_integer(),
+    'crfs-t03-m3_1b' = col_integer(),
+    'crfs-t03-m3_3' = col_integer(),
+    'crfs-t03-m3_3o' = col_character(),
+    'crfs-t03-m3_4' = col_integer(),
+    'crfs-t03-m3_6' = col_integer(),
+    'crfs-t03-m3_7' = col_integer(),
+    'crfs-t03-m3_8a' = col_integer(),
+    'crfs-t03-m3_9a' = col_integer(),
+    'crfs-t09a1-medication_injection' = col_integer(),
+    'crfs-t09a1-injection_types' = col_integer(),
+    'crfs-t09a1-injection_typeso' = col_character(),
+    'crfs-t09a2-g3_1' = col_character(),
+    'crfs-t09a2-g3_1o' = col_character(),
+    'crfs-t09a2-i2_1' = col_integer(),
+    'crfs-t09a2-i2_1a' = col_integer(),
+    'crfs-t09a2-i2_1b' = col_integer(),
+    'crfs-t09a2-i2_1o' = col_character(),
+    'crfs-t09a2-j2_1' = col_integer(),
+    'crfs-t09a2-j2_1c' = col_integer(),
+    'crfs-t09a2-h2_2a' = col_character(),
+    'crfs-t09a2-h2_2ao' = col_character(),
+    'crfs-t07a-tt07a-e2_1' = col_integer(),
+    'crfs-t07a-tt07a-e2_1a' = col_integer(),
+    'crfs-t07a-tt07a-e2_2' = col_integer(),
+    'crfs-t07a-tt07a-e2_2a' = col_integer(),
+    'crfs-t07a-tt07a-e2_3' = col_integer(),
+    'crfs-t07a-tt07a-e2_3a' = col_integer(),
+    'crfs-t07a-tt07a-e2_4' = col_integer(),
+    'crfs-t07a-tt07a-e2_4a' = col_integer(),
+    'crfs-t06a-tt06a-d2_6' = col_integer(),
+    'crfs-t06a-d2_6b' = col_integer(),
+    'crfs-t06a-tt06a-d2_1' = col_integer(),
+    'crfs-t06a-d2_1a' = col_integer(),
+    'crfs-t06a-tt06a-d2_4' = col_integer(),
+    'crfs-t06a-d2_4a' = col_integer(),
+    'crfs-t06a-tt06a-d2_5' = col_integer(),
+    'crfs-t06a-d2_5a' = col_integer(),
+    'crfs-t06a-tt06a-d2_2' = col_integer(),
+    'crfs-t06a-d2_2b' = col_integer(),
+    'crfs-t06a-tt06a-d2_3' = col_integer(),
+    'crfs-t06a-d2_3b' = col_integer(),
+    'crfs-t08a-f2_1' = col_character(),
+    'crfs-t08a-f2_1o' = col_character(),
+    'crfs-t08a-f2_2' = col_integer(),
+    'crfs-t08a-f2_3' = col_integer(),
+    'crfs-t08a-f2_4' = col_integer(),
+    'crfs-t08a-f2_5' = col_double(),
+    'crfs-t08a-f2_6' = col_integer(),
+    'crfs-t08a-f2_7' = col_integer(),
+    'crfs-t08a-f2_8' = col_integer(),
+    'crfs-t08a-f2_9' = col_integer(),
+    'crfs-t08a-f2_10a' = col_integer(),
+    'crfs-t05b-c3_1' = col_integer(),
+    'crfs-t05b-c3_2' = col_integer(),
+    'crfs-t05b-c3_3' = col_integer(),
+    'crfs-t05b-c3_3a' = col_integer(),
+    'crfs-t05b-c3_4' = col_integer(),
+    'crfs-t05b-c3_6a' = col_integer(),
+    'crfs-t05b-c3_6' = col_integer(),
+    'crfs-t05b-c3_6o' = col_character()
+  )
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
-                                                        end_date)
+                                                        end_date,
+                                                        col_specs)
   facility_data <- timci::process_facility_data(raw_facility_data)
 
   # Copy audit trail in folder
@@ -221,6 +286,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
+  tf_data <- NULL
   tf_data_full <- NULL
 
   if (spa_pid %in% odkc_project_list) {
@@ -383,7 +449,45 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
                  wfa_data = wfa_data)
-  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", "timci_rct_monitoring_report", params)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    rname <- "timci_rct_monitoring_report"
+  } else{
+    rname <- "timci_ls_monitoring_report"
+  }
+  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
+
+  #########################
+  # SPA monitoring report #
+  #########################
+
+  if (!is.null(spa_sco_data)) {
+    if (length(spa_sco_data) > 0) {
+      if (nrow(spa_sco_data) > 0) {
+        params <- list(research_facilities = research_facilities,
+                       facility_data = facility_data,
+                       spa_sco_data = spa_sco_data,
+                       raw_withdrawal_data = raw_withdrawal_data)
+        generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
+      }
+    }
+  }
+
+  #############################################
+  # Process map / time-flow monitoring report #
+  #############################################
+
+  if (!is.null(tf_data)) {
+    if (length(tf_data) > 0) {
+      if (nrow(tf_data) > 0) {
+        params <- list(research_facilities = research_facilities,
+                       facility_data = facility_data,
+                       tf_data = tf_data,
+                       raw_withdrawal_data = raw_withdrawal_data)
+        generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
+      }
+    }
+  }
+
 
   ###################
   # PATH M&E report #

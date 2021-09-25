@@ -189,6 +189,23 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 facilities %>% knitr::kable()
 ```
 
+## Facility / device correspondence
+
+```{r, results='asis'}
+facility_device <- facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
+  dplyr::select(c('device_id', 'fid')) %>%
+  unique()
+facility_device <- facility_device %>%
+  merge(research_facilities, by.x = 'fid', by.y = 'facility_id', all.x = TRUE) %>%
+  dplyr::select(c('device_id', 'fid', 'facility_name'))
+
+# Remove row for Senegal (RA used wrong QR codes)
+facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
+
+facility_device %>%
+  knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
+```
+
 \newpage
 
 # `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
@@ -197,6 +214,10 @@ facilities %>% knitr::kable()
 
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
+screening_data <- screening_data %>% 
+  merge(facility_device, by = 'device_id', all.x = TRUE) %>%
+  dplyr::rename('facility.x' = 'facility',
+                'facility.y' = 'facility_name')
 res <- timci::extract_enrolled_participants(facility_data)
 day0_data <- res[[1]]
 pii <- res[[2]]
@@ -267,32 +288,33 @@ if (!is.null(facility_data)) {
 }
 ```
 
-#### Possible duplicates
+#### Possible participant duplicates
 
 ```{r, results='asis'}
-cat("Rule: possible duplicates are detected based on name and date of birth. No specific action at the moment.")
+cat("Rule: possible participant duplicates are detected based on their name, sex and date of birth. No specific action at the moment.")
 ```
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
     if (!is.null(facility_data)) {
     if (nrow(locked_pii) > 0) {
-      day0_qc1 <- timci::detect_namedob_duplicates(locked_pii)
+      day0_qc1 <- timci::detect_participant_duplicates(locked_pii)
       day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
       duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
       if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
-        duplicates %>% knitr::kable(caption = "Possible duplicates are detected based on the exact name and date of birth")
+        duplicates %>% knitr::kable(caption = "Possible participant duplicates based on their name, sex and date of birth)")
       }
     }
   }
 }
 ```
+
 ```{r check-RCT-LS-ODK-facility-data-002-disp, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
   
   if (!is.null(facility_data)) {
     if (nrow(locked_pii) > 0) {
       if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
-        cat(paste0("", nrow(duplicates), " possible duplicated names were detected. No specific action was taken."))
+        cat(paste0("", nrow(duplicates), " possible participant duplicates were detected based on their name, sex and date of birth. No specific action was taken."))
       } else {
         cat("No duplicated names detected")
       }
@@ -329,10 +351,9 @@ if (!is.null(facility_data)) {
       if (nrow(raw_withdrawal_data) > 0) { 
         raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
         withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
-        # Remove withdrawn participants from the clean database
-        #locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-        day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-        withdrawal_data2$child_id %>%  knitr::kable(col.names = c("child_id"))
+        withdrawal_data2 %>%
+          dplyr::select(c("child_id", "date")) %>%
+          knitr::kable(col.names = c("Child ID", "Withdrawal date"))
       }
     }
   }
@@ -344,13 +365,41 @@ if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (!is.null(raw_withdrawal_data)) {
       if (nrow(raw_withdrawal_data) > 0) { 
-        cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs) and ", nrow(day0_data_id_withdrawal), " participants were automatically detected."))
+        cat(paste0(nrow(raw_withdrawal_data), " withdrawals were reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs)."))
       } else {
         cat("No withdrawal reported.")
       }
     }
   } else {
     cat("N/A")
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        day0_data_id_withdrawal %>%
+          merge(withdrawal_data2, by = 'child_id', all.x = TRUE) %>%
+          dplyr::select(c("child_id", "date_visit", "date")) %>%
+          knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date"))
+      }
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        cat(paste0(nrow(day0_data_id_withdrawal), " participants were found in the locked Day 0 database."))
+      }
+    }
   }
 }
 ```
@@ -513,15 +562,8 @@ if (!is.null(raw_day7fu_data)) {
 ```{r, results='asis'}
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    cat(paste0(nrow(allday7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database."))
-  }
-}
-```
-
-```{r, results='asis'}
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    cat(paste0(nrow(day7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database."))
+    cat(paste0(nrow(allday7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.\n\n"))
+     cat(paste0(nrow(day7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database."))
   }
 }
 ```
@@ -722,7 +764,12 @@ cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".
 cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 ```
 
-## Day 28 data quality checks
+
+```{r, results = 'asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  cat("## Day 28 data quality checks")
+}
+```
 
 ```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -744,9 +791,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
-### Non-valid participant IDs
 
-Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
+```{r, results = 'asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  cat("### Non-valid participant IDs\n\n")
+  cat("Rule: keep only IDs of children who are enrolled in the locked Day 0 database.")
+}
+```
 
 ```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {

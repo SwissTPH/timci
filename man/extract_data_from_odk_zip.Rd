@@ -8,7 +8,8 @@ extract_data_from_odk_zip(
   odk_zip,
   csv_name,
   start_date = NULL,
-  end_date = NULL
+  end_date = NULL,
+  col_specs = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ extract_data_from_odk_zip(
 \item{start_date}{start date}
 
 \item{end_date}{end date}
+
+\item{col_specs}{column specifications}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

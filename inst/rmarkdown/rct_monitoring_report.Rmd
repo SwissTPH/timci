@@ -1,5 +1,5 @@
 ---
-title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study - Monitoring Report'}`"
+title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study (LS) - Monitoring Report'}`"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 params:
@@ -193,7 +193,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   
 }
 facility_nb <- nrow(facilities)
-if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  facilities$type <- tolower(facilities$type)
   hc_nb <- nrow(facilities %>% filter(type == "health center"))
   dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
   cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " health centres and ", dispensary_nb, " dispensaries"))
@@ -304,7 +305,10 @@ cat(paste0(days_nb, wdays_str))
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
-  enrolment_target <- 11
+  hc_enrolment_target <- 25
+  dispensary_enrolment_target <- 5
+  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
+  enrolment_target <- day_target / facility_nb
 } else if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
   enrolment_target <- 8
 } else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
@@ -315,7 +319,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
 } else{
   enrolment_target <- 8
 }
-if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania") {
+if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania" | Sys.getenv('TIMCI_COUNTRY') != "Kenya") {
   day_target <- enrolment_target * facility_nb
   if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
     cat(paste0("Cible de recrutement quotidienne : ", enrolment_target))
@@ -638,8 +642,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 summary_statistics <- list(
   "Facility" = list(
-    "Below 18 years old" = ~qwraps2::n_perc(cg_eligibility == 0, pres),
-    "Above 18 years old" = ~qwraps2::n_perc(cg_eligibility == 1, pres)
+    "Below 18" = ~qwraps2::n_perc(cg_eligibility == 0, pres),
+    "18 and above" = ~qwraps2::n_perc(cg_eligibility == 1, pres)
     )
 )
 st <- qwraps2::summary_table(all, summary_statistics)
@@ -659,7 +663,7 @@ all$underaged_mother[is.na(all$underaged_mother)] <- 0
 mother_statistics <- list(
   "Mother's age" = list(
     "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0), pres),
-    "Above 18" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1), pres)
+    "18 and above" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1), pres)
     )
 )
 
@@ -922,6 +926,24 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Appels hebdomadaires\n\n")
+} else {
+  cat("## Weekly calls\n\n")
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(raw_day7fu_data) & length(raw_day7fu_data) > 0 & nrow(raw_day7fu_data) > 0) {
+  p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data$date,
+                                     date_min = as.Date(start_date),
+                                     date_max = as.Date(Sys.Date() + 1),
+                                     ylbl = paste0(enrolment_str))
+  plot(p)
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
 } else {
   cat("## Number of submissions during the last 30 days\n\n")
@@ -1116,7 +1138,7 @@ cat(appendix_title)
 ```{r, results="asis"}
 out <- lapply(1:nrow(facilities), function(i) {
   knitr::knit_child(
-    'facility_report1.Rmd', envir = environment(), quiet = TRUE
+    'rct_monitoring_report_facility_sub.Rmd', envir = environment(), quiet = TRUE
   )
 })
 cat(unlist(out), sep = '\n')

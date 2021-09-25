@@ -35,11 +35,12 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
 #' @param csv_name name of the .CSV file
 #' @param start_date start date
 #' @param end_date end date
+#' @param col_specs column specifications
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import magrittr dplyr readr utils fs
 
-extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL) {
+extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL, col_specs = NULL) {
 
   t <- tempdir()
   utils::unzip(odk_zip, exdir = t)
@@ -47,7 +48,11 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
   #print(fn)
   #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(t)
-  raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name)))
+  if (!is.null(col_specs)) {
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name), col_types = col_specs))
+  } else{
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name)))
+  }
   format_odk_metadata(raw_odk_data, start_date, end_date)
 
 }
@@ -114,6 +119,32 @@ format_text_fields <- function(df, cols) {
     if (c %in% dfcols) {
       df[[c]] <- stringr::str_replace_all(df[[c]], ",", ";")
       df[[c]] <- stringr::str_replace_all(df[[c]], "\n", "")
+    }
+  }
+  df
+
+}
+
+#' Combine 2 columns - function in progress (to be tested)
+#'
+#' @param df Dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @param cols1 Vector of reference column names
+#' @param cols2 Vector of column names to be merged with the reference columns
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr stringr
+
+combine_columns <- function(df, cols1, cols2) {
+
+  dfcols <- colnames(df)
+
+  for (i in 1:length(cols1)){
+    c1 <- cols1[i]
+    c2 <- cols2[i]
+    if (c1 %in% dfcols) {
+      if (c2 %in% dfcols) {
+        df[[c1]] <- ifelse(!is.na(df[[c1]]), df[[c1]], df[[c2]])
+      }
     }
   }
   df

@@ -200,7 +200,7 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
-                          breaks = waiver(),
+                          breaks = "1 day",
                           date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
@@ -345,7 +345,7 @@ generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max,
     ylab(ylbl) +
     xlab("Date") +
     scale_x_date(limits = c(date_min, date_max),
-                 breaks = waiver(),
+                 breaks = "1 day",
                  date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
