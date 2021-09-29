@@ -9,96 +9,6 @@ process_facility_data <- function(df) {
 
   cols <- colnames(df)
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    c1 <- c('crfs-t09a2-g3_1o',
-            'crfs-t09a2-g3_1',
-            'crfs-t09a2-i2_1',
-            'crfs-t09a2-i2_1a',
-            'crfs-t09a2-i2_1b',
-            'crfs-t09a2-i2_1o',
-            'crfs-t09a2-j2_1',
-            'crfs-t09a2-j2_1c',
-            'crfs-t07a-tt07a-e2_1',
-            'crfs-t07a-tt07a-e2_1a',
-            'crfs-t07a-tt07a-e2_2',
-            'crfs-t07a-tt07a-e2_2a',
-            'crfs-t06a-tt06a-d2_6',
-            'crfs-t06a-d2_6b',
-            'crfs-t06a-tt06a-d2_1',
-            'crfs-t06a-tt06a-d2_4',
-            'crfs-t06a-d2_4a',
-            'crfs-t06a-tt06a-d2_5',
-            'crfs-t06a-d2_5a',
-            'crfs-t06a-tt06a-d2_2',
-            'crfs-t06a-d2_2b',
-            'crfs-t06a-tt06a-d2_3',
-            'crfs-t06a-d2_3b',
-            'crfs-t06a-d2_1a',
-            'crfs-t08a-f2_1',
-            'crfs-t08a-f2_1o',
-            'crfs-t08a-f2_2',
-            'crfs-t08a-f2_3',
-            'crfs-t08a-f2_4',
-            'crfs-t08a-f2_5',
-            'crfs-t08a-f2_6',
-            'crfs-t08a-f2_7',
-            'crfs-t08a-f2_8',
-            'crfs-t08a-f2_9',
-            'crfs-t08a-f2_10a',
-            'crfs-t05b-c3_1',
-            'crfs-t05b-c3_2',
-            'crfs-t05b-c3_3',
-            'crfs-t05b-c3_3a',
-            'crfs-t05b-c3_4',
-            'crfs-t05b-c3_6a',
-            'crfs-t05b-c3_6',
-            'crfs-t05b-c3_6o')
-    c2 <- c('crfs-t09a1-t09a2-g3_1o',
-            'crfs-t09a1-t09a2-g3_1',
-            'crfs-t09a1-t09a2-i2_1',
-            'crfs-t09a1-t09a2-i2_1a',
-            'crfs-t09a1-t09a2-i2_1b',
-            'crfs-t09a1-t09a2-i2_1o',
-            'crfs-t09a1-t09a2-j2_1',
-            'crfs-t09a1-t09a2-j2_1c',
-            'crfs-t09a1-t07a-tt07a-e2_1',
-            'crfs-t09a1-t07a-tt07a-e2_1a',
-            'crfs-t09a1-t07a-tt07a-e2_2',
-            'crfs-t09a1-t07a-tt07a-e2_2a',
-            'crfs-t09a1-t06a-tt06a-d2_6',
-            'crfs-t09a1-t06a-d2_6b',
-            'crfs-t09a1-t06a-tt06a-d2_1',
-            'crfs-t09a1-t06a-d2_1a',
-            'crfs-t09a1-t06a-tt06a-d2_4',
-            'crfs-t09a1-t06a-d2_4a',
-            'crfs-t09a1-t06a-tt06a-d2_5',
-            'crfs-t09a1-t06a-d2_5a',
-            'crfs-t09a1-t06a-tt06a-d2_2',
-            'crfs-t09a1-t06a-d2_2b',
-            'crfs-t09a1-t06a-tt06a-d2_3',
-            'crfs-t09a1-t06a-d2_3b',
-            'crfs-t09a1-t08a-f2_1',
-            'crfs-t09a1-t08a-f2_1o',
-            'crfs-t09a1-t08a-f2_2',
-            'crfs-t09a1-t08a-f2_3',
-            'crfs-t09a1-t08a-f2_4',
-            'crfs-t09a1-t08a-f2_5',
-            'crfs-t09a1-t08a-f2_6',
-            'crfs-t09a1-t08a-f2_7',
-            'crfs-t09a1-t08a-f2_8',
-            'crfs-t09a1-t08a-f2_9',
-            'crfs-t09a1-t08a-f2_10a',
-            'crfs-t09a1-t05b-c3_1',
-            'crfs-t09a1-t05b-c3_2',
-            'crfs-t09a1-t05b-c3_3',
-            'crfs-t09a1-t05b-c3_3a',
-            'crfs-t09a1-t05b-c3_4',
-            'crfs-t09a1-t05b-c3_6a',
-            'crfs-t09a1-t05b-c3_6',
-            'crfs-t09a1-t05b-c3_6o')
-    df <- combine_columns(df, c1, c2)
-  }
-
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
     df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
@@ -114,6 +24,23 @@ process_facility_data <- function(df) {
     df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y"), '')
   }
 
+  # Young infants: extract age in days (WHO category)
+  if ('a3-a3_a_9' %in% cols) {
+    df$yi_age_ctg_tmp <- sapply(df$'a3-a3_a_9', timci::convert_yi_age2ctg)
+  }
+  if ('a3-a3_a_9a' %in% cols) {
+    df$yi_age_ctg_tmp2 <- sapply(df$'a3-a3_a_9a', timci::convert_yi_age2ctg)
+  }
+  if ('a3-a3_a_8' %in% cols) {
+    df$'a3-a3_a_8' <- ifelse(is.na(df$'a3-a3_a_8') & df$'a3-is_young_infant' == 1,
+                             ifelse(!is.na(df$'a3-a3_a_9') & df$'a3-dobk' == 1,
+                                    df$yi_age_ctg_tmp,
+                                    ifelse(!is.na(df$'a3-a3_a_9a'),
+                                           df$yi_age_ctg_tmp2,
+                                           "")),
+                             df$'a3-a3_a_8')
+  }
+
   # Combine exact and approximate options to get the age in years
   if ('a3-a3_a_3' %in% cols) {
     df$'a3-a3_a_3' <- ifelse(!is.na(df$'a3-a3_a_3'), df$'a3-a3_a_3', df$'a3-a3_a_2a')
@@ -122,21 +49,26 @@ process_facility_data <- function(df) {
   }
 
   # Combine exact and approximate options to get the age in months
-  # a3-a3_a_6b corresponds to the minimal age a child can have if the date of birth is not accurately known
+  # a3-a3_a_6b corresponds to the maximal age a child can have if the date of birth is not accurately known
+  # a3-a3_a_6a corresponds to the minimal age a child can have if the date of birth is not accurately known
   if ('a3-a3_a_6' %in% cols) {
-    df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6'),
+    df$'a3-a3_a_6' <- ifelse(df$'a3-dobk' == 1 & !is.na(df$'a3-a3_a_6'),
                              df$'a3-a3_a_6',
-                             ifelse(!is.na(df$'a3-a3_a_6b'),
-                                    df$'a3-a3_a_6b',
+                             ifelse(df$'a3-dobk' != 98 & !is.na(df$'a3-a3_a_6a'),
+                                    df$'a3-a3_a_6a',
                                     ifelse(df$'a3-a3_a_3' > 1,
                                            12 * df$'a3-a3_a_3',
                                            ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))))
-  } else if ('a3-a3_a_6b' %in% cols) {
-    df$'a3-a3_a_6' <- ifelse(!is.na(df$'a3-a3_a_6b'),
-                             df$'a3-a3_a_6b',
-                             ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
+  } else if ('a3-a3_a_6a' %in% cols) {
+    df$'a3-a3_a_6' <- ifelse(df$'a3-dobk' != 98 & !is.na(df$'a3-a3_a_6a'),
+                             df$'a3-a3_a_6a',
+                             ifelse(df$'a3-a3_a_3' > 1,
+                                    12 * df$'a3-a3_a_3',
+                                    ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)))
   } else if ('a3-a3_a_5' %in% cols) {
-    df$'a3-a3_a_6' <- ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA)
+    df$'a3-a3_a_6' <- ifelse(df$'a3-a3_a_3' > 1,
+                             12 * df$'a3-a3_a_3',
+                             ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
   }
 
   if ('a3-a3_a_5' %in% cols) {
@@ -147,14 +79,14 @@ process_facility_data <- function(df) {
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     if ('crfs-t02b-a4_c_4' %in% cols) {
       df$'crfs-t02b-a4_c_4' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4'),
-                                       ifelse(df$'crfs-t02b-a4_c_4' != 99,
-                                              ifelse(df$'crfs-t02b-a4_c_4' != 98,
-                                                     ifelse(df$'crfs-t02b-a4_c_4' != 96,
-                                                            df$'crfs-t02b-a4_c_4',
-                                                            'Outside the region'),
-                                                     ''),
-                                              df$'crfs-t02b-a4_c_4_oth'),
-                                       '')
+                                      ifelse(df$'crfs-t02b-a4_c_4' != 99,
+                                             ifelse(df$'crfs-t02b-a4_c_4' != 98,
+                                                    ifelse(df$'crfs-t02b-a4_c_4' != 96,
+                                                           df$'crfs-t02b-a4_c_4',
+                                                           'Outside the region'),
+                                                    ''),
+                                             df$'crfs-t02b-a4_c_4_oth'),
+                                      '')
     } else{
       df$'crfs-t02b-a4_c_4' <- ''
     }
@@ -246,6 +178,108 @@ process_facility_data <- function(df) {
 
   # Malaria test done
   #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
+
+}
+
+#' Process Tanzania facility data (TIMCI-specific function)
+#'
+#' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+#' @import dplyr magrittr stringr
+
+process_tanzania_facility_data <- function(df) {
+
+  cols <- colnames(df)
+
+  c1 <- c('crfs-t09a2-g3_1o',
+          'crfs-t09a2-g3_1',
+          'crfs-t09a2-i2_1',
+          'crfs-t09a2-i2_1a',
+          'crfs-t09a2-i2_1b',
+          'crfs-t09a2-i2_1o',
+          'crfs-t09a2-j2_1',
+          'crfs-t09a2-j2_1c',
+          'crfs-t07a-tt07a-e2_1',
+          'crfs-t07a-tt07a-e2_1a',
+          'crfs-t07a-tt07a-e2_2',
+          'crfs-t07a-tt07a-e2_2a',
+          'crfs-t06a-tt06a-d2_6',
+          'crfs-t06a-d2_6b',
+          'crfs-t06a-tt06a-d2_1',
+          'crfs-t06a-tt06a-d2_4',
+          'crfs-t06a-d2_4a',
+          'crfs-t06a-tt06a-d2_5',
+          'crfs-t06a-d2_5a',
+          'crfs-t06a-tt06a-d2_2',
+          'crfs-t06a-d2_2b',
+          'crfs-t06a-tt06a-d2_3',
+          'crfs-t06a-d2_3b',
+          'crfs-t06a-d2_1a',
+          'crfs-t08a-f2_1',
+          'crfs-t08a-f2_1o',
+          'crfs-t08a-f2_2',
+          'crfs-t08a-f2_3',
+          'crfs-t08a-f2_4',
+          'crfs-t08a-f2_5',
+          'crfs-t08a-f2_6',
+          'crfs-t08a-f2_7',
+          'crfs-t08a-f2_8',
+          'crfs-t08a-f2_9',
+          'crfs-t08a-f2_10a',
+          'crfs-t05b-c3_1',
+          'crfs-t05b-c3_2',
+          'crfs-t05b-c3_3',
+          'crfs-t05b-c3_3a',
+          'crfs-t05b-c3_4',
+          'crfs-t05b-c3_6a',
+          'crfs-t05b-c3_6',
+          'crfs-t05b-c3_6o')
+  c2 <- c('crfs-t09a1-t09a2-g3_1o',
+          'crfs-t09a1-t09a2-g3_1',
+          'crfs-t09a1-t09a2-i2_1',
+          'crfs-t09a1-t09a2-i2_1a',
+          'crfs-t09a1-t09a2-i2_1b',
+          'crfs-t09a1-t09a2-i2_1o',
+          'crfs-t09a1-t09a2-j2_1',
+          'crfs-t09a1-t09a2-j2_1c',
+          'crfs-t09a1-t07a-tt07a-e2_1',
+          'crfs-t09a1-t07a-tt07a-e2_1a',
+          'crfs-t09a1-t07a-tt07a-e2_2',
+          'crfs-t09a1-t07a-tt07a-e2_2a',
+          'crfs-t09a1-t06a-tt06a-d2_6',
+          'crfs-t09a1-t06a-d2_6b',
+          'crfs-t09a1-t06a-tt06a-d2_1',
+          'crfs-t09a1-t06a-d2_1a',
+          'crfs-t09a1-t06a-tt06a-d2_4',
+          'crfs-t09a1-t06a-d2_4a',
+          'crfs-t09a1-t06a-tt06a-d2_5',
+          'crfs-t09a1-t06a-d2_5a',
+          'crfs-t09a1-t06a-tt06a-d2_2',
+          'crfs-t09a1-t06a-d2_2b',
+          'crfs-t09a1-t06a-tt06a-d2_3',
+          'crfs-t09a1-t06a-d2_3b',
+          'crfs-t09a1-t08a-f2_1',
+          'crfs-t09a1-t08a-f2_1o',
+          'crfs-t09a1-t08a-f2_2',
+          'crfs-t09a1-t08a-f2_3',
+          'crfs-t09a1-t08a-f2_4',
+          'crfs-t09a1-t08a-f2_5',
+          'crfs-t09a1-t08a-f2_6',
+          'crfs-t09a1-t08a-f2_7',
+          'crfs-t09a1-t08a-f2_8',
+          'crfs-t09a1-t08a-f2_9',
+          'crfs-t09a1-t08a-f2_10a',
+          'crfs-t09a1-t05b-c3_1',
+          'crfs-t09a1-t05b-c3_2',
+          'crfs-t09a1-t05b-c3_3',
+          'crfs-t09a1-t05b-c3_3a',
+          'crfs-t09a1-t05b-c3_4',
+          'crfs-t09a1-t05b-c3_6a',
+          'crfs-t09a1-t05b-c3_6',
+          'crfs-t09a1-t05b-c3_6o')
+  df <- combine_columns(df, c1, c2)
+  process_facility_data(df)
 
 }
 
@@ -507,4 +541,25 @@ count_screening <- function(df) {
                        n_rep,
                        n_con))
 
+}
+
+#' Convert age in days to age categories (TIMCI-specific function)
+#'
+#' @param val scalar value containing the age of the child in days
+#' @return This function returns a formatted dataframe for future display and analysis.
+#' @export
+
+convert_yi_age2ctg <- function(val) {
+  res <- ""
+  val <- as.integer(val)
+  if (!is.na(val)) {
+    if (val >= 1 & val < 7) {
+      res <- "[1-6d]"
+    } else if (val >= 7 & val < 28) {
+      res <- "[7-27d]"
+    } else if (val >= 28 & val < 60) {
+      res <- "[28-59d]"
+    }
+  }
+  res
 }

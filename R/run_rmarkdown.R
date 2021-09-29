@@ -181,7 +181,11 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                         start_date,
                                                         end_date,
                                                         col_specs)
-  facility_data <- timci::process_facility_data(raw_facility_data)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+  } else{
+    facility_data <- timci::process_facility_data(raw_facility_data)
+  }
 
   # Copy audit trail in folder
   facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid, " - audit.csv"))
@@ -566,7 +570,11 @@ generate_fu_logs <- function(rctls_pid,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
                                                         end_date)
-  facility_data <- timci::process_facility_data(raw_facility_data)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+  } else{
+    facility_data <- timci::process_facility_data(raw_facility_data)
+  }
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 
   # Load day 7 follow-up data

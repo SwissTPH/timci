@@ -231,7 +231,7 @@ locked_pii <- pii %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")
 cat(paste0("There are ", nrow(locked_day0_data), " records between ", start_date, " and ", lock_date, " in the raw Day 0 database."))
 ```
 
-### Non-valid enrolment facilities
+### Non-valid enrolment facilities [compliance check]
 
 ```{r, results='asis'}
 cat("Rule: records from facilities different from the ones listed in the first section of this report are removed from the locked database.")
@@ -251,7 +251,7 @@ cat(paste0(nrow(invalid_facilities), " records with non-valid enrolment faciliti
 
 ### Duplicate management
 
-#### Child ID duplicates  
+#### Child ID duplicates [compliance check] 
 
 ```{r, results='asis'}
 cat("Rule: child ID duplicates are removed from the locked database.")
@@ -293,6 +293,7 @@ if (!is.null(facility_data)) {
 ```{r, results='asis'}
 cat("Rule: possible participant duplicates are detected based on their name, sex and date of birth. No specific action at the moment.")
 ```
+
 ```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
     if (!is.null(facility_data)) {
@@ -301,7 +302,7 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
       day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
       duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
       if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
-        duplicates %>% knitr::kable(caption = "Possible participant duplicates based on their name, sex and date of birth)")
+        duplicates %>% knitr::kable(caption = "Possible participant duplicates based on their name, sex and date of birth")
       }
     }
   }
@@ -317,6 +318,50 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
         cat(paste0("", nrow(duplicates), " possible participant duplicates were detected based on their name, sex and date of birth. No specific action was taken."))
       } else {
         cat("No duplicated names detected")
+      }
+    } else {
+      cat("N/A")
+    }
+  }
+  
+  # Approximate String Matching (Fuzzy Matching)
+  #df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  #df3 <- df[c("child_id", "full_name")]
+  #qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+  #print(qc3)
+}
+```
+
+#### Possible participant duplicates with sex discrepancy
+
+```{r, results='asis'}
+cat("Rule: possible participant duplicates detected based on their name and date of birth, but with a sex discrepancy. No specific action at the moment.")
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+    if (!is.null(facility_data)) {
+    if (nrow(locked_pii) > 0) {
+      day0_qc2 <- timci::detect_namedob_duplicates(locked_pii)
+      day0_qc <- merge(day0_qc, day0_qc2, by = 'child_id')
+      duplicates2 <- day0_qc[(day0_qc$ex_name2_fq > 1 & day0_qc$ex_name2_fq > day0_qc$ex_name_fq) | (day0_qc$sw_name2_fq > 1 & day0_qc$sw_name2_fq > day0_qc$sw_name_fq),]
+      if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
+        duplicates2 %>% knitr::kable(caption = "Possible participant duplicates based on their name and date of birth, but with a sex discrepancy")
+      }
+    }
+  }
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-003-disp, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+  
+  if (!is.null(facility_data)) {
+    if (nrow(locked_pii) > 0) {
+      if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
+        cat(paste0("", nrow(duplicates2), " possible participant duplicates detected based on their name and date of birth, but with sex discrepancy. No specific action was taken."))
+      } else {
+        cat("No possible participant duplicates detected based on their name and date of birth, but with sex discrepancy detected")
       }
     } else {
       cat("N/A")
@@ -539,7 +584,7 @@ if (!is.null(raw_day7fu_data)) {
 cat(paste0("There are ", nrow(allday7fu_data), " records in the raw Day 7 follow-up database, among which ", nrow(day7fu_data), " records documenting successful follow-ups."))
 ```
 
-### Non-valid participant IDs
+### Non-valid participant IDs [compliance check]
 
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
 
@@ -616,6 +661,10 @@ if (!is.null(day7fu_data)) {
   cat(paste0(nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), " records were removed in the locked successful Day 7 follow-up database. Note that records duplicated on the same day are kept - we need to define a rule for this."))
 }
 ```
+
+### Day 7 follow-up anterior to enrolment date [consistency check]
+
+To be implemented
 
 ### Data cleaning summary
 
