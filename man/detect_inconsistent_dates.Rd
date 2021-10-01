@@ -4,10 +4,12 @@
 \alias{detect_inconsistent_dates}
 \title{Detect inconsistent dates (TIMCI-specific function)}
 \usage{
-detect_inconsistent_dates(df)
+detect_inconsistent_dates(df1, df2)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{df1}{dataframe containing the processed facility data}
+
+\item{df2}{dataframe containing the processed facility data}
 }
 \value{
 This function returns a dataframe containing data of possible duplicate participants only
