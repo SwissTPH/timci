@@ -358,11 +358,11 @@ if (!is.null(raw_day7fu_data)) {
 n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date())
 ```
 
-```{r, results='asis', height = 4}
+```{r, results='asis'}
 gridExtra::grid.arrange(plot1, plot2, ncol = 2)
 ```
 
-```{r, results='asis', height = 4}
+```{r, results='asis'}
 gridExtra::grid.arrange(plot3, plot3, ncol = 2)
 ```
 

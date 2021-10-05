@@ -212,7 +212,8 @@ generate_ltfu_log <- function(df,
         group_by(child_id) %>%
         count
       ltfu_log <- ltfu_log[!(ltfu_log$child_id %in% suc_fudf$'a1-pid'),]
-      ltfu_log <- merge(ltfu_log, attempt_nb, by = 'child_id', all.x = TRUE)
+      ltfu_log <- merge(ltfu_log, attempt_nb, by = 'child_id', all.x = TRUE) %>%
+        dplyr::rename(fu_attempts = n)
     }
   }
 
@@ -222,6 +223,28 @@ generate_ltfu_log <- function(df,
   # Order entries by date
   ltfu_log <- ltfu_log %>%
     dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+
+  # Order columns
+  ltfu_log$date_maxfu <- as.Date(ltfu_log$date_maxfu, "%Y-%m-%d")
+  col_order <- c('child_id',
+                 'date_visit',
+                 'date_maxfu',
+                 'fu_attempts',
+                 'age_mo',
+                 'yg_infant',
+                 'yg_infant_ctg',
+                 'fid',
+                 'facility',
+                 'district',
+                 'phone_nb_avail',
+                 'referral_cg',
+                 'referral_hf',
+                 'urg_referral_hf',
+                 'ref_facility',
+                 'ref_facility_oth',
+                 'device_id',
+                 'sys_submit_id')
+  ltfu_log <- ltfu_log[, col_order]
 
 }
 
