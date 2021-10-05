@@ -422,6 +422,7 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results='asis'}
+day0_data_id_withdrawal <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (!is.null(raw_withdrawal_data)) {
@@ -441,8 +442,8 @@ if (!is.null(facility_data)) {
 ```{r, results='asis'}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      if (nrow(raw_withdrawal_data) > 0) { 
+    if (!is.null(day0_data_id_withdrawal)) {
+      if (nrow(day0_data_id_withdrawal) > 0) { 
         cat(paste0(nrow(day0_data_id_withdrawal), " participants were found in the locked Day 0 database."))
       }
     }
