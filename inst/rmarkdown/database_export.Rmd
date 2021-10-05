@@ -570,10 +570,12 @@ if (!is.null(raw_withdrawal_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(raw_withdrawal_data)) {
-  fn <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
-                                 lock_rctls_dir,
-                                 withdrawal_export_name)
-  cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  if (!is.null(day0_data_id_withdrawal)) {
+    fn <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
+                                   lock_rctls_dir,
+                                   withdrawal_export_name)
+    cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  }
 }
 ```
 
