@@ -182,6 +182,49 @@ generate_fu_log2 <- function(pii,
 
 }
 
+#' Generate lost to follow-up log (TIMCI-specific function)
+#'
+#' Generate a list of participants who are lost to follow-up after wmax
+#' @param df dataframe
+#' @param fudf dataframe containing the processed follow-up data
+#' @param dltfu numerical, end of the follow-up period (in days)
+#' @return This function returns a dataframe.
+#' @export
+#' @import magrittr dplyr
+
+generate_ltfu_log <- function(df,
+                              fudf,
+                              dltfu) {
+
+  ltfu_log <- df
+  ltfu_log$date_maxfu <- as.Date(ltfu_log$date_visit) + dltfu
+
+  # Exclude children who already underwent successful follow-up
+  if (!is.null(fudf)) {
+    if (nrow(fudf) > 0) {
+      suc_fudf <- fudf %>%
+        dplyr::filter(proceed == 1)
+      un_fudf <- fudf %>%
+        dplyr::filter(proceed == 0) %>%
+        dplyr::rename(child_id = "a1-pid")
+      # Count the number of unsuccessful attempts
+      attempt_nb <- un_fudf %>%
+        group_by(child_id) %>%
+        count
+      ltfu_log <- ltfu_log[!(ltfu_log$child_id %in% suc_fudf$'a1-pid'),]
+      ltfu_log <- merge(ltfu_log, attempt_nb, by = 'child_id', all.x = TRUE)
+    }
+  }
+
+  # Exclude children who are still within or before the follow-up window period
+  ltfu_log <- ltfu_log[ltfu_log$date_maxfu < Sys.Date(),]
+
+  # Order entries by date
+  ltfu_log <- ltfu_log %>%
+    dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+
+}
+
 #' Process day 7 follow-up data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call

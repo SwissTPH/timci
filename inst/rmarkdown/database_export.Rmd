@@ -427,8 +427,9 @@ if (!is.null(facility_data)) {
     if (!is.null(raw_withdrawal_data)) {
       if (nrow(raw_withdrawal_data) > 0) { 
         day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+          merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
         day0_data_id_withdrawal %>%
-          merge(withdrawal_data2, by = 'child_id', all.x = TRUE) %>%
           dplyr::select(c("child_id", "date_visit", "date")) %>%
           knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date"))
       }
@@ -563,6 +564,15 @@ if (!is.null(raw_withdrawal_data)) {
                                 params$rctls_dir,
                                 withdrawal_export_name)
   cat(paste0("* Raw withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(raw_withdrawal_data)) {
+  fn <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
+                                 lock_rctls_dir,
+                                 withdrawal_export_name)
+  cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 }
 ```
 

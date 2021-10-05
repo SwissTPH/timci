@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d')`"
 params:
   output_dir: !r tempdir()
   rct_ls_form_list: NULL
-  pii: NULL
+  facility_data: NULL
   rctls_pid: NULL
   fu_fid: !r Sys.getenv('TIMCI_CRF_DAY7_FID')
   raw_fu_data: NULL
@@ -39,9 +39,12 @@ output_dir <- params$output_dir
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
 
-if (!is.null(params$pii)) {
+if (!is.null(params$facility_data)) {
   
-  pii <- params$pii
+  facility_data <- params$facility_data
+  res <- timci::extract_enrolled_participants(facility_data)
+  day0_data <- res[[1]]
+  pii <- res[[2]]
   raw_fu_data <- params$raw_fu_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   rct_ls_form_list <- params$rct_ls_form_list
@@ -142,7 +145,7 @@ if (!is.null(raw_fu_data)) {
 ```
 
 ```{r}
-ltfu <- timci::generate_fu_log(pii, raw_fu_data, fu_end + 1, 100000, fu_end + 1, 100000)
+ltfu <- timci::generate_ltfu_log(day0_data, raw_fu_data, fu_end)
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
