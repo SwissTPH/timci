@@ -749,16 +749,6 @@ st <- qwraps2::summary_table(all, consent_statistics)
 st1 <- qwraps2::summary_table(dplyr::group_by(all, facility_name), consent_statistics)
 print(t(cbind(st, st1)))
 ```
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Carte thermique des recrutements par poste de santé\n\n"))
-  cat("A compléter\n\n")
-} else {
-  cat(paste0("## Enrolment heatmap by facility\n\n"))
-  cat("To be completed\n\n")
-}
-```
   
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -913,17 +903,21 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (nrow(baseline_data) > 0) {
   all <- data.frame(study_data)
   all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
+  all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
+  all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
   
   summary_statistics <- list(
     "Referral (caregiver)" = list(
       "No" = ~qwraps2::n_perc(referral_cg == 0, 2),
       "Yes" = ~qwraps2::n_perc(referral_cg == 1, 2),
       "Unknown" = ~qwraps2::n_perc(referral_cg == 98, 2),
-      "Declined" = ~qwraps2::n_perc(referral_cg == 97, 2)
+      "Declined" = ~qwraps2::n_perc(referral_cg == 97, 2),
+      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, 2)
       ),
     "Referral (registry)" = list(
       "No" = ~qwraps2::n_perc(referral_hf == 0, 2),
-      "Yes" = ~qwraps2::n_perc(referral_hf == 1, 2)
+      "Yes" = ~qwraps2::n_perc(referral_hf == 1, 2),
+      "Missing" = ~qwraps2::n_perc(referral_hf == 100, 2)
       )
   )
   referral_summary <- qwraps2::summary_table(all, summary_statistics)
