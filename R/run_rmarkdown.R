@@ -55,16 +55,17 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     un = Sys.getenv("ODKC_UN"),
     pw = Sys.getenv("ODKC_PW"),
     tz = Sys.getenv("TZ"),
-    verbose = TRUE # Can be switched to TRUE for demo or debugging
+    verbose = FALSE # Can be switched to TRUE for demo or debugging
   )
 
-  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  # List of projects ---------------------------
+  # Only list projects visible with the credentials `ODKC_UN` and `ODKC_PW`
   odkc_project_list <- ruODK::project_list()$id
 
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
   problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
 
-  # RCT / LS environment variables
+  # RCT / LS environment variables ---------------------------
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
@@ -73,14 +74,14 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
-  # SPA environment variables
+  # SPA environment variables ---------------------------
   cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
   fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
   hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
   tf_fid <- Sys.getenv("TIMCI_TF_FID")
 
-  # Qualitative environment variables
+  # Qualitative environment variables ---------------------------
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
   cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
   cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
@@ -89,16 +90,16 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Load TIMCI ODK data #
   #######################
 
-  # List of forms visible in the RCT / LS project
+  # List RCT/LS forms ---------------------------
   rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
-  # List of forms visible in the SPA project
+  # List SPA forms ---------------------------
   spa_form_list <- NULL
   if (spa_pid %in% odkc_project_list) {
     spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
   }
 
-  # List of forms visible in the qualitative project
+  # List qualitative forms ---------------------------
   qual_form_list <- NULL
   if (qpid %in% odkc_project_list) {
     qual_form_list <- ruODK::form_list(pid = qpid)$fid
@@ -112,6 +113,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                fid = crf_facility_fid,
                                                pp = rctls_pp,
                                                media = FALSE)
+  # Dirty fix - To be moved when time allows
   col_specs <- list(
     'a4_c_10a' = col_integer(),
     'crfs-t04a-b2_3' = col_integer(),

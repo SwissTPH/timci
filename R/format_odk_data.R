@@ -14,7 +14,7 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
     df$duration <- as.integer(round(df$end - df$start, digits = 0))
     df$start <- strftime(df$start,"%T")
     df$end <- strftime(df$end,"%T")
-    df <- df %>% dplyr::rename('date' = 'today')
+    df <- df %>% dplyr::rename(date = today)
     if (!is.null(start_date)) {
       df <- df %>%
         dplyr::filter(date >= as.Date(start_date, "%Y-%m-%d"))

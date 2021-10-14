@@ -99,12 +99,12 @@ generate_fu_log <- function(pii,
 #' @export
 #' @import magrittr dplyr
 
-generate_fu_log2 <- function(pii,
-                             fudf,
-                             wmin,
-                             wmax,
-                             vwmin,
-                             vwmax) {
+generate_fu_log_csv <- function(pii,
+                                fudf,
+                                wmin,
+                                wmax,
+                                vwmin,
+                                vwmax) {
 
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
@@ -208,11 +208,11 @@ generate_ltfu_log <- function(df,
         dplyr::filter(proceed == 0) %>%
         dplyr::rename(child_id = "a1-pid")
       # Count the number of unsuccessful attempts
-      attempt_nb <- un_fudf %>%
+      attempt_df <- un_fudf %>%
         group_by(child_id) %>%
         count
       ltfu_log <- ltfu_log[!(ltfu_log$child_id %in% suc_fudf$'a1-pid'),]
-      ltfu_log <- merge(ltfu_log, attempt_nb, by = 'child_id', all.x = TRUE) %>%
+      ltfu_log <- merge(ltfu_log, attempt_df, by = 'child_id', all.x = TRUE) %>%
         dplyr::rename(fu_attempts = n)
     }
   }
