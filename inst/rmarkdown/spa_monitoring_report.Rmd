@@ -156,29 +156,34 @@ facility_disp %>% knitr::kable()
 ```{r, results='asis'}
 cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title_str <- "# Indicateurs globaux\n\n"
-  plot1_str <- "Recrutement mensuel\nvs.\ncible"
-  plot2_str <- "Recrutement hebdomadaire\nvs.\ncible"
-  plot3_str <- "Taux de recrutement\n(hors visites secondaires)"
+  title2_str1 <- "## Nombre de soumissions au cours des 30 derniers jours\n\n"
+  title2_str2 <- "## Recrutement hebdomadaire\n\n"
 } else {
-  title_str <- "# Global indicators\n\n"
-  plot1_str <- "Monthly enrolment\nvs.\ntarget"
-  plot2_str <- "Weekly enrolment\nvs.\ntarget"
-  plot3_str <- "Enrolment rate\n(excl. repeat visits)"
+  title2_str1 <- "## Number of submissions during the last 30 days\n\n"
+  title2_str2 <- "## Weekly enrolment\n\n"
 }
 ```
 
 ```{r, results='asis'}
 w <- 30
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
-} else {
-  cat("## Number of submissions during the last 30 days\n\n")
-}
+cat(title2_str1)
 
 if (nrow(spa_sco_data) > 0) {
-  plot(timci::generate_day_bar_plot(spa_sco_data$date, as.Date(Sys.Date() - w),
+  plot(timci::generate_day_bar_plot(spa_sco_data$date,
+                                    as.Date(Sys.Date() - w),
                                     as.Date(Sys.Date() + 1),
                                     ylbl = submission_str))
+}
+```
+
+```{r, results = "asis"}
+cat(title2_str2)
+if (!is.null(spa_sco_data) & length(spa_sco_data) > 0 & nrow(spa_sco_data) > 0) {
+  p <- timci::generate_week_bar_plot(date_vec = spa_sco_data$date,
+                                     date_min = as.Date(start_date),
+                                     date_max = as.Date(Sys.Date() + 1),
+                                     ylbl = paste0(enrolment_str),
+                                     relative = FALSE)
+  plot(p)
 }
 ```

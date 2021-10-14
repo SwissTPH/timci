@@ -342,8 +342,8 @@ if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
     succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
-    n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date()) 
-    n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax)) 
+    n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date(), na.rm = TRUE) 
+    n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_expandedwmax) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax), na.rm = TRUE) 
   } else {
     n_completed_day7fu <- 0
     n_valid_day7fu <- 0
@@ -387,8 +387,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
     if (nrow(raw_day28fu_data) > 0) {
       day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[3]]
       succ_day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
-      n_completed_day28fu <- sum((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_expandedwmax) <= Sys.Date()) 
-      n_valid_day28fu <- sum(((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_expandedwmax) <= Sys.Date()) & (succ_day28fu_data$days >= day28_wmin) & (succ_day28fu_data$days <= day28_wmax)) 
+      n_completed_day28fu <- sum((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_expandedwmax) <= Sys.Date(), na.rm = TRUE) 
+      n_valid_day28fu <- sum(((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_expandedwmax) <= Sys.Date()) & (succ_day28fu_data$days >= day28_wmin) & (succ_day28fu_data$days <= day28_wmax), na.rm = TRUE) 
     } else {
       n_completed_day28fu <- 0
       n_valid_day28fu <- 0

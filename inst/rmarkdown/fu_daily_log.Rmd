@@ -139,7 +139,7 @@ fu <- timci::generate_fu_log_csv(pii,
 if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
   if (!is.null(raw_oth_fu_data)) {
     if (nrow(raw_oth_fu_data) > 0) {
-      # Add date of the day 7 follow-up if available
+      # Add date of the day 7 follow-up in the day 28 log, if available
       fu <- merge(fu,
                   raw_oth_fu_data[, c('a1-pid', 'date')],
                   by.x = 'name',
