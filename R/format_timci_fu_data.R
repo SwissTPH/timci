@@ -7,6 +7,7 @@
 #' @param wmax numerical, end of the follow-up period (in days)
 #' @param vwmin numerical, start of the follow-up period valid for the statistical analysis (in days)
 #' @param vwmax numerical, end of the follow-up period valid for the statistical analysis (in days)
+#' @param ext boolean, allow to export more information
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
@@ -16,7 +17,8 @@ generate_fu_log <- function(pii,
                             wmin,
                             wmax,
                             vwmin,
-                            vwmax) {
+                            vwmax,
+                            ext = FALSE) {
 
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
@@ -51,6 +53,13 @@ generate_fu_log <- function(pii,
                  'phone_nb3',
                  'location',
                  'cmty_contact')
+  # If ext is set to TRUE, also add the district and facility name
+  if (ext) {
+    col_order <- c('district',
+                   'facility',
+                   col_order)
+  }
+  # Select only a subset of columns
   fu_log <- fu_log[, col_order]
 
   # Order entries by date
@@ -61,20 +70,25 @@ generate_fu_log <- function(pii,
   fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on ", fu_log$date_visit, "]")
 
   # Add a first generic row
-  fu_log <- rbind(data.frame('fid' = 'F0000',
-                             'child_id' = 'X-F0000-P0000',
-                             'label' = 'CHILD NAME',
-                             'sex' = 'SEX',
-                             'date_visit' = 'VALID WINDOW [ENROLMENT DATE]',
-                             'caregiver' = 'CAREGIVER NAME',
-                             'main_cg_lbl' = 'RELATIONSHIP',
-                             'mother' = 'MOTHER NAME',
-                             'phone_nb' = 'PHONE NB 1',
-                             'phone_nb2' = 'PHONE NB 2',
-                             'phone_nb3' = 'PHONE NB 3',
-                             'location' = 'LOCATION',
-                             'cmty_contact' = 'CONTACT'),
-                  fu_log)
+
+  # If ext is set to TRUE, do not add
+  if (!ext) {
+    first_row <- data.frame('fid' = 'F0000',
+                            'child_id' = 'X-F0000-P0000',
+                            'label' = 'CHILD NAME',
+                            'sex' = 'SEX',
+                            'date_visit' = 'VALID WINDOW [ENROLMENT DATE]',
+                            'caregiver' = 'CAREGIVER NAME',
+                            'main_cg_lbl' = 'RELATIONSHIP',
+                            'mother' = 'MOTHER NAME',
+                            'phone_nb' = 'PHONE NB 1',
+                            'phone_nb2' = 'PHONE NB 2',
+                            'phone_nb3' = 'PHONE NB 3',
+                            'location' = 'LOCATION',
+                            'cmty_contact' = 'CONTACT')
+    fu_log <- rbind(first_row,
+                    fu_log)
+  }
 
   fu_log %>% dplyr::rename('name' = 'child_id',
                            'enroldate' = 'date_visit',

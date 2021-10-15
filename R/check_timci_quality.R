@@ -7,7 +7,7 @@
 
 detect_submission_duration <- function(df) {
 
-  # To be defined
+  # Placeholder content to be defined
 
 }
 

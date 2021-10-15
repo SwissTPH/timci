@@ -139,7 +139,7 @@ generate_fu_logs <- function(rctls_pid,
   day7fu_dir <- file.path(fu_dir, "day7_log")
   dir.create(day7fu_dir, showWarnings = FALSE)
 
-  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10)
+  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE)
   timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
 
   # Weekly log
