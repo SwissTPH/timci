@@ -11,6 +11,7 @@
 
 generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()) {
 
+  # Look for the Rmarkdown document in the package file system of the package
   report <- system.file("rmarkdown", rmd_fn, package = "timci")
   if (report == "") {
     stop(paste("Could not find `", rmd_fn, "`. Try re-installing `timci`."), call. = FALSE)

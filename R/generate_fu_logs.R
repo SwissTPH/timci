@@ -139,8 +139,11 @@ generate_fu_logs <- function(rctls_pid,
   day7fu_dir <- file.path(fu_dir, "day7_log")
   dir.create(day7fu_dir, showWarnings = FALSE)
 
-  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE)
+  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = FALSE)
   timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
+
+  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = TRUE)
+  timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_deidentified_day7_fu_weekly_log_all")
 
   # Weekly log
   for (i in 1:nrow(research_facilities)) {
@@ -177,6 +180,15 @@ generate_fu_logs <- function(rctls_pid,
   # Hospitalisation follow-up log #
   #################################
 
+  hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
+  dir.create(hospitfu_dir, showWarnings = FALSE)
+
+  hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                            fu7df = raw_day7fu_data,
+                                            hospitdf = raw_hospit_data,
+                                            deidentify = TRUE)
+  timci::export_df2xlsx(hospit_fu, hospitfu_dir, "02_timci_deidentified_hospit_fu_log_all")
+
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  pii = pii,
@@ -185,7 +197,7 @@ generate_fu_logs <- function(rctls_pid,
                  raw_hospit_data = raw_hospit_data,
                  raw_withdrawal_data = raw_withdrawal_data,
                  fu_end = 12)
-  generate_word_report(fu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+  generate_word_report(hospitfu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
   # Day 28 follow-up log #

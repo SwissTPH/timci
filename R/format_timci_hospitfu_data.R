@@ -26,13 +26,15 @@ format_hospital_data <- function(df) {
 #' @param pii dataframe containing personally identifiable data
 #' @param fu7df dataframe containing day 7 follow-up data
 #' @param hospitdf dataframe containing hospital follow-up data
+#' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
 #' @export
 #' @import magrittr dplyr
 
 generate_hospital_log <- function(pii,
                                   fu7df,
-                                  hospitdf) {
+                                  hospitdf,
+                                  deidentify = FALSE) {
 
   hospit_log <- NULL
   if (!is.null(fu7df)) {
@@ -47,7 +49,8 @@ generate_hospital_log <- function(pii,
                      'dob',
                      'age_mo',
                      'fs_name',
-                     'ls_name')
+                     'ls_name',
+                     'facility')
       rpii <- pii[, col_order]
 
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
@@ -58,24 +61,44 @@ generate_hospital_log <- function(pii,
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
 
           # Order columns
-          col_order <- c('device_id',
-                         'district',
-                         'rhf_loc_id',
-                         'rhf_loc_oth',
-                         'rhf_loc_name',
-                         'rhf_id',
-                         'rhf_oth',
-                         'rhf_name',
-                         'date_hosp_day7',
-                         'child_id',
-                         'label',
-                         'child_name',
-                         'sex',
-                         'dob',
-                         'age_mo',
-                         'fid',
-                         'date_day0',
-                         'date_call')
+          if (deidentify) {
+            col_order <- c('device_id',
+                           'district',
+                           'rhf_loc_id',
+                           'rhf_loc_oth',
+                           'rhf_loc_name',
+                           'rhf_id',
+                           'rhf_oth',
+                           'rhf_name',
+                           'date_hosp_day7',
+                           'child_id',
+                           'sex',
+                           'age_mo',
+                           'fid',
+                           'facility',
+                           'date_day0',
+                           'date_call')
+          } else{
+            col_order <- c('device_id',
+                           'district',
+                           'rhf_loc_id',
+                           'rhf_loc_oth',
+                           'rhf_loc_name',
+                           'rhf_id',
+                           'rhf_oth',
+                           'rhf_name',
+                           'date_hosp_day7',
+                           'child_id',
+                           'label',
+                           'child_name',
+                           'sex',
+                           'dob',
+                           'age_mo',
+                           'fid',
+                           'facility',
+                           'date_day0',
+                           'date_call')
+          }
           hospit_log <- hospit_log[, col_order]
 
           hospit_log <- hospit_log %>% dplyr::rename('name' = 'child_id',

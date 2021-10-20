@@ -98,7 +98,14 @@ if (!is.null(params$pii)) {
 ```
 
 ```{r}
-fu <- timci::generate_fu_log(pii, raw_fu_data, fu_start, fu_end, fu_vstart, fu_vend)
+fu <- timci::generate_fu_log(pii,
+                             raw_fu_data,
+                             fu_start,
+                             fu_end,
+                             fu_vstart,
+                             fu_vend,
+                             ext = FALSE,
+                             deidentify = FALSE)
 fu <- fu %>%
   dplyr::filter(fid == facility_id | fid == "F0000")
 ```

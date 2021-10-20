@@ -8,6 +8,7 @@
 #' @param vwmin numerical, start of the follow-up period valid for the statistical analysis (in days)
 #' @param vwmax numerical, end of the follow-up period valid for the statistical analysis (in days)
 #' @param ext boolean, allow to export more information
+#' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
@@ -18,7 +19,8 @@ generate_fu_log <- function(pii,
                             wmax,
                             vwmin,
                             vwmax,
-                            ext = FALSE) {
+                            ext = FALSE,
+                            deidentify = FALSE) {
 
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
@@ -40,19 +42,27 @@ generate_fu_log <- function(pii,
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
 
   # Order columns
-  col_order <- c('fid',
-                 'child_id',
-                 'label',
-                 'sex',
-                 'date_visit',
-                 'caregiver',
-                 'main_cg_lbl',
-                 'mother',
-                 'phone_nb',
-                 'phone_nb2',
-                 'phone_nb3',
-                 'location',
-                 'cmty_contact')
+  if (deidentify) {
+    col_order <- c('fid',
+                   'child_id',
+                   'sex',
+                   'date_visit',
+                   'main_cg_lbl')
+  } else{
+    col_order <- c('fid',
+                   'child_id',
+                   'label',
+                   'sex',
+                   'date_visit',
+                   'caregiver',
+                   'main_cg_lbl',
+                   'mother',
+                   'phone_nb',
+                   'phone_nb2',
+                   'phone_nb3',
+                   'location',
+                   'cmty_contact')
+  }
   # If ext is set to TRUE, also add the district and facility name
   if (ext) {
     col_order <- c('district',
@@ -72,7 +82,7 @@ generate_fu_log <- function(pii,
   # Add a first generic row
 
   # If ext is set to TRUE, do not add
-  if (!ext) {
+  if (!ext & !deidentify) {
     first_row <- data.frame('fid' = 'F0000',
                             'child_id' = 'X-F0000-P0000',
                             'label' = 'CHILD NAME',
@@ -90,17 +100,21 @@ generate_fu_log <- function(pii,
                     fu_log)
   }
 
-  fu_log %>% dplyr::rename('name' = 'child_id',
-                           'enroldate' = 'date_visit',
-                           'relationship' = 'main_cg_lbl',
-                           'phonenb1' = 'phone_nb',
-                           'phonenb2' = 'phone_nb2',
-                           'phonenb3' = 'phone_nb3',
-                           'contact' = 'cmty_contact')
+  if (!deidentify) {
+    fu_log <- fu_log %>% dplyr::rename('name' = 'child_id',
+                                       'enroldate' = 'date_visit',
+                                       'relationship' = 'main_cg_lbl',
+                                       'phonenb1' = 'phone_nb',
+                                       'phonenb2' = 'phone_nb2',
+                                       'phonenb3' = 'phone_nb3',
+                                       'contact' = 'cmty_contact')
+  }
+
+  fu_log
 
 }
 
-#' Generate follow-up log 2 (TIMCI-specific function)
+#' Generate follow-up log CSV for upload on ODK Central (TIMCI-specific function)
 #'
 #' Generate a list of participants to be called in a time window after baseline between wmin and wmax
 #' @param pii dataframe containing personally identifiable data
@@ -201,31 +215,39 @@ generate_fu_log_csv <- function(pii,
 #' Generate a list of participants who are lost to follow-up after wmax
 #' @param df dataframe
 #' @param fudf dataframe containing the processed follow-up data
-#' @param dltfu numerical, end of the follow-up period (in days)
+#' @param end_date numerical, end of the follow-up period (in days)
+#' @param raw boolean flag for selecting raw (TRUE) or processed (FALSE) data
 #' @return This function returns a dataframe.
 #' @export
 #' @import magrittr dplyr
 
 generate_ltfu_log <- function(df,
                               fudf,
-                              dltfu) {
+                              end_date,
+                              raw = TRUE) {
 
   ltfu_log <- df
-  ltfu_log$date_maxfu <- as.Date(ltfu_log$date_visit) + dltfu
+  ltfu_log$date_maxfu <- as.Date(ltfu_log$date_visit) + end_date
+
+  # If raw data
+  if (raw) {
+    fudf <- fudf %>%
+      dplyr::rename(child_id = "a1-pid",
+                    proceed_day7 = proceed)
+  }
 
   # Exclude children who already underwent successful follow-up
   if (!is.null(fudf)) {
     if (nrow(fudf) > 0) {
       suc_fudf <- fudf %>%
-        dplyr::filter(proceed == 1)
+        dplyr::filter(proceed_day7 == 1)
       un_fudf <- fudf %>%
-        dplyr::filter(proceed == 0) %>%
-        dplyr::rename(child_id = "a1-pid")
+        dplyr::filter(proceed_day7 == 0)
       # Count the number of unsuccessful attempts
       attempt_df <- un_fudf %>%
         group_by(child_id) %>%
         count
-      ltfu_log <- ltfu_log[!(ltfu_log$child_id %in% suc_fudf$'a1-pid'),]
+      ltfu_log <- ltfu_log[!(ltfu_log$child_id %in% suc_fudf$child_id),]
       ltfu_log <- merge(ltfu_log, attempt_df, by = 'child_id', all.x = TRUE) %>%
         dplyr::rename(fu_attempts = n)
     }

@@ -4,14 +4,16 @@
 \alias{generate_ltfu_log}
 \title{Generate lost to follow-up log (TIMCI-specific function)}
 \usage{
-generate_ltfu_log(df, fudf, dltfu)
+generate_ltfu_log(df, fudf, end_date, raw = TRUE)
 }
 \arguments{
 \item{df}{dataframe}
 
 \item{fudf}{dataframe containing the processed follow-up data}
 
-\item{dltfu}{numerical, end of the follow-up period (in days)}
+\item{end_date}{numerical, end of the follow-up period (in days)}
+
+\item{raw}{boolean flag for selecting raw (TRUE) or processed (FALSE) data}
 }
 \value{
 This function returns a dataframe.

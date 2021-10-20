@@ -137,7 +137,10 @@ if (!is.null(params$raw_day7fu_data)) {
 ```
 
 ```{r}
-hospit_fu <- timci::generate_hospital_log(pii, raw_day7fu_data, raw_hospit_data)
+hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                          fu7df = raw_day7fu_data,
+                                          hospitdf = raw_hospit_data,
+                                          deidentify = FALSE)
 ```
 
 ```{r}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_timci_fu_data.R
 \name{generate_fu_log_csv}
 \alias{generate_fu_log_csv}
-\title{Generate follow-up log 2 (TIMCI-specific function)}
+\title{Generate follow-up log CSV for upload on ODK Central (TIMCI-specific function)}
 \usage{
 generate_fu_log_csv(pii, fudf, wmin, wmax, vwmin, vwmax)
 }

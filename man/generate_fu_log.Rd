@@ -4,7 +4,16 @@
 \alias{generate_fu_log}
 \title{Generate follow-up log (TIMCI-specific function)}
 \usage{
-generate_fu_log(pii, fudf, wmin, wmax, vwmin, vwmax, ext = FALSE)
+generate_fu_log(
+  pii,
+  fudf,
+  wmin,
+  wmax,
+  vwmin,
+  vwmax,
+  ext = FALSE,
+  deidentify = FALSE
+)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
@@ -20,6 +29,8 @@ generate_fu_log(pii, fudf, wmin, wmax, vwmin, vwmax, ext = FALSE)
 \item{vwmax}{numerical, end of the follow-up period valid for the statistical analysis (in days)}
 
 \item{ext}{boolean, allow to export more information}
+
+\item{deidentify}{boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)}
 }
 \value{
 This function returns a dataframe.

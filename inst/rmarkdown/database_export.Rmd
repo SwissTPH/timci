@@ -693,6 +693,24 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
+```{r}
+if (!is.null(day7fu_data)) {
+  ltfu <- timci::generate_ltfu_log(df = day0_data,
+                                   fudf = allday7fu_data,
+                                   end_date = 12,
+                                   raw = FALSE)
+}
+```
+
+```{r}
+if (!is.null(locked_day7fu_data)) {
+  locked_ltfu <- timci::generate_ltfu_log(df = locked_day0_data,
+                                          fudf = locked_allday7fu_data,
+                                          end_date = 12,
+                                          raw = FALSE)
+}
+```
+
 ### Data export
 
 ```{r export-RCT-LS-ODK-fu-day7-data, results = 'asis'}
@@ -741,6 +759,22 @@ if (!is.null(day7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
   cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+}
+```
+
+```{r}
+if (!is.null(ltfu)) {
+  fn <- timci::export_df2xlsx(ltfu,
+                              params$rctls_dir,
+                              "04c_day7_lost_to_followup")
+}
+```
+
+```{r}
+if (!is.null(locked_ltfu)) {
+  fn <- timci::export_df2xlsx(locked_ltfu,
+                              lock_rctls_dir,
+                              "04c_day7_lost_to_followup")
 }
 ```
 
