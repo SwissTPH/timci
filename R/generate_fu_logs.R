@@ -142,9 +142,6 @@ generate_fu_logs <- function(rctls_pid,
   fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = FALSE)
   timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
 
-  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = TRUE)
-  timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_deidentified_day7_fu_weekly_log_all")
-
   # Weekly log
   for (i in 1:nrow(research_facilities)) {
     fid <- research_facilities[[i, 'facility_id']]
@@ -182,12 +179,6 @@ generate_fu_logs <- function(rctls_pid,
 
   hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
   dir.create(hospitfu_dir, showWarnings = FALSE)
-
-  hospit_fu <- timci::generate_hospital_log(pii = pii,
-                                            fu7df = raw_day7fu_data,
-                                            hospitdf = raw_hospit_data,
-                                            deidentify = TRUE)
-  timci::export_df2xlsx(hospit_fu, hospitfu_dir, "02_timci_deidentified_hospit_fu_log_all")
 
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,

@@ -778,6 +778,22 @@ if (!is.null(locked_ltfu)) {
 }
 ```
 
+```{r}
+if (!is.null(pii) & !is.null(raw_day7fu_data)) {
+  fu7all <- timci::generate_fu_log(pii,
+                                   raw_day7fu_data,
+                                   0,
+                                   12,
+                                   7,
+                                   10,
+                                   ext = TRUE,
+                                   deidentify = TRUE)
+  timci::export_df2xlsx(fu7all,
+                        params$rctls_dir,
+                        "04d_timci_deidentified_day7_fu_weekly_log_all")
+}
+```
+
 ## Hospitalisation data quality checks
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
@@ -841,7 +857,7 @@ if (!is.null(hospit_data)) {
 ### Data export
 
 ```{r export-RCT-LS-ODK-fu-hospit-data}
-hospit_export_name <- "05_timci_followup_hospit_data"
+hospit_export_name <- "05a_timci_followup_hospit_data"
 if (!is.null(hospit_data)) {
   fn <- timci::export_df2csvxlsx(hospit_data,
                                  params$rctls_dir,
@@ -860,6 +876,17 @@ cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".
 cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 ```
 
+```{r, results = 'asis'}
+if (!is.null(pii) & !is.null(raw_day7fu_data) & !is.null(raw_hospit_data)) {
+  hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                            fu7df = raw_day7fu_data,
+                                            hospitdf = raw_hospit_data,
+                                            deidentify = TRUE)
+  timci::export_df2xlsx(hospit_fu,
+                        params$rctls_dir,
+                        "05b_timci_deidentified_hospit_fu_log_all")
+}
+```
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -1028,6 +1055,22 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat(paste0("* Locked Day 28 data are exported in ", day28_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (!is.null(pii) & !is.null(raw_day28fu_data)) {
+    fu28all <- timci::generate_fu_log(pii,
+                                      raw_day28fu_data,
+                                      0,
+                                      32,
+                                      28,
+                                      32,
+                                      ext = TRUE,
+                                      deidentify = TRUE)
+    timci::export_df2xlsx(fu28all, params$rctls_dir, "06d_timci_day28_fu_weekly_log_all")
+  }
 }
 ```
 
