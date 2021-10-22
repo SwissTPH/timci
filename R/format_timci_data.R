@@ -151,6 +151,12 @@ process_facility_data <- function(df) {
 
   text_field_cols <- c('visit_reason-a3_c_1o',
                        'visit_reason-main_cg_name',
+                       'crfs-t03-m3_5o',
+                       'crfs-t05a-c1_a_11o',
+                       'crfs-t04a-b2_2a_o',
+                       'crfs-t04a-b2_2b_o',
+                       'crfs-t04a-b1_4o',
+                       'crfs-t04a-b2_1o',
                        'crfs-t09a1-h2_2o',
                        'crfs-t09a2-h2_2ao',
                        'crfs-t02b-a4_c_1',
