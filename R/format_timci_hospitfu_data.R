@@ -41,6 +41,8 @@ generate_hospital_log <- function(pii,
     if (nrow(fu7df) > 0) {
 
       day7fu_data <- timci::format_day7_data(fu7df)[[3]]
+
+      # Select children who were indicated as having visited a referral facility structure between Day 0 and Day 7
       hospit_log <- day7fu_data %>% dplyr::filter( (hf_visit_day7 == 1 & hf_visit_type == 1) | (status_day7 == 2) )
 
       col_order <- c('child_id',
