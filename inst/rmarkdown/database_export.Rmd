@@ -218,6 +218,9 @@ screening_data <- screening_data %>%
   merge(facility_device, by = 'device_id', all.x = TRUE) %>%
   dplyr::rename('facility.x' = 'facility',
                 'facility.y' = 'facility_name')
+# Order entries by date
+screening_data <- screening_data %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
 res <- timci::extract_enrolled_participants(facility_data)
 day0_data <- res[[1]]
 pii <- res[[2]]
