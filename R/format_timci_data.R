@@ -507,32 +507,32 @@ count_screening <- function(df) {
                              'consent')
 
   # Above 5 years
-  n_incl1 <- sum(cp$'age_incl' == 0)
+  n_incl1 <- sum(cp$'age_incl' == 0, na.rm = TRUE)
 
   # First day of life
   cp <- cp %>%
     dplyr::filter(cp$'age_incl' == 1)
-  n_excl1 <- sum(cp$'age_excl'  == 1)
+  n_excl1 <- sum(cp$'age_excl'  == 1, na.rm = TRUE)
 
   # Inpatient admission
   cp <- cp %>%
     dplyr::filter(cp$'age_excl' == 0)
-  n_excl3 <- sum(cp$'inpatient' == 1)
+  n_excl3 <- sum(cp$'inpatient' == 1, na.rm = TRUE)
 
   # No illness
   cp <- cp %>%
     dplyr::filter(cp$'inpatient' == 0)
-  n_incl2 <- sum(cp$'sickness' == 0)
+  n_incl2 <- sum(cp$'sickness' == 0, na.rm = TRUE)
 
   # Repeat visit
   cp <- cp %>%
     dplyr::filter(cp$'sickness' == 1)
-  n_rep <- sum(cp$'repeat_consult' == 1)
+  n_rep <- sum(cp$'repeat_consult' == 1, na.rm = TRUE)
 
   # Consent withdrawal
   cp <- cp %>%
     dplyr::filter(cp$'repeat_consult' == 0)
-  n_con <- sum(cp$'consent' == 0)
+  n_con <- sum(cp$'consent' == 0, na.rm = TRUE)
 
   data.frame(group = c("Above 5 years",
                        "First day of life",
