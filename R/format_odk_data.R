@@ -118,7 +118,7 @@ format_text_fields <- function(df, cols) {
   for (c in cols) {
     if (c %in% dfcols) {
       df[[c]] <- stringr::str_replace_all(df[[c]], ",", ";")
-      df[[c]] <- stringr::str_replace_all(df[[c]], "\n", "")
+      df[[c]] <- stringr::str_replace_all(df[[c]], "\n", " ")
     }
   }
   df
@@ -138,7 +138,7 @@ combine_columns <- function(df, cols1, cols2) {
 
   dfcols <- colnames(df)
 
-  for (i in 1:length(cols1)){
+  for (i in 1:length(cols1)) {
     c1 <- cols1[i]
     c2 <- cols2[i]
     if (c1 %in% dfcols) {
