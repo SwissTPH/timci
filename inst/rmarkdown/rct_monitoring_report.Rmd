@@ -464,7 +464,7 @@ if (!is.null(wfa_data) & length(wfa_data) > 0 & nrow(wfa_data) > 0) {
   wfa_data$week <- as.Date(cut(as.Date(wfa_data$date),
                           breaks = "week",
                           start.on.monday = TRUE))
-  ggplot2::ggplot(wfa_data, aes(x = week, y = nb_children_seen)) +
+  ggplot2::ggplot(wfa_data, aes(x = week, y = u5_attendance_last_week)) +
     geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
     ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
                           breaks = "1 week",
