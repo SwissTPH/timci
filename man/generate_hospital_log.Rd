@@ -4,12 +4,14 @@
 \alias{generate_hospital_log}
 \title{Generate hospital follow-up log (TIMCI-specific function)}
 \usage{
-generate_hospital_log(pii, fu7df, hospitdf, deidentify = FALSE)
+generate_hospital_log(pii, fu7df, day0df, hospitdf, deidentify = FALSE)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
 
 \item{fu7df}{dataframe containing day 7 follow-up data}
+
+\item{day0df}{dataframe containing day 0 data}
 
 \item{hospitdf}{dataframe containing hospital follow-up data}
 

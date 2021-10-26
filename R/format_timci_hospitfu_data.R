@@ -25,6 +25,7 @@ format_hospital_data <- function(df) {
 #' Generate a list of participants to be searched for at hospital level
 #' @param pii dataframe containing personally identifiable data
 #' @param fu7df dataframe containing day 7 follow-up data
+#' @param day0df dataframe containing day 0 data
 #' @param hospitdf dataframe containing hospital follow-up data
 #' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
@@ -33,27 +34,33 @@ format_hospital_data <- function(df) {
 
 generate_hospital_log <- function(pii,
                                   fu7df,
+                                  day0df,
                                   hospitdf,
                                   deidentify = FALSE) {
 
   hospit_log <- NULL
+  hospit_log2 <- NULL
+
+  col_order <- c('child_id',
+                 'sex',
+                 'date_visit',
+                 'dob',
+                 'age_mo',
+                 'fs_name',
+                 'ls_name',
+                 'facility')
+  rpii <- pii[, col_order]
+
   if (!is.null(fu7df)) {
     if (nrow(fu7df) > 0) {
 
+      ###############################################################################################################
+      # Select children who visited a referral facility structure between Day 0 and Day 7 - Source: Day 7 follow-up #
+      ###############################################################################################################
+
       day7fu_data <- timci::format_day7_data(fu7df)[[3]]
 
-      # Select children who were indicated as having visited a referral facility structure between Day 0 and Day 7
       hospit_log <- day7fu_data %>% dplyr::filter( (hf_visit_day7 == 1 & hf_visit_type == 1) | (status_day7 == 2) )
-
-      col_order <- c('child_id',
-                     'sex',
-                     'date_visit',
-                     'dob',
-                     'age_mo',
-                     'fs_name',
-                     'ls_name',
-                     'facility')
-      rpii <- pii[, col_order]
 
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
       if (!is.null(hospit_log)) {
@@ -61,6 +68,7 @@ generate_hospital_log <- function(pii,
           hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
           hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " ", hospit_log$rhf_name, " - ", hospit_log$rhf_loc_name, ")")
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
+          hospit_log$date_day0 <- as.Date(hospit_log$date_day0, format = "%Y-%m-%d")
 
           # Order columns
           if (deidentify) {
@@ -110,37 +118,97 @@ generate_hospital_log <- function(pii,
         }
       }
 
-      # Exclude children who already underwent successful hospital follow-up
-      if (!is.null(hospitdf)) {
-        if (nrow(hospitdf) > 0) {
-          hospit_data <- timci::format_hospital_data(hospitdf)
-          #hospit_data <- hospit_data %>% dplyr::filter(found == 1)
-          hospit_log <- hospit_log[!(hospit_log$name %in% hospit_data$child_id),]
+      #############################################################################
+      # Select children who were referred at Day 0 and lost to follow-up at Day 7 #
+      #############################################################################
+
+      # Lost to follow-up at Day 7
+      ltfu_df <- timci::generate_ltfu_log(df = day0df,
+                                          fudf = day7fu_data,
+                                          end_date = 12,
+                                          raw = FALSE)
+
+      hospit_log2 <- ltfu_df %>% dplyr::filter( referral_cg == 1 | referral_hf == 1 )
+      col_order <- c('child_id',
+                     'fs_name',
+                     'ls_name',
+                     'dob',
+                     'sex')
+      rpii2 <- rpii[, col_order]
+
+      hospit_log2 <- merge(hospit_log2, rpii2, by = "child_id")
+
+      if (!is.null(hospit_log2)) {
+        if (nrow(hospit_log2) > 0) {
+          hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ls_name)
+          hospit_log2$label <- paste0(hospit_log2$child_name)
+          hospit_log2$sex <- ifelse(hospit_log2$sex == 1, "male", ifelse(hospit_log2$sex == 2, "female", "other"))
+          hospit_log2$date_visit <- as.Date(hospit_log2$date_visit, format = "%Y-%m-%d")
+          hospit_log2$ref_facility <- as.character(hospit_log2$ref_facility)
+
+          # Order columns
+          if (deidentify) {
+            col_order <- c('date_visit',
+                           'device_id',
+                           'district',
+                           'referral_cg',
+                           'referral_hf',
+                           'urg_referral_hf',
+                           'ref_facility',
+                           'ref_facility_oth',
+                           'child_id',
+                           'sex',
+                           'age_mo',
+                           'fid',
+                           'facility')
+          } else{
+            col_order <- c('date_visit',
+                           'device_id',
+                           'district',
+                           'referral_cg',
+                           'referral_hf',
+                           'urg_referral_hf',
+                           'ref_facility',
+                           'ref_facility_oth',
+                           'child_id',
+                           'label',
+                           'child_name',
+                           'sex',
+                           'dob',
+                           'age_mo',
+                           'fid',
+                           'facility')
+          }
+          hospit_log2 <- hospit_log2[, col_order]
+
+          hospit_log2 <- hospit_log2 %>% dplyr::rename('name' = 'child_id',
+                                                       'enroldate' = 'date_visit',
+                                                       'rhf_id' = 'ref_facility',
+                                                       'rhf_oth' = 'ref_facility_oth')
         }
       }
 
     }
   }
 
-  "
-  # Add a first generic row
-  hospit_log <- rbind(data.frame('fid' = 'F0000',
-                                 'device_id' = 'none',
-                                 'child_id' = 'X-F0000-P0000',
-                                 'child_name' = 'CHILD NAME',
-                                 'sex' = 'SEX',
-                                 'date_visit' = 'ENROLMENT DATE',
-                                 'caregiver' = 'CAREGIVER NAME',
-                                 'main_cg_lbl' = 'RELATIONSHIP',
-                                 'mother' = 'MOTHER NAME',
-                                 'phone_nb' = 'PHONE NB 1',
-                                 'phone_nb2' = 'PHONE NB 2',
-                                 'phone_nb3' = 'PHONE NB 3',
-                                 'location' = 'LOCATION',
-                                 'cmty_contact' = 'CONTACT',
-                                 'label' = 'CHILD NAME (VALID WINDOW)'),
-                      hospit_log)
-  "
+  if (!is.null(hospit_log2)) {
+    if (nrow(hospit_log2) > 0) {
+      if (!is.null(hospit_log)) {
+        hospit_log <- dplyr::bind_rows(hospit_log, hospit_log2)
+      } else{
+        hospit_log <- hospit_log2
+      }
+    }
+  }
+
+  # Exclude children who already underwent hospital follow-up
+  if (!is.null(hospitdf)) {
+    if (nrow(hospitdf) > 0) {
+      hospit_data <- timci::format_hospital_data(hospitdf)
+      hospit_log <- hospit_log[!(hospit_log$name %in% hospit_data$child_id),]
+    }
+  }
+
   hospit_log
 
 }

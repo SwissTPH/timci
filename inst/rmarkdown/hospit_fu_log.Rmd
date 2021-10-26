@@ -6,6 +6,7 @@ params:
   output_dir: !r tempdir()
   rct_ls_form_list: NULL
   pii: NULL
+  day0_data: NULL
   rctls_pid: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
@@ -35,6 +36,7 @@ crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
 if (!is.null(params$raw_day7fu_data)) {
   
   pii <- params$pii
+  day0_data <- params$day0_data
   rctls_pid <- params$rctls_pid
   rct_ls_form_list <- params$rct_ls_form_list
   raw_day7fu_data <- params$raw_day7fu_data
@@ -43,95 +45,7 @@ if (!is.null(params$raw_day7fu_data)) {
   
 } else {
 
-  ################
-  # Set up ruODK #
-  ################
-
-  ruODK::ru_setup(
-    svc = Sys.getenv("ODKC_SVC"),
-    un = Sys.getenv("ODKC_UN"),
-    pw = Sys.getenv("ODKC_PW"),
-    tz = Sys.getenv("TZ"),
-    verbose = TRUE # Can be switched to TRUE for demo or debugging
-  )
-
-  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
-  odkc_project_list <- ruODK::project_list()$id
-  wd_fid <- Sys.getenv("TIMCI_WD_FID")
-
-  # RCT / LS environment variables
-  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-  
-  rctls_pid <- Sys.getenv("TIMCI_PILOT_RCTLS_PID")
-  rctls_pp <- Sys.getenv("TIMCI_PILOT_RCTLS_PP")
-
-  #######################
-  # Load TIMCI ODK data #
-  #######################
-
-  # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
-
-  # Load facility data
-  print("Load facility data")
-
-  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_facility_fid,
-                                               pp = rctls_pp)
-  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
-                                                        paste0(crf_facility_fid,".csv"),
-                                                        start_date = as.Date("2021-07-05"),
-                                                        end_date = NULL)
-  facility_data <- timci::process_facility_data(raw_facility_data)
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-
-  # Load day 7 follow-up data
-  print("Load day 7 follow-up data")
-  raw_day7fu_data <- NULL
-  if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_day7_fid,
-                                               pp = rctls_pp,
-                                               media = FALSE)
-    raw_day7fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip,
-                                                        paste0(crf_day7_fid,".csv"),
-                                                        start_date = as.Date("2021-07-05"),
-                                                        end_date = NULL)
-    ltfu <- timci::generate_fu_log(pii, raw_day7fu_data, fu_end + 1, 100000, fu_end + 1, 100000)
-  }
-  
-  # Load hospital visit follow-up data
-  print("Load hospital visit data")
-  raw_hospit_data <- NULL
-  if (crf_hospit_fid %in% rct_ls_form_list) {
-    raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_hospit_fid,
-                                               pp = rctls_pp,
-                                               media = FALSE)
-    raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip,
-                                                        paste0(crf_hospit_fid,".csv"),
-                                                        start_date = as.Date("2021-07-05"),
-                                                        end_date = NULL)
-  }
-
-  # Load widthdrawal data
-  print("Load withdrawal data")
-  raw_withdrawal_data <- NULL
-  if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                   pid = rctls_pid,
-                                                   fid = wd_fid,
-                                                   pp = rctls_pp,
-                                                   media = FALSE)
-    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                            paste0(wd_fid,".csv"),
-                                                            start_date = as.Date("2021-07-05"),
-                                                            end_date = NULL)
-  }
+  print("Please load data first")
   
 }
 ```
@@ -139,23 +53,10 @@ if (!is.null(params$raw_day7fu_data)) {
 ```{r}
 hospit_fu <- timci::generate_hospital_log(pii = pii,
                                           fu7df = raw_day7fu_data,
+                                          day0df = day0_data,
                                           hospitdf = raw_hospit_data,
                                           deidentify = FALSE)
 ```
-
-```{r}
-"
-day7fu <- NULL
-if (!is.null(raw_hospit_data)) {
-  if (nrow(raw_hospit_data) > 0) {
-    day7fu <- timci::generate_fu_log(params$pii, raw_hospit_data, 7, 9)
-    day7lost <- timci::generate_fu_log(params$pii, raw_hospit_data, 10, 2000)
-    tmp <- timci::export_df2xlsx(day7lost, params$output_dir, 'hospit_lost_to_followup')
-  }
-}
-"
-```
-
 ```{r}
 dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
 csvh_fname <- file.path(output_dir, "odk_external_files", "higher_level_visits.csv")

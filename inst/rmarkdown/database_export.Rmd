@@ -806,6 +806,16 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
+```{r}
+if (!is.null(pii)) {
+  hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                            fu7df = raw_day7fu_data,
+                                            day0df = day0_data,
+                                            hospitdf = raw_hospit_data,
+                                            deidentify = TRUE)
+}
+```
+
 ```{r, results = 'asis'}
 cat(paste0("There are ", nrow(hospit_data), " records in the raw hospitalisation follow-up database."))
 ```
@@ -879,16 +889,17 @@ cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".
 cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 ```
 
-```{r, results = 'asis'}
-if (!is.null(pii) & !is.null(raw_day7fu_data) & !is.null(raw_hospit_data)) {
-  hospit_fu <- timci::generate_hospital_log(pii = pii,
-                                            fu7df = raw_day7fu_data,
-                                            hospitdf = raw_hospit_data,
-                                            deidentify = TRUE)
+```{r}
+if (!is.null(hospit_fu)) {
+  hospit_fu_export_name <- "05b_timci_deidentified_hospit_fu_log_all"
   timci::export_df2xlsx(hospit_fu,
                         params$rctls_dir,
-                        "05b_timci_deidentified_hospit_fu_log_all")
+                        hospit_fu_export_name)
 }
+```
+
+```{r, results = 'asis'}
+cat(paste0("* Hospitalisation log is exported in ", hospit_fu_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 ```
 
 ```{r, results = 'asis'}
