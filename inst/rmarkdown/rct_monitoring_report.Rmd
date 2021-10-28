@@ -143,7 +143,7 @@ end_date <- NULL
 if (nrow(facility_data) > 0) {
   start_date <- min(facility_data$date_visit)
   end_date <- max(facility_data$date_visit)
-  week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
+  week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1, units = "weeks"))
   days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** (semaine **", week_nb, "** de l'étude) pour le **Sénégal**."))
@@ -451,6 +451,17 @@ if (!is.null(baseline_data) & length(baseline_data) > 0 & nrow(baseline_data) > 
 }
 ```
 
+```{r, results='asis'}
+baseline_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data$date_visit),
+                                            "week",
+                                            week_start = getOption("lubridate.week.start", 1))) %>%
+  dplyr::group_by(week) %>%
+  dplyr::tally() %>%
+  dplyr::rename('N' = 'n') %>%
+  knitr::kable()
+```
+
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("### Fréquentation hebdomadaire des postes\n\n")
@@ -466,9 +477,9 @@ if (!is.null(wfa_data) & length(wfa_data) > 0 & nrow(wfa_data) > 0) {
                           start.on.monday = TRUE))
   ggplot2::ggplot(wfa_data, aes(x = week, y = u5_attendance_last_week)) +
     geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
-    ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
+    ggplot2::scale_x_date(limits = c(as.Date(as.Date(start_date) - 7), as.Date(Sys.Date() + 1)),
                           breaks = "1 week",
-                          date_labels = "%y.%m.%d") +
+                          date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),

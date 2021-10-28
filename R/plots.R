@@ -256,6 +256,9 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
   week_vec <- as.Date(cut(as.Date(date_vec),
                           breaks = "week",
                           start.on.monday = TRUE))
+  wdate_min <- as.Date(cut(as.Date(date_min - 7),
+                           breaks = "week",
+                           start.on.monday = TRUE))
   # Count elements
   counts <- aggregate(week_vec, by = list(week_vec), FUN = length)
   if (relative) {
@@ -267,7 +270,7 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
     geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
     ylab(ylbl) +
     xlab("Date") +
-    ggplot2::scale_x_date(limits = c(date_min, date_max),
+    ggplot2::scale_x_date(limits = c(wdate_min, date_max),
                           breaks = "1 week",
                           date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
