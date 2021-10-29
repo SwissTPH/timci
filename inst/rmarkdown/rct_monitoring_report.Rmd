@@ -748,7 +748,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("## Informed consent\n\n"))
 }
 
-all <- all %>% filter(prev_enrl == 3 | prev_enrl == 98)
+all <- all %>% filter((prev_enrl == 3 | prev_enrl == 98) | ((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0))
 
 consent_statistics <- list(
   "Facility" = list(
