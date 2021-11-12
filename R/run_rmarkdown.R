@@ -178,6 +178,20 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     'crfs-t05b-c3_6' = col_integer(),
     'crfs-t05b-c3_6o' = col_character()
   )
+
+  # SANITY CHECK
+  t <- tempdir()
+  utils::unzip(raw_facility_zip, exdir = t)
+  fs::dir_ls(t)
+  if (!is.null(col_specs)) {
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")), col_types = col_specs))
+  } else{
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv"))))
+  }
+  fn <- timci::export_df2xlsx(raw_odk_data,
+                              mdb_dir,
+                              "01a_screening_raw")
+
   raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
