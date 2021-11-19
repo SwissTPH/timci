@@ -33,6 +33,12 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 ### Prerequisites 
 You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `emayili`, `tinytex`.
 
+`ruODK`, `tinytex` and `emayili` require specific installations (see clarifications below). All other packages can be installed using `install.packages`.
+
+```r
+install.packages("hash")
+```
+
 #### ruODK
 To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
 
@@ -57,6 +63,17 @@ tinytex::install_tinytex()
 
 ### emayili
 This package is required to send emails using a gmail address.
+The function `send_email_tls` in the `timci` package requires `emayili v0.6.5` and above to work correctly.
+
+To know what version of the `emayili` package is installed on your computer, please proceed as follow:
+```r
+packageVersion("emayili")
+```
+
+If the version number is below `0.6.5`, please install the package from the master branch:
+```r
+remotes::install_github("datawookie/emayili")
+```
 
 ### Installation of timci from GitHub
 To install the `timci` package on your workstation, you can
