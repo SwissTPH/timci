@@ -167,7 +167,7 @@ generate_fu_logs <- function(rctls_pid,
                  fu_fid = crf_day7_fid,
                  raw_fu_data = raw_day7fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
-                 fu_start = 6,
+                 fu_start = 7,
                  fu_end = 12,
                  fu_vstart = 7,
                  fu_vend = 10)

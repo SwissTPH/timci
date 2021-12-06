@@ -57,6 +57,7 @@ hospit_fu <- timci::generate_hospital_log(pii = pii,
                                           hospitdf = raw_hospit_data,
                                           deidentify = FALSE)
 ```
+
 ```{r}
 dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
 csvh_fname <- file.path(output_dir, "odk_external_files", "higher_level_visits.csv")

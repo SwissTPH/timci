@@ -69,6 +69,7 @@ generate_hospital_log <- function(pii,
           hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " ", hospit_log$rhf_name, " - ", hospit_log$rhf_loc_name, ")")
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
           hospit_log$date_day0 <- as.Date(hospit_log$date_day0, format = "%Y-%m-%d")
+          hospit_log$rhf_id <- as.character(hospit_log$rhf_id)
 
           # Order columns
           if (deidentify) {
