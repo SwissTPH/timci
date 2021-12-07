@@ -114,3 +114,29 @@ match_from_xls_dict <- function(df, xls_dict) {
   df <- match_from_dict(df, dictionary)
 
 }
+
+#' Format string to header of level H1 for printing in console
+#'
+#' This function formats an input string `s` for printing as a header of level H1 in an output console
+#'
+#' @param s String
+#' @export
+
+formats2h1 <- function(s) {
+
+  paste0("\n==============================================\n ", s, "\n==============================================\n")
+
+}
+
+#' Format string to header of level H2 for printing in console
+#'
+#' This function formats an input string `s` for printing as a header of level H2 in an output console
+#'
+#' @param s String
+#' @export
+
+formats2h2 <- function(s) {
+
+  paste0("\t\n----------------------------------------------\n ", s, "\n----------------------------------------------\n")
+
+}

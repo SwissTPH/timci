@@ -22,7 +22,9 @@ run_rmarkdown_reportonly(
   start_date = NULL,
   end_date = NULL,
   spa_start_date = NULL,
-  lock_date = NULL
+  lock_date = NULL,
+  cost_pid = NULL,
+  cost_dir = NULL
 )
 }
 \arguments{
@@ -30,7 +32,7 @@ run_rmarkdown_reportonly(
 
 \item{rctls_pp}{Passphrase}
 
-\item{spa_pid}{Numeric ID of the SPA / time-flow ODK Central project}
+\item{spa_pid}{Numeric ID of the SPA / time-flow / process mapping ODK Central project}
 
 \item{qpid}{Numeric ID of the qualitative ODK Central project}
 
@@ -50,17 +52,21 @@ run_rmarkdown_reportonly(
 
 \item{qual2_dir}{Path to the output folder for the healthcare provider IDI exports}
 
-\item{spa_db_dir}{Path to the output folder for the SPA database exports}
+\item{spa_db_dir}{Path to the output folder for the SPA / time-flow / process mapping database exports}
 
 \item{path_dir}{Path to the output folder for the M&E exports to be shared with PATH}
 
-\item{start_date}{RCT/LS data collection start date}
+\item{start_date}{RCT/LS data collection start date (optional)}
 
-\item{end_date}{RCT/LS data collection end date}
+\item{end_date}{RCT/LS data collection end date (optional)}
 
-\item{spa_start_date}{SPA data collection start date}
+\item{spa_start_date}{SPA data collection start date (optional)}
 
-\item{lock_date}{RCT/LS data collection cleaning end date (for database lock)}
+\item{lock_date}{RCT/LS data collection cleaning end date for database lock (optional)}
+
+\item{cost_pid}{Numeric ID of the cost and cost-effectiveness ODK Central project (optional)}
+
+\item{cost_dir}{Path to the output folder for the cost and cost effectiveness database exports (optional)}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

@@ -4,7 +4,8 @@
 #'
 #' @param rctls_pid Numeric ID of the RCT/LS ODK Central project
 #' @param rctls_pp Passphrase
-#' @param spa_pid Numeric ID of the SPA / time-flow ODK Central project
+#' @param spa_pid Numeric ID of the SPA / time-flow / process mapping ODK Central project
+#' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project (optional)
 #' @param qpid Numeric ID of the qualitative ODK Central project
 #' @param qual_pp Passphrase
 #' @param research_facilities Dataframe that contains the research facilities
@@ -14,12 +15,13 @@
 #' @param fu_dir Path to the output folder for the follow-up exports
 #' @param qual1_dir Path to the output folder for the caregiver IDI exports
 #' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
-#' @param spa_db_dir Path to the output folder for the SPA database exports
+#' @param spa_db_dir Path to the output folder for the SPA / time-flow / process mapping database exports
+#' @param cost_dir Path to the output folder for the cost and cost effectiveness database exports (optional)
 #' @param path_dir Path to the output folder for the M&E exports to be shared with PATH
-#' @param start_date RCT/LS data collection start date
-#' @param end_date RCT/LS data collection end date
-#' @param spa_start_date SPA data collection start date
-#' @param lock_date RCT/LS data collection cleaning end date (for database lock)
+#' @param start_date RCT/LS data collection start date (optional)
+#' @param end_date RCT/LS data collection end date (optional)
+#' @param spa_start_date SPA data collection start date (optional)
+#' @param lock_date RCT/LS data collection cleaning end date for database lock (optional)
 #' @import rmarkdown ruODK
 #' @export
 
@@ -40,7 +42,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      start_date = NULL,
                                      end_date = NULL,
                                      spa_start_date = NULL,
-                                     lock_date = NULL) {
+                                     lock_date = NULL,
+                                     cost_pid = NULL,
+                                     cost_dir = NULL) {
+
 
   if (is.null(spa_start_date)) {
     spa_start_date = start_date
@@ -49,6 +54,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   ################
   # Set up ruODK #
   ################
+
+  write(formats2h1("Connection to ODK Central through ruODK"), stderr())
 
   ruODK::ru_setup(
     svc = Sys.getenv("ODKC_SVC"),
@@ -62,6 +69,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Only list projects visible with the credentials `ODKC_UN` and `ODKC_PW`
   odkc_project_list <- ruODK::project_list()$id
 
+  # Environment variables which may be shared between different projects ---------------------------
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
   problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
 
@@ -80,6 +88,11 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
   hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
   tf_fid <- Sys.getenv("TIMCI_TF_FID")
+  pm_fid <- Sys.getenv("TIMCI_PM_FID")
+
+  # Cost environment variables ---------------------------
+  medical_cost_fid <- Sys.getenv("TIMCI_COST_MEDICAL_FID")
+  hospital_cost_fid <- Sys.getenv("TIMCI_COST_HOSPITAL_FID")
 
   # Qualitative environment variables ---------------------------
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
@@ -90,6 +103,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Load TIMCI ODK data #
   #######################
 
+  write(formats2h1("Load TIMCI ODK data"), stderr())
+
   # List RCT/LS forms ---------------------------
   rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
 
@@ -99,14 +114,22 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
   }
 
+  # List cost forms ---------------------------
+  cost_form_list <- NULL
+  if (!is.null(cost_pid)) {
+    if (cost_pid %in% odkc_project_list) {
+      cost_form_list <- ruODK::form_list(pid = cost_pid)$fid
+    }
+  }
+
   # List qualitative forms ---------------------------
   qual_form_list <- NULL
   if (qpid %in% odkc_project_list) {
     qual_form_list <- ruODK::form_list(pid = qpid)$fid
   }
 
-  # Load facility data
-  print("Load facility data")
+  # Load facility data ---------------------------
+  write(formats2h2("Load RCT/LS facility data"), stderr())
 
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
@@ -179,7 +202,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     'crfs-t05b-c3_6o' = col_character()
   )
 
-  # SANITY CHECK
+  # SANITY CHECK: export raw LS/RCT data from ODK
   t <- tempdir()
   utils::unzip(raw_facility_zip, exdir = t)
   fs::dir_ls(t)
@@ -203,11 +226,11 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     facility_data <- timci::process_facility_data(raw_facility_data)
   }
 
-  # Copy audit trail in folder
+  # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
   facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid, " - audit.csv"))
 
   # Load day 7 follow-up data
-  print("Load day 7 follow-up data")
+  write("Load day 7 follow-up data", stderr())
   raw_day7fu_data <- NULL
   if (crf_day7_fid %in% rct_ls_form_list) {
     raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -222,7 +245,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load hospital visit follow-up data
-  print("Load hospital visit data")
+  write("Load hospital visit data", stderr())
   raw_hospit_data <- NULL
   if (crf_hospit_fid %in% rct_ls_form_list) {
     raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -236,10 +259,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                         end_date)
   }
 
-  # Load day 28 follow-up data
+  # [Tanzania and India only] Load day 28 follow-up data
   raw_day28fu_data <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    print("Load day 28 follow-up data")
+    write("Load day 28 follow-up data", stderr())
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                   pid = rctls_pid,
@@ -254,7 +277,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load widthdrawal data
-  print("Load withdrawal data")
+  write("Load withdrawal data", stderr())
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
     raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -269,7 +292,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load weekly facility assessment data
-  print("Load weekly facility assessment data")
+  write("Load weekly facility assessment data", stderr())
   wfa_data <- NULL
   if (crf_wfa_fid %in% rct_ls_form_list) {
     raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -301,18 +324,22 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                          end_date)
   }
 
-  # Load SPA data
+  # Load SPA data ---------------------------
+
+  write("Load TIMCI SPA data", stderr())
+
   spa_cgei_data <- NULL
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
   tf_data <- NULL
   tf_data_full <- NULL
+  pm_data <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
     # Load SPA caregiver exit interview data
-    print("Load SPA caregiver exit interview data")
+    write("Load SPA caregiver exit interview data", stderr())
     if (cgei_fid %in% spa_form_list) {
       raw_spa_cgei_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                    pid = spa_pid,
@@ -369,20 +396,70 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
                                              pid = spa_pid,
                                              fid = tf_fid,
-                                             media = FALSE)
+                                             media = TRUE)
       tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip,
                                                   paste0(tf_fid,".csv"),
                                                   spa_start_date,
                                                   end_date)
-      # To improve with a constraint of no submission
+      # Extract time-flow audit and single steps
       tf_data_audit <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, " - audit.csv"))
       tf_data_steps <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, "-steps.csv"))
       tf_data_full <- list(tf_data, tf_data_audit, tf_data_steps)
     }
 
+    # Load process-mapping data
+    print("Load time-flow data")
+    if (pm_fid %in% spa_form_list) {
+      raw_pm_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                             pid = spa_pid,
+                                             fid = pm_fid,
+                                             media = FALSE)
+      pm_data <- timci::extract_data_from_odk_zip(raw_pm_zip,
+                                                  paste0(pm_fid,".csv"),
+                                                  spa_start_date,
+                                                  end_date)
+    }
+
   }
 
-  # Load qualitative data
+  # Load cost data ---------------------------
+  medical_cost_data <- NULL
+  hospital_cost_data <- NULL
+
+  if (!is.null(cost_pid)) {
+    if (cost_pid %in% odkc_project_list) {
+
+      # Load medical cost data
+      write("Load medical cost data", stderr())
+
+      if (medical_cost_fid %in% cost_form_list) {
+        medical_cost_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                     pid = cost_pid,
+                                                     fid = medical_cost_fid,
+                                                     media = FALSE)
+        medical_cost_data <- timci::extract_data_from_odk_zip(medical_cost_zip,
+                                                              paste0(medical_cost_fid,".csv"),
+                                                              spa_start_date,
+                                                              end_date)
+      }
+
+      # Load hospital cost data
+      write("Load hospital cost data", stderr())
+      if (hospital_cost_fid %in% cost_form_list) {
+        hospital_cost_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                      pid = cost_pid,
+                                                      fid = hospital_cost_fid,
+                                                      media = FALSE)
+        hospital_cost_data <- timci::extract_data_from_odk_zip(hospital_cost_zip,
+                                                               paste0(hospital_cost_fid,".csv"),
+                                                               spa_start_date,
+                                                               end_date)
+      }
+
+    }
+  }
+
+  # Load qualitative data ---------------------------
   cgidi_invitation_data <- NULL
   cgidi_encryption_data <- NULL
   cgidi_interview_data <- NULL
@@ -438,6 +515,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  research_facilities = research_facilities,
                  participant_zip = participant_zip,
                  spa_dir = spa_db_dir,
+                 cost_dir = cost_dir,
                  qual1_dir = qual1_dir,
                  facility_data = facility_data,
                  lock_date = lock_date,
@@ -452,6 +530,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  spa_hcpi_data = spa_hcpi_data,
                  spa_sco_data = spa_sco_data,
                  tf_data = tf_data_full,
+                 pm_data = pm_data,
+                 medical_cost_data = medical_cost_data,
+                 hospital_cost_data = hospital_cost_data,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data,

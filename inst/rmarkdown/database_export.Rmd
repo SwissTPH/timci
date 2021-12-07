@@ -18,6 +18,7 @@ params:
   participant_zip: !r file.path(tempdir(),"participants.zip")
   spa_dir: !r tempdir()
   qual1_dir: !r tempdir()
+  cost_dir: !r tempdir()
   facility_data: NULL
   lock_date: NULL
   facility_data_audit: NULL
@@ -31,6 +32,9 @@ params:
   spa_hcpi_data: NULL
   spa_sco_data: NULL
   tf_data: NULL
+  pm_data: NULL
+  medical_cost_data: NULL
+  hospital_cost_data: NULL
   cgidi_invitation_data: NULL
   cgidi_encryption_data: NULL
   cgidi_interview_data: NULL
@@ -55,6 +59,7 @@ lock_rctls_dir <- file.path(params$rctls_dir, "locked")
 dir.create(lock_rctls_dir, showWarnings = FALSE)
 
 qual1_dir <- params$qual1_dir
+cost_dir <- params$cost_dir
 
 research_facilities <- params$research_facilities
 
@@ -72,41 +77,12 @@ if (!is.null(params$facility_data)) {
   spa_hcpi_data <- params$spa_hcpi_data
   spa_sco_data <- params$spa_sco_data
   tf_data <- params$tf_data
+  pm_data <- params$pm_data
+  medical_cost_data <- params$medical_cost_data
+  hospital_cost_data <- params$hospital_cost_data
   cgidi_invitation_data <- params$cgidi_invitation_data
   cgidi_encryption_data <- params$cgidi_encryption_data
   cgidi_interview_data <- params$cgidi_interview_data
-  
-} else {
-  
-  lock_date <- "2021-08-13"
-  facility_data_audit <- NULL
-  
-  # Facility data
-  raw_facility_csv <- "C://Users//langhe//Documents//Tanzania//raw_data//01a-TIMCI-CRF-Facility.csv"
-  raw_facility_data <- readr::with_edition(1, readr::read_csv(raw_facility_csv))
-  raw_facility_data <- timci::format_odk_metadata(raw_facility_data, "2021-07-05")
-  facility_data <- timci::process_facility_data(raw_facility_data)
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-  
-  # Withdrawal data
-  raw_withdrawal_csv <- "C://Users//langhe//Documents//Tanzania//raw_data//99-TIMCI-withdrawal.csv"
-  raw_withdrawal_data <- readr::with_edition(1, readr::read_csv(raw_withdrawal_csv))
-  raw_withdrawal_data <- timci::format_odk_metadata(raw_withdrawal_data, "2021-07-05")
-  
-  # Day 7 follow-up data
-  raw_day7fu_csv <- "C://Users//langhe//Documents//Tanzania//raw_data//01c-TIMCI-CRF-Day7.csv"
-  raw_day7fu_data <- readr::with_edition(1, readr::read_csv(raw_day7fu_csv))
-  raw_day7fu_data <- timci::format_odk_metadata(raw_day7fu_data, "2021-07-05")
-  
-  # Day 28 follow-up data
-  raw_day28fu_csv <- "C://Users//langhe//Documents//Tanzania//raw_data//01d-TIMCI-CRF-fu-Day28.csv"
-  raw_day28fu_data <- readr::with_edition(1, readr::read_csv(raw_day28fu_csv))
-  raw_day28fu_data <- timci::format_odk_metadata(raw_day28fu_data, "2021-07-05")
-  
-  # Sick child observation protocol data
-  spa_sco_csv <- "C://Users//langhe//Documents//Tanzania//raw_data//05a-TIMCI-SPA-sco.csv"
-  spa_sco_data <- readr::with_edition(1, readr::read_csv(spa_sco_csv))
-  spa_sco_data <- timci::format_odk_metadata(spa_sco_data, "2021-07-05")
   
 }
 ```
@@ -1423,8 +1399,51 @@ if (!is.null(tf_data)) {
 ```
 
 ```{r, results = 'asis'}
-if (!is.null(spa_hcpi_data)) {
+if (!is.null(tf_data)) {
   cat(paste0("* Raw time-flow data are exported in ", "05a_timci_timeflow_data", ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+## Process mapping
+
+```{r process-mapping-export}
+pm_export_name <- "06_timci_processmapping_data"
+if (!is.null(pm_data)) {
+  fn <- timci::export_df2csvxlsx(pm_data,
+                                 params$spa_dir,
+                                 pm_export_name)
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(pm_data)) {
+  cat(paste0("* Raw process mapping data are exported in ", pm_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+\newpage
+
+# Cost & Cost-effectiveness
+
+## Medical costs
+
+```{r medical-cost-export}
+medical_cost_export_name <- "01_timci_medical_cost_data"
+if (!is.null(medical_cost_data)) {
+  fn <- timci::export_df2csvxlsx(medical_cost_data,
+                                 cost_dir,
+                                 medical_cost_export_name)
+}
+```
+
+## Hospital costs
+
+```{r hospital-cost-export}
+hospital_cost_export_name <- "02_timci_hospital_cost_data"
+if (!is.null(hospital_cost_data)) {
+  fn <- timci::export_df2csvxlsx(hospital_cost_data,
+                                 cost_dir,
+                                 hospital_cost_export_name)
 }
 ```
 
