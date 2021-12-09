@@ -31,12 +31,6 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 * [Link to download RStudio](https://rstudio.com/products/rstudio/download/#download)
 
 ### Prerequisites 
-You need to have the following R packages installed: `ruODK`, `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `emayili`, `tinytex`.
-
-`ruODK`, `tinytex` and `emayili` require specific installations (see clarifications below). All other packages can be installed as follow:
-```r
-install.packages("hash")
-```
 
 #### ruODK
 To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
@@ -72,6 +66,29 @@ packageVersion("emayili")
 If the version number is below `0.6.5`, please install the package from the master branch:
 ```r
 remotes::install_github("datawookie/emayili")
+```
+#### Other R dependencies
+
+You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`.
+
+All these packages can be installed using the function `install.packages`:
+```r
+install.packages("hash")
+install.packages("shiny")
+install.packages("qrcode")
+install.packages("readxl")
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("viridis")
+install.packages("pryr")
+install.packages("flexdashboard")
+install.packages("magrittr")
+install.packages("scales")
+install.packages("tidyr")
+install.packages("DT")
+install.packages("data.table")
+install.packages("openxslx")
+install.packages("rmarkdown")
 ```
 
 ### Installation of timci from GitHub
