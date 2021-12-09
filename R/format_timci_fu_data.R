@@ -251,6 +251,8 @@ generate_ltfu_log <- function(df,
       ltfu_log <- merge(ltfu_log, attempt_df, by = 'child_id', all.x = TRUE) %>%
         dplyr::rename(fu_attempts = n)
     }
+  } else{
+    ltfu_log$fu_attempts <- 0
   }
 
   # Exclude children who are still within or before the follow-up window period
