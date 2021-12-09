@@ -37,7 +37,8 @@ For Windows users, it is smoother to install 1) Rtools, 2) R and 3) RStudio in t
 #### ruODK
 To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
 
-When trying to upgrade RuODK, if you encounter difficulties to upgrade some of the dependencies (e.g., `sf` package), you can switch dependencies and build_vignettes from TRUE to FALSE.
+##### ruODK installation difficulties
+When trying to upgrade RuODK, if you encounter difficulties to upgrade some of the dependencies (e.g., `sf` package), you can switch `dependencies` and `build_vignettes` from TRUE to FALSE.
 ```r
 if (!requireNamespace("remotes")) install.packages("remotes")
 remotes::install_github(
