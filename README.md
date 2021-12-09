@@ -30,6 +30,8 @@ This package was developed on a Windows 10 operating system, with R version 4.0.
 * [CRAN mirrors to download R and RTools](https://cran.r-project.org/mirrors.html)
 * [Link to download RStudio](https://rstudio.com/products/rstudio/download/#download)
 
+For Windows users, it is smoother to install 1) Rtools, 2) R and 3) RStudio in this order.
+
 ### Prerequisites 
 
 #### ruODK
