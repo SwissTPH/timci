@@ -160,6 +160,12 @@ generate_fu_logs <- function(rctls_pid,
   }
 
   # Daily log
+  if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+    fu_start = 4
+  } else{
+    fu_start = 6
+  }
+
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  facility_data = facility_data,
@@ -167,7 +173,7 @@ generate_fu_logs <- function(rctls_pid,
                  fu_fid = crf_day7_fid,
                  raw_fu_data = raw_day7fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
-                 fu_start = 6,
+                 fu_start = fu_start,
                  fu_end = 12,
                  fu_vstart = 7,
                  fu_vend = 10)
