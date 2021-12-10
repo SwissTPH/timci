@@ -173,6 +173,8 @@ process_facility_data <- function(df) {
     df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     df <- match_from_xls_dict(df, "main_dict_kenya.xlsx")
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    df <- match_from_xls_dict(df, "main_dict_india.xlsx")
   } else{
     df <- match_from_xls_dict(df, "main_dict.xlsx")
   }
@@ -302,6 +304,8 @@ extract_screening_data <- function(df) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
   } else{
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
@@ -353,6 +357,8 @@ extract_pii <- function(df) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
   } else {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
@@ -381,6 +387,8 @@ extract_all_visits <- function(df) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
   } else{
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
