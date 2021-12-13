@@ -251,7 +251,10 @@ generate_ltfu_log <- function(df,
       ltfu_log <- merge(ltfu_log, attempt_df, by = 'child_id', all.x = TRUE) %>%
         dplyr::rename(fu_attempts = n)
     }
-  } else{
+  }
+
+  # If fu_attempts does not exist, create a column and fill out values with zeroes
+  if(!("fu_attempts" %in% colnames(ltfu_log))) {
     ltfu_log$fu_attempts <- 0
   }
 

@@ -1,3 +1,48 @@
+#' Match facility data using the Day 0 dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with columns that match the specified country dictionary.
+#' @export
+
+match_from_day0_xls_dict <- function(df) {
+
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    df <- match_from_xls_dict(df, "main_dict_kenya.xlsx")
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    df <- match_from_xls_dict(df, "main_dict_india.xlsx")
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    df <- match_from_xls_dict(df, "main_dict.xlsx")
+  } else{
+    df <- match_from_xls_dict(df, "main_dict.xlsx")
+  }
+  df
+
+}
+
+#' Load the Day 0 dictionary - adapted for each country to account for differences in the data collection (TIMCI-specific function)
+#'
+#' @return This function returns a dataframe that will be used as a dictionary to convert data exported from ODK Central to a statistician-friendly format.
+#' @export
+
+read_day0_xls_dict <- function() {
+
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  } else{
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  }
+  dictionary
+
+}
+
 #' Process facility data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
@@ -169,15 +214,7 @@ process_facility_data <- function(df) {
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    df <- match_from_xls_dict(df, "main_dict_kenya.xlsx")
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    df <- match_from_xls_dict(df, "main_dict_india.xlsx")
-  } else{
-    df <- match_from_xls_dict(df, "main_dict.xlsx")
-  }
+  df <- match_from_day0_xls_dict(df)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
@@ -300,15 +337,7 @@ process_tanzania_facility_data <- function(df) {
 
 extract_screening_data <- function(df) {
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
-  } else{
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
-  }
+  dictionary <- read_day0_xls_dict()
   sub <- subset(dictionary, screening == 1)
   df[sub$new]
 
@@ -353,15 +382,7 @@ extract_pii <- function(df) {
 
   # Extract de-identified baseline data
   # Merge dictionaries
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
-  } else {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
-  }
+  dictionary <- read_day0_xls_dict()
   sub <- subset(dictionary, day0 == 1)
   demog <- df[sub$new]
 
@@ -383,15 +404,7 @@ extract_pii <- function(df) {
 
 extract_all_visits <- function(df) {
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
-  } else{
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
-  }
+  dictionary <- read_day0_xls_dict()
   sub <- subset(dictionary, visits == 1)
   df <- df[sub$new]
   df %>%

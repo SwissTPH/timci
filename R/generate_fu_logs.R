@@ -161,7 +161,7 @@ generate_fu_logs <- function(rctls_pid,
 
   # Daily log
   if (Sys.getenv('TIMCI_COUNTRY') == "India") {
-    fu_start = 4
+    fu_start = 6
   } else{
     fu_start = 6
   }

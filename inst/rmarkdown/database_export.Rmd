@@ -705,7 +705,7 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
-```{r}
+```{r day7-lost-to-followup}
 if (!is.null(day7fu_data)) {
   ltfu <- timci::generate_ltfu_log(df = day0_data,
                                    fudf = allday7fu_data,
@@ -714,7 +714,7 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
-```{r}
+```{r locked-day7-lost-to-followup}
 if (!is.null(locked_day7fu_data)) {
   locked_ltfu <- timci::generate_ltfu_log(df = locked_day0_data,
                                           fudf = locked_allday7fu_data,
