@@ -305,7 +305,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                      start_date,
                                                      end_date)
     if (!is.null(raw_wfa_data)) {
-      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+      if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+        wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+      }
     }
   }
 
@@ -550,7 +552,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
                  wfa_data = wfa_data)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
     rname <- "timci_rct_monitoring_report"
   } else{
     rname <- "timci_ls_monitoring_report"
