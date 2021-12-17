@@ -59,7 +59,6 @@ generate_fu_log <- function(pii,
                    'mother',
                    'phone_nb',
                    'phone_nb2',
-                   'phone_nb3',
                    'location',
                    'cmty_contact')
   }
@@ -93,7 +92,6 @@ generate_fu_log <- function(pii,
                             'mother' = 'MOTHER NAME',
                             'phone_nb' = 'PHONE NB 1',
                             'phone_nb2' = 'PHONE NB 2',
-                            'phone_nb3' = 'PHONE NB 3',
                             'location' = 'LOCATION',
                             'cmty_contact' = 'CONTACT')
     fu_log <- rbind(first_row,
@@ -106,7 +104,6 @@ generate_fu_log <- function(pii,
                                        'relationship' = 'main_cg_lbl',
                                        'phonenb1' = 'phone_nb',
                                        'phonenb2' = 'phone_nb2',
-                                       'phonenb3' = 'phone_nb3',
                                        'contact' = 'cmty_contact')
   }
 
@@ -172,7 +169,6 @@ generate_fu_log_csv <- function(pii,
                  'mother',
                  'phone_nb',
                  'phone_nb2',
-                 'phone_nb3',
                  'location',
                  'cmty_contact',
                  'label')
@@ -194,7 +190,6 @@ generate_fu_log_csv <- function(pii,
                              'mother' = 'MOTHER NAME',
                              'phone_nb' = 'PHONE NB 1',
                              'phone_nb2' = 'PHONE NB 2',
-                             'phone_nb3' = 'PHONE NB 3',
                              'location' = 'LOCATION',
                              'cmty_contact' = 'CONTACT',
                              'label' = 'CHILD NAME (VALID WINDOW)'),
@@ -205,7 +200,6 @@ generate_fu_log_csv <- function(pii,
                            'relationship' = 'main_cg_lbl',
                            'phonenb1' = 'phone_nb',
                            'phonenb2' = 'phone_nb2',
-                           'phonenb3' = 'phone_nb3',
                            'contact' = 'cmty_contact')
 
 }
