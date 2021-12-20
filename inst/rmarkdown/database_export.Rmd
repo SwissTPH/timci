@@ -140,6 +140,10 @@ if (!is.null(facility_data)) {
 
 ## Study facilities
 
+```{r}
+write("Study facilities", stderr())
+```
+
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name")]
@@ -170,6 +174,10 @@ cat(paste0("Data collection is planned in ", nrow(facilities), " facilities."))
 ```
 
 ## Facility / device correspondence
+
+```{r}
+write("Facility /device correspondence", stderr())
+```
 
 ```{r, results='asis'}
 facility_device <- facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
@@ -466,7 +474,7 @@ if (!is.null(facility_data)) {
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-cat(paste0("There are ", nrow(locked_day0_data), " records in the locked Day 0 database."))
+format_nrow("There are", locked_day0_data, "records in the locked Day 0 database.")
 ```
 
 ### Data export
@@ -629,13 +637,12 @@ if (!is.null(raw_day7fu_data)) {
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    cat(paste0(nrow(allday7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.\n\n"))
-     cat(paste0(nrow(day7fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database."))
-  }
-}
+```{r, results = 'asis'}
+format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.")
+```
+
+```{r, results = 'asis'}
+format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database.")
 ```
 
 ### Duplicate management
@@ -694,15 +701,11 @@ To be implemented
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-if (!is.null(day7fu_data)) {
-  cat(paste0("There are ", nrow(locked_allday7fu_data), " records in the locked Day 7 follow-up database."))
-}
+format_nrow("There are", locked_allday7fu_data, "records in the locked Day 7 follow-up database.")
 ```
 
 ```{r, results = 'asis'}
-if (!is.null(day7fu_data)) {
-  cat(paste0("There are ", nrow(locked_day7fu_data), " records in the locked successful Day 7 follow-up database."))
-}
+format_nrow("There are", locked_day7fu_data, "records in the locked successful Day 7 follow-up database.")
 ```
 
 ```{r day7-lost-to-followup}
@@ -815,6 +818,10 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
+```{r, results = 'asis'}
+format_nrow("There are", hospit_data, "records in the raw hospitalisation follow-up database.")
+```
+
 ```{r}
 if (!is.null(pii)) {
   hospit_fu <- timci::generate_hospital_log(pii = pii,
@@ -825,25 +832,21 @@ if (!is.null(pii)) {
 }
 ```
 
-```{r, results = 'asis'}
-cat(paste0("There are ", nrow(hospit_data), " records in the raw hospitalisation follow-up database."))
-```
-
 ### Non-valid participant IDs
 
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
 
 ```{r}
+hospit_data_uids <- NULL
+locked_hospit_data <- NULL
 if (!is.null(hospit_data)) {
   hospit_data_uids <- hospit_data[!hospit_data$child_id %in% locked_day0_data$child_id, ]
   locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(hospit_data)) {
-  cat(paste0(nrow(hospit_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked hospitalisation database."))
-}
+```{r, results = 'asis'}
+format_nrow("", hospit_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked hospitalisation database.")
 ```
 
 ### Duplicate management
@@ -855,6 +858,7 @@ if (!is.null(hospit_data)) {
 ```
 
 ```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
+hospit_data_duplicates <- NULL
 if (!is.null(hospit_data)) {
   if (length(hospit_data) > 0) { 
     hospit_data_qc <- timci::detect_id_duplicates(locked_hospit_data)
@@ -870,10 +874,8 @@ if (!is.null(hospit_data)) {
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(hospit_data)) {
-  cat(paste0("", nrow(hospit_data_duplicates), " duplicated IDs were automatically detected and removed in the locked hospitalisation database."))
-}
+```{r, results = 'asis'}
+format_nrow("", hospit_data_duplicates, "duplicated IDs were automatically detected and removed in the locked hospitalisation database.")
 ```
 
 ### Data export
@@ -884,6 +886,8 @@ if (!is.null(hospit_data)) {
   fn <- timci::export_df2csvxlsx(hospit_data,
                                  params$rctls_dir,
                                  hospit_export_name)
+}
+if (!is.null(locked_hospit_data)) {
   fn <- timci::export_df2csvxlsx(locked_hospit_data,
                                  lock_rctls_dir,
                                  hospit_export_name)
@@ -933,10 +937,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat(paste0("There are ", nrow(allday28fu_data), " records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
+  if (!is.null(allday28fu_data)) {
+    cat(paste0("There are ", nrow(allday28fu_data), " records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
+  }
 }
 ```
-
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -947,6 +952,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  allday28fu_data_uids <- NULL
+  day28fu_data_uids <- NULL
+  locked_day28fu_data <- NULL
   if (!is.null(day28fu_data)) {
     # All follow-ups
     locked_allday28fu_data <- allday28fu_data[allday28fu_data$child_id %in% locked_day0_data$child_id, ]
@@ -962,13 +970,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat(paste0(nrow(allday28fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked Day 28 follow-up database."))
+  format_nrow("", allday28fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 28 follow-up database.")
 }
 ```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat(paste0(nrow(day28fu_data_uids), " records with non-valid participant IDs were automatically detected and removed in the locked successful Day 28 follow-up database."))
+  format_nrow("", day28fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 28 follow-up database.")
 }
 ```
 
@@ -982,7 +990,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r check-RCT-LS-ODK-fu-day28-data, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  if (!is.null(day28fu_data)) {
+  day28fu_duplicates <- NULL
+  if (!is.null(locked_day28fu_data)) {
     day28fu_qc <- timci::detect_id_duplicates(locked_day28fu_data)
     day28fu_duplicates <- day28fu_qc[day28fu_qc$id_fq > 1,]
     if (length(day28fu_duplicates) > 0) { 
@@ -998,6 +1007,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  day28fu_data_duplicates <- NULL
   if (!is.null(day28fu_data)) {
     # Process duplicates separately
     day28fu_data_duplicates <- locked_day28fu_data[locked_day28fu_data$child_id %in% day28fu_duplicates$child_id, ]
@@ -1014,13 +1024,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  n <- nrow(day28fu_data_duplicates) - nrow(processed_day28fu_data_duplicates)
-  if (n > 1) {
-    cat(paste0(n, " records were removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
-  } else if (n == 1) {
-    cat(paste0(n, " record was removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
-  } else{
-    cat(paste0("No records were removed in the locked successful Day 28 follow-up database."))
+  if (!is.null(day28fu_data_duplicates)) {
+    n <- nrow(day28fu_data_duplicates) - nrow(processed_day28fu_data_duplicates)
+    if (n > 1) {
+      cat(paste0(n, " records were removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
+    } else if (n == 1) {
+      cat(paste0(n, " record was removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
+    } else{
+      cat(paste0("No records were removed in the locked successful Day 28 follow-up database."))
+    }
   }
 }
 ```
@@ -1033,7 +1045,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  if (!is.null(day28fu_data)) {
+  if (!is.null(locked_day28fu_data)) {
     cat(paste0("There are ", nrow(locked_day28fu_data), " records in the locked Day 28 follow-up database."))
   } else{
     cat("N/A")
@@ -1054,7 +1066,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
                                    lock_rctls_dir,
                                    "06_timci_followup_successful_day28_data")
   }
-  if (!is.null(allday7fu_data)) {
+  if (!is.null(allday28fu_data)) {
     
     fn <- timci::export_df2csvxlsx(allday28fu_data,
                                    params$rctls_dir,

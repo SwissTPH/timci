@@ -131,6 +131,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Load facility data ---------------------------
   write(formats2h2("Load RCT/LS facility data"), stderr())
 
+  write("Load day 0 data", stderr())
+
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
@@ -424,7 +426,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   }
 
-  # Load cost data ---------------------------
+  # Load TIMCI cost data ---------------------------
+
+  write("Load TIMCI cost data", stderr())
+
   medical_cost_data <- NULL
   hospital_cost_data <- NULL
 
@@ -461,7 +466,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     }
   }
 
-  # Load qualitative data ---------------------------
+  # Load TIMCI qualitative data ---------------------------
+
+  write("Load TIMCI qualitative data", stderr())
+
   cgidi_invitation_data <- NULL
   cgidi_encryption_data <- NULL
   cgidi_interview_data <- NULL
@@ -513,6 +521,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # RCT data quality report #
   ###########################
 
+  write(formats2h1("Export data and generate data quality report"), stderr())
+
   params <- list(rctls_dir = mdb_dir,
                  research_facilities = research_facilities,
                  participant_zip = participant_zip,
@@ -545,6 +555,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # RCT monitoring report #
   #########################
 
+  write(formats2h1("Generate monitoring report"), stderr())
+
   params <- list(research_facilities = research_facilities,
                  facility_data = facility_data,
                  raw_day7fu_data = raw_day7fu_data,
@@ -563,6 +575,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # SPA monitoring report #
   #########################
 
+  write(formats2h1("Generate SPA report"), stderr())
+
   if (!is.null(spa_sco_data)) {
     if (length(spa_sco_data) > 0) {
       if (nrow(spa_sco_data) > 0) {
@@ -578,6 +592,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   #############################################
   # Process map / time-flow monitoring report #
   #############################################
+
+  write(formats2h1("Generate process map & time-flow report"), stderr())
 
   if (!is.null(tf_data)) {
     if (length(tf_data) > 0) {
@@ -595,6 +611,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   ###################
   # PATH M&E report #
   ###################
+
+  write(formats2h1("Generate PATH M&E report"), stderr())
 
   params <- list(path_dir = path_dir,
                  facility_data = facility_data,

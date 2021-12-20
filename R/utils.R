@@ -140,3 +140,20 @@ formats2h2 <- function(s) {
   paste0("\t\n----------------------------------------------\n ", s, "\n----------------------------------------------\n")
 
 }
+
+#' Format display number of rows
+#'
+#' @param s_before String displayed before the number of rows
+#' @param df Dataframe
+#' @param s_after String displayed after the number of rows
+#' @export
+
+format_nrow <- function(s_before,
+                        df,
+                        s_after) {
+
+  if(!is.null(df)){
+    cat(paste0(s_before, " ", nrow(df), " ", s_after))
+  }
+
+}

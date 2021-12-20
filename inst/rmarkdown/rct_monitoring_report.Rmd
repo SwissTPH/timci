@@ -1144,13 +1144,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   } else {
     cat("## Weekly calls\n\n")
   }
-  if (!is.null(raw_day28fu_data) & length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 0) {
-  p <- timci::generate_week_bar_plot(date_vec = raw_day28fu_data$date,
-                                     date_min = as.Date(start_date),
-                                     date_max = as.Date(Sys.Date() + 1),
-                                     ylbl = paste0(enrolment_str))
-  plot(p)
-}
+  if (!is.null(raw_day28fu_data)) {
+    if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 0){
+      p <- timci::generate_week_bar_plot(date_vec = raw_day28fu_data$date,
+                                       date_min = as.Date(start_date),
+                                       date_max = as.Date(Sys.Date() + 1),
+                                       ylbl = paste0(enrolment_str))
+      plot(p)
+    }
+  }
 }
 ```
 
