@@ -793,7 +793,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya') {
+if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya' && Sys.getenv('TIMCI_COUNTRY') != 'India') {
   if (!is.null(facility_data)) {
     if (nrow(facility_data) > 0) {
       
