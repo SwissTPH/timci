@@ -20,7 +20,13 @@ noneligible_tmp <- noneligible %>% dplyr::filter(fid == cfid)
 baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
 repeat_data_tmp <- repeat_data %>% dplyr::filter(fid == cfid)
 facility_data_tmp <- facility_data %>% dplyr::filter(fid == cfid)
-wfa_data_tmp <- wfa_data %>% dplyr::filter(fcode == cfid)
+
+wfa_data_tmp <- NULL
+if (!is.null(wfa_data)) {
+  if (length(wfa_data) > 0 & nrow(wfa_data) > 0) {
+    wfa_data_tmp <- wfa_data %>% dplyr::filter(fcode == cfid)
+  }
+}
 day7fu_data_facility <- raw_day7fu_data %>% dplyr::filter('a1-fid' == cfid)
 ```
 
@@ -64,21 +70,23 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-if (!is.null(wfa_data_tmp) & length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
-  wfa_data_tmp$week <- as.Date(cut(as.Date(wfa_data_tmp$date),
-                          breaks = "week",
-                          start.on.monday = TRUE))
-  ggplot2::ggplot(wfa_data_tmp, aes(x = week, y = u5_attendance_last_week)) +
-    geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
-    ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
-                          breaks = "1 week",
-                          date_labels = "%d.%m.%y") +
-    theme(panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.line = element_blank(),
-          axis.text.x = element_text(angle = 45, hjust = 1),
-          panel.background = element_blank())
+if (!is.null(wfa_data_tmp)) {
+  if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
+    wfa_data_tmp$week <- as.Date(cut(as.Date(wfa_data_tmp$date),
+                            breaks = "week",
+                            start.on.monday = TRUE))
+    ggplot2::ggplot(wfa_data_tmp, aes(x = week, y = u5_attendance_last_week)) +
+      geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
+      ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
+                            breaks = "1 week",
+                            date_labels = "%d.%m.%y") +
+      theme(panel.border = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.background = element_blank())
+  }
 }
 ```
 
