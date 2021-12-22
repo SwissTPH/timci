@@ -192,6 +192,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
   hc_nb <- nrow(facilities %>% filter(type == "health center"))
   dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
   cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " health centres and ", dispensary_nb, " dispensaries"))
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  hc_nb <- nrow(facilities %>% filter(type == "CHC"))
+  dispensary_nb <- nrow(facilities %>% filter(type == "PHC"))
+  cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " CHCs and ", dispensary_nb, " PHCs"))
 } else{
   cat(paste0(facility_nb, " research facilities"))
 }
@@ -309,6 +313,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
 } else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
   hc_enrolment_target <- 16
   dispensary_enrolment_target <- 4
+  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
+  enrolment_target <- day_target / facility_nb
+} else if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+  hc_enrolment_target <- 6
+  dispensary_enrolment_target <- 1
   day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
   enrolment_target <- day_target / facility_nb
 } else{

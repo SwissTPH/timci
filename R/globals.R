@@ -50,4 +50,5 @@ utils::globalVariables(c("Group.1",
                          "raw_day28fu_data",
                          "var",
                          "dob",
-                         "name"))
+                         "name",
+                         "diff"))

@@ -1,4 +1,4 @@
-#' Detect submission not submitted on the day they were started (ODK function)
+#' Detect submission not submitted on the day they were finalised (ODK function)
 #'
 #' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
 #' @return This function returns a dataframe containing the duration between start and end
@@ -7,7 +7,30 @@
 
 detect_submission_duration <- function(df) {
 
-  # Placeholder content to be defined
+  qc <- NULL
+
+  # Duration from form completion to transfer on the server
+  df$diff <- as.Date(as.character(df$submission_date), format="%Y-%m-%d %T") - as.Date(as.character(df$end), format="%Y-%m-%d %T")
+  qc <- df[c("fid", "child_id", "start", "diff")] %>%
+    dplyr::arrange(fid, diff)
+
+}
+
+#' Detect submission not finalised on the day they were started (ODK function)
+#'
+#' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
+#' @return This function returns a dataframe containing the duration between start and end
+#' @export
+#' @import dplyr magrittr
+
+detect_submission_duration2 <- function(df) {
+
+  qc <- NULL
+
+  # Duration from form completion to transfer on the server
+  df$diff <- as.Date(as.character(df$end), format="%Y-%m-%d %T") - as.Date(as.character(df$start), format="%Y-%m-%d %T")
+  qc <- df[c("fid", "child_id", "start", "diff")] %>%
+    dplyr::arrange(fid, diff)
 
 }
 

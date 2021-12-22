@@ -449,7 +449,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   if (qpid %in% odkc_project_list) {
 
     # Load caregiver IDI invitation data
-    write(formats2h3("Load caregiver IDI invitation data"), stderr())
+    write(formats2h3("Load caregiver in-depth interview (IDI) invitation data"), stderr())
     cgidi_invitation_data <- timci::extract_data_from_odk_server(cpid = qpid,
                                                                  cpid_forms = qual_form_list,
                                                                  cfid = cgidi1_fid,
@@ -459,7 +459,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                                  verbose = TRUE)
 
     # Load caregiver IDI encryption list
-    write(formats2h3("Load caregiver IDI encryption list"), stderr())
+    write(formats2h3("Load caregiver in-depth interview (IDI) encryption list"), stderr())
     cgidi_encryption_data <- timci::extract_data_from_odk_server(cpid = qpid,
                                                                  cpid_forms = qual_form_list,
                                                                  cfid = cgidi2_fid,
@@ -469,7 +469,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                                  verbose = TRUE)
 
     # Load caregiver in-depth interview (IDI) data
-    write(formats2h3("Load caregiverin-depth interview (IDI) data"), stderr())
+    write(formats2h3("Load caregiver in-depth interview (IDI) data"), stderr())
     cgidi_interview_data <- extract_data_from_odk_server(cpid = qpid,
                                                          cpid_forms = qual_form_list,
                                                          cfid = cgidi3_fid,

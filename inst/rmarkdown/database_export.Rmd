@@ -297,6 +297,38 @@ if (nrow(underaged_cg) == 1) {
 }
 ```
 
+### Submission completion timeliness
+
+#### Submissions not finalised on the day they were started [compliance check]
+
+```{r, results='asis'}
+qc <- NULL
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    qc <- detect_submission_duration2(locked_day0_data)
+    issue <- qc[qc$diff > 1,]
+    if (nrow(issue) > 0) { 
+      issue %>% knitr::kable(caption = "Submissions not finalised on the day they were started", row.names = FALSE)
+    }
+  }
+}
+```
+
+#### Transfer not done on the day the submission was finalised [compliance check]
+
+```{r, results='asis'}
+qc <- NULL
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    qc <- detect_submission_duration(locked_day0_data)
+    issue <- qc[qc$diff > 1,]
+    if (nrow(issue) > 0) { 
+      issue %>% knitr::kable(caption = "Transfer not done on the day the submission was finalised", row.names = FALSE)
+    }
+  }
+}
+```
+
 ### Duplicate management
 
 #### Child ID duplicates [compliance check] 
