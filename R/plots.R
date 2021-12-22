@@ -378,7 +378,7 @@ generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max,
 
 generate_time_hist_plot <- function(df, title){
 
-  df$timestamp <- strptime(df$start, format = "%H:%M:%S")
+  df$timestamp <- strptime(df$start_time, format = "%H:%M:%S")
   df$hours <-  as.numeric(format(df$timestamp, format = "%H"))
   breaks <- seq(0,23,1)
   graphics::hist(df$hours,
@@ -388,6 +388,13 @@ generate_time_hist_plot <- function(df, title){
                  col = "#7dbbd6",
                  las = 1,
                  breaks = breaks)
+
+  # df$timestamp <- strptime(df$start_time, format = "%H:%M:%S")
+  # df$hours <- as.numeric(format(df$timestamp, format = "%H"))
+  # p <- ggplot(df, aes(x=df$hours)) +
+  #   geom_histogram(binwidth = 24,
+  #                  color = "#7dbbd6",
+  #                  fill = "#7dbbd6")
 
 }
 
