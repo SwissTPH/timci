@@ -8,7 +8,6 @@
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
-  #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".xlsx", sep = ""))
   fname <- file.path(dirname, paste0(prefix, ".xlsx"))
   openxlsx::write.xlsx(df, fname, row.names = rnames, overwrite = TRUE, encoding = "UTF-8")
   fname
@@ -24,7 +23,6 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
 export_df2csv <- function(df, dirname, prefix) {
 
-  #fname <- file.path(dirname, paste(prefix, "_", Sys.Date(), ".csv", sep = ""))
   fname <- file.path(dirname, paste0(prefix, ".csv"))
   write.csv(df, file = fname, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
   fname
@@ -119,12 +117,14 @@ match_from_xls_dict <- function(df, xls_dict) {
 #'
 #' This function formats an input string `s` for printing as a header of level H1 in an output console
 #'
-#' @param s String
+#' @param s String to format
 #' @export
 
 formats2h1 <- function(s) {
 
-  paste0("\n==============================================\n ", s, "\n==============================================\n")
+  paste0("\n============================================================================================\n",
+         s,
+         "\n============================================================================================\n")
 
 }
 
@@ -132,12 +132,28 @@ formats2h1 <- function(s) {
 #'
 #' This function formats an input string `s` for printing as a header of level H2 in an output console
 #'
-#' @param s String
+#' @param s String to format
 #' @export
 
 formats2h2 <- function(s) {
 
-  paste0("\t\n----------------------------------------------\n ", s, "\n----------------------------------------------\n")
+  paste0("\n--------------------------------------------------------------------------------------------\n",
+         s,
+         "\n--------------------------------------------------------------------------------------------\n")
+
+}
+
+#' Format string to header of level H3 for printing in console
+#'
+#' This function formats an input string `s` for printing as a header of level H2 in an output console
+#'
+#' @param s String to format
+#' @export
+
+formats2h3 <- function(s) {
+
+  paste0(s,
+         "\n--------------------------------------------")
 
 }
 

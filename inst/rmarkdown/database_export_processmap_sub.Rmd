@@ -1,0 +1,52 @@
+---
+title: "Database export process mapping subsection"
+author: "H. LANGET"
+date: "2021-12-22"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+## Process mapping
+
+```{r process-mapping-verbose}
+write("Export process mapping data", stderr())
+```
+
+```{r process-mapping-export-data, results = 'asis'}
+pm_export_name <- "06a_timci_processmapping_data"
+
+if (!is.null(pm_data[[1]])) {
+  fn <- timci::export_df2csvxlsx(pm_data[[1]],
+                                 params$spa_dir,
+                                 pm_export_name)
+  cat(paste0("* Raw process mapping data are exported in files ", pm_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+```{r process-mapping-export-docs, results = 'asis'}
+pm_export_name <- "06b_timci_processmapping_docs"
+
+if (!is.null(pm_data[[2]])) {
+  fn <- timci::export_df2csvxlsx(pm_data[[2]],
+                                 params$spa_dir,
+                                 pm_export_name)
+  cat(paste0("* Process mapping docs are exported in files ", pm_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+```{r process-mapping-export-audit, results = 'asis'}
+pm_export_name <- "06z_timci_processmapping_audit"
+i <- length(pm_data)
+
+if (!is.null(pm_data[[i]])) {
+  fn <- timci::export_df2csvxlsx(pm_data[[i]],
+                                 params$spa_dir,
+                                 pm_export_name)
+  cat(paste0("* Process mapping audit log is exported in files ", pm_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```

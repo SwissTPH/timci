@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_odk_data.R
 \name{extract_data_from_odk_zip}
 \alias{extract_data_from_odk_zip}
-\title{# Unzip and extract ODK data from ODK zip}
+\title{Unzip and extract ODK data from ODK zip}
 \usage{
 extract_data_from_odk_zip(
   odk_zip,
@@ -27,5 +27,5 @@ extract_data_from_odk_zip(
 This function returns a formatted dataframe for future display and analysis.
 }
 \description{
-# Unzip and extract ODK data from ODK zip
+Unzip and extract ODK data from ODK zip
 }

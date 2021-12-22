@@ -7,7 +7,7 @@
 formats2h1(s)
 }
 \arguments{
-\item{s}{String}
+\item{s}{String to format}
 }
 \description{
 This function formats an input string `s` for printing as a header of level H1 in an output console

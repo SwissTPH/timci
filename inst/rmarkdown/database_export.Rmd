@@ -17,7 +17,10 @@ params:
   rctls_dir: !r tempdir()
   participant_zip: !r file.path(tempdir(),"participants.zip")
   spa_dir: !r tempdir()
-  qual1_dir: !r tempdir()
+  qualcg_dir: !r tempdir()
+  qualhcp_dir: !r tempdir()
+  qualkii_dir: !r tempdir()
+  qualos_dir: !r tempdir()
   cost_dir: !r tempdir()
   facility_data: NULL
   lock_date: NULL
@@ -38,12 +41,25 @@ params:
   cgidi_invitation_data: NULL
   cgidi_encryption_data: NULL
   cgidi_interview_data: NULL
+  hcpidi_interview_data: NULL
+  kii_interview_data: NULL
+  online_survey_data: NULL
 ---
 
 ```{r setup-rmd, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE)
 library(dplyr)
+```
+
+```{r translations}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  notice_str <- ""
+  screening_times_str <- "Heures de screening"
+} else {
+  notice_str <- ""
+  screening_times_str <- "Screening times"
+}
 ```
 
 ```{r setup-variables, echo = FALSE}
@@ -58,7 +74,10 @@ lock_date <- params$lock_date
 lock_rctls_dir <- file.path(params$rctls_dir, "locked")
 dir.create(lock_rctls_dir, showWarnings = FALSE)
 
-qual1_dir <- params$qual1_dir
+qualcg_dir <- params$qualcg_dir
+qualhcp_dir <- params$qualhcp_dir
+qualkii_dir <- params$qualkii_dir
+qualos_dir <- params$qualos_dir
 cost_dir <- params$cost_dir
 
 research_facilities <- params$research_facilities
@@ -83,6 +102,9 @@ if (!is.null(params$facility_data)) {
   cgidi_invitation_data <- params$cgidi_invitation_data
   cgidi_encryption_data <- params$cgidi_encryption_data
   cgidi_interview_data <- params$cgidi_interview_data
+  hcpidi_interview_data <- params$hcpidi_interview_data
+  kii_interview_data <- params$kii_interview_data
+  online_survey_data <- params$online_survey_data
   
 }
 ```
@@ -90,6 +112,11 @@ if (!is.null(params$facility_data)) {
 \newpage
 
 # Context
+
+```{r}
+write(formats2h2("Context"),stderr())
+write("Write contextual information including dates, study facilities, facility and device correspondence", stderr())
+```
 
 ## Dates
 
@@ -105,13 +132,14 @@ if (!is.null(facility_data)) {
     }
     week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
     if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-      cat(paste0("* Début de la collecte au niveau des postes de santé : **", start_date, "**"))
+      cat(paste0("* Début de la collecte longitudinale au niveau des postes de santé : **", start_date, "**"))
     } else {
       cat(paste0("* Facility data collection start: **", start_date, "**"))
     }
   }
 }
 ```
+
 ```{r, results='asis'}
 if (!is.null(spa_sco_data)) {
   if (nrow(spa_sco_data) > 0) {
@@ -139,10 +167,6 @@ if (!is.null(facility_data)) {
 ```
 
 ## Study facilities
-
-```{r}
-write("Study facilities", stderr())
-```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -175,10 +199,6 @@ cat(paste0("Data collection is planned in ", nrow(facilities), " facilities."))
 
 ## Facility / device correspondence
 
-```{r}
-write("Facility /device correspondence", stderr())
-```
-
 ```{r, results='asis'}
 facility_device <- facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
   dplyr::select(c('device_id', 'fid')) %>%
@@ -201,6 +221,10 @@ cat(paste0("Data collection has been done using ", nrow(facility_device), " tabl
 \newpage
 
 # `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
+
+```{r}
+write(formats2h2("Review, process and export facility data"), stderr())
+```
 
 ## Facility data quality checks
 
@@ -601,6 +625,10 @@ if (!is.null(raw_withdrawal_data)) {
 
 ## Day 7 data quality checks
 
+```{r}
+write("Export Day 7 data and run corresponding quality checks", stderr())
+```
+
 ```{r format-RCT-LS-ODK-fu-day7-data}
 day7fu_data <- NULL
 allday7fu_data <- NULL
@@ -811,6 +839,10 @@ if (!is.null(pii) & !is.null(raw_day7fu_data)) {
 
 ## Hospitalisation data quality checks
 
+```{r}
+write("Export hospitalisation data and run corresponding quality checks", stderr())
+```
+
 ```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- NULL
 if (!is.null(raw_hospit_data)) {
@@ -921,6 +953,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
+`r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'## Day 28 data quality checks'}`
+
 ```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   day28fu_data <- NULL
@@ -940,6 +974,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   if (!is.null(allday28fu_data)) {
     cat(paste0("There are ", nrow(allday28fu_data), " records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
   }
+}
+```
+
+`r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'### Non-valid participant IDs'}`
+
+```{r}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  write("Export Day 28 data and run corresponding quality checks", stderr())
 }
 ```
 
@@ -980,7 +1022,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
-### Duplicate management
+`r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'### Duplicate management'}`
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -1127,6 +1169,10 @@ cat(paste0("* Problem reports are exported in ", problem_export_name, ".csv/xslx
 \newpage
 
 # Service Provision Assessment (SPA)
+
+```{r}
+write("Export service provision assessment (SPA) data and run corresponding quality checks", stderr())
+```
 
 ## Facility assessment
 
@@ -1388,48 +1434,25 @@ if (!is.null(spa_hcpi_data)) {
 
 # Process mapping & Time-flow
 
-## Time-flow
+```{r}
+write(formats2h2("Export process mapping & time-flow data"), stderr())
+```
 
-```{r time-flow-export}
-if (!is.null(tf_data)) {
-  if (!is.null(tf_data[[1]])) {
-    fn <- timci::export_df2csvxlsx(tf_data[[1]],
-                                   params$spa_dir,
-                                   "05a_timci_timeflow_data")
-  }
-  if (!is.null(tf_data[[2]])) {
-    fn <- timci::export_df2csvxlsx(tf_data[[2]],
-                                   params$spa_dir,
-                                   "05b_timci_timeflow_audit")
-  }
-  if (!is.null(tf_data[[3]])) {
-    fn <- timci::export_df2csvxlsx(tf_data[[3]],
-                                   params$spa_dir,
-                                   "05c_timci_timeflow_steps")
-  }
+```{r timeflow-subsection, results="asis"}
+if (!is.null(tf_data)){
+  out <- knitr::knit_child('database_export_timeflow_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
 }
 ```
 
-```{r, results = 'asis'}
-if (!is.null(tf_data)) {
-  cat(paste0("* Raw time-flow data are exported in ", "05a_timci_timeflow_data", ".csv/xslx in the ", params$spa_dir, " folder"))
-}
-```
-
-## Process mapping
-
-```{r process-mapping-export}
-pm_export_name <- "06_timci_processmapping_data"
-if (!is.null(pm_data)) {
-  fn <- timci::export_df2csvxlsx(pm_data,
-                                 params$spa_dir,
-                                 pm_export_name)
-}
-```
-
-```{r, results = 'asis'}
-if (!is.null(pm_data)) {
-  cat(paste0("* Raw process mapping data are exported in ", pm_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+```{r process-mapping-subsection, results="asis"}
+if (!is.null(pm_data)){
+  out <- knitr::knit_child('database_export_processmap_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
 }
 ```
 
@@ -1437,25 +1460,27 @@ if (!is.null(pm_data)) {
 
 # Cost & Cost-effectiveness
 
-## Medical costs
+```{r}
+write(formats2h2("Export cost & cost-effectiveness data"), stderr())
+```
 
-```{r medical-cost-export}
-medical_cost_export_name <- "01_timci_medical_cost_data"
-if (!is.null(medical_cost_data)) {
-  fn <- timci::export_df2csvxlsx(medical_cost_data,
-                                 cost_dir,
-                                 medical_cost_export_name)
+```{r medical-cost-subsection, results="asis"}
+if (!is.null(medical_cost_data)){
+  out <- knitr::knit_child('database_export_medicalcost_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
 }
 ```
 
 ## Hospital costs
 
-```{r hospital-cost-export}
-hospital_cost_export_name <- "02_timci_hospital_cost_data"
-if (!is.null(hospital_cost_data)) {
-  fn <- timci::export_df2csvxlsx(hospital_cost_data,
-                                 cost_dir,
-                                 hospital_cost_export_name)
+```{r hospital-cost-subsection, results="asis"}
+if (!is.null(hospital_cost_data)){
+  out <- knitr::knit_child('database_export_hospitalcost_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
 }
 ```
 
@@ -1463,78 +1488,43 @@ if (!is.null(hospital_cost_data)) {
 
 # Qualitative studies
 
-## Caregiver in-depth interview
+```{r}
+write(formats2h2("Export qualitative data"), stderr())
+```
 
-No data cleaning for the lock.
+```{r caregiver-idi-subsection, results="asis"}
+out <- knitr::knit_child('database_export_cgidi_sub.Rmd',
+                         envir = environment(),
+                         quiet = TRUE)
+cat(out, sep = '\n')
+```
 
-```{r cg-idi-potential-participants}
-if (!is.null(day0_data) && !is.null(day7fu_data)) {
-  cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
-  fn <- timci::export_df2csvxlsx(cg_qual_export_data,
-                                 qual1_dir,
-                                 "cg_idi_participants")
+## Healthcare provider in-depth interview (IDI)
+
+```{r hcp-idi-interview-export}
+if (!is.null(hcpidi_interview_data)) {
+  fn <- timci::export_df2csvxlsx(hcpidi_interview_data,
+                                 qualhcp_dir,
+                                 "03_timci_hcp_interview_data")
 }
 ```
 
-```{r cg-idi-invitation-export}
-if (!is.null(cgidi_invitation_data)) {
-  fn <- timci::export_df2csvxlsx(cgidi_invitation_data,
-                                 qual1_dir,
-                                 "01_timci_cg_invitation_data")
+## Key informant interview
+
+```{r kii-export}
+if (!is.null(kii_interview_data)) {
+  fn <- timci::export_df2csvxlsx(kii_interview_data,
+                                 qualkii_dir,
+                                 "03_timci_kii_interview_data")
 }
 ```
 
-```{r cg-idi-encryption-export}
-if (!is.null(cgidi_encryption_data)) {
-  fn <- timci::export_df2csvxlsx(cgidi_encryption_data,
-                                 qual1_dir,
-                                 "02_timci_cg_encryption_data")
-}
-```
+## Online survey
 
-```{r cg-idi-interview-export}
-if (!is.null(cgidi_interview_data)) {
-  
-  # Filter data
-  drops <- c("encryption-name",
-             "encryption-child_name",
-             "encryption-phonenb1",
-             "encryption-phonenb2",
-             "other_participant-cg2_name")
-  cgidi_interview_data <- cgidi_interview_data[, !(names(cgidi_interview_data) %in% drops)]
-  
-  fn <- timci::export_df2csvxlsx(cgidi_interview_data,
-                                 qual1_dir,
-                                 "03_timci_cg_interview_data")
-
-  sl <- ruODK::submission_list(pid = qpid,
-                               fid = cgidi3_fid)
-  
-  # Loop on all rows
-  for (i in 1:nrow(sl)) {
-    crow <- cgidi_interview_data[i,]
-    uuid <- crow$'meta-instanceID'
-    cpath <- file.path(qual1_dir, crow$'encryption-participant')
-    print(paste0("Participant: ", crow$'encryption-participant'))
-    dir.create(cpath, showWarnings = FALSE)
-    # Create a new dataframe using the transpose of crow
-    tcrow <- as.data.frame(t(as.matrix(crow)))
-    names(tcrow)[names(tcrow) == "V1"] <- "values"
-    fn <- export_df2xlsx(tcrow, cpath, "data")
-    
-    # Download attachments
-    al <- ruODK::get_one_submission_attachment_list(pid = qpid,
-                                                    fid = cgidi3_fid,
-                                                    uuid)
-    for (j in 1:nrow(al)) {
-      aid <- al$name[[j]]
-      print(paste0("Attachment: ", aid))
-      ruODK::attachment_get(pid = qpid,
-                            fid = cgidi3_fid,
-                            uuid, 
-                            aid,
-                            local_dir = cpath)
-    }
-  }
+```{r online-survey-export}
+if (!is.null(online_survey_data)) {
+  fn <- timci::export_df2csvxlsx(online_survey_data,
+                                 qualos_dir,
+                                 "01_timci_online_survey_data")
 }
 ```

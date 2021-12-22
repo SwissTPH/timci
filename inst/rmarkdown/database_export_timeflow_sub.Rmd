@@ -1,0 +1,52 @@
+---
+title: "Database export time-flow subsection"
+author: "H. LANGET"
+date: "2021-12-22"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+## Time-flow
+
+```{r time-flow-verbose}
+write("Export time-flow data", stderr())
+```
+
+```{r time-flow-export-data, results = 'asis'}
+tf_export_name <- "05a_timci_timeflow_data"
+
+if (!is.null(tf_data[[1]])) {
+  fn <- timci::export_df2csvxlsx(tf_data[[1]],
+                                 params$spa_dir,
+                                 tf_export_name)
+  cat(paste0("* Raw time-flow data are exported in files ", tf_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+```{r time-flow-export-steps, results = 'asis'}
+tf_export_name <- "05b_timci_timeflow_steps"
+
+if (!is.null(tf_data[[2]])) {
+  fn <- timci::export_df2csvxlsx(tf_data[[2]],
+                                 params$spa_dir,
+                                 tf_export_name)
+  cat(paste0("* Time-flow steps are exported in files ", tf_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```
+
+```{r time-flow-export-audit, results = 'asis'}
+tf_export_name <- "05z_timci_timeflow_audit"
+i <- length(tf_data)
+
+if (!is.null(tf_data[[i]])) {
+  fn <- timci::export_df2csvxlsx(tf_data[[i]],
+                                 params$spa_dir,
+                                 tf_export_name)
+  cat(paste0("* Time-flow audit log is exported in files ", tf_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+}
+```

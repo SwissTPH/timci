@@ -13,8 +13,10 @@
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
 #' @param mdb_dir Path to the output folder for the RCT / LS database exports
 #' @param fu_dir Path to the output folder for the follow-up exports
-#' @param qual1_dir Path to the output folder for the caregiver IDI exports
-#' @param qual2_dir Path to the output folder for the healthcare provider IDI exports
+#' @param qualcg_dir Path to the output folder for the caregiver in-depth interview exports
+#' @param qualhcp_dir Path to the output folder for the healthcare provider in-depth interview exports
+#' @param qualkii_dir Path to the output folder for the key informant interview exports (optional)
+#' @param qualos_dir Path to the output folder for the online survey exports (optional)
 #' @param spa_db_dir Path to the output folder for the SPA / time-flow / process mapping database exports
 #' @param cost_dir Path to the output folder for the cost and cost effectiveness database exports (optional)
 #' @param path_dir Path to the output folder for the M&E exports to be shared with PATH
@@ -35,8 +37,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      participant_zip,
                                      mdb_dir,
                                      fu_dir,
-                                     qual1_dir,
-                                     qual2_dir,
+                                     qualcg_dir,
+                                     qualhcp_dir,
                                      spa_db_dir,
                                      path_dir,
                                      start_date = NULL,
@@ -44,7 +46,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      spa_start_date = NULL,
                                      lock_date = NULL,
                                      cost_pid = NULL,
-                                     cost_dir = NULL) {
+                                     cost_dir = NULL,
+                                     qualkii_dir = NULL,
+                                     qualos_dir = NULL) {
 
 
   if (is.null(spa_start_date)) {
@@ -98,6 +102,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   cgidi1_fid <- Sys.getenv("TIMCI_QUAL_CGIDI1_FID")
   cgidi2_fid <- Sys.getenv("TIMCI_QUAL_CGIDI2_FID")
   cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
+  hcpidi_fid <- Sys.getenv("TIMCI_QUAL_HCPIDI_FID")
+  kii_fid <- Sys.getenv("TIMCI_QUAL_KII_FID")
+  os_fid <- Sys.getenv("TIMCI_QUAL_OS_FID")
 
   #######################
   # Load TIMCI ODK data #
@@ -131,7 +138,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Load facility data ---------------------------
   write(formats2h2("Load RCT/LS facility data"), stderr())
 
-  write("Load day 0 data", stderr())
+  write(formats2h3("Load day 0 data"), stderr())
 
   raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                pid = rctls_pid,
@@ -229,10 +236,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
-  facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip, paste0(crf_facility_fid, " - audit.csv"))
+  facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip,
+                                                                     paste0(crf_facility_fid, " - audit.csv"),
+                                                                     tempdir())
 
   # Load day 7 follow-up data
-  write("Load day 7 follow-up data", stderr())
+  write(formats2h3("Load day 7 follow-up data"), stderr())
   raw_day7fu_data <- NULL
   if (crf_day7_fid %in% rct_ls_form_list) {
     raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -247,7 +256,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load hospital visit follow-up data
-  write("Load hospital visit data", stderr())
+  write(formats2h3("Load hospital visit data"), stderr())
   raw_hospit_data <- NULL
   if (crf_hospit_fid %in% rct_ls_form_list) {
     raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -264,7 +273,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # [Tanzania and India only] Load day 28 follow-up data
   raw_day28fu_data <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    write("Load day 28 follow-up data", stderr())
+    write(formats2h3("Load day 28 follow-up data"), stderr())
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                   pid = rctls_pid,
@@ -279,7 +288,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load widthdrawal data
-  write("Load withdrawal data", stderr())
+  write(formats2h3("Load withdrawal data"), stderr())
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
     raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -294,7 +303,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Load weekly facility assessment data
-  write("Load weekly facility assessment data", stderr())
+  write(formats2h3("Load weekly facility assessment data"), stderr())
   wfa_data <- NULL
   if (crf_wfa_fid %in% rct_ls_form_list) {
     raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -330,105 +339,76 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   # Load SPA data ---------------------------
 
-  write("Load TIMCI SPA data", stderr())
+  write(formats2h2("Load TIMCI SPA data"), stderr())
 
   spa_cgei_data <- NULL
   spa_fa_data <- NULL
   spa_hcpi_data <- NULL
   spa_sco_data <- NULL
   tf_data <- NULL
-  tf_data_full <- NULL
   pm_data <- NULL
 
   if (spa_pid %in% odkc_project_list) {
 
     # Load SPA caregiver exit interview data
-    write("Load SPA caregiver exit interview data", stderr())
-    if (cgei_fid %in% spa_form_list) {
-      raw_spa_cgei_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                   pid = spa_pid,
-                                                   fid = cgei_fid,
-                                                   media = FALSE)
-      spa_cgei_data <- timci::extract_data_from_odk_zip(raw_spa_cgei_zip,
-                                                        paste0(cgei_fid,".csv"),
-                                                        spa_start_date,
-                                                        end_date)
-    }
+    write(formats2h3("Load SPA caregiver exit interview data"), stderr())
+    spa_cgei_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                  cpid_forms = spa_form_list,
+                                                  cfid = cgei_fid,
+                                                  start_date = spa_start_date,
+                                                  end_date = end_date,
+                                                  verbose = TRUE)
 
     # Load SPA facility assessment data
     print("Load SPA facility assessment data")
-    if (fa_fid %in% spa_form_list) {
-      raw_spa_fa_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                 pid = spa_pid,
-                                                 fid = fa_fid,
-                                                 media = FALSE)
-      spa_fa_data <- timci::extract_data_from_odk_zip(raw_spa_fa_zip,
-                                                      paste0(fa_fid,".csv"),
-                                                      spa_start_date,
-                                                      end_date)
-    }
+    spa_fa_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                cpid_forms = spa_form_list,
+                                                cfid = fa_fid,
+                                                start_date = spa_start_date,
+                                                end_date = end_date,
+                                                verbose = TRUE)
 
     # Load SPA healthcare provider interview data
     print("Load SPA healthcare provider interview data")
-    if (hcpi_fid %in% spa_form_list) {
-      raw_spa_hcpi_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                   pid = spa_pid,
-                                                   fid = hcpi_fid,
-                                                   media = FALSE)
-      spa_hcpi_data <- timci::extract_data_from_odk_zip(raw_spa_hcpi_zip,
-                                                        paste0(hcpi_fid,".csv"),
-                                                        spa_start_date,
-                                                        end_date)
-    }
+    spa_hcpi_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                  cpid_forms = spa_form_list,
+                                                  cfid = hcpi_fid,
+                                                  start_date = spa_start_date,
+                                                  end_date = end_date,
+                                                  verbose = TRUE)
 
     # Load SPA sick child observation protocol data
     print("Load SPA sick child observation protocol data")
-    if (sco_fid %in% spa_form_list) {
-      raw_spa_sco_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                  pid = spa_pid,
-                                                  fid = sco_fid,
-                                                  media = FALSE)
-      spa_sco_data <- timci::extract_data_from_odk_zip(raw_spa_sco_zip,
-                                                       paste0(sco_fid,".csv"),
-                                                       spa_start_date,
-                                                       end_date)
-    }
+    spa_sco_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                 cpid_forms = spa_form_list,
+                                                 cfid = sco_fid,
+                                                 start_date = spa_start_date,
+                                                 end_date = end_date,
+                                                 verbose = TRUE)
 
     # Load time-flow data
-    print("Load time-flow data")
-    if (tf_fid %in% spa_form_list) {
-      raw_tf_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                             pid = spa_pid,
-                                             fid = tf_fid,
-                                             media = TRUE)
-      tf_data <- timci::extract_data_from_odk_zip(raw_tf_zip,
-                                                  paste0(tf_fid,".csv"),
-                                                  spa_start_date,
-                                                  end_date)
-      # Extract time-flow audit and single steps
-      tf_data_audit <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, " - audit.csv"))
-      tf_data_steps <- timci::extract_additional_data_from_odk_zip(raw_tf_zip, paste0(tf_fid, "-steps.csv"))
-      tf_data_full <- list(tf_data, tf_data_audit, tf_data_steps)
-    }
+    write(formats2h3("Load time-flow data"), stderr())
+    tf_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                    cpid_forms = spa_form_list,
+                                                    cfid = tf_fid,
+                                                    start_date = spa_start_date,
+                                                    end_date = end_date,
+                                                    verbose = TRUE)
 
     # Load process-mapping data
-    print("Load time-flow data")
-    if (pm_fid %in% spa_form_list) {
-      raw_pm_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                             pid = spa_pid,
-                                             fid = pm_fid,
-                                             media = FALSE)
-      pm_data <- timci::extract_data_from_odk_zip(raw_pm_zip,
-                                                  paste0(pm_fid,".csv"),
-                                                  spa_start_date,
-                                                  end_date)
-    }
+    write(formats2h3("Load process mapping data"), stderr())
+    pm_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                    cpid_forms = spa_form_list,
+                                                    cfid = pm_fid,
+                                                    start_date = spa_start_date,
+                                                    end_date = end_date,
+                                                    verbose = TRUE)
 
   }
 
   # Load TIMCI cost data ---------------------------
 
-  write("Load TIMCI cost data", stderr())
+  write(formats2h2("Load TIMCI cost data"), stderr())
 
   medical_cost_data <- NULL
   hospital_cost_data <- NULL
@@ -437,83 +417,96 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (cost_pid %in% odkc_project_list) {
 
       # Load medical cost data
-      write("Load medical cost data", stderr())
-
-      if (medical_cost_fid %in% cost_form_list) {
-        medical_cost_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                     pid = cost_pid,
-                                                     fid = medical_cost_fid,
-                                                     media = FALSE)
-        medical_cost_data <- timci::extract_data_from_odk_zip(medical_cost_zip,
-                                                              paste0(medical_cost_fid,".csv"),
-                                                              spa_start_date,
-                                                              end_date)
-      }
+      write(formats2h3("Load medical cost data"), stderr())
+      medical_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                cpid_forms = cost_form_list,
+                                                                cfid = medical_cost_fid,
+                                                                start_date = start_date,
+                                                                end_date = end_date,
+                                                                verbose = TRUE)
 
       # Load hospital cost data
-      write("Load hospital cost data", stderr())
-      if (hospital_cost_fid %in% cost_form_list) {
-        hospital_cost_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                      pid = cost_pid,
-                                                      fid = hospital_cost_fid,
-                                                      media = FALSE)
-        hospital_cost_data <- timci::extract_data_from_odk_zip(hospital_cost_zip,
-                                                               paste0(hospital_cost_fid,".csv"),
-                                                               spa_start_date,
-                                                               end_date)
-      }
+      write(formats2h3("Load hospital cost data"), stderr())
+      hospital_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                 cpid_forms = cost_form_list,
+                                                                 cfid = hospital_cost_fid,
+                                                                 start_date = start_date,
+                                                                 end_date = end_date,
+                                                                 verbose = TRUE)
 
     }
   }
 
   # Load TIMCI qualitative data ---------------------------
 
-  write("Load TIMCI qualitative data", stderr())
+  write(formats2h2("Load TIMCI qualitative data"), stderr())
 
   cgidi_invitation_data <- NULL
   cgidi_encryption_data <- NULL
   cgidi_interview_data <- NULL
+  hcpidi_interview_data <- NULL
 
   if (qpid %in% odkc_project_list) {
 
     # Load caregiver IDI invitation data
-    print("Load caregiver IDI invitation data")
-    if (cgidi1_fid %in% qual_form_list) {
-      raw_cgidi_invitation_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                           pid = qpid,
-                                                           fid = cgidi1_fid,
-                                                           pp = qual_pp)
-      cgidi_invitation_data <- timci::extract_data_from_odk_zip(raw_cgidi_invitation_zip,
-                                                                paste0(cgidi1_fid,".csv"),
-                                                                start_date,
-                                                                end_date)
-    }
+    write(formats2h3("Load caregiver IDI invitation data"), stderr())
+    cgidi_invitation_data <- timci::extract_data_from_odk_server(cpid = qpid,
+                                                                 cpid_forms = qual_form_list,
+                                                                 cfid = cgidi1_fid,
+                                                                 cpp = qual_pp,
+                                                                 start_date = start_date,
+                                                                 end_date = end_date,
+                                                                 verbose = TRUE)
 
     # Load caregiver IDI encryption list
-    print("Load caregiver IDI encryption list")
-    if (cgidi2_fid %in% qual_form_list) {
-      raw_cgidi_encryption_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                           pid = qpid,
-                                                           fid = cgidi2_fid,
-                                                           pp = qual_pp)
-      cgidi_encryption_data <- timci::extract_data_from_odk_zip(raw_cgidi_encryption_zip,
-                                                                paste0(cgidi2_fid,".csv"),
-                                                                start_date,
-                                                                end_date)
-    }
+    write(formats2h3("Load caregiver IDI encryption list"), stderr())
+    cgidi_encryption_data <- timci::extract_data_from_odk_server(cpid = qpid,
+                                                                 cpid_forms = qual_form_list,
+                                                                 cfid = cgidi2_fid,
+                                                                 cpp = qual_pp,
+                                                                 start_date = start_date,
+                                                                 end_date = end_date,
+                                                                 verbose = TRUE)
 
-    # Load caregiver IDI interview data
-    print("Load caregiver IDI interview data")
-    if (cgidi3_fid %in% qual_form_list) {
-      raw_cgidi_interview_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                          pid = qpid,
-                                                          fid = cgidi3_fid,
-                                                          pp = qual_pp)
-      cgidi_interview_data <- timci::extract_data_from_odk_zip(raw_cgidi_interview_zip,
-                                                               paste0(cgidi3_fid,".csv"),
-                                                               start_date,
-                                                               end_date)
-    }
+    # Load caregiver in-depth interview (IDI) data
+    write(formats2h3("Load caregiverin-depth interview (IDI) data"), stderr())
+    cgidi_interview_data <- extract_data_from_odk_server(cpid = qpid,
+                                                         cpid_forms = qual_form_list,
+                                                         cfid = cgidi3_fid,
+                                                         cpp = qual_pp,
+                                                         start_date = start_date,
+                                                         end_date = end_date,
+                                                         verbose = TRUE)
+
+    # Load healthcare provider in-depth interview (IDI) data
+    write(formats2h3("Load healthcare provider in-depth interview (IDI) data"), stderr())
+    hcpidi_interview_data <- extract_data_from_odk_server(cpid = qpid,
+                                                          cpid_forms = qual_form_list,
+                                                          cfid = hcpidi_fid,
+                                                          cpp = qual_pp,
+                                                          start_date = start_date,
+                                                          end_date = end_date,
+                                                          verbose = TRUE)
+
+    # Load key informant interview (KII) data
+    write(formats2h3("Load key informant interview (KII) data"), stderr())
+    kii_interview_data <- extract_data_from_odk_server(cpid = qpid,
+                                                       cpid_forms = qual_form_list,
+                                                       cfid = kii_fid,
+                                                       cpp = qual_pp,
+                                                       start_date = start_date,
+                                                       end_date = end_date,
+                                                       verbose = TRUE)
+
+    # Load online survey data
+    write(formats2h3("Load online survey data"), stderr())
+    online_survey_data <- extract_data_from_odk_server(cpid = qpid,
+                                                       cpid_forms = qual_form_list,
+                                                       cfid = os_fid,
+                                                       cpp = qual_pp,
+                                                       start_date = start_date,
+                                                       end_date = end_date,
+                                                       verbose = TRUE)
 
   }
 
@@ -528,7 +521,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  participant_zip = participant_zip,
                  spa_dir = spa_db_dir,
                  cost_dir = cost_dir,
-                 qual1_dir = qual1_dir,
+                 qualcg_dir = qualcg_dir,
+                 qualhcp_dir = qualhcp_dir,
+                 qualkii_dir = qualkii_dir,
+                 qualos_dir = qualos_dir,
                  facility_data = facility_data,
                  lock_date = lock_date,
                  facility_data_audit = facility_data_audit,
@@ -541,13 +537,16 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  spa_fa_data = spa_fa_data,
                  spa_hcpi_data = spa_hcpi_data,
                  spa_sco_data = spa_sco_data,
-                 tf_data = tf_data_full,
+                 tf_data = tf_data,
                  pm_data = pm_data,
                  medical_cost_data = medical_cost_data,
                  hospital_cost_data = hospital_cost_data,
                  cgidi_invitation_data = cgidi_invitation_data,
                  cgidi_encryption_data = cgidi_encryption_data,
                  cgidi_interview_data = cgidi_interview_data,
+                 hcpidi_interview_data = hcpidi_interview_data,
+                 kii_interview_data = kii_interview_data,
+                 online_survey_data = online_survey_data,
                  lock_date = lock_date)
   generate_word_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
 
@@ -597,10 +596,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   if (!is.null(tf_data)) {
     if (length(tf_data) > 0) {
-      if (nrow(tf_data) > 0) {
+      if (nrow(tf_data[[1]]) > 0) {
         params <- list(research_facilities = research_facilities,
                        facility_data = facility_data,
-                       tf_data = tf_data,
+                       tf_data = tf_data[[1]],
                        raw_withdrawal_data = raw_withdrawal_data)
         generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
       }

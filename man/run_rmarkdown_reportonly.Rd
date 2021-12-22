@@ -15,8 +15,8 @@ run_rmarkdown_reportonly(
   participant_zip,
   mdb_dir,
   fu_dir,
-  qual1_dir,
-  qual2_dir,
+  qualcg_dir,
+  qualhcp_dir,
   spa_db_dir,
   path_dir,
   start_date = NULL,
@@ -24,7 +24,9 @@ run_rmarkdown_reportonly(
   spa_start_date = NULL,
   lock_date = NULL,
   cost_pid = NULL,
-  cost_dir = NULL
+  cost_dir = NULL,
+  qualkii_dir = NULL,
+  qualos_dir = NULL
 )
 }
 \arguments{
@@ -48,9 +50,9 @@ run_rmarkdown_reportonly(
 
 \item{fu_dir}{Path to the output folder for the follow-up exports}
 
-\item{qual1_dir}{Path to the output folder for the caregiver IDI exports}
+\item{qualcg_dir}{Path to the output folder for the caregiver in-depth interview exports}
 
-\item{qual2_dir}{Path to the output folder for the healthcare provider IDI exports}
+\item{qualhcp_dir}{Path to the output folder for the healthcare provider in-depth interview exports}
 
 \item{spa_db_dir}{Path to the output folder for the SPA / time-flow / process mapping database exports}
 
@@ -67,6 +69,10 @@ run_rmarkdown_reportonly(
 \item{cost_pid}{Numeric ID of the cost and cost-effectiveness ODK Central project (optional)}
 
 \item{cost_dir}{Path to the output folder for the cost and cost effectiveness database exports (optional)}
+
+\item{qualkii_dir}{Path to the output folder for the key informant interview exports (optional)}
+
+\item{qualos_dir}{Path to the output folder for the online survey exports (optional)}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

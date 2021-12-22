@@ -1,0 +1,92 @@
+---
+title: "Database export caregiver IDI subsection"
+author: "H. LANGET"
+date: "2021-12-22"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+## Caregiver in-depth interview (IDI)
+
+```{r caregiver-idi-verbose}
+write("Export caregiver in-depth interview (IDI) data", stderr())
+```
+
+No data cleaning for the lock.
+
+```{r cg-idi-potential-participants}
+if (!is.null(day0_data) && !is.null(day7fu_data)) {
+  cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
+  fn <- timci::export_df2csvxlsx(cg_qual_export_data,
+                                 qualcg_dir,
+                                 "cg_idi_participants")
+}
+```
+
+```{r cg-idi-invitation-export}
+if (!is.null(cgidi_invitation_data)) {
+  fn <- timci::export_df2csvxlsx(cgidi_invitation_data,
+                                 qualcg_dir,
+                                 "01_timci_cg_invitation_data")
+}
+```
+
+```{r cg-idi-encryption-export}
+if (!is.null(cgidi_encryption_data)) {
+  fn <- timci::export_df2csvxlsx(cgidi_encryption_data,
+                                 qualcg_dir,
+                                 "02_timci_cg_encryption_data")
+}
+```
+
+```{r cg-idi-interview-export}
+if (!is.null(cgidi_interview_data)) {
+  
+  # Filter data
+  drops <- c("encryption-name",
+             "encryption-child_name",
+             "encryption-phonenb1",
+             "encryption-phonenb2",
+             "other_participant-cg2_name")
+  cgidi_interview_data <- cgidi_interview_data[, !(names(cgidi_interview_data) %in% drops)]
+  
+  fn <- timci::export_df2csvxlsx(cgidi_interview_data,
+                                 qualcg_dir,
+                                 "03_timci_cg_interview_data")
+
+  sl <- ruODK::submission_list(pid = qpid,
+                               fid = cgidi3_fid)
+  
+  # Loop on all rows
+  for (i in 1:nrow(sl)) {
+    crow <- cgidi_interview_data[i,]
+    uuid <- crow$'meta-instanceID'
+    cpath <- file.path(qualcg_dir, crow$'encryption-participant')
+    print(paste0("Participant: ", crow$'encryption-participant'))
+    dir.create(cpath, showWarnings = FALSE)
+    # Create a new dataframe using the transpose of crow
+    tcrow <- as.data.frame(t(as.matrix(crow)))
+    names(tcrow)[names(tcrow) == "V1"] <- "values"
+    fn <- export_df2xlsx(tcrow, cpath, "data")
+    
+    # Download attachments
+    al <- ruODK::get_one_submission_attachment_list(pid = qpid,
+                                                    fid = cgidi3_fid,
+                                                    uuid)
+    for (j in 1:nrow(al)) {
+      aid <- al$name[[j]]
+      print(paste0("Attachment: ", aid))
+      ruODK::attachment_get(pid = qpid,
+                            fid = cgidi3_fid,
+                            uuid, 
+                            aid,
+                            local_dir = cpath)
+    }
+  }
+}
+```

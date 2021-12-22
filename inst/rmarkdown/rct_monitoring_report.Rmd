@@ -65,8 +65,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
+\newpage
+
 ```{r intro-text, results='asis'}
-cat("\\newpage")
 cat(paste0(notice_str, "\n\n", intro_str))
 ```
 
@@ -200,8 +201,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
 facility_disp %>% knitr::kable()
 ```
 
+\newpage
+
 ```{r, results='asis'}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   title_str <- "# Indicateurs globaux\n\n"
   plot1_str <- "Recrutement mensuel\nvs.\ncible"
@@ -413,8 +415,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
+\newpage
+
 ```{r submissions-1, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("# Soumissions\n\n")
   cat("## Nombre total de soumissions par formulaire\n\n")
@@ -574,8 +577,9 @@ timci::generate_time_hist_plot(facility_data, screening_times_str)
 
 To be completed (track submissions that are not submitted on the same day)
 
+\newpage
+
 ```{r, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Participants\n\n"))
 } else {
@@ -775,8 +779,9 @@ nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
 plot(nec_pie_chart)
 ```
 
+\newpage
+
 ```{r, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Visite primaire\n\n"))
 } else {
@@ -854,8 +859,9 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'Kenya' && Sys.getenv('TIMCI_COUNTRY') != 'In
 }
 ```
 
+\newpage
+
 ```{r header-clinical-presentation, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("## Oxymètre de pouls\n\n"))
 } else {
@@ -903,8 +909,9 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
+\newpage
+
 ```{r header-referrals, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("## Orientation vers un centre de référence\n\n"))
 } else {
@@ -948,8 +955,9 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
+\newpage
+
 ```{r, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Suivi à Jour 7\n\n"))
   cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
@@ -1080,8 +1088,9 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
+\newpage
+
 ```{r, results = "asis"}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Suivi des visites à l'hôpital\n\n"))
 } else {
@@ -1190,8 +1199,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 }
 ```
 
+\newpage
+
 ```{r appendix-title, results = "asis"}
-cat("\\newpage")
 cat(appendix_title)
 ```
 
