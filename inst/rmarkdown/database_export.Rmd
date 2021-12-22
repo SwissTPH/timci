@@ -1505,8 +1505,6 @@ if (!is.null(medical_cost_data)){
 }
 ```
 
-## Hospital costs
-
 ```{r hospital-cost-subsection, results="asis"}
 if (!is.null(hospital_cost_data)){
   out <- knitr::knit_child('database_export_hospitalcost_sub.Rmd',
