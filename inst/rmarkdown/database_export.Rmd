@@ -299,32 +299,82 @@ if (nrow(underaged_cg) == 1) {
 
 ### Submission completion timeliness
 
-#### Submissions not finalised on the day they were started [compliance check]
+#### Non-timely completion [compliance check]
 
-```{r, results='asis'}
-qc <- NULL
+Definition: delayed completion of a submission, either finalisation not done on the same day the submission was started (i.e., duration from start to end superior to 0 day) or finalisation 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
+
+```{r}
+qc_completion_ab1day <- NULL
+qc_completion_ab2days <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    qc <- detect_submission_duration2(locked_day0_data)
-    issue <- qc[qc$diff > 1,]
-    if (nrow(issue) > 0) { 
-      issue %>% knitr::kable(caption = "Submissions not finalised on the day they were started", row.names = FALSE)
-    }
+    qc <- detect_non_timely_completion(locked_day0_data)
+    qc_completion_ab1day <- qc[qc$diff > 0,]
+    qc_completion_ab2days <- qc[qc$diff > 1,]
   }
 }
 ```
 
-#### Transfer not done on the day the submission was finalised [compliance check]
+```{r, results='asis'}
+if (!is.null(qc_completion_ab1day)) {
+  if (nrow(qc_completion_ab1day) > 0) {
+    cat(nrow(qc_completion_ab1day), "participants for which the submission was not finalised on the same day it was started.")
+  }
+}
+```
 
 ```{r, results='asis'}
-qc <- NULL
+if (!is.null(qc_completion_ab2days)) {
+  if (nrow(qc_completion_ab2days) > 0) {
+    cat(nrow(qc_completion_ab2days), "participants for which the submission was finalised after 2 days and more.")
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_completion_ab2days)) {
+  if (nrow(qc_completion_ab2days) > 0) {
+    qc_completion_ab2days %>% knitr::kable(caption = "Submissions finalised after 2 days and more", row.names = FALSE)
+  }
+}
+```
+
+#### Non-timely submission [compliance check]
+
+Definition: transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet.
+
+```{r}
+qc_transfer_ab1day <- NULL
+qc_transfer_ab7days <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    qc <- detect_submission_duration(locked_day0_data)
-    issue <- qc[qc$diff > 1,]
-    if (nrow(issue) > 0) { 
-      issue %>% knitr::kable(caption = "Transfer not done on the day the submission was finalised", row.names = FALSE)
-    }
+    qc <- detect_non_timely_submission(locked_day0_data)
+    qc_transfer_ab1day <- qc[qc$diff > 0,]
+    qc_transfer_ab7days <- qc[qc$diff > 6,]
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab1day)) {
+  if (nrow(qc_transfer_ab1day) > 0) {
+    cat(nrow(qc_transfer_ab1day), "participants for which the submission was not transferred on the same day it was finalised.")
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab7days)) {
+  if (nrow(qc_transfer_ab7days) > 0) {
+    cat(nrow(qc_transfer_ab7days), "participants for which the submission was transferred after 7 days and more.")
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab7days)) {
+  if (nrow(qc_transfer_ab7days) > 0) {
+    qc_transfer_ab7days %>% knitr::kable(caption = "Submission transfer after 7 days and more", row.names = FALSE)
   }
 }
 ```
@@ -333,9 +383,7 @@ if (!is.null(facility_data)) {
 
 #### Child ID duplicates [compliance check] 
 
-```{r, results='asis'}
-cat("Rule: child ID duplicates are removed from the locked database.")
-```
+Rule: child ID duplicates are removed from the locked database.
 
 ```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
 day0_qc <- NULL

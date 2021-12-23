@@ -1,34 +1,36 @@
-#' Detect submission not submitted on the day they were finalised (ODK function)
+#' Detect non-timely submissions, i.e. submissions not sent to the server on the day they were finalised (ODK function)
 #'
 #' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
 #' @return This function returns a dataframe containing the duration between start and end
 #' @export
 #' @import dplyr magrittr
 
-detect_submission_duration <- function(df) {
+detect_non_timely_submission <- function(df) {
 
   qc <- NULL
 
   # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df$submission_date), format="%Y-%m-%d %T") - as.Date(as.character(df$end), format="%Y-%m-%d %T")
+  df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
   qc <- df[c("fid", "child_id", "start", "diff")] %>%
     dplyr::arrange(fid, diff)
 
 }
 
-#' Detect submission not finalised on the day they were started (ODK function)
+#' Detect non-timely completion of a submission, i.e. submissions not finalised on the day they were started (ODK function)
 #'
 #' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
 #' @return This function returns a dataframe containing the duration between start and end
 #' @export
 #' @import dplyr magrittr
 
-detect_submission_duration2 <- function(df) {
+detect_non_timely_completion <- function(df) {
 
   qc <- NULL
 
   # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df$end), format="%Y-%m-%d %T") - as.Date(as.character(df$start), format="%Y-%m-%d %T")
+  df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
   qc <- df[c("fid", "child_id", "start", "diff")] %>%
     dplyr::arrange(fid, diff)
 
