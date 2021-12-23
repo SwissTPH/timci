@@ -445,6 +445,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   cgidi_encryption_data <- NULL
   cgidi_interview_data <- NULL
   hcpidi_interview_data <- NULL
+  kii_interview_data <- NULL
+  online_survey_data <- NULL
 
   if (qpid %in% odkc_project_list) {
 
