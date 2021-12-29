@@ -17,7 +17,7 @@ generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()
     stop(paste("Could not find `", rmd_fn, "`. Try re-installing `timci`."), call. = FALSE)
   }
 
-  rmarkdown::render(report,
+  rmarkdown::render(input = report,
                     output_format = c("pdf_document"),
                     output_file = c(paste0(report_fn, '_',Sys.Date(),'.pdf')),
                     output_dir = report_dir,
@@ -44,7 +44,7 @@ generate_word_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list(
     stop(paste("Could not find `", rmd_fn, "`. Try re-installing `timci`."), call. = FALSE)
   }
 
-  rmarkdown::render(report,
+  rmarkdown::render(input = report,
                     output_format = c("word_document"),
                     output_file = c(paste0(report_fn, '_',Sys.Date(),'.docx')),
                     output_dir = report_dir,

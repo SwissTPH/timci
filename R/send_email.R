@@ -18,7 +18,9 @@ send_email <- function(study_type, dest, attachment_list) {
       emayili::from(Sys.getenv('EMAIL_UN')) %>%
       emayili::to(dest) %>%
       emayili::subject(paste0("TIMCI ", study_type, " reports - ", Sys.getenv('TIMCI_COUNTRY'), " - ", format(Sys.time(), '%Y-%m-%d'))) %>%
-      emayili::text(paste0("Dear all,\n\nPlease receive the TIMCI daily report for ", Sys.getenv('TIMCI_COUNTRY'), ".\n\nBest regards,\n\nThe TIMCI team\n\n[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]"))
+      emayili::text(paste0("Dear all,\n\nPlease receive the TIMCI daily report for ",
+                           Sys.getenv('TIMCI_COUNTRY'),
+                           ".\n\nBest regards,\n\nThe TIMCI team\n\n[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]"))
 
     smtp <- emayili::server(host = "smtp.gmail.com",
                             port = 465,
@@ -59,7 +61,9 @@ send_email_tls <- function(study_type, dest, attachment_list) {
       emayili::from(Sys.getenv('EMAIL_UN')) %>%
       emayili::to(dest) %>%
       emayili::subject(paste0("TIMCI ", study_type, " reports - ", Sys.getenv('TIMCI_COUNTRY'), " - ", format(Sys.time(), '%Y-%m-%d'))) %>%
-      emayili::text(paste0("Dear all,\n\nPlease receive the TIMCI daily report for ", Sys.getenv('TIMCI_COUNTRY'), ".\n\nBest regards,\n\nThe TIMCI team\n\n[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]"))
+      emayili::text(paste0("Dear all,\n\nPlease receive the TIMCI daily report for ",
+                           Sys.getenv('TIMCI_COUNTRY'),
+                           ".\n\nBest regards,\n\nThe TIMCI team\n\n[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]"))
 
     smtp <- emayili::gmail(username = Sys.getenv('EMAIL_UN'),
                            password = Sys.getenv('EMAIL_PW'))
