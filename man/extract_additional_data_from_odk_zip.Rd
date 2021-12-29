@@ -4,14 +4,14 @@
 \alias{extract_additional_data_from_odk_zip}
 \title{Unzip and extract additional data from ODK zip}
 \usage{
-extract_additional_data_from_odk_zip(odk_zip, csv_name, cdir)
+extract_additional_data_from_odk_zip(odk_zip, csv_name, local_dir = tempdir())
 }
 \arguments{
 \item{odk_zip}{absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`}
 
 \item{csv_name}{name of the .CSV file}
 
-\item{cdir}{current directory}
+\item{local_dir}{local directory (optional, by default set to `tempdir()`)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

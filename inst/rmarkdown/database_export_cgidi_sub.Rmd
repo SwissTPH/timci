@@ -61,23 +61,26 @@ if (!is.null(cgidi_interview_data)) {
   
   # Loop on all rows
   for (i in 1:nrow(sl)) {
+    
     crow <- cgidi_interview_data[i,]
     uuid <- crow$'meta-instanceID'
     cpath <- file.path(qualcg_dir, crow$'encryption-participant')
-    print(paste0("Participant: ", crow$'encryption-participant'))
+    
+    write(paste0("Participant: ", crow$'encryption-participant'), stderr())
+    
     dir.create(cpath, showWarnings = FALSE)
     # Create a new dataframe using the transpose of crow
     tcrow <- as.data.frame(t(as.matrix(crow)))
     names(tcrow)[names(tcrow) == "V1"] <- "values"
-    fn <- export_df2xlsx(tcrow, cpath, "data")
+    fn <- export_df2xlsx(tcrow, cpath, "data", rnames = TRUE)
     
     # Download attachments
-    al <- ruODK::get_one_submission_attachment_list(pid = qpid,
-                                                    fid = cgidi3_fid,
-                                                    uuid)
-    for (j in 1:nrow(al)) {
-      aid <- al$name[[j]]
-      print(paste0("Attachment: ", aid))
+    media_list <- ruODK::get_one_submission_attachment_list(pid = qpid,
+                                                            fid = cgidi3_fid,
+                                                            uuid)
+    for (j in 1:nrow(media_list)) {
+      aid <- media_list$name[[j]]
+      write(paste0("\tAttachment: ", aid), stderr())
       ruODK::attachment_get(pid = qpid,
                             fid = cgidi3_fid,
                             uuid, 

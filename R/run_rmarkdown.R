@@ -50,7 +50,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      qualkii_dir = NULL,
                                      qualos_dir = NULL) {
 
-
   if (is.null(spa_start_date)) {
     spa_start_date = start_date
   }
@@ -224,11 +223,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                               mdb_dir,
                               "01a_screening_raw")
 
-  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
-                                                        paste0(crf_facility_fid,".csv"),
-                                                        start_date,
-                                                        end_date,
-                                                        col_specs)
+  raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
+                                                        csv_name = paste0(crf_facility_fid,".csv"),
+                                                        start_date = start_date,
+                                                        end_date = end_date,
+                                                        local_dir = t,
+                                                        col_specs = col_specs)
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
   } else{
@@ -236,39 +236,29 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
-  facility_data_audit <- timci::extract_additional_data_from_odk_zip(raw_facility_zip,
-                                                                     paste0(crf_facility_fid, " - audit.csv"),
-                                                                     tempdir())
+  facility_data_audit <- timci::extract_additional_data_from_odk_zip(odk_zip = raw_facility_zip,
+                                                                     csv_name = paste0(crf_facility_fid, " - audit.csv"),
+                                                                     local_dir = t)
 
   # Load day 7 follow-up data
   write(formats2h3("Load day 7 follow-up data"), stderr())
-  raw_day7fu_data <- NULL
-  if (crf_day7_fid %in% rct_ls_form_list) {
-    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_day7_fid,
-                                               pp = rctls_pp,
-                                               media = FALSE)
-    raw_day7fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip,
-                                                        paste0(crf_day7_fid,".csv"),
-                                                        start_date,
-                                                        end_date)
-  }
+  raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                  cpid_forms = rct_ls_form_list,
+                                                  cpp = rctls_pp,
+                                                  cfid = crf_day7_fid,
+                                                  start_date = start_date,
+                                                  end_date = end_date,
+                                                  verbose = TRUE)
 
   # Load hospital visit follow-up data
   write(formats2h3("Load hospital visit data"), stderr())
-  raw_hospit_data <- NULL
-  if (crf_hospit_fid %in% rct_ls_form_list) {
-    raw_hospit_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_hospit_fid,
-                                               pp = rctls_pp,
-                                               media = FALSE)
-    raw_hospit_data <- timci::extract_data_from_odk_zip(raw_hospit_zip,
-                                                        paste0(crf_hospit_fid,".csv"),
-                                                        start_date,
-                                                        end_date)
-  }
+  raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                  cpid_forms = rct_ls_form_list,
+                                                  cpp = rctls_pp,
+                                                  cfid = crf_hospit_fid,
+                                                  start_date = start_date,
+                                                  end_date = end_date,
+                                                  verbose = TRUE)
 
   # [Tanzania and India only] Load day 28 follow-up data
   raw_day28fu_data <- NULL
@@ -280,62 +270,50 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   fid = crf_day28_fid,
                                                   pp = rctls_pp,
                                                   media = FALSE)
-      raw_day28fu_data <- timci::extract_data_from_odk_zip(raw_day28fu_zip,
-                                                           paste0(crf_day28_fid,".csv"),
-                                                           start_date,
-                                                           end_date)
+      raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
+                                                           csv_name = paste0(crf_day28_fid,".csv"),
+                                                           start_date = start_date,
+                                                           end_date = end_date)
     }
   }
 
   # Load widthdrawal data
   write(formats2h3("Load withdrawal data"), stderr())
-  raw_withdrawal_data <- NULL
-  if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                   pid = rctls_pid,
-                                                   fid = wd_fid,
-                                                   pp = rctls_pp,
-                                                   media = FALSE)
-    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                            paste0(wd_fid,".csv"),
-                                                            start_date,
-                                                            end_date)
-  }
+  raw_withdrawal_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                      cpid_forms = rct_ls_form_list,
+                                                      cpp = rctls_pp,
+                                                      cfid = wd_fid,
+                                                      start_date = start_date,
+                                                      end_date = end_date,
+                                                      verbose = TRUE)
 
   # Load weekly facility assessment data
   write(formats2h3("Load weekly facility assessment data"), stderr())
+  raw_wfa_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                               cpid_forms = rct_ls_form_list,
+                                               cpp = rctls_pp,
+                                               cfid = crf_wfa_fid,
+                                               start_date = start_date,
+                                               end_date = end_date,
+                                               verbose = TRUE)
   wfa_data <- NULL
-  if (crf_wfa_fid %in% rct_ls_form_list) {
-    raw_wfa_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                            pid = rctls_pid,
-                                            fid = crf_wfa_fid,
-                                            pp = rctls_pp,
-                                            media = TRUE)
-    raw_wfa_data <- timci::extract_data_from_odk_zip(raw_wfa_zip,
-                                                     paste0(crf_wfa_fid,".csv"),
-                                                     start_date,
-                                                     end_date)
-    if (!is.null(raw_wfa_data)) {
-      if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-        wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-      }
+  if (!is.null(raw_wfa_data)) {
+    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+    } else{
+      wfa_data <- raw_wfa_data
     }
   }
 
   # Load problem report data
-  print("Load problem report data")
-  raw_problem_data <- NULL
-  if (problem_fid %in% rct_ls_form_list) {
-    raw_problem_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                pid = rctls_pid,
-                                                fid = problem_fid,
-                                                pp = rctls_pp,
-                                                media = FALSE)
-    raw_problem_data <- timci::extract_data_from_odk_zip(raw_problem_zip,
-                                                         paste0(problem_fid,".csv"),
-                                                         start_date,
-                                                         end_date)
-  }
+  write(formats2h3("Load problem report data"), stderr())
+  raw_problem_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                   cpid_forms = rct_ls_form_list,
+                                                   cpp = rctls_pp,
+                                                   cfid = problem_fid,
+                                                   start_date = start_date,
+                                                   end_date = end_date,
+                                                   verbose = TRUE)
 
   # Load SPA data ---------------------------
 

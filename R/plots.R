@@ -273,7 +273,9 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
     ggplot2::scale_x_date(limits = c(wdate_min, date_max),
                           breaks = "1 week",
                           date_labels = "%d.%m.%y") +
-    geom_text(aes(label = x), position=position_dodge(width=0.9), vjust=-0.25) +
+    geom_text(aes(label = x),
+              position=position_dodge(width=0.9),
+              vjust=-0.25) +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),

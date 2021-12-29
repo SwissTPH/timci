@@ -9,6 +9,7 @@ extract_data_from_odk_zip(
   csv_name,
   start_date = NULL,
   end_date = NULL,
+  local_dir = tempdir(),
   col_specs = NULL
 )
 }
@@ -17,11 +18,13 @@ extract_data_from_odk_zip(
 
 \item{csv_name}{name of the .CSV file}
 
-\item{start_date}{start date}
+\item{start_date}{start date (optional, by default set to `NULL`)}
 
-\item{end_date}{end date}
+\item{end_date}{end date (optional, by default set to `NULL`)}
 
-\item{col_specs}{column specifications}
+\item{local_dir}{local directory (optional, by default set to `tempdir()`)}
+
+\item{col_specs}{column specifications (optional)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

@@ -2,8 +2,8 @@
 #' The function removes ODK note columns (which are systematically empty columns) from the outputted dataframe
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.
-#' @param start_date start date (optional)
-#' @param end_date end date (optional)
+#' @param start_date start date (optional, by default set to `NULL`)
+#' @param end_date end date (optional, by default set to `NULL`)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import magrittr dplyr
 #' @export
@@ -44,25 +44,25 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
 #'
 #' @param odk_zip absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
 #' @param csv_name name of the .CSV file
-#' @param start_date start date
-#' @param end_date end date
-#' @param col_specs column specifications
+#' @param start_date start date (optional, by default set to `NULL`)
+#' @param end_date end date (optional, by default set to `NULL`)
+#' @param local_dir local directory (optional, by default set to `tempdir()`)
+#' @param col_specs column specifications (optional)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import readr utils fs
 #' @export
 
-extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL, col_specs = NULL) {
+extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL, local_dir = tempdir(), col_specs = NULL) {
 
-  t <- tempdir()
-  utils::unzip(odk_zip, exdir = t)
-  #fn <- fs::dir_ls(t, glob=paste0("*", csv_name))
+  utils::unzip(odk_zip, exdir = local_dir)
+  #fn <- fs::dir_ls(local_dir, glob=paste0("*", csv_name))
   #print(fn)
   #raw_odk_data <- fn %>% readr::read_csv()
-  fs::dir_ls(t)
+  fs::dir_ls(local_dir)
   if (!is.null(col_specs)) {
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name), col_types = col_specs))
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name), col_types = col_specs))
   } else{
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, csv_name)))
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name)))
   }
   timci::format_odk_metadata(raw_odk_data, start_date, end_date)
 
@@ -86,19 +86,21 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
 extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
 
   df <- NULL
+  cdir <- tempdir()
 
   if (cfid %in% cpid_forms) {
-    odk_zip <- ruODK::submission_export(local_dir = tempdir(),
+    odk_zip <- ruODK::submission_export(local_dir = cdir,
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
                                         media = FALSE)
-    # Extract ODK submissions
-    df <- timci::extract_data_from_odk_zip(odk_zip,
-                                           paste0(cfid,".csv"),
-                                           start_date,
-                                           end_date,
-                                           col_specs)
+
+    df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
+                                           csv_name = paste0(cfid,".csv"),
+                                           start_date = start_date,
+                                           end_date = end_date,
+                                           local_dir = cdir,
+                                           col_specs = col_specs)
   }
 
   if (verbose == TRUE) {
@@ -117,16 +119,16 @@ extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_d
 #'
 #' @param odk_zip absolute path to the zip file named "`fid`.zip" containing ODK submissions as CSV, plus separate CSVs for any repeating groups, plus any attachments in a subfolder `media`
 #' @param csv_name name of the .CSV file
-#' @param cdir current directory
+#' @param local_dir local directory (optional, by default set to `tempdir()`)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import readr utils fs
 #' @export
 
-extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, cdir) {
+extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, local_dir = tempdir()) {
 
-  utils::unzip(odk_zip, exdir = cdir)
-  fs::dir_ls(cdir)
-  fn <- file.path(cdir, csv_name)
+  utils::unzip(odk_zip, exdir = local_dir)
+  fs::dir_ls(local_dir)
+  fn <- file.path(local_dir, csv_name)
   df <- NULL
   if ( file.exists(fn) ) {
     df <- raw_odk_data <- readr::with_edition(1, readr::read_csv(fn))
@@ -153,23 +155,25 @@ extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, cdir) {
 extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
 
   out <- NULL
+  cdir <- tempdir()
 
   if (cfid %in% cpid_forms) {
-    odk_zip <- ruODK::submission_export(local_dir = tempdir(),
+    odk_zip <- ruODK::submission_export(local_dir = cdir,
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
                                         media = TRUE)
     # Extract ODK submissions
-    df <- timci::extract_data_from_odk_zip(odk_zip,
-                                           paste0(cfid,".csv"),
-                                           start_date,
-                                           end_date,
-                                           col_specs)
+    df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
+                                           csv_name = paste0(cfid,".csv"),
+                                           start_date = start_date,
+                                           end_date = end_date,
+                                           local_dir = cdir,
+                                           col_specs = col_specs)
 
     # Extract and append other CSV attachments
     out <- list(df)
-    files <- list.files(path = tempdir(),
+    files <- list.files(path = cdir,
                         pattern = glob2rx(paste0(cfid,"*.csv")))
     i = 2
     for (f in files){
@@ -177,9 +181,9 @@ extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="",
         if (verbose == TRUE) {
           write(f, stderr())
         }
-        df_tmp <- timci::extract_additional_data_from_odk_zip(odk_zip,
-                                                              f,
-                                                              tempdir())
+        df_tmp <- timci::extract_additional_data_from_odk_zip(odk_zip = odk_zip,
+                                                              csv_name = f,
+                                                              local_dir = cdir)
         out[[i]] <- df_tmp
         i <- i + 1
       }

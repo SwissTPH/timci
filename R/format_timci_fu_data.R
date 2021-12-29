@@ -362,3 +362,22 @@ format_day28_data <- function(df) {
   list(successful_day28_df, fail_day28_df, day28_df)
 
 }
+
+#' Clean follow-up data for estimating rough follow-up rate (TIMCI-specific function)
+#'
+#' @param day0_df dataframe containing the non de-identified (raw) ODK data collected at Day 0
+#' @param fu_df dataframe containing follow-up data that correspond to successful (either Day 7 Day 28) calls
+#' @return out
+#' @import dplyr magrittr
+#' @export
+#'
+#' @examples
+clean_followup_for_rate_estimation <- function(day0_df, fu_df) {
+
+  # Extract only follow-ups that corresponds to an enrolled child
+  # and delete duplicated IDs
+  fu_df[fu_df$child_id %in% day0_df$child_id, ] %>%
+    dplyr::distinct_at(dplyr::vars(child_id),
+                       .keep_all = TRUE)
+
+}
