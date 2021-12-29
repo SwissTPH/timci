@@ -1,9 +1,10 @@
 #' Format ODK metadata
+#' The function removes ODK note columns (which are systematically empty columns) from the outputted dataframe
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.
+#' @param start_date start date (optional)
+#' @param end_date end date (optional)
 #' @return This function returns a formatted dataframe for future display and analysis.
-#' @param start_date start date
-#' @param end_date end date
 #' @import magrittr dplyr
 #' @export
 
@@ -17,6 +18,8 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
     df$end_time <- strftime(df$end,"%T")
     df$end <- strftime(df$end,"%Y-%m-%d %T")
     df <- df %>% dplyr::rename(date = today)
+
+    # Filter by start date and end date
     if (!is.null(start_date)) {
       df <- df %>%
         dplyr::filter(date >= as.Date(start_date, "%Y-%m-%d"))
@@ -26,6 +29,12 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
       df <- df %>%
         dplyr::filter(date <= as.Date(end_date, "%Y-%m-%d"))
     }
+
+    # Remove ODK note columns (which are systematically empty columns and identified by the string generated_note_name) from the outputted dataframe
+    cols <- colnames(df)
+    drops <- cols[grepl("generated_note_name_", cols)]
+    df <- df[, !(names(df) %in% drops)]
+
     df
   }
 
