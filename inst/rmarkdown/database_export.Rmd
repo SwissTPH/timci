@@ -226,7 +226,7 @@ cat(paste0("Data collection has been done using ", nrow(facility_device), " tabl
 write(formats2h2("Review, process and export facility data"), stderr())
 ```
 
-## Facility data quality checks
+## Day 0 data quality checks
 
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
@@ -297,9 +297,9 @@ if (nrow(underaged_cg) == 1) {
 }
 ```
 
-### Submission completion timeliness
+### Submission timeliness [compliance check]
 
-#### Non-timely completion [compliance check]
+#### Non-timely completion
 
 Definition: delayed completion of a submission, either finalisation not done on the same day the submission was started (i.e., duration from start to end superior to 0 day) or finalisation 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
 
@@ -346,11 +346,14 @@ Definition: transfer of a finalised submission to the ODK Central server not don
 ```{r}
 qc_transfer_ab1day <- NULL
 qc_transfer_ab7days <- NULL
+qc_transfer_ab12days <- NULL
+
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     qc <- detect_non_timely_submission(locked_day0_data)
     qc_transfer_ab1day <- qc[qc$diff > 0,]
     qc_transfer_ab7days <- qc[qc$diff > 6,]
+    qc_transfer_ab12days <- qc[qc$diff > 11,]
   }
 }
 ```
@@ -374,7 +377,23 @@ if (!is.null(qc_transfer_ab7days)) {
 ```{r, results='asis'}
 if (!is.null(qc_transfer_ab7days)) {
   if (nrow(qc_transfer_ab7days) > 0) {
-    qc_transfer_ab7days %>% knitr::kable(caption = "Submission transfer after 7 days and more", row.names = FALSE)
+    qc_transfer_ab7days %>% knitr::kable(caption = "Participants with a submission transfer after 7 days and more", row.names = FALSE)
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab12days)) {
+  if (nrow(qc_transfer_ab12days) > 0) {
+    cat(nrow(qc_transfer_ab12days), "participants for which the submission was transferred after 12 days and more (participant never displayed in the Day 7 follow-up log on the tablet).")
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab12days)) {
+  if (nrow(qc_transfer_ab12days) > 0) {
+    qc_transfer_ab12days %>% knitr::kable(caption = "Participants with a submissions transfer after 12 days and more", row.names = FALSE)
   }
 }
 ```
@@ -1577,14 +1596,11 @@ out <- knitr::knit_child('database_export_cgidi_sub.Rmd',
 cat(out, sep = '\n')
 ```
 
-## Healthcare provider in-depth interview (IDI)
-
-```{r hcp-idi-interview-export}
-if (!is.null(hcpidi_interview_data)) {
-  fn <- timci::export_df2csvxlsx(hcpidi_interview_data,
-                                 qualhcp_dir,
-                                 "03_timci_hcp_interview_data")
-}
+```{r hcp-idi-subsection, results="asis"}
+out <- knitr::knit_child('database_export_hcpidi_sub.Rmd',
+                         envir = environment(),
+                         quiet = TRUE)
+cat(out, sep = '\n')
 ```
 
 ## Key informant interview

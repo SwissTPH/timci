@@ -24,7 +24,7 @@ if (!is.null(day0_data) && !is.null(day7fu_data)) {
   cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
   fn <- timci::export_df2csvxlsx(cg_qual_export_data,
                                  qualcg_dir,
-                                 "cg_idi_participants")
+                                 "01_cg_idi_participants")
 }
 ```
 
@@ -33,14 +33,6 @@ if (!is.null(cgidi_invitation_data)) {
   fn <- timci::export_df2csvxlsx(cgidi_invitation_data,
                                  qualcg_dir,
                                  "01_timci_cg_invitation_data")
-}
-```
-
-```{r cg-idi-encryption-export}
-if (!is.null(cgidi_encryption_data)) {
-  fn <- timci::export_df2csvxlsx(cgidi_encryption_data,
-                                 qualcg_dir,
-                                 "02_timci_cg_encryption_data")
 }
 ```
 
@@ -57,7 +49,12 @@ if (!is.null(cgidi_interview_data)) {
   
   fn <- timci::export_df2csvxlsx(cgidi_interview_data,
                                  qualcg_dir,
-                                 "03_timci_cg_interview_data")
+                                 "02_timci_cg_interview_data")
+}
+```
+
+```{r cg-idi-audio-export}
+if (!is.null(cgidi_interview_data)) {
 
   sl <- ruODK::submission_list(pid = qpid,
                                fid = cgidi3_fid)

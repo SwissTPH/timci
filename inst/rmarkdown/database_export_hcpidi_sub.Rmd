@@ -1,0 +1,22 @@
+---
+title: "Database export caregiver IDI subsection"
+author: "H. LANGET"
+date: "2021-12-22"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+## Healthcare provider in-depth interview (IDI)
+
+```{r hcp-idi-interview-export}
+if (!is.null(hcpidi_interview_data)) {
+  fn <- timci::export_df2csvxlsx(hcpidi_interview_data,
+                                 qualhcp_dir,
+                                 "01_timci_hcp_interview_data")
+}
+```
