@@ -30,7 +30,7 @@ format_hospital_data <- function(df) {
 #' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
 #' @export
-#' @import magrittr dplyr
+#' @import dplyr
 
 generate_hospital_log <- function(pii,
                                   fu7df,
@@ -70,6 +70,14 @@ generate_hospital_log <- function(pii,
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
           hospit_log$date_day0 <- as.Date(hospit_log$date_day0, format = "%Y-%m-%d")
           hospit_log$rhf_id <- as.character(hospit_log$rhf_id)
+
+          # Exclude true duplicates (children with the same participant ID, the same name, the same sex and the same age)
+          # Participants may appear several times in the hospital follow-up log because their Day 7 follow-up has been done several times.
+          hospit_log <- hospit_log %>% dplyr::distinct_at(dplyr::vars(child_id,
+                                                                      child_name,
+                                                                      sex,
+                                                                      age_mo),
+                                                          .keep_all = TRUE)
 
           # Order columns
           if (deidentify) {
