@@ -2,20 +2,22 @@
 % Please edit documentation in R/format_odk_data.R
 \name{format_odk_metadata}
 \alias{format_odk_metadata}
-\title{Format ODK metadata}
+\title{Format ODK metadata
+The function removes ODK note columns (which are systematically empty columns) from the outputted dataframe}
 \usage{
 format_odk_metadata(df, start_date = NULL, end_date = NULL)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data, assuming standard metadata fields (`today`, `start`, `end`) are present.}
 
-\item{start_date}{start date}
+\item{start_date}{start date (optional)}
 
-\item{end_date}{end date}
+\item{end_date}{end date (optional)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.
 }
 \description{
 Format ODK metadata
+The function removes ODK note columns (which are systematically empty columns) from the outputted dataframe
 }
