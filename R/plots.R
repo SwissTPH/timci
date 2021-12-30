@@ -43,12 +43,13 @@ generate_enrolment_hist <- function(df, col1, col2, lthres, uthres, lblx, lbly){
 #'
 #' @param df Data frame to use for the plot
 #' @param datecol Column name in data frame `df` that contains dates
-#' @param end_date Final date for drawing the heatmap calendar (optional)
+#' @param date_min Start date of the plot (optional)
+#' @param date_max End date of the plot (optional)
 #' @return This function returns a ggplot object which contains a calendar heatmap.
 #' @export
 #' @import ggplot2
 
-generate_calendar_heatmap <- function(df, datecol, end_date = Sys.Date()){
+generate_calendar_heatmap <- function(df, datecol, date_max = Sys.Date(), date_min = NULL){
 
   # Quote `datecol`
   datecol <- dplyr::enquo(datecol)
@@ -60,9 +61,9 @@ generate_calendar_heatmap <- function(df, datecol, end_date = Sys.Date()){
     dplyr::rename(ndate = !!datecol)
 
   sdate <- as.Date(min(df1$ndate))
-  day_seq <- data.frame(ndate = seq(lubridate::floor_date(sdate, 'month'), as.Date(lubridate::ceiling_date(end_date, "month") - 1), "days"))
+  day_seq <- data.frame(ndate = seq(lubridate::floor_date(sdate, 'month'), as.Date(lubridate::ceiling_date(date_max, "month") - 1), "days"))
   df2 <- merge(day_seq, df1, by = "ndate", all = TRUE)
-  df2$n[(df2$ndate >= sdate) & (df2$ndate <= end_date) & is.na(df2$n)] <- 0
+  df2$n[(df2$ndate >= sdate) & (df2$ndate <= date_max) & is.na(df2$n)] <- 0
 
   df2 <- df2 %>%
     dplyr::mutate(weekday = lubridate::wday(ndate, label = FALSE, abbr = FALSE, week_start = 7),

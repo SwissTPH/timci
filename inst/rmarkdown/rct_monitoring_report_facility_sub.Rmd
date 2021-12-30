@@ -29,7 +29,7 @@ if (!is.null(wfa_data)) {
 }
 
 # Day 7 follow-up
-raw_day7fu_data_tmp <- raw_day7fu_data %>% dplyr::filter('a1-fid' == cfid)
+raw_day7fu_data_tmp <- raw_day7fu_data %>% dplyr::filter(raw_day7fu_data$'a1-fid' == cfid)
 ```
 
 ## `r fname`
@@ -71,7 +71,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", fig.height = 3}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
     
@@ -145,7 +145,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   timci::generate_calendar_heatmap(baseline_data_tmp,
-                                   date_visit)
+                                   date_visit,
+                                   date_max = as.Date(end_date))
 }
 ```
 
@@ -174,10 +175,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results = "asis", fig.height = 3}
 if (!is.null(raw_day7fu_data_tmp) & length(raw_day7fu_data_tmp) > 0 & nrow(raw_day7fu_data_tmp) > 0) {
-  p <- timci::generate_day_bar_plot(date_vec = raw_day7fu_data_tmp$date,
-                                    date_min = as.Date(start_date),
-                                    date_max = as.Date(Sys.Date() + 7),
-                                    ylbl = "Calls")
+  p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data_tmp$date,
+                                     date_min = as.Date(start_date),
+                                     date_max = as.Date(Sys.Date() + 7),
+                                     ylbl = "Calls",
+                                     relative = FALSE)
   plot(p)
 } else {
   cat("To be completed\n\n")

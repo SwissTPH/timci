@@ -553,7 +553,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 timci::generate_calendar_heatmap(facility_data,
                                  date_visit,
-                                 end_date = as.Date(end_date))
+                                 date_max = as.Date(end_date))
 ```
 
 ```{r, results='asis'}
@@ -566,7 +566,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (nrow(baseline_data) > 0) {
   timci::generate_calendar_heatmap(baseline_data,
                                    date_visit,
-                                   end_date = as.Date(end_date))
+                                   date_max = as.Date(end_date))
 }
 ```
 
