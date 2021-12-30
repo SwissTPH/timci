@@ -616,6 +616,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
         params <- list(research_facilities = research_facilities,
                        facility_data = facility_data,
                        tf_data = tf_data[[1]],
+                       pm_data = pm_data[[1]],
                        raw_withdrawal_data = raw_withdrawal_data)
         generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
       }
