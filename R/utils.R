@@ -8,9 +8,17 @@
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
-  fname <- file.path(dirname, paste0(prefix, ".xlsx"))
-  openxlsx::write.xlsx(df, fname, row.names = rnames, overwrite = TRUE, encoding = "UTF-8")
-  fname
+  out <- "Dataframe cannot be written to Excel."
+  if (!is.null(dirname)){
+    fname <- file.path(dirname, paste0(prefix, ".xlsx"))
+    openxlsx::write.xlsx(df,
+                         fname,
+                         row.names = rnames,
+                         overwrite = TRUE,
+                         encoding = "UTF-8")
+    out <- fname
+  }
+  out
 
 }
 
@@ -23,9 +31,17 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
 export_df2csv <- function(df, dirname, prefix) {
 
-  fname <- file.path(dirname, paste0(prefix, ".csv"))
-  write.csv(df, file = fname, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
-  fname
+  out <- "Dataframe cannot be written to CSV."
+  if (!is.null(dirname)){
+    fname <- file.path(dirname, paste0(prefix, ".csv"))
+    write.csv(df,
+              file = fname,
+              row.names = FALSE,
+              quote = FALSE,
+              fileEncoding = "UTF-8")
+    out <- fname
+  }
+  out
 
 }
 
@@ -38,13 +54,13 @@ export_df2csv <- function(df, dirname, prefix) {
 
 export_df2csvxlsx <- function(df, dirname, prefix) {
 
-  fn <- timci::export_df2xlsx(df,
+  out1 <- timci::export_df2xlsx(df,
                               dirname,
                               prefix)
-  fn <- timci::export_df2csv(df,
+  out2 <- timci::export_df2csv(df,
                              dirname,
                              prefix)
-  fn
+  out <- paste0(out1,'\n',out2)
 
 }
 
