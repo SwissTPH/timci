@@ -26,7 +26,8 @@ run_rmarkdown_reportonly(
   cost_pid = NULL,
   cost_dir = NULL,
   qualkii_dir = NULL,
-  qualos_dir = NULL
+  qualos_dir = NULL,
+  sample_size = 1e+05
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ run_rmarkdown_reportonly(
 \item{qualkii_dir}{Path to the output folder for the key informant interview exports (optional)}
 
 \item{qualos_dir}{Path to the output folder for the online survey exports (optional)}
+
+\item{sample_size}{Numeric value, sample size for RCT/LS enrolment}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

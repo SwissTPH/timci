@@ -43,11 +43,12 @@ generate_enrolment_hist <- function(df, col1, col2, lthres, uthres, lblx, lbly){
 #'
 #' @param df Data frame to use for the plot
 #' @param datecol Column name in data frame `df` that contains dates
+#' @param end_date Final date for drawing the heatmap calendar (optional)
 #' @return This function returns a ggplot object which contains a calendar heatmap.
 #' @export
 #' @import ggplot2
 
-generate_calendar_heatmap <- function(df, datecol){
+generate_calendar_heatmap <- function(df, datecol, end_date = Sys.Date()){
 
   # Quote `datecol`
   datecol <- dplyr::enquo(datecol)
@@ -59,9 +60,9 @@ generate_calendar_heatmap <- function(df, datecol){
     dplyr::rename(ndate = !!datecol)
 
   sdate <- as.Date(min(df1$ndate))
-  day_seq <- data.frame(ndate = seq(lubridate::floor_date(sdate, 'month'), as.Date(lubridate::ceiling_date(Sys.Date(), "month") - 1), "days"))
+  day_seq <- data.frame(ndate = seq(lubridate::floor_date(sdate, 'month'), as.Date(lubridate::ceiling_date(end_date, "month") - 1), "days"))
   df2 <- merge(day_seq, df1, by = "ndate", all = TRUE)
-  df2$n[(df2$ndate >= sdate) & (df2$ndate <= Sys.Date()) & is.na(df2$n)] <- 0
+  df2$n[(df2$ndate >= sdate) & (df2$ndate <= end_date) & is.na(df2$n)] <- 0
 
   df2 <- df2 %>%
     dplyr::mutate(weekday = lubridate::wday(ndate, label = FALSE, abbr = FALSE, week_start = 7),
@@ -104,7 +105,7 @@ generate_calendar_heatmap <- function(df, datecol){
 
 #' Create an enrolment gauge
 #'
-#' plot_enrolment_gauge() creates a gauge plot that represents the global enrolment with respect to the target.
+#' plot_gauge() creates a gauge plot that represents the current rate with respect to a target.
 #'
 #' Description of plot_enrolment_gauge
 #' @param val Value
@@ -112,10 +113,11 @@ generate_calendar_heatmap <- function(df, datecol){
 #' @param m Maximal gauge value
 #' @param lthres Numeric value,  lower threshold
 #' @param uthres Numeric value, upper threshold
-#' @return This function plots a gauge representing enrolment.
+#' @param scale Numeric value (optional, default 1), must vary between 0 and 1 to scale the text size
+#' @return This function plots a gauge with rate and title.
 #' @export
 
-plot_enrolment_gauge <- function(val, lbl, m, lthres, uthres){
+plot_gauge <- function(val, lbl, m, lthres, uthres, scale = 1){
 
   df <- data.frame(matrix(nrow = 1, ncol = 2))
 
@@ -134,8 +136,8 @@ plot_enrolment_gauge <- function(val, lbl, m, lthres, uthres){
     geom_rect(aes(ymax = 1, ymin = 0, xmax = 2, xmin = 1), fill = "#dcdcdc") +
     geom_rect() +
     coord_polar(theta = "y", start = -pi/2) + xlim(c(0, 2)) + ylim(c(0,2)) +
-    geom_text(aes(x = 0, y = 0, label = label, colour = group), size = 10) +
-    geom_text(aes(x = 0.9, y = 1.5, label = title), size = 4.2) +
+    geom_text(aes(x = 0, y = 0, label = label, colour = group), size = 10 * scale) +
+    geom_text(aes(x = 0.9, y = 1.5, label = title), size = 4.2 * (scale * (2 - scale))) +
     theme_void() +
     scale_fill_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
     scale_colour_manual(values = c("red" = "#ff0000", "orange" = "#f9c800", "green" = "#a6d40d")) +
@@ -203,8 +205,12 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
                           breaks = "1 day",
                           date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_line(color = "grey60",
+                                            linetype = "dashed"),
+          panel.grid.minor.y = element_line(color = "grey",
+                                            linetype = "dashed"),
           axis.line = element_blank(),
           panel.background = element_blank(),
           axis.text.x = element_text(angle = 45, hjust = 1))
@@ -273,12 +279,13 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
     ggplot2::scale_x_date(limits = c(wdate_min, date_max),
                           breaks = "1 week",
                           date_labels = "%d.%m.%y") +
-    geom_text(aes(label = x),
-              position=position_dodge(width=0.9),
-              vjust=-0.25) +
     theme(panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_line(color = "grey60",
+                                            linetype = "dashed"),
+          panel.grid.minor.y = element_line(color = "grey",
+                                            linetype = "dashed"),
           axis.line = element_blank(),
           panel.background = element_blank(),
           axis.text.x = element_text(angle = 45, hjust = 1))
@@ -305,6 +312,54 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
     }
   }
 
+  p
+
+}
+
+#' Create a weekly bar plot by adding values from a specific column
+#'
+#' generate_week_bar_plot() creates an absolute or a relative bar plot.
+#'
+#' @param date_vec Vector containing dates
+#' @param values Vector containing values to sum
+#' @param date_min Start date of the plot
+#' @param date_max End date of the plot
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
+#' @param ylbl String of the y-axis
+#' @return This function returns a ggplot object which contains a bar plot of frequencies by week
+#' @export
+#' @import ggplot2 scales
+
+generate_week_bar_plot2 <- function(date_vec, values, date_min, date_max, ylim = NULL, ylbl = "Values"){
+
+  # Convert to week
+  week <- as.Date(cut(as.Date(date_vec),
+                      breaks = "week",
+                      start.on.monday = TRUE))
+
+  wdate_min <- as.Date(cut(as.Date(date_min - 7),
+                           breaks = "week",
+                           start.on.monday = TRUE))
+
+  df <- data.frame(week, values)
+
+  p <- ggplot2::ggplot(df, aes(x = week, y = values)) +
+    geom_bar(stat = "identity", fill = "#7dbbd6", width = 7)  +
+    ylab(ylbl) +
+    xlab("Date") +
+    ggplot2::scale_x_date(limits = c(wdate_min, date_max),
+                          breaks = "1 week",
+                          date_labels = "%d.%m.%y") +
+    theme(panel.border = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_line(color = "grey60",
+                                            linetype = "dashed"),
+          panel.grid.minor.y = element_line(color = "grey",
+                                            linetype = "dashed"),
+          axis.line = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.background = element_blank())
   p
 
 }
@@ -354,8 +409,12 @@ generate_day_cumbar_plot <- function(date_vec_list, lbl_vec, date_min, date_max,
                  breaks = "1 day",
                  date_labels = "%d.%m.%y") +
     theme(panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_line(color = "grey60",
+                                            linetype = "dashed"),
+          panel.grid.minor.y = element_line(color = "grey",
+                                            linetype = "dashed"),
           axis.line = element_blank(),
           legend.title = element_blank(),
           panel.background = element_blank(),

@@ -4,7 +4,7 @@
 \alias{format_summary_table}
 \title{Format summary table to have a global descriptive statistics on the first row and a descriptive statistics by group in subsequent rows}
 \usage{
-format_summary_table(all, stat_list, gvar)
+format_summary_table(all, stat_list, gvar = NULL)
 }
 \arguments{
 \item{all}{Dataframe}

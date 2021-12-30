@@ -24,6 +24,7 @@
 #' @param end_date RCT/LS data collection end date (optional)
 #' @param spa_start_date SPA data collection start date (optional)
 #' @param lock_date RCT/LS data collection cleaning end date for database lock (optional)
+#' @param sample_size Numeric value, sample size for RCT/LS enrolment
 #' @import rmarkdown ruODK
 #' @export
 
@@ -48,7 +49,36 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      cost_pid = NULL,
                                      cost_dir = NULL,
                                      qualkii_dir = NULL,
-                                     qualos_dir = NULL) {
+                                     qualos_dir = NULL,
+                                     sample_size = 100000) {
+
+  ###########################
+  # Set up current language #
+  ###########################
+
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    Sys.setenv(LANG = "fr")
+    Sys.setlocale("LC_TIME", "French")
+  } else {
+    Sys.setenv(LANG = "en")
+    Sys.setlocale("LC_TIME", "English")
+  }
+
+  ######################
+  # Set up study dates #
+  ######################
+
+  if (is.null(end_date)) {
+    end_date = Sys.Date()
+  } else{
+    end_date = as.Date(end_date, "%Y-%m-%d")
+  }
+
+  day7fu_end_date <- min(as.Date(end_date + 14), Sys.Date())
+  hospitfu_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  day28fu_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  withdrawal_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  wfa_end_date <- min(as.Date(end_date + 6), Sys.Date())
 
   if (is.null(spa_start_date)) {
     spa_start_date = start_date
@@ -247,7 +277,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   cpp = rctls_pp,
                                                   cfid = crf_day7_fid,
                                                   start_date = start_date,
-                                                  end_date = end_date,
+                                                  end_date = day7fu_end_date,
                                                   verbose = TRUE)
 
   # Load hospital visit follow-up data
@@ -257,7 +287,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   cpp = rctls_pp,
                                                   cfid = crf_hospit_fid,
                                                   start_date = start_date,
-                                                  end_date = end_date,
+                                                  end_date = hospitfu_end_date,
                                                   verbose = TRUE)
 
   # [Tanzania and India only] Load day 28 follow-up data
@@ -273,7 +303,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
                                                            csv_name = paste0(crf_day28_fid,".csv"),
                                                            start_date = start_date,
-                                                           end_date = end_date)
+                                                           end_date = day28fu_end_date)
     }
   }
 
@@ -284,7 +314,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                       cpp = rctls_pp,
                                                       cfid = wd_fid,
                                                       start_date = start_date,
-                                                      end_date = end_date,
+                                                      end_date = withdrawal_end_date,
                                                       verbose = TRUE)
 
   # Load weekly facility assessment data
@@ -294,7 +324,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                cpp = rctls_pp,
                                                cfid = crf_wfa_fid,
                                                start_date = start_date,
-                                               end_date = end_date,
+                                               end_date = wfa_end_date,
                                                verbose = TRUE)
   wfa_data <- NULL
   if (!is.null(raw_wfa_data)) {
@@ -537,6 +567,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   write(formats2h1("Generate monitoring report"), stderr())
 
   params <- list(research_facilities = research_facilities,
+                 start_date = start_date,
+                 end_date = end_date,
+                 sample_target = sample_size,
                  facility_data = facility_data,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
@@ -562,6 +595,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
         params <- list(research_facilities = research_facilities,
                        facility_data = facility_data,
                        spa_sco_data = spa_sco_data,
+                       spa_cgei_data = spa_cgei_data,
+                       spa_fa_data = spa_fa_data,
+                       spa_hcpi_data = spa_hcpi_data,
                        raw_withdrawal_data = raw_withdrawal_data)
         generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
       }

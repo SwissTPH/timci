@@ -226,6 +226,10 @@ cat(paste0("Data collection has been done using ", nrow(facility_device), " tabl
 write(formats2h2("Review, process and export facility data"), stderr())
 ```
 
+```{r}
+write("Export Day 0 data and run corresponding quality checks", stderr())
+```
+
 ## Day 0 data quality checks
 
 ```{r}
@@ -1609,7 +1613,7 @@ cat(out, sep = '\n')
 if (!is.null(kii_interview_data)) {
   fn <- timci::export_df2csvxlsx(kii_interview_data,
                                  qualkii_dir,
-                                 "03_timci_kii_interview_data")
+                                 "01_timci_kii_interview_data")
 }
 ```
 

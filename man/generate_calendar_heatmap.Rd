@@ -4,12 +4,14 @@
 \alias{generate_calendar_heatmap}
 \title{Generate a calendar heatmap}
 \usage{
-generate_calendar_heatmap(df, datecol)
+generate_calendar_heatmap(df, datecol, end_date = Sys.Date())
 }
 \arguments{
 \item{df}{Data frame to use for the plot}
 
 \item{datecol}{Column name in data frame `df` that contains dates}
+
+\item{end_date}{Final date for drawing the heatmap calendar (optional)}
 }
 \value{
 This function returns a ggplot object which contains a calendar heatmap.

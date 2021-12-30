@@ -27,7 +27,9 @@ if (!is.null(wfa_data)) {
     wfa_data_tmp <- wfa_data %>% dplyr::filter(fcode == cfid)
   }
 }
-day7fu_data_facility <- raw_day7fu_data %>% dplyr::filter('a1-fid' == cfid)
+
+# Day 7 follow-up
+raw_day7fu_data_tmp <- raw_day7fu_data %>% dplyr::filter('a1-fid' == cfid)
 ```
 
 ## `r fname`
@@ -53,7 +55,7 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
   }
   p <- timci::generate_week_bar_plot(date_vec = baseline_data_tmp$date_visit,
                                      date_min = as.Date(start_date),
-                                     date_max = as.Date(Sys.Date() + 1),
+                                     date_max = as.Date(as.Date(end_date) + 7),
                                      ylbl = paste0(enrolment_str),
                                      rref = val,
                                      relative = FALSE)
@@ -72,20 +74,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
-    wfa_data_tmp$week <- as.Date(cut(as.Date(wfa_data_tmp$date),
-                            breaks = "week",
-                            start.on.monday = TRUE))
-    ggplot2::ggplot(wfa_data_tmp, aes(x = week, y = u5_attendance_last_week)) +
-      geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
-      ggplot2::scale_x_date(limits = c(as.Date(start_date), as.Date(Sys.Date() + 1)),
-                            breaks = "1 week",
-                            date_labels = "%d.%m.%y") +
-      theme(panel.border = element_blank(),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = 1),
-            panel.background = element_blank())
+    
+    p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date,
+                                        values = wfa_data_tmp$u5_attendance_last_week,
+                                        date_min = as.Date(start_date),
+                                        date_max = as.Date(as.Date(end_date) + 7),
+                                        ylbl = "Under 5 attendance")
+    plot(p)
   }
 }
 ```
@@ -112,8 +107,8 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
     val <- enrolment_target
   }
   p <- timci::generate_day_bar_plot(date_vec = baseline_data_tmp$date_visit,
-                                    date_min = as.Date(Sys.Date() - w),
-                                    date_max = as.Date(Sys.Date() + 1),
+                                    date_min = as.Date(as.Date(end_date) - w),
+                                    date_max = as.Date(as.Date(end_date) + 1),
                                     ylbl = paste0(enrolment_str),
                                     rref = val)
   plot(p)
@@ -133,8 +128,8 @@ if (nrow(baseline_data_tmp) > 0) {
                                        baseline_data_tmp$date_visit,
                                        repeat_data_tmp$date_visit),
                                   c("Non-eligible", baseline_str, repeat_str),
-                                  as.Date(Sys.Date() - w),
-                                  as.Date(Sys.Date() + 1),
+                                  as.Date(as.Date(end_date) - w),
+                                  as.Date(as.Date(end_date) + 1),
                                   ylbl = submission_str)
 } else{
   cat('N/A\n\n')
@@ -149,7 +144,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
-  timci::generate_calendar_heatmap(baseline_data_tmp, date_visit)
+  timci::generate_calendar_heatmap(baseline_data_tmp,
+                                   date_visit)
 }
 ```
 
@@ -163,7 +159,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results = "asis", fig.height = 3}
 if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
-  timci::generate_time_hist_plot(facility_data_tmp, screening_times_str)
+  timci::generate_time_hist_plot(facility_data_tmp,
+                                 screening_times_str)
 }
 ```
 
@@ -176,13 +173,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis", fig.height = 3}
-w <- 29
-
-if (!is.null(day7fu_data_facility) & length(day7fu_data_facility) > 0 & nrow(day7fu_data_facility) > 0) {
-  p <- timci::generate_day_bar_plot(date_vec = day7fu_data_facility$date_visit,
-                                    date_min = as.Date(Sys.Date() - w),
-                                    date_max = as.Date(Sys.Date() + 1),
-                                    ylbl = paste0(enrolment_str))
+if (!is.null(raw_day7fu_data_tmp) & length(raw_day7fu_data_tmp) > 0 & nrow(raw_day7fu_data_tmp) > 0) {
+  p <- timci::generate_day_bar_plot(date_vec = raw_day7fu_data_tmp$date,
+                                    date_min = as.Date(start_date),
+                                    date_max = as.Date(Sys.Date() + 7),
+                                    ylbl = "Calls")
   plot(p)
+} else {
+  cat("To be completed\n\n")
 }
 ```

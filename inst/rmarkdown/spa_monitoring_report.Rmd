@@ -6,6 +6,9 @@ params:
   research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
   spa_sco_data: NULL
+  spa_cgei_data: NULL
+  spa_fa_data: NULL
+  spa_hcpi_data: NULL
   raw_withdrawal_data: NULL
 output:
   word_document:
@@ -74,6 +77,9 @@ if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
   spa_sco_data <- params$spa_sco_data
+  spa_cgei_data <- params$spa_cgei_data
+  spa_fa_data <- params$spa_fa_data
+  spa_hcpi_data <- params$spa_hcpi_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   
 }
@@ -153,37 +159,54 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == '
 facility_disp %>% knitr::kable()
 ```
 
+# Sick child observation protocol
+
 ```{r, results='asis'}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title2_str1 <- "## Nombre de soumissions au cours des 30 derniers jours\n\n"
-  title2_str2 <- "## Recrutement hebdomadaire\n\n"
+  cat("## Cartes thermiques calendaires\n\n")
 } else {
-  title2_str1 <- "## Number of submissions during the last 30 days\n\n"
-  title2_str2 <- "## Weekly enrolment\n\n"
+  cat("## Calendar heatmaps\n\n")
 }
+
+timci::generate_calendar_heatmap(spa_sco_data,
+                                 date)
 ```
+
+# Caregiver exit interview
 
 ```{r, results='asis'}
-w <- 30
-cat(title2_str1)
-
-if (nrow(spa_sco_data) > 0) {
-  plot(timci::generate_day_bar_plot(spa_sco_data$date,
-                                    as.Date(Sys.Date() - w),
-                                    as.Date(Sys.Date() + 1),
-                                    ylbl = submission_str))
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Cartes thermiques calendaires\n\n")
+} else {
+  cat("## Calendar heatmaps\n\n")
 }
+
+timci::generate_calendar_heatmap(spa_cgei_data,
+                                 date)
 ```
 
-```{r, results = "asis"}
-cat(title2_str2)
-if (!is.null(spa_sco_data) & length(spa_sco_data) > 0 & nrow(spa_sco_data) > 0) {
-  p <- timci::generate_week_bar_plot(date_vec = spa_sco_data$date,
-                                     date_min = as.Date(start_date),
-                                     date_max = as.Date(Sys.Date() + 1),
-                                     ylbl = paste0(enrolment_str),
-                                     relative = FALSE)
-  plot(p)
+# Facility assessment
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Cartes thermiques calendaires\n\n")
+} else {
+  cat("## Calendar heatmaps\n\n")
 }
+
+timci::generate_calendar_heatmap(spa_fa_data,
+                                 date)
+```
+
+# Healthcare provider interview
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Cartes thermiques calendaires\n\n")
+} else {
+  cat("## Calendar heatmaps\n\n")
+}
+
+timci::generate_calendar_heatmap(spa_hcpi_data,
+                                 date)
 ```
