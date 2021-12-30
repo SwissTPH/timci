@@ -6,6 +6,7 @@ params:
   research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
   tf_data: NULL
+  pm_data: NULL
   raw_withdrawal_data: NULL
 output:
   word_document:
@@ -74,6 +75,7 @@ if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
   tf_data <- params$tf_data
+  pm_data <- params$pm_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   
 }
@@ -153,32 +155,36 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == '
 facility_disp %>% knitr::kable()
 ```
 
+# Process mapping
+
 ```{r, results='asis'}
-cat("\\newpage")
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title_str <- "# Indicateurs globaux\n\n"
-  plot1_str <- "Recrutement mensuel\nvs.\ncible"
-  plot2_str <- "Recrutement hebdomadaire\nvs.\ncible"
-  plot3_str <- "Taux de recrutement\n(hors visites secondaires)"
+  cat("## Cartes thermiques calendaires\n\n")
 } else {
-  title_str <- "# Global indicators\n\n"
-  plot1_str <- "Monthly enrolment\nvs.\ntarget"
-  plot2_str <- "Weekly enrolment\nvs.\ntarget"
-  plot3_str <- "Enrolment rate\n(excl. repeat visits)"
+  cat("## Calendar heatmaps\n\n")
+}
+
+if (!is.null(pm_data)){
+  if (nrow(pm_data) > 0) {
+    timci::generate_calendar_heatmap(pm_data,
+                                     date)
+  }
 }
 ```
 
+# Time-flow
+
 ```{r, results='asis'}
-w <- 30
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
+  cat("## Cartes thermiques calendaires\n\n")
 } else {
-  cat("## Number of submissions during the last 30 days\n\n")
+  cat("## Calendar heatmaps\n\n")
 }
 
-if (nrow(tf_data) > 0) {
-  plot(timci::generate_day_bar_plot(tf_data$date, as.Date(Sys.Date() - w),
-                                    as.Date(Sys.Date() + 1),
-                                    ylbl = submission_str))
+if (!is.null(tf_data)){
+  if (nrow(tf_data) > 0) {
+    timci::generate_calendar_heatmap(tf_data,
+                                     date)
+  }
 }
 ```
