@@ -583,6 +583,18 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
   generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
 
+  ###################
+  # PATH M&E report #
+  ###################
+
+  write(formats2h1("Generate PATH M&E report"), stderr())
+
+  params <- list(path_dir = path_dir,
+                 facility_data = facility_data,
+                 research_facilities = research_facilities,
+                 wfa_data = wfa_data)
+  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
+
   #########################
   # SPA monitoring report #
   #########################
@@ -610,9 +622,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Generate process map & time-flow report"), stderr())
 
-  if (!is.null(tf_data)) {
-    if (length(tf_data) > 0) {
-      if (nrow(tf_data[[1]]) > 0) {
+  if (!is.null(tf_data) & !is.null(pm_data)) {
+    if (length(tf_data) > 0 & length(pm_data) > 0) {
+      if (length(tf_data[[1]]) > 0 & length(pm_data[[1]]) > 0) {
         params <- list(research_facilities = research_facilities,
                        facility_data = facility_data,
                        tf_data = tf_data[[1]],
@@ -622,18 +634,5 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       }
     }
   }
-
-
-  ###################
-  # PATH M&E report #
-  ###################
-
-  write(formats2h1("Generate PATH M&E report"), stderr())
-
-  params <- list(path_dir = path_dir,
-                 facility_data = facility_data,
-                 research_facilities = research_facilities,
-                 wfa_data = wfa_data)
-  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
 
 }
