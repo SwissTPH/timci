@@ -787,45 +787,48 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-if (!is.null(facility_data)) {
-  if (nrow(facility_data) > 0) {
-    
-    all <- data.frame(facility_data)
-    all$phone_nb[!is.na(all$phone_nb)] <- 1
-    all$phone_nb[is.na(all$phone_nb)] <- 0
-    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
-    all$phone_nb2[is.na(all$phone_nb2)] <- 0
-    all$phone_nb3[!is.na(all$phone_nb3)] <- 1
-    all$phone_nb3[is.na(all$phone_nb3)] <- 0
-    all$cmty[is.na(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
-    all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
-    all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
-    
-    phone_stats <- list(
-      "Facility" = list(
-        "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, 2),
-        "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, 2),
-        "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2)
-        )
-    )
-    
-    print(format_summary_table(all, phone_stats, facility_name))
-    
-    all <- all %>%
-      dplyr::filter(all$phone_nb == 0)
-    
-    contact_details_stats <- list(
-      "Facility" = list(
-        "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
-        "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2)
-        )
-    )
-
-    print(format_summary_table(all, contact_details_stats, facility_name))
-    
+if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+  
+  if (!is.null(facility_data)) {
+    if (nrow(facility_data) > 0) {
+      
+      all <- data.frame(facility_data)
+      all$phone_nb[!is.na(all$phone_nb)] <- 1
+      all$phone_nb[is.na(all$phone_nb)] <- 0
+      all$phone_nb2[!is.na(all$phone_nb2)] <- 1
+      all$phone_nb2[is.na(all$phone_nb2)] <- 0
+      all$cmty[is.na(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
+      all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
+      all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
+      
+      phone_stats <- list(
+        "Facility" = list(
+          "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, 2),
+          "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, 2),
+          "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2)
+          )
+      )
+      
+      print(format_summary_table(all, phone_stats, facility_name))
+      
+      all <- all %>%
+        dplyr::filter(all$phone_nb == 0)
+      
+      contact_details_stats <- list(
+        "Facility" = list(
+          "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
+          "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2)
+          )
+      )
+  
+      print(format_summary_table(all, contact_details_stats, facility_name))
+      
+    }
   }
+} else{
+  cat("To be completed.")
 }
 ```
 
