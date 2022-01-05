@@ -56,6 +56,17 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
+If LaTeX packages or styles are missing, they can be installed using the following commands:
+
+```r
+tinytex::tlmgr_install("xcolor")
+```
+
+```r
+tinytex::parse_install(
+    text = "! LaTeX Error: File `ulem.sty' not found."
+)
+```
 
 #### emayili
 This package is required to send emails using a gmail address.
