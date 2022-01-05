@@ -56,7 +56,7 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
-If LaTeX packages or styles are missing, they can be installed using the following commands:
+If specific LaTeX packages or styles are missing, they can be installed using the following commands:
 
 ```r
 tinytex::tlmgr_install("xcolor")
