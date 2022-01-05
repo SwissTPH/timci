@@ -36,7 +36,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
 options(qwraps2_markup = 'markdown')
-pres <- 1
+prec <- 1
 ```
 
 ```{r translations}
@@ -63,6 +63,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   plot4_str <- "Taux de suivi à Jour 7"
   plot5_str <- "Taux de suivi à Jour 7\ndans la fenêtre statistique"
   
+  pox_title_str <- "## Oxymètre de pouls\n\n"
+  referral_title_str <- "## Orientation vers un centre de référence\n\n"
+  
 } else {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
@@ -85,6 +88,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   plot3_str <- "Enrolment rate\n(excl. repeat visits)"
   plot4_str <- "Day 7 follow-up rate"
   plot5_str <- "Day 7 follow-up rate\nwithin the time window"
+  
+  pox_title_str <- "## Pulse oximetry\n\n"
+  referral_title_str <- "## Referrals\n\n"
 }
 ```
 
@@ -110,11 +116,13 @@ if (!is.null(params$facility_data)) {
   
 }
 
-# Extract personally identifiable data
-pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-
 # Merge facility generic info with facility data
 facility_data <- merge(facility_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+
+# Extract personally identifiable data
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+pii <- merge(pii, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -180,7 +188,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
 ```
 
 ```{r context-facilities, results = "asis"}
-facility_disp %>% knitr::kable()
+facility_disp %>%
+  knitr::kable()
 ```
 
 \newpage
@@ -440,7 +449,8 @@ visit_names <- c(visit_names, "All")
 submissions <- c(submissions, n_total)
 
 visits <- data.frame(visit_names, submissions) 
-visits %>% knitr::kable(col.names = c("Visit", "N"))
+visits %>%
+  knitr::kable(col.names = c("Visit", "N"))
 ```
 
 ```{r, results='asis'}
@@ -551,9 +561,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("### Screening\n\n")
 }
 
-timci::generate_calendar_heatmap(facility_data,
-                                 date_visit,
-                                 date_max = as.Date(end_date))
+timci::generate_calendar_heatmap2(facility_data,
+                                  date_visit,
+                                  legendtitle = "Number of screenings")
+```
+
+```{r, results='asis'}
+
 ```
 
 ```{r, results='asis'}
@@ -564,9 +578,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 
 if (nrow(baseline_data) > 0) {
-  timci::generate_calendar_heatmap(baseline_data,
-                                   date_visit,
-                                   date_max = as.Date(end_date))
+  timci::generate_calendar_heatmap2(baseline_data,
+                                    date_visit,
+                                    legendtitle = "Number of enrolments")
 }
 ```
 
@@ -619,10 +633,10 @@ all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 age_statistics <- list(
   "Facility" = list(
-    "First day of life" = ~qwraps2::n_perc(age_excl == 1, pres),
-    "1 - 59 days" = ~qwraps2::n_perc(age_excl == 0 & age_incl == 1 & yg_infant == "0-2m", pres),
-    "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", pres),
-    "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, pres)
+    "First day of life" = ~qwraps2::n_perc(age_excl == 1, prec),
+    "1 - 59 days" = ~qwraps2::n_perc(age_excl == 0 & age_incl == 1 & yg_infant == "0-2m", prec),
+    "2 - 59 months" = ~qwraps2::n_perc(age_incl == 1 & yg_infant == "2-59m", prec),
+    "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, prec)
     )
 )
 print(format_summary_table(all, age_statistics, facility_name))
@@ -638,8 +652,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 sickness_statistics <- list(
   "Facility" = list(
-    "Sick children" = ~qwraps2::n_perc(sickness == 1, pres),
-    "Other children" = ~qwraps2::n_perc(sickness == 0, pres)
+    "Sick children" = ~qwraps2::n_perc(sickness == 1, prec),
+    "Other children" = ~qwraps2::n_perc(sickness == 0, prec)
     )
 )
 print(format_summary_table(all, sickness_statistics, facility_name))
@@ -656,10 +670,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 sick_reason_statistics <- list(
   "Facility" = list(
-    "Sickness" = ~qwraps2::n_perc(consult_reason == 1, pres),
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 1, pres),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 1, pres),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, pres)
+    "Sickness" = ~qwraps2::n_perc(consult_reason == 1, prec),
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 1, prec),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 1, prec),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, prec)
     )
 )
 print(format_summary_table(all, sick_reason_statistics, facility_name))
@@ -674,10 +688,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 reason_statistics <- list(
   "Facility" = list(
-    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, pres),
-    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, pres),
-    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, pres),
-    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, pres)
+    "Trauma" = ~qwraps2::n_perc(consult_reason == 2 & sickness == 0, prec),
+    "Immunisation" = ~qwraps2::n_perc(consult_reason == 3 & sickness == 0, prec),
+    "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 0, prec),
+    "Inpatient admission" = ~qwraps2::n_perc(inpatient == 1, prec)
     )
 )
 if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
@@ -694,8 +708,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 caregiver_statistics <- list(
   "Facility" = list(
-    "Below 18" = ~qwraps2::n_perc(cg_eligibility == 0, pres),
-    "18 and above" = ~qwraps2::n_perc(cg_eligibility == 1, pres)
+    "Below 18" = ~qwraps2::n_perc(cg_eligibility == 0, prec),
+    "18 and above" = ~qwraps2::n_perc(cg_eligibility == 1, prec)
     )
 )
 print(format_summary_table(all, caregiver_statistics, facility_name))
@@ -712,8 +726,8 @@ all$underaged_mother[is.na(all$underaged_mother)] <- 0
 
 mother_statistics <- list(
   "Mother's age" = list(
-    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0), pres),
-    "18 and above" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1), pres)
+    "Below 18" = ~qwraps2::n_perc(underaged_mother == 1 | (main_cg == 1 & cg_eligibility == 0), prec),
+    "18 and above" = ~qwraps2::n_perc(underaged_mother == 0 | (main_cg == 1 & cg_eligibility == 1), prec)
     )
 )
 
@@ -729,10 +743,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 summary_statistics <- list(
   "Facility" = list(
-    "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, pres),
-    "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, pres),
-    "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, pres),
-    "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, pres)
+    "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, prec),
+    "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, prec),
+    "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, prec),
+    "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, prec)
     )
 )
 print(format_summary_table(all, summary_statistics, facility_name))
@@ -749,8 +763,8 @@ all <- all %>% filter((prev_enrl == 3 | prev_enrl == 98) | ((prev_enrl == 1 | pr
 
 consent_statistics <- list(
   "Facility" = list(
-    "Consented" = ~qwraps2::n_perc(consent == 1, pres),
-    "Not consented" = ~qwraps2::n_perc(consent == 0, pres)
+    "Consented" = ~qwraps2::n_perc(consent == 1, prec),
+    "Not consented" = ~qwraps2::n_perc(consent == 0, prec)
     )
 )
 print(format_summary_table(all, consent_statistics, facility_name))
@@ -789,10 +803,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
   
-  if (!is.null(facility_data)) {
-    if (nrow(facility_data) > 0) {
+  if (!is.null(pii)) {
+    if (nrow(pii) > 0) {
       
-      all <- data.frame(facility_data)
+      all <- data.frame(pii)
       all$phone_nb[!is.na(all$phone_nb)] <- 1
       all$phone_nb[is.na(all$phone_nb)] <- 0
       all$phone_nb2[!is.na(all$phone_nb2)] <- 1
@@ -805,9 +819,9 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
       
       phone_stats <- list(
         "Facility" = list(
-          "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, 2),
-          "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, 2),
-          "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), 2)
+          "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, prec),
+          "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, prec),
+          "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), prec)
           )
       )
       
@@ -818,8 +832,8 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
       
       contact_details_stats <- list(
         "Facility" = list(
-          "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), 2),
-          "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), 2)
+          "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), prec),
+          "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), prec)
           )
       )
   
@@ -835,11 +849,7 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
 \newpage
 
 ```{r header-clinical-presentation, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Oxymètre de pouls\n\n"))
-} else {
-  cat(paste0("## Pulse oximetry\n\n"))
-}
+cat(pox_title_str)
 ```
 
 ```{r, results = "asis"}
@@ -854,8 +864,8 @@ if (nrow(baseline_data) > 0) {
   all <- data.frame(baseline_data) %>% filter(yg_infant == 1)
   
   pox_statistics <- list(
-    "Pulse oximetry" = list(
-      "Reported" = ~qwraps2::n_perc(spo2 == 1, 2)
+    "Facility" = list(
+      "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
       )
   )
   print(format_summary_table(all, pox_statistics, facility_name))
@@ -869,8 +879,8 @@ if (nrow(baseline_data) > 0) {
   all <- data.frame(baseline_data) %>% filter(yg_infant == 0)
   
   pox_statistics <- list(
-    "Pulse oximetry" = list(
-      "Reported" = ~qwraps2::n_perc(spo2 == 1, 2)
+    "Facility" = list(
+      "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
       )
   )
   print(format_summary_table(all, pox_statistics, facility_name))
@@ -880,44 +890,64 @@ if (nrow(baseline_data) > 0) {
 \newpage
 
 ```{r header-referrals, results = "asis"}
+cat(referral_title_str)
+```
+
+```{r}
+if (nrow(baseline_data) > 0) {
+  all <- data.frame(baseline_data)
+  #all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
+  all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
+  all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
+}
+```
+
+```{r header-referrals-cg, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Orientation vers un centre de référence\n\n"))
+  cat(paste0("### Rapporté par l'accompagnant à la sortie de la consultation\n\n"))
 } else {
-  cat(paste0("## Referrals\n\n"))
+  cat(paste0("### Reported by the caregiver at the consultation exit\n\n"))
 }
 ```
 
 ```{r, results = "asis"}
 if (nrow(baseline_data) > 0) {
-  all <- data.frame(study_data)
-  all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
-  all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
-  all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
-  
   summary_statistics <- list(
-    "Referral (caregiver)" = list(
-      "No" = ~qwraps2::n_perc(referral_cg == 0, 2),
-      "Yes" = ~qwraps2::n_perc(referral_cg == 1, 2),
-      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, 2),
-      "Declined" = ~qwraps2::n_perc(referral_cg == 97, 2),
-      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, 2)
-      ),
-    "Referral (registry)" = list(
-      "No" = ~qwraps2::n_perc(referral_hf == 0, 2),
-      "Yes" = ~qwraps2::n_perc(referral_hf == 1, 2),
-      "Missing" = ~qwraps2::n_perc(referral_hf == 100, 2)
+    "Facility" = list(
+      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
+      "Yes" = ~qwraps2::n_perc(referral_cg == 1, prec),
+      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, prec),
+      "Declined" = ~qwraps2::n_perc(referral_cg == 97, prec),
+      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
       )
   )
-  referral_summary <- qwraps2::summary_table(all, summary_statistics)
-  referral_summary1 <- qwraps2::summary_table(dplyr::group_by(all, yg_infant), summary_statistics)
-  print(cbind(referral_summary, referral_summary1))
-  #print(format_summary_table(all, summary_statistics, yg_infant))
+  print(format_summary_table(all, summary_statistics, facility_name))
 }
+```
+
+```{r header-referrals-hf, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("### Rapporté dans le registre du poste\n\n"))
+} else {
+  cat(paste0("### Reported in the facility registry\n\n"))
+}
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  summary_statistics <- list(
+    "Facility" = list(
+      "No" = ~qwraps2::n_perc(referral_hf == 0, prec),
+      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec)
+      )
+  )
+  print(format_summary_table(all, summary_statistics, facility_name))
+} 
 ```
 
 ```{r}
 if (nrow(baseline_data) > 0) {
-  referral_data <- timci::extract_referrals(study_data)
+  referral_data <- timci::extract_referrals(baseline_data)
   n_referrals <- nrow(referral_data)
   referral_pie_chart <- timci::generate_pie_chart(data.frame(group = c("Referred at Day 0", "Not referred at Day 0"), value = c(n_referrals, n_enrolled - n_referrals)))
   plot(referral_pie_chart)
@@ -980,10 +1010,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    plot(timci::generate_day_bar_plot(raw_day7fu_data$date,
+    p <- timci::generate_day_bar_plot(raw_day7fu_data$date,
                                       as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
-                                      ylbl = submission_str))
+                                      ylbl = submission_str)
+    plot(p)
   } else{
     cat('0 submissions since the start of the study.\n\n')
   }
@@ -1001,8 +1032,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
-    timci::generate_calendar_heatmap(raw_day7fu_data,
-                                     date)
+    timci::generate_calendar_heatmap2(raw_day7fu_data,
+                                      date,
+                                      legendtitle = "Number of day 7 follow-up phone calls")
   } else{
     cat('N/A\n\n')
   }
@@ -1029,9 +1061,9 @@ if (!is.null(day7fu_data)) {
     
     day7_call_stats <- list(
       "District" = list(
-        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, 2),
-        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day7_wmin) & (days <= day7_wmax), 2),
-        "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day7_wmax)), 2)
+        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day7_wmin) & (days <= day7_wmax), prec),
+        "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day7_wmax)), prec)
         )
     )
     
@@ -1050,8 +1082,8 @@ if (!is.null(day7fu_data)) {
     day7_outcome_ss <- list(
       "District" = list(
         "Time (in s)" = ~qwraps2::mean_sd(days),
-        "Death" = ~qwraps2::n_perc(status_day7 == 3, 2),
-        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == 1), 2)
+        "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
+        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == 1), prec)
         )
       )
     print(format_summary_table(all, day7_outcome_ss, district))
@@ -1110,9 +1142,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       
       day28_call_ss <- list(
         "District" = list(
-          "Successful call" = ~qwraps2::n_perc(cg_reached == 1, 2),
-          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), 2),
-          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day28_wmax)), 2)
+          "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
+          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec),
+          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day28_wmax)), prec)
           )
       )
       print(format_summary_table(all, day28_call_ss, district))
@@ -1158,8 +1190,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
   cat("## Calendar heatmap\n\n")
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
-      timci::generate_calendar_heatmap(raw_day28fu_data,
-                                       date)
+      timci::generate_calendar_heatmap2(raw_day28fu_data,
+                                        date,
+                                        legendtitle = "Number of day 28 follow-up phone calls")
     } else{
       cat('N/A\n\n')
     }

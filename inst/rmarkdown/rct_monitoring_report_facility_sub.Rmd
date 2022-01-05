@@ -144,9 +144,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
-  timci::generate_calendar_heatmap(baseline_data_tmp,
-                                   date_visit,
-                                   date_max = as.Date(end_date))
+  timci::generate_calendar_heatmap2(baseline_data_tmp,
+                                    date_visit,
+                                    legendtitle = "Number of enrolments")
 }
 ```
 

@@ -168,8 +168,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Calendar heatmaps\n\n")
 }
 
-timci::generate_calendar_heatmap(spa_sco_data,
-                                 date)
+timci::generate_calendar_heatmap2(spa_sco_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
 ```
 
 # Caregiver exit interview
@@ -181,8 +182,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Calendar heatmaps\n\n")
 }
 
-timci::generate_calendar_heatmap(spa_cgei_data,
-                                 date)
+timci::generate_calendar_heatmap2(spa_cgei_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
 ```
 
 # Facility assessment
@@ -194,8 +196,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Calendar heatmaps\n\n")
 }
 
-timci::generate_calendar_heatmap(spa_fa_data,
-                                 date)
+timci::generate_calendar_heatmap2(spa_fa_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
 ```
 
 # Healthcare provider interview
@@ -207,6 +210,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Calendar heatmaps\n\n")
 }
 
-timci::generate_calendar_heatmap(spa_hcpi_data,
-                                 date)
+timci::generate_calendar_heatmap2(spa_hcpi_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
 ```

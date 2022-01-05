@@ -191,7 +191,8 @@ process_facility_data <- function(df) {
                  "crfs-t09a2-g3_1",
                  "crfs-t09a2-h2_2a",
                  "crfs-t08a-f2_1",
-                 "crfs-t05b-c3_6")
+                 "crfs-t05b-c3_6",
+                 "crfs-t09a2-rxothermain")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   text_field_cols <- c('visit_reason-a3_c_1o',

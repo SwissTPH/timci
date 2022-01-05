@@ -166,8 +166,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(pm_data)){
   if (nrow(pm_data) > 0) {
-    timci::generate_calendar_heatmap(pm_data,
-                                     date)
+    timci::generate_calendar_heatmap2(pm_data,
+                                      date,
+                                      legendtitle = "Number of submissions")
   }
 }
 ```
@@ -183,8 +184,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 if (!is.null(tf_data)){
   if (nrow(tf_data) > 0) {
-    timci::generate_calendar_heatmap(tf_data,
-                                     date)
+    timci::generate_calendar_heatmap2(tf_data,
+                                      date,
+                                      legendtitle = "Number of submissions")
   }
 }
 ```
