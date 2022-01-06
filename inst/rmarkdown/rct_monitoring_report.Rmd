@@ -24,6 +24,7 @@ output:
     number_sections: true
     toc: true
     toc_depth: 3
+classoption: table
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -32,10 +33,13 @@ library(readxl)
 library(ggplot2)
 library(lubridate)
 library(gridExtra)
+library(knitr)
+library(kableExtra)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
 options(qwraps2_markup = 'markdown')
+options(knitr.table.format = "latex")
 prec <- 1
 ```
 
@@ -63,6 +67,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   plot4_str <- "Taux de suivi à Jour 7"
   plot5_str <- "Taux de suivi à Jour 7\ndans la fenêtre statistique"
   
+  calendar_heatmap_title_str <- "## Cartes thermiques calendaires\n\n"
+  
+  baseline_visit_title_str <- "### Visites primaires\n\n"
+  
+  clinical_presentation_title_str <- "## Présentation clinique\n\n"
   pox_title_str <- "## Oxymètre de pouls\n\n"
   referral_title_str <- "## Orientation vers un centre de référence\n\n"
   
@@ -89,6 +98,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   plot4_str <- "Day 7 follow-up rate"
   plot5_str <- "Day 7 follow-up rate\nwithin the time window"
   
+  calendar_heatmap_title_str <- "## Calendar heatmap\n\n"
+  
+  baseline_visit_title_str <- "### Baseline visits\n\n"
+  
+  clinical_presentation_title_str <- "## Clinical presentation\n\n"
   pox_title_str <- "## Pulse oximetry\n\n"
   referral_title_str <- "## Referrals\n\n"
 }
@@ -188,8 +202,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
 ```
 
 ```{r context-facilities, results = "asis"}
-facility_disp %>%
-  knitr::kable()
+facility_disp  %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 \newpage
@@ -445,12 +461,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Total number of submissions per form\n\n")
 }
 
-visit_names <- c(visit_names, "All")
-submissions <- c(submissions, n_total)
+visit_names <- c("Total", visit_names)
+submissions <- c(n_total, submissions)
 
-visits <- data.frame(visit_names, submissions) 
-visits %>%
-  knitr::kable(col.names = c("Visit", "N"))
+data.frame(visit_names, submissions) %>%
+  kableExtra::kbl(booktabs = TRUE, linesep = "", col.names = c("Submission", "N")) %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = "gray", bold = TRUE)
 ```
 
 ```{r, results='asis'}
@@ -477,12 +495,14 @@ if (!is.null(baseline_data) & length(baseline_data) > 0 & nrow(baseline_data) > 
 ```{r, results='asis'}
 baseline_data %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data$date_visit),
-                                            "week",
-                                            week_start = getOption("lubridate.week.start", 1))) %>%
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
   dplyr::group_by(week) %>%
   dplyr::tally() %>%
   dplyr::rename('N' = 'n') %>%
-  knitr::kable()
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -571,11 +591,7 @@ timci::generate_calendar_heatmap2(facility_data,
 ```
 
 ```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Visites primaires\n\n")
-} else {
-  cat("### Baseline visits\n\n")
-}
+cat(baseline_visit_title_str)
 
 if (nrow(baseline_data) > 0) {
   timci::generate_calendar_heatmap2(baseline_data,
@@ -639,7 +655,11 @@ age_statistics <- list(
     "Above 59 months" = ~qwraps2::n_perc(age_incl == 0, prec)
     )
 )
-print(format_summary_table(all, age_statistics, facility_name))
+format_summary_table(all, age_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = "gray", bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -656,7 +676,10 @@ sickness_statistics <- list(
     "Other children" = ~qwraps2::n_perc(sickness == 0, prec)
     )
 )
-print(format_summary_table(all, sickness_statistics, facility_name))
+format_summary_table(all, sickness_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -676,7 +699,10 @@ sick_reason_statistics <- list(
     "Monitoring" = ~qwraps2::n_perc(consult_reason == 4 & sickness == 1, prec)
     )
 )
-print(format_summary_table(all, sick_reason_statistics, facility_name))
+format_summary_table(all, sick_reason_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -695,7 +721,10 @@ reason_statistics <- list(
     )
 )
 if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
-  print(format_summary_table(all, reason_statistics, facility_name))
+  format_summary_table(all, reason_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
 }
 ```
 
@@ -712,7 +741,10 @@ caregiver_statistics <- list(
     "18 and above" = ~qwraps2::n_perc(cg_eligibility == 1, prec)
     )
 )
-print(format_summary_table(all, caregiver_statistics, facility_name))
+format_summary_table(all, caregiver_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -731,7 +763,10 @@ mother_statistics <- list(
     )
 )
 
-print(format_summary_table(all, mother_statistics, facility_name))
+format_summary_table(all, mother_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -749,7 +784,10 @@ summary_statistics <- list(
     "Last > 28 days" = ~qwraps2::n_perc((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0, prec)
     )
 )
-print(format_summary_table(all, summary_statistics, facility_name))
+format_summary_table(all, summary_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results = "asis"}
@@ -767,7 +805,10 @@ consent_statistics <- list(
     "Not consented" = ~qwraps2::n_perc(consent == 0, prec)
     )
 )
-print(format_summary_table(all, consent_statistics, facility_name))
+format_summary_table(all, consent_statistics, facility_name) %>% 
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
   
 ```{r, results='asis'}
@@ -825,7 +866,23 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
           )
       )
       
-      print(format_summary_table(all, phone_stats, facility_name))
+      format_summary_table(all, phone_stats, facility_name) %>% 
+        kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+        kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+        kableExtra::row_spec(0, bold = TRUE)
+      
+    }
+  }
+} else{
+  cat("To be completed.")
+}
+```
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+  
+  if (!is.null(pii)) {
+    if (nrow(pii) > 0) {
       
       all <- all %>%
         dplyr::filter(all$phone_nb == 0)
@@ -837,18 +894,44 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
           )
       )
   
-      print(format_summary_table(all, contact_details_stats, facility_name))
+      format_summary_table(all, contact_details_stats, facility_name) %>%
+        kableExtra::kbl(booktabs = TRUE, linesep = "") %>%
+        kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+        kableExtra::row_spec(0, bold = TRUE)
       
     }
   }
-} else{
-  cat("To be completed.")
 }
 ```
 
 \newpage
 
 ```{r header-clinical-presentation, results = "asis"}
+cat(clinical_presentation_title_str)
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  all <- data.frame(baseline_data)
+  
+  clinical_presentation_statistics <- list(
+    "Facility" = list(
+      "Cough" = ~qwraps2::n_perc(sx_cough == 1, prec),
+      "Difficulty breathing" = ~qwraps2::n_perc(sx_difficulty_breath == 1, prec),
+      "Diarrhoea" = ~qwraps2::n_perc(sx_diarrhoea == 1, prec),
+      "Fever" = ~qwraps2::n_perc(sx_fever == 1, prec)
+      )
+  )
+  format_summary_table(all, clinical_presentation_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
+}
+```
+
+\newpage
+
+```{r header-pox, results = "asis"}
 cat(pox_title_str)
 ```
 
@@ -868,7 +951,10 @@ if (nrow(baseline_data) > 0) {
       "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
       )
   )
-  print(format_summary_table(all, pox_statistics, facility_name))
+  format_summary_table(all, pox_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
   
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     cat(paste0("### 2-59 months\n\n"))
@@ -883,7 +969,10 @@ if (nrow(baseline_data) > 0) {
       "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
       )
   )
-  print(format_summary_table(all, pox_statistics, facility_name))
+  format_summary_table(all, pox_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
 }
 ```
 
@@ -921,7 +1010,10 @@ if (nrow(baseline_data) > 0) {
       "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
       )
   )
-  print(format_summary_table(all, summary_statistics, facility_name))
+  format_summary_table(all, summary_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
 }
 ```
 
@@ -941,7 +1033,10 @@ if (nrow(baseline_data) > 0) {
       "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec)
       )
   )
-  print(format_summary_table(all, summary_statistics, facility_name))
+  format_summary_table(all, summary_statistics, facility_name) %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+    kableExtra::row_spec(0, bold = TRUE)
 } 
 ```
 
@@ -998,7 +1093,9 @@ raw_day7fu_data %>%
   dplyr::group_by(week) %>%
   dplyr::tally() %>%
   dplyr::rename('N' = 'n') %>%
-  knitr::kable()
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 ```{r, results='asis'}
@@ -1024,11 +1121,7 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmap\n\n")
-}
+cat(calendar_heatmap_title_str)
 
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
@@ -1067,7 +1160,10 @@ if (!is.null(day7fu_data)) {
         )
     )
     
-    print(format_summary_table(all, day7_call_stats, district))
+    format_summary_table(all, day7_call_stats, district) %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+      kableExtra::row_spec(0, bold = TRUE)
     
   }
 }
@@ -1086,7 +1182,10 @@ if (!is.null(day7fu_data)) {
         "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == 1), prec)
         )
       )
-    print(format_summary_table(all, day7_outcome_ss, district))
+    format_summary_table(all, day7_outcome_ss, district) %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+      kableExtra::row_spec(0, bold = TRUE)
   }
 }
 ```
@@ -1123,6 +1222,22 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
+```{r, results='asis'}
+cat(calendar_heatmap_title_str)
+
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    timci::generate_calendar_heatmap2(raw_hospit_data,
+                                      date,
+                                      legendtitle = "Number of hospital submissions")
+  } else{
+    cat('N/A\n\n')
+  }
+} else{
+    cat('N/A\n\n')
+  }
+```
+
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat("\\newpage")
@@ -1147,7 +1262,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
           "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day28_wmax)), prec)
           )
       )
-      print(format_summary_table(all, day28_call_ss, district))
+      format_summary_table(all, day28_call_ss, district) %>% 
+        kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+        kableExtra::kable_styling(latex_options = c("striped", "HOLD_position")) %>%
+        kableExtra::row_spec(0, bold = TRUE)
     }
   }
 }

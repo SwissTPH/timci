@@ -167,7 +167,7 @@ if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_
 
 ```{r, results = "asis"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("### Jour 7\n\n")
+  cat("### Suivi à Jour 7\n\n")
 } else {
   cat("### Day 7 follow-up\n\n")
 }
