@@ -22,7 +22,11 @@ generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()
                     output_file = c(paste0(report_fn, '_',Sys.Date(),'.pdf')),
                     output_dir = report_dir,
                     params = rmd_params,
-                    encoding = "UTF-8")
+                    encoding = "UTF-8",
+                    envir = new.env())
+  if("kableExtra" %in% (.packages())){
+    detach("package:kableExtra", unload=TRUE)
+  }
 
 }
 
