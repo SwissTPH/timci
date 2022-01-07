@@ -635,4 +635,23 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     }
   }
 
+  #################################
+  # Qualitative monitoring report #
+  #################################
+
+  write(formats2h1("Generate qualitative report"), stderr())
+
+  if (!is.null(tf_data) & !is.null(pm_data)) {
+    if (length(tf_data) > 0 & length(pm_data) > 0) {
+      if (length(tf_data[[1]]) > 0 & length(pm_data[[1]]) > 0) {
+        params <- list(research_facilities = research_facilities,
+                       facility_data = facility_data,
+                       tf_data = tf_data[[1]],
+                       pm_data = pm_data[[1]],
+                       raw_withdrawal_data = raw_withdrawal_data)
+        generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
+      }
+    }
+  }
+
 }

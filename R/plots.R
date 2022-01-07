@@ -116,15 +116,23 @@ generate_pie_chart <- function(df){
 #' @param date_vec Vector containing dates
 #' @param date_min Start date of the plot
 #' @param date_max End date of the plot
-#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
-#' @param ylbl String of the y-axis
-#' @param rref reference value
-#' @param relative Boolean for plotting relative/absolute plots
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis (optional, default = NULL)
+#' @param ylbl String of the y-axis (optional, default = NULL)
+#' @param rref reference value (optional, default = NULL)
+#' @param relative Boolean for plotting relative/absolute plots (optional, default = FALSE)
+#' @param date_vec_ref Vector containing reference dates (optional, default = NULL)
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by dates
 #' @export
-#' @import ggplot2 scales
+#' @import ggplot2 scales dplyr
 
-generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL, relative = FALSE){
+generate_day_bar_plot <- function(date_vec,
+                                  date_min,
+                                  date_max,
+                                  ylim = NULL,
+                                  ylbl = "Frequencies",
+                                  rref = NULL,
+                                  relative = FALSE,
+                                  date_vec_ref = NULL){
 
   # Count elements
   counts <- aggregate(date_vec, by = list(date_vec), FUN = length)
@@ -133,23 +141,46 @@ generate_day_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylb
   }
   counts$names <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
-  p <- ggplot(counts, aes(x = names, y = x)) +
-    geom_bar(stat = "identity", fill = "#7dbbd6", width = 1) +
+  p <- ggplot2::ggplot(data = counts,
+                       mapping = aes(x = names, y = x)) +
+    ggplot2::geom_bar(stat = "identity",
+                      fill = "#7dbbd6",
+                      width = 1,
+                      position = position_dodge(0.5)) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
                           breaks = "1 day",
                           date_labels = "%d.%m.%y") +
-    theme(panel.border = element_blank(),
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.major.y = element_line(color = "grey60",
-                                            linetype = "dashed"),
-          panel.grid.minor.y = element_line(color = "grey",
-                                            linetype = "dashed"),
-          axis.line = element_blank(),
-          panel.background = element_blank(),
-          axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::theme(panel.border = element_blank(),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.x = element_blank(),
+                   panel.grid.major.y = element_line(color = "grey60",
+                                                     linetype = "dashed"),
+                   panel.grid.minor.y = element_line(color = "grey",
+                                                     linetype = "dashed"),
+                   axis.line = element_blank(),
+                   panel.background = element_blank(),
+                   axis.text.x = element_text(angle = 45, hjust = 1))
+
+  if (!is.null(date_vec_ref)) {
+    # Count elements
+    counts_ref <- aggregate(date_vec_ref, by = list(date_vec_ref), FUN = length)
+    if (relative) {
+      counts_ref$x <- counts_ref$x / rref
+    }
+    counts_ref$names <- as.Date(counts_ref$Group.1, format = "%Y-%m-%d")
+
+    counts_ref <- counts_ref %>%
+      tidyr::complete(names = seq.Date(date_min, date_max, by="day"))
+    counts_ref$x[is.na(counts_ref$x)] <- 0
+
+    p <- p + ggplot2::geom_step(data = counts_ref,
+                                mapping = aes(x = names, y = x),
+                                color = "gray30",
+                                size = 0.5)
+
+  }
 
   if (relative) {
     if (!is.null(ylim)) {

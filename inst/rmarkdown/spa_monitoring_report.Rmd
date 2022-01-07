@@ -20,6 +20,7 @@ output:
     number_sections: true
     toc: true
     toc_depth: 3
+    extra_dependencies: ["float", "flafter", "bm"]
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -28,10 +29,13 @@ library(readxl)
 library(ggplot2)
 library(lubridate)
 library(gridExtra)
+library(kableExtra)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
-                      message = FALSE)
+                      message = FALSE,
+                      fig.pos='!H')
 options(qwraps2_markup = 'markdown')
+table_fs <- 7
 pres <- 1
 ```
 
@@ -40,6 +44,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
   baseline_str <- "Visite primaire"
+  facility_cap <- "Liste des poste de recherche"
   repeat_str <- "Visite secondaire"
   submission_str <- "Soumissions"
   enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
@@ -52,6 +57,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
   baseline_str <- "Baseline visit"
+  facility_cap <- "List of research facilities"
   repeat_str <- "Repeat visit"
   submission_str <- "Submissions"
   enrolment_rate_str <- "Enrolment rate vs. target"
@@ -100,9 +106,9 @@ if (nrow(spa_sco_data) > 0) {
   week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
   days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** (semaine **", week_nb, "** de l'étude EPS) pour le **Sénégal**."))
+    cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** pour le **Sénégal**."))
   } else {
-    cat(paste0("This report covers the period from **", start_date, "** (study start) to **", end_date, "** (week **", week_nb,"** of the SPA study) for **", Sys.getenv('TIMCI_COUNTRY'), "**."))
+    cat(paste0("This report covers the period from **", start_date, "** (study start) to **", end_date, "** for **", Sys.getenv('TIMCI_COUNTRY'), "**."))
   }
 }
 ```
@@ -156,7 +162,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == '
 ```
 
 ```{r context-facilities, results = "asis"}
-facility_disp %>% knitr::kable()
+facility_disp  %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  caption = facility_cap,
+                  align = c("c", "c", "c")) %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE)
 ```
 
 # Sick child observation protocol

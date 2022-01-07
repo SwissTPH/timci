@@ -1,46 +1,46 @@
-Package: timci
 Type: Package
+Package: timci
 Title: Data management and visualisation for the TIMCI project
 Version: 0.1.0
-Author:
-    person(given = "Helene",
-           family = "Langet",
-           role = c("aut", "cre"),
-           email = "helene.langet@swisstph.ch")
+Author:person(given = "Helene", family = "Langet", role = c("aut",
+    "cre"), email = "helene.langet@swisstph.ch")
 Maintainer: The package maintainer <helene.langet@swisstph.ch>
-Description: The package provides all tools and functions necessary for the management, cleansing and visualisation of data generated as part of the TIMCI project, including the main study but other quantitative studies such as SPA.
+Description: The package provides all tools and functions necessary for
+    the management, cleansing and visualisation of data generated as part
+    of the TIMCI project, including the main study but other quantitative
+    studies such as SPA.
 License: GPL-3 + file LICENSE
-Encoding: UTF-8
-LazyData: true
 Imports: 
-    readxl,
-    hash,
-    ggplot2,
-    dplyr,
-    viridis,
-    pryr,
-    magrittr,
-    utils,
-    qrcode,
-    scales,
-    grDevices,
-    stats,
-    tidyr,
-    DT,
     data.table,
-    openxlsx,
-    rmarkdown,
-    stringr,
-    qwraps2,
     digest,
-    readr,
+    dplyr,
+    DT,
     fs,
-    lubridate,
+    ggplot2,
+    grDevices,
+    hash,
     httr,
+    lubridate,
+    magrittr,
+    openxlsx,
     plyr,
+    pryr,
+    qrcode,
+    qwraps2,
+    readr,
+    readxl,
+    rmarkdown,
     ruODK,
-    shiny
-RoxygenNote: 7.1.2
+    scales,
+    shiny,
+    stats,
+    stringr,
+    tidyr,
+    utils,
+    viridis
 Suggests: 
     emayili,
     flexdashboard
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2

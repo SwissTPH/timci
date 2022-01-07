@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 cfid <- facilities[[i, 'facility_id']]
 fname <- facilities[[i, 'facility_name']]
 ftype <- tolower(facilities[[i, 'type']])
@@ -42,7 +42,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" | Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
     if (ftype == "dispensary") {
@@ -71,7 +71,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
     
@@ -93,7 +93,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 w <- 29
 
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
@@ -115,7 +115,7 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
 }
 ```
 
-```{r, results='asis', fig.height = 3}
+```{r, results='asis', fig.height = figsize}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("### Visites primaires et secondaires\n\n"))
 } else {
@@ -158,7 +158,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
   timci::generate_time_hist_plot(facility_data_tmp,
                                  screening_times_str)
@@ -173,7 +173,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = 3}
+```{r, results = "asis", fig.height = figsize}
 if (!is.null(raw_day7fu_data_tmp) & length(raw_day7fu_data_tmp) > 0 & nrow(raw_day7fu_data_tmp) > 0) {
   p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data_tmp$date,
                                      date_min = as.Date(start_date),

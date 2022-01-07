@@ -1,5 +1,5 @@
 ---
-title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {'Process Mapping & Time-flow - Monitoring Report'} else {'Cartographie des processus & flux temporel - Rapport de suivi'}`"
+title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {'Qualitative studies - Monitoring Report'} else {'Etude qualitatives - Rapport de suivi'}`"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 params:
