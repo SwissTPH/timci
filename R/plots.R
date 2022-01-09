@@ -145,8 +145,7 @@ generate_day_bar_plot <- function(date_vec,
                        mapping = aes(x = names, y = x)) +
     ggplot2::geom_bar(stat = "identity",
                       fill = "#7dbbd6",
-                      width = 1,
-                      position = position_dodge(0.5)) +
+                      width = 1) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(date_min, date_max),
@@ -178,7 +177,9 @@ generate_day_bar_plot <- function(date_vec,
     p <- p + ggplot2::geom_step(data = counts_ref,
                                 mapping = aes(x = names, y = x),
                                 color = "gray30",
-                                size = 0.5)
+                                size = 0.5,
+                                stat = "identity",
+                                direction = "mid")
 
   }
 
