@@ -55,78 +55,67 @@ total_row_bg2 <- "gray"
 
 ```{r translations}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
-  intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
   
-  context_title_str <- "# Contexte\n\n"
-  facility_cap <- "Liste des poste de recherche"
-  
+  appendix_title <- "# Annexe\n\n"
   baseline_str <- "Visite primaire (Jour 0)"
-  repeat_str <- "Visite secondaire"
-  submission_str <- "Soumissions"
+  baseline_visit_title_str <- "### Visites primaires\n\n"
+  calendar_heatmap_title_str <- "## Cartes thermiques calendaires\n\n"
+  clinical_presentation_title_str <- "## Présentation clinique\n\n"
+  consent_cap <- "Consentement éclairé"
+  context_title_str <- "# Contexte\n\n"
   enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
   enrolment_str <- "Recrutement"
-  screening_str <- "Screening"
-  withdrawal_str <- "Désistement"
-  appendix_title <- "# Annexe\n\n"
-  screening_times_str <- "Heures de screening"
-  
-  title_str <- "# Indicateurs globaux\n\n"
-  sample_size_str <- "Taille d'échantillon cible : "
+  facility_cap <- "Liste des poste de recherche"
+  intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
+  multi_rec_cap <- "Recrutements multiples"
+  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   plot0_str <- "Recrutement total\nvs. taille d'échantillon cible"
   plot1_str <- "Recrutement mensuel\nvs.cible mensuelle"
   plot2_str <- "Recrutement hebdomadaire\nvs. cible hebdomadaire"
   plot3_str <- "Taux de recrutement\n(hors visites secondaires)"
   plot4_str <- "Taux de suivi à Jour 7"
   plot5_str <- "Taux de suivi à Jour 7\ndans la fenêtre statistique"
-  
-  calendar_heatmap_title_str <- "## Cartes thermiques calendaires\n\n"
-  
-  multi_rec_cap <- "Recrutements multiples"
-  consent_cap <- "Consentement éclairé"
-  
-  baseline_visit_title_str <- "### Visites primaires\n\n"
-  
-  clinical_presentation_title_str <- "## Présentation clinique\n\n"
   pox_title_str <- "## Oxymètre de pouls\n\n"
   referral_title_str <- "## Orientation vers un centre de référence\n\n"
+  repeat_str <- "Visite secondaire"
+  sample_size_str <- "Taille d'échantillon cible : "
+  screening_str <- "Screening"
+  screening_times_str <- "Heures de screening"
+  submission_str <- "Soumissions"
+  title_str <- "# Indicateurs globaux\n\n"
+  withdrawal_str <- "Désistement"
   
 } else {
-  notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
-  intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
   
-  context_title_str <- "# Context\n\n"
-  facility_cap <- "List of research facilities"
-  
+  appendix_title <- "# Appendix\n\n"
   baseline_str <- "Baseline visit (day 0)"
-  repeat_str <- "Repeat visit"
-  submission_str <- "Submissions"
+  baseline_visit_title_str <- "### Baseline visits\n\n"
+  calendar_heatmap_title_str <- "## Calendar heatmap\n\n"
+  clinical_presentation_title_str <- "## Clinical presentation\n\n"
+  consent_cap <- "Informed consent"
+  context_title_str <- "# Context\n\n"
   enrolment_rate_str <- "Enrolment rate vs. target"
   enrolment_str <- "Enrolment"
-  screening_str <- "Screening"
-  withdrawal_str <- "Withdrawal"
-  appendix_title <- "# Appendix\n\n"
-  screening_times_str <- "Screening times"
-  
-  title_str <- "# Global indicators\n\n"
-  sample_size_str <- "Target sample size: "
+  facility_cap <- "List of research facilities"
+  intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
+  multi_rec_cap <- "Multiple enrolments"
+  notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   plot0_str <- "Total enrolment\nvs. target sample size"
   plot1_str <- "Monthly enrolment\nvs. monthly target"
   plot2_str <- "Weekly enrolment\nvs. weekly target"
   plot3_str <- "Enrolment rate\n(excl. repeat visits)"
   plot4_str <- "Day 7 follow-up rate"
   plot5_str <- "Day 7 follow-up rate\nwithin the time window"
-  
-  calendar_heatmap_title_str <- "## Calendar heatmap\n\n"
-  
-  multi_rec_cap <- "Multiple enrolments"
-  consent_cap <- "Informed consent"
-  
-  baseline_visit_title_str <- "### Baseline visits\n\n"
-  
-  clinical_presentation_title_str <- "## Clinical presentation\n\n"
   pox_title_str <- "## Pulse oximetry\n\n"
   referral_title_str <- "## Referrals\n\n"
+  repeat_str <- "Repeat visit"
+  screening_str <- "Screening"
+  sample_size_str <- "Target sample size: "
+  screening_times_str <- "Screening times"
+  submission_str <- "Submissions"
+  title_str <- "# Global indicators\n\n"
+  withdrawal_str <- "Withdrawal"
+  
 }
 ```
 
@@ -869,8 +858,12 @@ out %>%
   kableExtra::kbl(booktabs = TRUE, linesep = "", caption = consent_cap) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::column_spec(2, color = ifelse(grepl(pattern = "(100.0%)", x = out[,1], fixed = TRUE), "red", "black")) %>%
-  kableExtra::column_spec(3, color = ifelse(grepl(pattern = "(0.0%)", x = out[,2], fixed = TRUE), "red", "black")) %>%
+  kableExtra::column_spec(2, color = ifelse(grepl(pattern = "(100.0%)", x = out[,1], fixed = TRUE),
+                                            "red",
+                                            "black")) %>%
+  kableExtra::column_spec(3, color = ifelse(grepl(pattern = "(0.0%)", x = out[,2], fixed = TRUE),
+                                            "red",
+                                            "black")) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
@@ -1087,8 +1080,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (nrow(baseline_data) > 0) {
   summary_statistics <- list(
     "Facility" = list(
-      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
       "Yes" = ~qwraps2::n_perc(referral_cg == 1, prec),
+      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
       "Unknown" = ~qwraps2::n_perc(referral_cg == 98, prec),
       "Declined" = ~qwraps2::n_perc(referral_cg == 97, prec),
       "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
@@ -1099,8 +1092,12 @@ if (nrow(baseline_data) > 0) {
     kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[,1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
     kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+  
 }
 ```
 
@@ -1116,8 +1113,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (nrow(baseline_data) > 0) {
   summary_statistics <- list(
     "Facility" = list(
-      "No" = ~qwraps2::n_perc(referral_hf == 0, prec),
-      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec)
+      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec),
+      "No" = ~qwraps2::n_perc(referral_hf == 0, prec)
       )
   )
   out <- format_summary_table(all, summary_statistics, facility_name) 
