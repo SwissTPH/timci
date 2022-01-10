@@ -104,7 +104,9 @@ generate_pie_chart <- function(df){
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_brewer(palette = "Set1", name = "Group:") +
-    geom_text(aes(label = percentage), position = position_stack(vjust = 0.5))+
+    geom_text(aes(label = percentage),
+              position = position_stack(vjust = 0.5),
+              size = 3)+
     theme_void() # remove background, grid, numeric labels
 
 }
@@ -220,11 +222,19 @@ generate_day_bar_plot <- function(date_vec,
 #' @param ylbl String of the y-axis
 #' @param rref reference value
 #' @param relative Boolean for plotting relative/absolute plots
+#' @param date_vec_ref Vector containing reference dates (optional, default = NULL)
 #' @return This function returns a ggplot object which contains a bar plot of frequencies by week
 #' @export
 #' @import ggplot2 scales
 
-generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, ylbl = "Frequencies", rref = NULL, relative = FALSE){
+generate_week_bar_plot <- function(date_vec,
+                                   date_min,
+                                   date_max,
+                                   ylim = NULL,
+                                   ylbl = "Frequencies",
+                                   rref = NULL,
+                                   relative = FALSE,
+                                   date_vec_ref = NULL){
 
   # Convert to week
   week_vec <- as.Date(cut(as.Date(date_vec),
@@ -241,7 +251,9 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
   counts$week <- as.Date(counts$Group.1, format = "%Y-%m-%d")
 
   p <- ggplot(counts, aes(x = week, y = x)) +
-    geom_bar(stat = "identity", fill = "#7dbbd6", width = 7) +
+    geom_bar(stat = "identity",
+             fill = "#7dbbd6",
+             width = 7) +
     ylab(ylbl) +
     xlab("Date") +
     ggplot2::scale_x_date(limits = c(wdate_min, date_max),
@@ -257,6 +269,28 @@ generate_week_bar_plot <- function(date_vec, date_min, date_max, ylim = NULL, yl
           axis.line = element_blank(),
           panel.background = element_blank(),
           axis.text.x = element_text(angle = 45, hjust = 1))
+
+  if (!is.null(date_vec_ref)) {
+    # Convert to week
+    week_vec_ref <- as.Date(cut(as.Date(date_vec_ref),
+                            breaks = "week",
+                            start.on.monday = TRUE))
+
+    # Count elements
+    counts_ref <- aggregate(week_vec_ref, by = list(week_vec_ref), FUN = length)
+    if (relative) {
+      counts_ref$x <- counts_ref$x / rref
+    }
+    counts_ref$week <- as.Date(counts_ref$Group.1, format = "%Y-%m-%d")
+
+    p <- p + ggplot2::geom_step(data = counts_ref,
+                                mapping = aes(x = week, y = x),
+                                color = "gray30",
+                                size = 0.5,
+                                stat = "identity",
+                                direction = "mid")
+
+  }
 
   if (relative) {
     if (!is.null(ylim)) {
