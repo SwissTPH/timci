@@ -49,6 +49,7 @@ params:
 ```{r setup-rmd, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE)
+options(knitr.table.format = "pipe")
 library(dplyr)
 ```
 
