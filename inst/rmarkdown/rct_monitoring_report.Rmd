@@ -685,6 +685,9 @@ out %>%
   kableExtra::kbl(booktabs = TRUE, linesep = "", caption = age_cap) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::column_spec(5, color = ifelse(grepl(pattern = "(0.0%)", x = out[, 4], fixed = TRUE),
+                                            "red",
+                                            "black")) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
@@ -708,6 +711,9 @@ out %>%
   kableExtra::kbl(booktabs = TRUE, linesep = "", caption = sick_cap) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::column_spec(3, color = ifelse(grepl(pattern = "(0.0%)", x = out[, 2], fixed = TRUE),
+                                            "red",
+                                            "black")) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
@@ -858,10 +864,10 @@ out %>%
   kableExtra::kbl(booktabs = TRUE, linesep = "", caption = consent_cap) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::column_spec(2, color = ifelse(grepl(pattern = "(100.0%)", x = out[,1], fixed = TRUE),
+  kableExtra::column_spec(2, color = ifelse(grepl(pattern = "(100.0%)", x = out[, 1], fixed = TRUE),
                                             "red",
                                             "black")) %>%
-  kableExtra::column_spec(3, color = ifelse(grepl(pattern = "(0.0%)", x = out[,2], fixed = TRUE),
+  kableExtra::column_spec(3, color = ifelse(grepl(pattern = "(0.0%)", x = out[, 2], fixed = TRUE),
                                             "red",
                                             "black")) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1092,7 +1098,7 @@ if (nrow(baseline_data) > 0) {
     kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
-    kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[,1], perl = TRUE)) >= 10,
+    kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
                                               "red",
                                               "black")) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
