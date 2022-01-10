@@ -12,7 +12,9 @@ detect_non_timely_submission <- function(df) {
   # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df$submission_date), format="%Y-%m-%d %T") - as.Date(as.character(df$end), format="%Y-%m-%d %T")
   df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
-  qc <- df[c("fid", "child_id", "start", "diff")] %>%
+  df$end <- as.Date(as.character(df$end), format="%Y-%m-%d")
+  df$submission_date <- as.Date(as.character(df$submission_date), format="%Y-%m-%d")
+  qc <- df[c("fid", "child_id", "start", "end", "submission_date", "diff")] %>%
     dplyr::arrange(diff, fid)
 
 }
@@ -31,7 +33,8 @@ detect_non_timely_completion <- function(df) {
   # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df$end), format="%Y-%m-%d %T") - as.Date(as.character(df$start), format="%Y-%m-%d %T")
   df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
-  qc <- df[c("fid", "child_id", "start", "diff")] %>%
+  df$end <- as.Date(as.character(df$end), format="%Y-%m-%d")
+  qc <- df[c("fid", "child_id", "start", "end", "diff")] %>%
     dplyr::arrange(diff, fid)
 
 }
