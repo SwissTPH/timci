@@ -1271,7 +1271,33 @@ if (!is.null(day7fu_data)) {
     
     day7_outcome_ss <- list(
       "District" = list(
-        "Days" = ~qwraps2::mean_sd(days, denote_sd = "paren"),
+        "Before day 7" = ~qwraps2::n_perc(days == 6, prec),
+        "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec),
+        "Day 11-12" = ~qwraps2::n_perc(days >= 11 & days <= 12, prec),
+        "Above day 12" = ~qwraps2::n_perc(days > 12, prec),
+        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren")
+        )
+      )
+    out <- format_summary_table(all, day7_outcome_ss, district) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format mean (SD)")
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(succ_day7fu_data)
+    
+    day7_outcome_ss <- list(
+      "District" = list(
         "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
         "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == 1), prec)
         )
@@ -1282,8 +1308,7 @@ if (!is.null(day7fu_data)) {
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
-      kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format _mean (SD)_")
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
   }
 }
 ```
