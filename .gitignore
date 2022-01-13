@@ -5,3 +5,6 @@
 .Renviron
 nul
 .R1environ
+inst/rmarkdown/test.html
+inst/rmarkdown/test.pdf
+inst/rmarkdown/test.Rmd

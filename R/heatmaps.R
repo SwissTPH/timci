@@ -171,8 +171,8 @@ calendar_heatmap <- function(dates, values, title = "", subtitle = "", legendtit
 
   # add lines
   g <- g + geom_segment(data=my.lines, aes(x,y,xend=xend, yend=yend), lineend = "square", color = "black", inherit.aes=FALSE)
-
   return(g)
+
 }
 
 #' Generate a calendar heatmap
@@ -267,5 +267,59 @@ generate_calendar_heatmap <- function(df, datecol, date_max = Sys.Date(), date_m
                          guide = guide_colorbar(title.position = "top",
                                                 direction = "horizontal")) +
     facet_wrap(~month, nrow = 4, ncol = 3, scales = "free")
+
+}
+
+#' Create a heatmap by day of Week and hour of day
+#'
+#' @param df Data frame to use for the plot
+#' @param datecol Column name in data frame `df` that contains dates
+#' @return This function returns a ggplot object which contains a heatmap by day of Week and hour of day.
+#' @export
+#' @import ggplot2 lubridate dplyr
+
+generate_dh_heatmap <- function(df, datecol){
+
+  # Quote `datecol`
+  datecol <- dplyr::enquo(datecol)
+
+  # Add a column with the weekday and then abbreviate the weekday to be just
+  # the first 3 letters. Then, make that column a factor with the
+  # values in a specific order (the normal order for days of the week)
+  df <- df %>%
+    dplyr::mutate(hour = lubridate::hour(strptime(!!datecol, "%Y-%m-%d %H:%M:%S"))) %>%
+    dplyr::mutate(weekday = weekdays(as.Date(!!datecol)))
+
+  # Count entries by weekday and hour
+  dh_counts <- df %>% dplyr::count(weekday, hour)
+
+  # Create a theme that is a bit more friendly. This isn't required to do the visualization,
+  # but it's a painful heatmap to look at otherwise. We start with a minimalist theme... and
+  # then basically make it even more minimalist. Thank you, Tufte and Few.
+  theme_heatmap <- theme_light() +                 # Start with a minimalist theme
+    theme(panel.grid = element_blank(),            # Remove the gridlines
+          panel.border = element_blank(),          # Remove the border around the heatmap
+          plot.title = element_text(face = "bold", # Make the title bold
+                                    size = 11,     # Adjust the title size
+                                    hjust = 0.5),  # Center the title
+          axis.ticks = element_blank(),            # Remove the axis tickmarks
+          axis.title.x = element_blank(),          # Turn off the x-axis title
+          axis.title.y = element_text(size=10),    # Adjust the size of the y-axis title
+          axis.text.y = element_text(size = 8),    # Adjust the size of the y-axis labels
+          axis.text.x = element_text(size = 10),   # Adjust the size of the x-axis labels
+          legend.position = "none")                # Turn off the legend
+
+  # Create the plot.
+  dh_counts  %>% ggplot(dh_counts,
+                        mapping = aes(x = weekday,
+                                      y = hour,
+                                      fill = n)) +
+    geom_tile(colour="white") +  # This makes the heatmap (the colour is the lines in the grid)
+    scale_fill_gradient(low = "#f4fff6", high="#0bb730") +  # The colour range to use
+    scale_y_reverse(breaks=c(23:0), labels=c(23:0),    # Put the 0 at the top of the y-axis
+                    expand = c(0,0)) +                 # Remove padding around the heatmap
+    scale_x_discrete(expand = c(0,0), position = "top") +
+    labs(title = "Average Visits by Day of Week / Hour of Day", y = "Hour of Day") +
+    theme_heatmap  # Apply the theme defined earlier for styling
 
 }

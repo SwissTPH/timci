@@ -25,6 +25,7 @@
 #' @param spa_start_date SPA data collection start date (optional)
 #' @param lock_date RCT/LS data collection cleaning end date for database lock (optional)
 #' @param sample_size Numeric value, sample size for RCT/LS enrolment
+#' @param short Short version of the export
 #' @import rmarkdown ruODK
 #' @export
 
@@ -50,7 +51,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      cost_dir = NULL,
                                      qualkii_dir = NULL,
                                      qualos_dir = NULL,
-                                     sample_size = 100000) {
+                                     sample_size = 100000,
+                                     short = FALSE) {
 
   ###########################
   # Set up current language #

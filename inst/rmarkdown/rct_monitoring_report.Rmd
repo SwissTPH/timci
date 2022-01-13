@@ -68,6 +68,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   facility_cap <- "Liste des poste de recherche"
   intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
   multi_rec_cap <- "Recrutements multiples"
+  nonenrolment_cap <- "Causes de non-recrutement"
   notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   plot0_str <- "Recrutement total\nvs. taille d'échantillon cible"
   plot1_str <- "Recrutement mensuel\nvs.cible mensuelle"
@@ -99,6 +100,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   facility_cap <- "List of research facilities"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
   multi_rec_cap <- "Multiple enrolments"
+  nonenrolment_cap <- "Non-enrolment causes"
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   plot0_str <- "Total enrolment\nvs. target sample size"
   plot1_str <- "Monthly enrolment\nvs. monthly target"
@@ -318,7 +320,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
   day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
   enrolment_target <- round(day_target / facility_nb, 0)
 } else if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
-  enrolment_target <- 8
+  enrolment_target <- 4
 } else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
   hc_enrolment_target <- 16
   dispensary_enrolment_target <- 4
@@ -642,18 +644,7 @@ timci::generate_time_hist_plot(facility_data, screening_times_str)
 \newpage
 
 ```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# Participants\n\n"))
-} else {
-  cat(paste0("# Participants\n\n"))
-}
-
-
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("## Eligibilité\n\n"))
-} else {
-  cat(paste0("## Eligibility\n\n"))
-}
+cat(paste0("# Participants\n\n"))
 
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   age_cap <- "Âge"
@@ -874,13 +865,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
   
-```{r, results='asis', fig.height = figsize}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Causes de non-recrutement\n\n"))
-} else {
-  cat(paste0("### Non-enrolment causes\n\n"))
-}
-
+```{r, results='asis', fig.height = figsize, fig.cap = nonenrolment_cap}
 non_enrolment_causes <- timci::count_screening(facility_data)
 nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
 plot(nec_pie_chart)
@@ -977,6 +962,28 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
 
 ```{r header-clinical-presentation, results = "asis"}
 cat(clinical_presentation_title_str)
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  all <- data.frame(baseline_data)
+  
+  clinical_presentation_statistics <- list(
+    "Facility" = list(
+      "Convulsions" = ~qwraps2::n_perc(sx_convulsions == 1, prec),
+      "Lethargy" = ~qwraps2::n_perc(sx_lethargy == 1, prec),
+      "Vomit" = ~qwraps2::n_perc(sx_vomit == 1, prec),
+      "Less appetite" = ~qwraps2::n_perc(sx_less_feed == 1, prec)
+      )
+  )
+  out <- format_summary_table(all, clinical_presentation_statistics, facility_name)
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+}
 ```
 
 ```{r, results = "asis"}
@@ -1170,12 +1177,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = figsize}
+```{r, results = "asis", fig.height = figsize, fig.cap = "Weekly Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)"}
 if (!is.null(raw_day7fu_data) & length(raw_day7fu_data) > 0 & nrow(raw_day7fu_data) > 0) {
   p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data$date,
                                      date_min = as.Date(start_date),
                                      date_max = as.Date(Sys.Date() + 7),
-                                     ylbl = paste0(enrolment_str))
+                                     ylbl = paste0(enrolment_str),
+                                     date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 7))
   plot(p)
 }
 ```
@@ -1193,7 +1201,7 @@ raw_day7fu_data %>%
   kableExtra::row_spec(0, bold = TRUE)
 ```
 
-```{r, results='asis', fig.height = figsize}
+```{r, results='asis', fig.height = figsize, fig.cap = "Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)  over the last 30 days"}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
 } else {

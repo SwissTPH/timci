@@ -2,7 +2,7 @@ Type: Package
 Package: timci
 Title: Data management and visualisation for the TIMCI project
 Version: 0.1.0
-Author:person(given = "Helene", family = "Langet", role = c("aut",
+Author: person(given = "Helene", family = "Langet", role = c("aut",
     "cre"), email = "helene.langet@swisstph.ch")
 Maintainer: The package maintainer <helene.langet@swisstph.ch>
 Description: The package provides all tools and functions necessary for
@@ -17,6 +17,7 @@ Imports:
     DT,
     fs,
     ggplot2,
+    ggrepel,
     grDevices,
     hash,
     httr,

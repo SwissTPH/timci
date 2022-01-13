@@ -91,8 +91,7 @@ plot_gauge <- function(val, lbl, m, lthres, uthres, scale = 1){
 #' @param df Data frame to use for the plot
 #' @return This function returns a ggplot object which contains a pie chart.
 #' @export
-#' @import ggplot2 scales
-#' @importFrom stats reorder
+#' @import ggplot2 scales ggrepel
 
 generate_pie_chart <- function(df){
 
@@ -104,9 +103,13 @@ generate_pie_chart <- function(df){
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_brewer(palette = "Set1", name = "Group:") +
-    geom_text(aes(label = percentage),
-              position = position_stack(vjust = 0.5),
-              size = 3)+
+    ggrepel::geom_label_repel(data = df,
+                              aes(label = percentage),
+                              position = position_stack(vjust = 0.5),
+                              max.overlaps = Inf,
+                              size = 3,
+                              segment.alpha = 0,
+                              show.legend = FALSE) +
     theme_void() # remove background, grid, numeric labels
 
 }
@@ -282,6 +285,10 @@ generate_week_bar_plot <- function(date_vec,
       counts_ref$x <- counts_ref$x / rref
     }
     counts_ref$week <- as.Date(counts_ref$Group.1, format = "%Y-%m-%d")
+
+    counts_ref <- counts_ref %>%
+      tidyr::complete(week = seq.Date(date_min, date_max, by="week"))
+    counts_ref$x[is.na(counts_ref$x)] <- 0
 
     p <- p + ggplot2::geom_step(data = counts_ref,
                                 mapping = aes(x = week, y = x),
