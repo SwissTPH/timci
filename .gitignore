@@ -8,3 +8,8 @@ nul
 inst/rmarkdown/test.html
 inst/rmarkdown/test.pdf
 inst/rmarkdown/test.Rmd
+inst/rmarkdown/test.aux
+inst/rmarkdown/test.log
+inst/rmarkdown/test.lot
+inst/rmarkdown/test.out
+inst/rmarkdown/test.toc

@@ -119,11 +119,12 @@ cat(title_str)
 ```
 
 ```{r context-load-facilities, results='asis'}
+facilities <- params$research_facilities %>% filter(spa == 1)
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name")]
+  facilities <- facilities[, c("lvl2", "facility_id", "facility_name")]
   facilities <- facilities[!duplicated(facilities$facility_id), ]
 } else{
-  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name", "type")]
+  facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type")]
   facilities <- facilities[!duplicated(facilities$facility_id), ]
 }
 ```
