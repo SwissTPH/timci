@@ -68,6 +68,10 @@ tinytex::parse_install(
 )
 ```
 
+```r
+tinytex::tlmgr_install("hyphen-french")
+```
+
 #### emayili
 This package is required to send emails using a gmail address.
 The function `send_email_tls` in the `timci` package requires `emayili v0.6.5` and above to work correctly.
