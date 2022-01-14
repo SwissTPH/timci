@@ -56,7 +56,7 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
-If specific LaTeX packages or styles are missing, they can be installed using the following commands:
+If specific LaTeX packages (e.g., `graphicx`, `fancyhdr`, `lastpage`, `babel`, `bm`, `tocbibind`) or styles are missing, they can be installed using the following commands:
 
 ```r
 tinytex::tlmgr_install("xcolor")
@@ -68,6 +68,7 @@ tinytex::parse_install(
 )
 ```
 
+To avoid the warning `No hyphenation patterns were preloaded for the language French into the format.`, install `hyphen-french`
 ```r
 tinytex::tlmgr_install("hyphen-french")
 ```
