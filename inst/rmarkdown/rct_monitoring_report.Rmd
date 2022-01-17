@@ -1497,8 +1497,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       day28_call_ss <- list(
         "District" = list(
           "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
-          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec),
-          "Lost to follow-up" = ~qwraps2::n_perc((cg_reached == 1 & (cg_ok == 0 | days > day28_wmax)), prec)
+          "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec)
           )
       )
       out <- format_summary_table(all, day28_call_ss, district)
