@@ -27,15 +27,16 @@ run_rmarkdown_reportonly(
   cost_dir = NULL,
   qualkii_dir = NULL,
   qualos_dir = NULL,
-  sample_size = 1e+05
+  sample_size = 1e+05,
+  short = FALSE
 )
 }
 \arguments{
-\item{rctls_pid}{Numeric ID of the RCT/LS ODK Central project}
+\item{rctls_pid}{Numeric value that refers ID of the RCT/LS ODK Central project}
 
 \item{rctls_pp}{Passphrase}
 
-\item{spa_pid}{Numeric ID of the SPA / time-flow / process mapping ODK Central project}
+\item{spa_pid}{Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server}
 
 \item{qpid}{Numeric ID of the qualitative ODK Central project}
 
@@ -67,7 +68,7 @@ run_rmarkdown_reportonly(
 
 \item{lock_date}{RCT/LS data collection cleaning end date for database lock (optional)}
 
-\item{cost_pid}{Numeric ID of the cost and cost-effectiveness ODK Central project (optional)}
+\item{cost_pid}{Numeric value (optional) that refers to the ID of the cost and cost-effectiveness project on the ODK Central server}
 
 \item{cost_dir}{Path to the output folder for the cost and cost effectiveness database exports (optional)}
 
@@ -76,6 +77,8 @@ run_rmarkdown_reportonly(
 \item{qualos_dir}{Path to the output folder for the online survey exports (optional)}
 
 \item{sample_size}{Numeric value, sample size for RCT/LS enrolment}
+
+\item{short}{Short version of the export}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

@@ -139,7 +139,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   plot2_str <- "Weekly enrolment\nvs. weekly target"
   plot3_str <- "Enrolment rate\n(excl. repeat visits)"
   plot4_str <- "Day 7 follow-up rate"
-  plot5_str <- "Day 7 follow-up rate\nwithin the time window"
+  plot5_str <- "Day 7 follow-up rate\nwithin the statistical window"
   pox_title_str <- "## Pulse oximetry\n\n"
   referral_title_str <- "## Referrals\n\n"
   repeat_str <- "Repeat visit"
@@ -182,15 +182,16 @@ if (!is.null(params$facility_data)) {
   
 }
 
-# Merge facility generic info with facility data
+# Add facility generic information to the RCT/LS facility data
 facility_data <- merge(x = facility_data,
                        y = params$research_facilities[, c("deviceid", "facility_name")],
                        by.x = 'device_id',
                        by.y = 'deviceid',
                        all.x = TRUE)
 
-# Extract personally identifiable data
+# Extract personally identifiable information from RCT/LS facility data
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+# Add facility generic information to personally identifiable information
 pii <- merge(x = pii,
              y = params$research_facilities[, c("deviceid", "facility_name")],
              by.x = 'device_id',
@@ -447,7 +448,9 @@ n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= 
 
 ```{r, results='asis'}
 if (n_due_day7fu > 0) {
-  plot4 <- timci::plot_gauge(n_completed_day7fu/n_due_day7fu, plot4_str, 100, 85, 95, scale = 0.4)
+  n_day7fu_rate <- n_completed_day7fu/n_due_day7fu
+  n_day7fu_rate100 <- round(100 * n_day7fu_rate, prec)
+  plot4 <- timci::plot_gauge(n_day7fu_rate, plot4_str, 100, 85, 95, scale = 0.4)
   plot5 <- timci::plot_gauge(n_valid_day7fu/n_due_day7fu, plot5_str, 100, 80, 90, scale = 0.4)
 }
 ```
@@ -588,33 +591,39 @@ cat(weekly_enrolment_hdr2)
 ```
 
 ```{r, results = "asis", fig.height = figsize}
-if (!is.null(baseline_data) & length(baseline_data) > 0 & nrow(baseline_data) > 0) {
-  val <- day_target * 5
-  p <- timci::generate_week_bar_plot(date_vec = baseline_data$date_visit,
-                                     date_min = as.Date(start_date),
-                                     date_max = as.Date(as.Date(end_date) + 7),
-                                     ylbl = paste0(enrolment_str),
-                                     rref = val,
-                                     relative = FALSE)
-  plot(p)
+if (!is.null(baseline_data)){
+    if (length(baseline_data) > 0 & nrow(baseline_data) > 0) {
+      val <- day_target * 5
+      p <- timci::generate_week_bar_plot(date_vec = baseline_data$date_visit,
+                                         date_min = as.Date(start_date),
+                                         date_max = as.Date(as.Date(end_date) + 7),
+                                         ylbl = paste0(enrolment_str),
+                                         rref = val,
+                                         relative = FALSE)
+      plot(p)
+  }
 }
 ```
 
 ```{r, results='asis'}
-baseline_data %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data$date_visit),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  dplyr::group_by(week) %>%
-  dplyr::tally() %>%
-  dplyr::rename('N' = 'n') %>%
-  kableExtra::kbl(booktabs = TRUE,
-                  linesep = "",
-                  align = c("l", "c"),
-                  caption = weekly_enrolment_cap) %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+if (!is.null(baseline_data)){
+    if (length(baseline_data) > 0 & nrow(baseline_data) > 0) {
+       baseline_data %>%
+        dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data$date_visit),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 1))) %>%
+        dplyr::group_by(week) %>%
+        dplyr::tally() %>%
+        dplyr::rename('N' = 'n') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        linesep = "",
+                        align = c("l", "c"),
+                        caption = weekly_enrolment_cap) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+  }
+}
 ```
 
 ```{r, results = "asis"}
@@ -1247,19 +1256,20 @@ if (nrow(baseline_data) > 0) {
 \newpage
 
 ```{r, results = "asis"}
+
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Suivi à Jour 7\n\n"))
   cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
   if (n_due_day7fu > 0) {
     cat(paste0("**", n_due_day7fu, "** participants devraient avoir complété leur suivi à Jour 7.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants ont complété leur suivi à Jour 7."))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) ont complété leur suivi à Jour 7."))
   }
 } else {
   cat(paste0("# Day 7 follow-up\n\n"))
   cat(paste0("The valid Day 7 follow-up period is **", day7_wmin, "** to **", day7_wmax, "** days.\n\n"))
   if (n_due_day7fu > 0) {
     cat(paste0("**", n_due_day7fu, "** participants should have completed their Day 7 follow-up.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants completed their Day 7 follow-up."))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) completed their Day 7 follow-up."))
   }
 }
 ```
@@ -1474,10 +1484,11 @@ if (!is.null(raw_hospit_data)) {
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat("\\newpage")
   cat('# Day 28 follow-up\n\n')
+  n_day28fu_rate <- round(100 * n_completed_day28fu/n_due_day28fu, pres)
   cat(paste0("The valid Day 28 follow-up period is **", day28_wmin, "** to **", day28_wmax, "** days.\n\n"))
   if (n_due_day28fu > 0) {
     cat(paste0("**", n_due_day28fu, "** participants should have completed their Day 28 follow-up.\n\n"))
-    cat(paste0("**", n_completed_day28fu, "** participants completed their Day 28 follow-up."))
+    cat(paste0("**", n_completed_day28fu, "** participants (", n_day28fu_rate, "%) completed their Day 28 follow-up."))
   }
 }
 ```

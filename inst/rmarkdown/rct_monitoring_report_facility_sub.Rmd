@@ -43,23 +43,46 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis", fig.height = figsize}
-if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" | Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
-    if (ftype == "dispensary") {
-      val <- 5 * dispensary_enrolment_target
+if (!is.null(baseline_data_tmp)){
+  if (length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" | Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
+      if (ftype == "dispensary") {
+        val <- 5 * dispensary_enrolment_target
+      } else{
+        val <- 5 * hc_enrolment_target
+      }
     } else{
-      val <- 5 * hc_enrolment_target
+      val <- 5 * enrolment_target
     }
-  } else{
-    val <- 5 * enrolment_target
+    p <- timci::generate_week_bar_plot(date_vec = baseline_data_tmp$date_visit,
+                                       date_min = as.Date(start_date),
+                                       date_max = as.Date(as.Date(end_date) + 7),
+                                       ylbl = paste0(enrolment_str),
+                                       rref = val,
+                                       relative = FALSE)
+    plot(p)
   }
-  p <- timci::generate_week_bar_plot(date_vec = baseline_data_tmp$date_visit,
-                                     date_min = as.Date(start_date),
-                                     date_max = as.Date(as.Date(end_date) + 7),
-                                     ylbl = paste0(enrolment_str),
-                                     rref = val,
-                                     relative = FALSE)
-  plot(p)
+}
+```
+
+```{r, results='asis'}
+if (!is.null(baseline_data_tmp)){
+    if (length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
+       baseline_data_tmp %>%
+        dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data_tmp$date_visit),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 1))) %>%
+        dplyr::group_by(week) %>%
+        dplyr::tally() %>%
+        dplyr::rename('N' = 'n') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        linesep = "",
+                        align = c("l", "c"),
+                        caption = paste0(fname, " - ", weekly_enrolment_cap)) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+  }
 }
 ```
 

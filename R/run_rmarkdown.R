@@ -1,11 +1,57 @@
+#' Set language settings
+#'
+#' This function sets country-specific language preferences to be used in the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#' The function more specifically sets the environment variable `LANG` and teh current locale `LC_TIME`
+#'
+#' @export
+
+set_language_settings <- function() {
+
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    Sys.setenv(LANG = "fr")
+    Sys.setlocale("LC_TIME", "French")
+  } else {
+    Sys.setenv(LANG = "en")
+    Sys.setlocale("LC_TIME", "English")
+  }
+
+}
+
+#' Set the connection to ODK Central through ruODK
+#'
+#' This function sets the connection to the country ODK Central server which stores data in the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#' To this aim, the function relies on the `ruODK` package which is an R client to access and parse data from ODK Central.
+#'
+#' @param verbose Boolean (optional) that enables (TRUE) or disables (FALSE) verbose output. Defaut is set to FALSE.
+#' @return list of ODK central project IDs
+#' @export
+
+set_odkc_connection <- function(verbose = FALSE) {
+
+  write(formats2h1("Connection to ODK Central through ruODK"), stderr())
+
+  ruODK::ru_setup(
+    svc = Sys.getenv("ODKC_SVC"),
+    un = Sys.getenv("ODKC_UN"),
+    pw = Sys.getenv("ODKC_PW"),
+    tz = Sys.getenv("TZ"),
+    verbose = verbose # Can be switched to TRUE for demo or debugging
+  )
+
+  # List of projects ---------------------------
+  # Only list projects visible with the credentials `ODKC_UN` and `ODKC_PW`
+  odkc_project_list <- ruODK::project_list()$id
+
+}
+
 #' Run Rmarkdown files
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
-#' @param rctls_pid Numeric ID of the RCT/LS ODK Central project
+#' @param rctls_pid Numeric value that refers ID of the RCT/LS ODK Central project
 #' @param rctls_pp Passphrase
-#' @param spa_pid Numeric ID of the SPA / time-flow / process mapping ODK Central project
-#' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project (optional)
+#' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
+#' @param cost_pid Numeric value (optional) that refers to the ID of the cost and cost-effectiveness project on the ODK Central server
 #' @param qpid Numeric ID of the qualitative ODK Central project
 #' @param qual_pp Passphrase
 #' @param research_facilities Dataframe that contains the research facilities
@@ -58,13 +104,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Set up current language #
   ###########################
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    Sys.setenv(LANG = "fr")
-    Sys.setlocale("LC_TIME", "French")
-  } else {
-    Sys.setenv(LANG = "en")
-    Sys.setlocale("LC_TIME", "English")
-  }
+  timci::set_language_settings()
 
   ######################
   # Set up study dates #
@@ -90,19 +130,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Set up ruODK #
   ################
 
-  write(formats2h1("Connection to ODK Central through ruODK"), stderr())
-
-  ruODK::ru_setup(
-    svc = Sys.getenv("ODKC_SVC"),
-    un = Sys.getenv("ODKC_UN"),
-    pw = Sys.getenv("ODKC_PW"),
-    tz = Sys.getenv("TZ"),
-    verbose = FALSE # Can be switched to TRUE for demo or debugging
-  )
-
-  # List of projects ---------------------------
-  # Only list projects visible with the credentials `ODKC_UN` and `ODKC_PW`
-  odkc_project_list <- ruODK::project_list()$id
+  # Connection to ODK Central through ruODK
+  odkc_project_list <- set_odkc_connection()
 
   # Environment variables which may be shared between different projects ---------------------------
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
@@ -655,5 +684,111 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       }
     }
   }
+
+}
+
+#' Run Rmarkdown files
+#'
+#' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#'
+#' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project (optional)
+#' @param research_facilities Dataframe that contains the research facilities
+#' @param report_dir Path to the output folder for the generated Rmarkdown reports
+#' @param cost_dir Path to the output folder for the cost and cost effectiveness database exports (optional)
+#' @param cost_start_date SPA data collection start date (optional)
+#' @param cost_end_date RCT/LS data collection end date (optional)
+#' @param cost_lock_date RCT/LS data collection cleaning end date for database lock (optional)
+#' @param short Short version of the export
+#' @import rmarkdown ruODK
+#' @export
+
+export_cost_studies <- function(cost_pid,
+                                cost_dir,
+                                research_facilities,
+                                report_dir,
+                                cost_start_date = NULL,
+                                cost_end_date = NULL,
+                                cost_lock_date = NULL,
+                                short = FALSE) {
+
+  ###########################
+  # Set up current language #
+  ###########################
+
+  timci::set_language_settings()
+
+  ######################
+  # Set up study dates #
+  ######################
+
+  if (is.null(cost_end_date)) {
+    cost_end_date = Sys.Date()
+  } else{
+    cost_end_date = as.Date(cost_end_date, "%Y-%m-%d")
+  }
+
+  if (is.null(cost_start_date)) {
+    cost_start_date = cost_start_date
+  }
+
+  ################
+  # Set up ruODK #
+  ################
+
+  # Connection to ODK Central through ruODK
+  odkc_project_list <- set_odkc_connection()
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  write(formats2h1("Load TIMCI ODK data"), stderr())
+
+  # Cost environment variables ---------------------------
+  medical_cost_fid <- Sys.getenv("TIMCI_COST_MEDICAL_FID")
+  hospital_cost_fid <- Sys.getenv("TIMCI_COST_HOSPITAL_FID")
+
+  # Initialise variables ---------------------------
+  cost_form_list <- NULL
+  medical_cost_data <- NULL
+  hospital_cost_data <- NULL
+
+  # Load TIMCI cost data ---------------------------
+
+  write(formats2h2("Load TIMCI cost data"), stderr())
+
+  if (!is.null(cost_pid)) {
+
+    if (cost_pid %in% odkc_project_list) {
+
+      cost_form_list <- ruODK::form_list(pid = cost_pid)$fid
+
+      # Load medical cost data
+      write(formats2h3("Load medical cost data"), stderr())
+      medical_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                cpid_forms = cost_form_list,
+                                                                cfid = medical_cost_fid,
+                                                                start_date = start_date,
+                                                                end_date = end_date,
+                                                                verbose = TRUE)
+
+      # Load hospital cost data
+      write(formats2h3("Load hospital cost data"), stderr())
+      hospital_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                 cpid_forms = cost_form_list,
+                                                                 cfid = hospital_cost_fid,
+                                                                 start_date = start_date,
+                                                                 end_date = end_date,
+                                                                 verbose = TRUE)
+
+    }
+  }
+
+  ###########################
+  # RCT data quality report #
+  ###########################
+
+  write(formats2h1("Export data and generate data quality report"), stderr())
+  write("No data exported for the moment - To be updated", stderr())
 
 }
