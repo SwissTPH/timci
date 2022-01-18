@@ -736,12 +736,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 ```{r, results = "asis"}
 all <- data.frame(facility_data)
-all$sickness[is.na(all$sickness)] <- 0
-all$inpatient[is.na(all$inpatient)] <- 0
-all$consult_reason[is.na(all$consult_reason)] <- 0
-all$cg_eligibility[is.na(all$cg_eligibility)] <- 0
-all$prev_enrl[is.na(all$prev_enrl)] <- 0
-all$repeat_consult[is.na(all$repeat_consult)] <- 0
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
 
 age_statistics <- list(
@@ -771,6 +765,7 @@ out %>%
 
 ```{r, results = "asis"}
 all <- all %>% filter(age_incl == 1 & age_excl == 0)
+all$sickness[is.na(all$sickness)] <- 0
 
 sickness_statistics <- list(
   "Facility" = list(
@@ -797,6 +792,7 @@ out %>%
 sick <- all %>% filter(sickness == 1)
 nonsick <- all %>% filter(sickness == 0)
 all <- sick
+all$consult_reason[is.na(all$consult_reason)] <- 0
 
 sick_reason_statistics <- list(
   "Facility" = list(
@@ -820,6 +816,8 @@ out %>%
 
 ```{r, results = "asis"}
 all <- nonsick
+all$inpatient[is.na(all$inpatient)] <- 0
+all$consult_reason[is.na(all$consult_reason)] <- 0
 
 reason_statistics <- list(
   "Facility" = list(
@@ -845,6 +843,8 @@ if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
 
 ```{r, results = "asis"}
 all <- sick
+all$cg_eligibility[is.na(all$cg_eligibility)] <- 0
+
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cg_age_eligibility_table_cap <- "Âge de l'accompagnant principal"
 } else {
@@ -905,6 +905,8 @@ out %>%
 
 ```{r, results = "asis"}
 all <- sick %>% filter(cg_eligibility == 1)
+all$prev_enrl[is.na(all$prev_enrl)] <- 0
+all$repeat_consult[is.na(all$repeat_consult)] <- 0
 
 summary_statistics <- list(
   "Facility" = list(
