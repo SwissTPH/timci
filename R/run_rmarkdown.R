@@ -722,13 +722,13 @@ export_cost_studies <- function(cost_pid,
   ######################
 
   if (is.null(cost_end_date)) {
-    cost_end_date = Sys.Date()
+    cost_end_date <- Sys.Date()
   } else{
-    cost_end_date = as.Date(cost_end_date, "%Y-%m-%d")
+    cost_end_date <- as.Date(cost_end_date, "%Y-%m-%d")
   }
 
   if (is.null(cost_start_date)) {
-    cost_start_date = cost_start_date
+    cost_start_date <- cost_start_date
   }
 
   ################
@@ -768,8 +768,8 @@ export_cost_studies <- function(cost_pid,
       medical_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
                                                                 cpid_forms = cost_form_list,
                                                                 cfid = medical_cost_fid,
-                                                                start_date = start_date,
-                                                                end_date = end_date,
+                                                                start_date = cost_start_date,
+                                                                end_date = cost_end_date,
                                                                 verbose = TRUE)
 
       # Load hospital cost data
@@ -777,8 +777,8 @@ export_cost_studies <- function(cost_pid,
       hospital_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
                                                                  cpid_forms = cost_form_list,
                                                                  cfid = hospital_cost_fid,
-                                                                 start_date = start_date,
-                                                                 end_date = end_date,
+                                                                 start_date = cost_start_date,
+                                                                 end_date = cost_end_date,
                                                                  verbose = TRUE)
 
     }

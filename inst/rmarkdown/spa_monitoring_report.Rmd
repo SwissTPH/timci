@@ -35,8 +35,18 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       fig.pos='!H')
 options(qwraps2_markup = 'markdown')
+
+# Qwraps2 parameters
+prec <- 1
+
+#kableExtra table parameters
 table_fs <- 7
-pres <- 1
+figsize <- 3
+total_row_ft <- "gray"
+total_row_ft2 <- "white"
+striped_row_bg <- "gray!10"
+total_row_bg2 <- "gray"
+
 ```
 
 ```{r translations}
@@ -53,6 +63,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   withdrawal_str <- "Désistement"
   appendix_title <- "# Annexe\n\n"
   screening_times_str <- "Heures de screening"
+  title_str <- "# Contexte\n\n"
 } else {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
@@ -66,6 +77,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   withdrawal_str <- "Withdrawal"
   appendix_title <- "# Appendix\n\n"
   screening_times_str <- "Screening times"
+  title_str <- "# Context\n\n"
 }
 ```
 
@@ -114,11 +126,6 @@ if (nrow(spa_sco_data) > 0) {
 ```
 
 ```{r context-title, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title_str <- "# Contexte\n\n"
-} else {
-  title_str <- "# Context\n\n"
-}
 cat(title_str)
 ```
 
@@ -168,12 +175,28 @@ facility_disp  %>%
                   linesep = "",
                   caption = facility_cap,
                   align = c("c", "c", "c")) %>% 
-  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"),
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
                             font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE)
+  kableExtra::row_spec(0, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
 ```
 
 # Sick child observation protocol
+
+The objective of the sick child observation protocol is:
+\begin{itemize}
+  \item to understand the impact of intervention(s) on healthcare provider's adherence to practice and quality of care
+  \begin{itemize}
+    \item critical components of IMCI assessment, diagnosis, management
+    \item inform understanding of correctness of severity classification
+    \item patient-centeredness of care (respectful care)
+  \end{itemize}
+  \item to evaluate the implementation of interventions
+  \begin{itemize}
+    \item functionality, use of and communication about pulse oximetry, including correctness of use
+    \item functionality, use of and communication about CDSA, including correctness of use
+  \end{itemize}
+\end{itemize}
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -185,6 +208,51 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 timci::generate_calendar_heatmap2(spa_sco_data,
                                   date,
                                   legendtitle = "Number of submissions")
+```
+
+```{r, results = "asis"}
+all <- spa_sco_data %>% 
+  rename(young_infant = "child_identification-young_infant",
+         back_from_lab = "child_identification-back_from_lab",
+         facility_name = "facility_identification-fname")
+
+summary <- list(
+  "Summary" = list(
+    "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec)
+    "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
+    )
+)
+out <- format_summary_table(all, summary, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Type of observation") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, results = "asis"}
+all %>% dplyr::filter(back_from_lab == 0)
+
+summary <- list(
+  "Summary" = list(
+    "0-59 days" = ~qwraps2::n_perc(young_infant == 1, prec),
+    "2-59 months" = ~qwraps2::n_perc(young_infant == 0, prec)
+    )
+)
+out <- format_summary_table(all, summary, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Age category") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
 # Caregiver exit interview
@@ -228,3 +296,9 @@ timci::generate_calendar_heatmap2(spa_hcpi_data,
                                   date,
                                   legendtitle = "Number of submissions")
 ```
+
+\newpage
+\listoftables
+
+\newpage
+\listoffigures
