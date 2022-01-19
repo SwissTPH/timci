@@ -33,8 +33,17 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       fig.pos='!H')
 options(qwraps2_markup = 'markdown')
+
+# Qwraps2 parameters
+prec <- 1
+
+#kableExtra table parameters
 table_fs <- 7
-pres <- 1
+figsize <- 3
+total_row_ft <- "gray"
+total_row_ft2 <- "white"
+striped_row_bg <- "gray!10"
+total_row_bg2 <- "gray"
 ```
 
 ```{r translations}
@@ -49,8 +58,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   enrolment_str <- "Recrutement"
   screening_str <- "Screening"
   withdrawal_str <- "Désistement"
-  appendix_title <- "# Annexe\n\n"
+  pm_h1 <- "# Cartographie des processus\n\n"
   screening_times_str <- "Heures de screening"
+  tf_h1 <- "# Flux temporels\n\n"
 } else {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
@@ -62,13 +72,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   enrolment_str <- "Enrolment"
   screening_str <- "Screening"
   withdrawal_str <- "Withdrawal"
-  appendix_title <- "# Appendix\n\n"
+  pm_h1 <- "# Process mapping\n\n"
   screening_times_str <- "Screening times"
+  tf_h1 <- "# Time-flow\n\n"
 }
 ```
 
+\newpage
+
 ```{r notice-text, results='asis'}
-cat("\\newpage")
 cat(notice_str)
 ```
 
@@ -164,12 +176,17 @@ facility_disp  %>%
                   linesep = "",
                   caption = facility_cap,
                   align = c("c", "c", "c")) %>% 
-  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"),
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
                             font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE)
+  kableExtra::row_spec(0, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
 ```
 
-# Process mapping
+\newpage
+
+```{r pm-h1, results='asis'}
+cat(pm_h1)
+```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -187,7 +204,11 @@ if (!is.null(pm_data)){
 }
 ```
 
-# Time-flow
+\newpage
+
+```{r tf-h1, results='asis'}
+cat(tf_h1)
+```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {

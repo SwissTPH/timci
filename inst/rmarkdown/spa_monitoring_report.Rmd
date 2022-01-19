@@ -59,6 +59,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   submission_str <- "Soumissions"
   enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
   enrolment_str <- "Recrutement"
+  heatmap_cap <- "Cartes thermiques calendaires"
   screening_str <- "Screening"
   withdrawal_str <- "Désistement"
   appendix_title <- "# Annexe\n\n"
@@ -73,6 +74,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   submission_str <- "Submissions"
   enrolment_rate_str <- "Enrolment rate vs. target"
   enrolment_str <- "Enrolment"
+  heatmap_cap <- "Calendar heatmaps"
   screening_str <- "Screening"
   withdrawal_str <- "Withdrawal"
   appendix_title <- "# Appendix\n\n"
@@ -198,13 +200,7 @@ The objective of the sick child observation protocol is:
   \end{itemize}
 \end{itemize}
 
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
-}
-
+```{r, results='asis', fig.cap = heatmap_cap}
 timci::generate_calendar_heatmap2(spa_sco_data,
                                   date,
                                   legendtitle = "Number of submissions")
@@ -235,7 +231,7 @@ out %>%
 ```
 
 ```{r, results = "asis"}
-all %>% dplyr::filter(back_from_lab == 0)
+all <- all %>% dplyr::filter(back_from_lab == 0)
 
 summary <- list(
   "Summary" = list(
