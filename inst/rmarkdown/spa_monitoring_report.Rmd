@@ -218,7 +218,7 @@ all <- spa_sco_data %>%
 
 summary <- list(
   "Summary" = list(
-    "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec)
+    "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
     "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
     )
 )
@@ -267,6 +267,31 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 timci::generate_calendar_heatmap2(spa_cgei_data,
                                   date,
                                   legendtitle = "Number of submissions")
+```
+
+```{r, results = "asis"}
+all <- spa_cgei_data %>% 
+  rename(referral = "g5-i4_1",
+         facility_name = "fname")
+
+summary <- list(
+  "Summary" = list(
+    "Yes" = ~qwraps2::n_perc(referral == 1, prec),
+    "No" = ~qwraps2::n_perc(referral == 0, prec),
+    "Not sure" = ~qwraps2::n_perc(referral == 98, prec),
+    "Declined" = ~qwraps2::n_perc(referral == 97, prec)
+    )
+)
+out <- format_summary_table(all, summary, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c", "c"),
+                  caption = "Referral") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
 # Facility assessment
