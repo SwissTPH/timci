@@ -359,11 +359,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                verbose = TRUE)
   wfa_data <- NULL
   if (!is.null(raw_wfa_data)) {
-    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-    } else{
-      wfa_data <- raw_wfa_data
-    }
+    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
   }
 
   # Load problem report data

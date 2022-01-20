@@ -142,6 +142,7 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results='asis'}
+spa_start_date <- NULL
 if (!is.null(spa_sco_data)) {
   if (nrow(spa_sco_data) > 0) {
     spa_start_date <- min(spa_sco_data$date)
@@ -754,6 +755,7 @@ cat(paste0("There are ", nrow(allday7fu_data), " records in the raw Day 7 follow
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
 
 ```{r}
+locked_day7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     # All follow-ups
@@ -770,11 +772,19 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r, results = 'asis'}
-format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.")
+if (!is.null(allday7fu_data)) {
+  if (nrow(allday7fu_data) > 0) {
+    format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.")
+  }
+}
 ```
 
 ```{r, results = 'asis'}
-format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database.")
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database.")
+  }
+}
 ```
 
 ### Duplicate management
@@ -833,14 +843,23 @@ To be implemented
 ### Data cleaning summary
 
 ```{r, results = 'asis'}
-format_nrow("There are", locked_allday7fu_data, "records in the locked Day 7 follow-up database.")
+if (!is.null(allday7fu_data)) {
+  if (nrow(allday7fu_data) > 0) {
+    format_nrow("There are", locked_allday7fu_data, "records in the locked Day 7 follow-up database.")
+  }
+}
 ```
 
 ```{r, results = 'asis'}
-format_nrow("There are", locked_day7fu_data, "records in the locked successful Day 7 follow-up database.")
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    format_nrow("There are", locked_day7fu_data, "records in the locked successful Day 7 follow-up database.")
+  }
+}
 ```
 
 ```{r day7-lost-to-followup}
+ltfu <- NULL
 if (!is.null(day7fu_data)) {
   ltfu <- timci::generate_ltfu_log(df = day0_data,
                                    fudf = allday7fu_data,
@@ -850,6 +869,7 @@ if (!is.null(day7fu_data)) {
 ```
 
 ```{r locked-day7-lost-to-followup}
+locked_ltfu <- NULL
 if (!is.null(locked_day7fu_data)) {
   locked_ltfu <- timci::generate_ltfu_log(df = locked_day0_data,
                                           fudf = locked_allday7fu_data,
@@ -1038,17 +1058,14 @@ cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".
 cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
 ```
 
-```{r}
+```{r, results = 'asis'}
+hospit_fu_export_name <- "05b_timci_deidentified_hospit_fu_log_all"
 if (!is.null(hospit_fu)) {
-  hospit_fu_export_name <- "05b_timci_deidentified_hospit_fu_log_all"
   fn <- timci::export_df2xlsx(hospit_fu,
                               params$rctls_dir,
                               hospit_fu_export_name)
+  cat(paste0("* Hospitalisation log is exported in ", hospit_fu_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 }
-```
-
-```{r, results = 'asis'}
-cat(paste0("* Hospitalisation log is exported in ", hospit_fu_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
 ```
 
 ```{r, results = 'asis'}

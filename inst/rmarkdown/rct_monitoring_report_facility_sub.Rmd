@@ -97,13 +97,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis", fig.height = figsize}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
-    
-    p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date,
-                                        values = wfa_data_tmp$u5_attendance_last_week,
-                                        date_min = as.Date(start_date),
-                                        date_max = as.Date(as.Date(end_date) + 7),
-                                        ylbl = "Under 5 attendance")
-    plot(p)
+    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+      p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date,
+                                          values = wfa_data_tmp$u5_attendance_last_week,
+                                          date_min = as.Date(start_date),
+                                          date_max = as.Date(as.Date(end_date) + 7),
+                                          ylbl = "Under 5 attendance")
+      plot(p)
+    }
   }
 }
 ```

@@ -10,7 +10,10 @@ process_weekly_fa_data <- function(df) {
   df$"page1-new_hcp" <- as.integer(df$"page1-new_hcp")
   df$"page1-hcp_leave" <- as.integer(df$"page1-hcp_leave")
   df$"page1-drug_stock_out" <- as.integer(df$"page1-drug_stock_out")
-  df$"page1-children_seen" <- as.integer(df$"page1-children_seen")
+
+  if (Sys.getenv('TIMCI_COUNTRY') != "India") {
+    df$"page1-children_seen" <- as.integer(df$"page1-children_seen")
+  }
 
   # Match column names with names from dictionary
   df <- match_from_xls_dict(df, "wfa_dict.xlsx")

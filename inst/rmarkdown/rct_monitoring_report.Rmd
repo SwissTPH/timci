@@ -95,7 +95,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   nonenrolment_cap <- "Causes de non-recrutement"
   notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   plot0_str <- "Recrutement total\nvs. taille d'échantillon cible"
-  plot1_str <- "Recrutement mensuel\nvs.cible mensuelle"
+  plot1_str <- "Recrutement mensuel\nvs. cible mensuelle"
   plot2_str <- "Recrutement hebdomadaire\nvs. cible hebdomadaire"
   plot3_str <- "Taux de recrutement\n(hors visites secondaires)"
   plot4_str <- "Taux de suivi à Jour 7"
@@ -111,6 +111,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   submission_table_cap <- "Nombre de visites."
   tech_info_str <- "# Informations techniques"
   title_str <- "# Indicateurs globaux\n\n"
+  u18_mother_cap <- "Proportion de mères adolescentes si la mère n'est pas l'accompagnant principal"
   weekly_enrolment_cap <- "Recrutement hebdomadaire pour chaque semaine de l'étude."
   weekly_enrolment_hdr2 <- "## Recrutement hebdomadaire\n\n"
   withdrawal_str <- "Retrait"
@@ -158,6 +159,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   submission_str <- "Submissions"
   tech_info_str <- "# Technical information"
   title_str <- "# Global indicators\n\n"
+  u18_mother_cap <- "Proportion of underaged mothers if the mother is not the main caregiver"
   weekly_enrolment_cap <- "Weekly recruitment for each week of the study."
   weekly_enrolment_hdr2 <- "## Weekly enrolment\n\n"
   withdrawal_str <- "Withdrawal"
@@ -645,13 +647,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis", fig.height = figsize}
 if (!is.null(wfa_data)) {
   if (length(wfa_data) > 0 & nrow(wfa_data) > 0) {
-    
-    p <- timci::generate_week_bar_plot2(date_vec = wfa_data$date,
-                                        values = wfa_data$u5_attendance_last_week,
-                                        date_min = as.Date(start_date),
-                                        date_max = as.Date(as.Date(end_date) + 7),
-                                        ylbl = "Under 5 attendance")
-    plot(p)
+    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+      p <- timci::generate_week_bar_plot2(date_vec = wfa_data$date,
+                                          values = wfa_data$u5_attendance_last_week,
+                                          date_min = as.Date(start_date),
+                                          date_max = as.Date(as.Date(end_date) + 7),
+                                          ylbl = "Under 5 attendance")
+      plot(p)
+    }
   }
 }
 ```
@@ -892,32 +895,29 @@ out %>%
 
 ```{r, results = "asis"}
 all <- sick %>% filter(main_cg != 1 & !is.na(underaged_mother))
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  u18_mother_cap <- "Proportion de mères adolescentes si la mère n'est pas l'accompagnant principal"
-} else {
-  u18_mother_cap <- "Proportion of underaged mothers if the mother is not the main caregiver"
+
+if (nrow(all) > 0) {
+  mother_statistics <- list(
+    "Summary" = list(
+      "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec),
+      ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec)
+      )
+  )
+
+  out <- format_summary_table(all, mother_statistics, facility_name)
+  out <- gsub("%", "\\\\%", out)
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    align = c("c", "c"),
+                    linesep = "",
+                    caption = u18_mother_cap,
+                    col.names = c("< 18", "$\\bm{\\geq 18}$"),
+                    escape = FALSE) %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 }
-
-mother_statistics <- list(
-  "Mother's age" = list(
-    "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec),
-    ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec)
-    )
-)
-
-out <- format_summary_table(all, mother_statistics, facility_name)
-out <- gsub("%", "\\\\%", out)
-out %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  align = c("c", "c"),
-                  linesep = "",
-                  caption = u18_mother_cap,
-                  col.names = c("< 18", "$\\bm{\\geq 18}$"),
-                  escape = FALSE) %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
 ```{r, results = "asis"}
@@ -926,7 +926,7 @@ all$prev_enrl[is.na(all$prev_enrl)] <- 0
 all$repeat_consult[is.na(all$repeat_consult)] <- 0
 
 summary_statistics <- list(
-  "Facility" = list(
+  "Summary" = list(
     "First" = ~qwraps2::n_perc(prev_enrl == 3 | prev_enrl == 98, prec),
     "Previous" = ~qwraps2::n_perc(prev_enrl == 1 | prev_enrl == 2, prec),
     "Last <= 28 days" = ~qwraps2::n_perc(repeat_consult == 1, prec),
@@ -1466,9 +1466,9 @@ if (!is.null(day7fu_data)) {
       kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
-      kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
-                                                "red",
-                                                "black")) %>%
+      # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
       kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format \\\\textit{mean (SD)}.",
@@ -1478,6 +1478,12 @@ if (!is.null(day7fu_data)) {
 ```
 
 ```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+  hospit_value <- 13
+} else{
+  hospit_value <- 1
+}
+
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
@@ -1489,7 +1495,7 @@ if (!is.null(day7fu_data)) {
       "summary" = list(
         "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec),
         "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
-        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == 1), prec)
+        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value), prec)
         )
       )
     out <- format_summary_table(all, day7_outcome_ss, facility_name) 
@@ -1497,12 +1503,12 @@ if (!is.null(day7fu_data)) {
       kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
-      kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
-                                                "red",
-                                                "black")) %>%
-      kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
-                                                "red",
-                                                "black")) %>%
+      # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      # kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
   }
@@ -1583,7 +1589,7 @@ if (!is.null(raw_hospit_data)) {
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   cat("\\newpage")
   cat('# Day 28 follow-up\n\n')
-  n_day28fu_rate <- round(100 * n_completed_day28fu/n_due_day28fu, pres)
+  n_day28fu_rate <- round(100 * n_completed_day28fu/n_due_day28fu, prec)
   cat(paste0("The valid Day 28 follow-up period is **", day28_wmin, "** to **", day28_wmax, "** days.\n\n"))
   if (n_due_day28fu > 0) {
     cat(paste0("**", n_due_day28fu, "** participants should have completed their Day 28 follow-up.\n\n"))
