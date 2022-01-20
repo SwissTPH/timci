@@ -55,11 +55,11 @@ export_df2csv <- function(df, dirname, prefix) {
 export_df2csvxlsx <- function(df, dirname, prefix) {
 
   out1 <- timci::export_df2xlsx(df,
-                              dirname,
-                              prefix)
+                                dirname,
+                                prefix)
   out2 <- timci::export_df2csv(df,
-                             dirname,
-                             prefix)
+                               dirname,
+                               prefix)
   out <- paste0(out1,'\n',out2)
 
 }

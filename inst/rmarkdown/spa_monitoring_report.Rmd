@@ -209,29 +209,36 @@ timci::generate_calendar_heatmap2(spa_sco_data,
 ```{r, results = "asis"}
 all <- spa_sco_data %>% 
   rename(young_infant = "child_identification-young_infant",
-         back_from_lab = "child_identification-back_from_lab",
          facility_name = "facility_identification-fname")
 
-summary <- list(
-  "Summary" = list(
-    "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
-    "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
-    )
-)
-out <- format_summary_table(all, summary, facility_name)
-out %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  linesep = "",
-                  align = c("c", "c"),
-                  caption = "Type of observation") %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
+  all <- all %>% 
+    rename(back_from_lab = "child_identification-back_from_lab")
+  
+  summary <- list(
+    "Summary" = list(
+      "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
+      "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
+      )
+  )
+  out <- format_summary_table(all, summary, facility_name)
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    linesep = "",
+                    align = c("c", "c"),
+                    caption = "Type of observation") %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+}
 ```
 
 ```{r, results = "asis"}
-all <- all %>% dplyr::filter(back_from_lab == 0)
+
+if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
+  all <- all %>% dplyr::filter(back_from_lab == 0)
+}
 
 summary <- list(
   "Summary" = list(
