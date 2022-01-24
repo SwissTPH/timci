@@ -56,10 +56,10 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
-If specific LaTeX packages (e.g., `graphicx`, `fancyhdr`, `lastpage`, `babel`, `tocbibind`) or styles are missing, they can be installed using the following commands:
+If specific LaTeX packages (e.g., `fancyhdr`, `lastpage`, `babel`, `tocbibind`) or styles are missing, they can be installed using the following commands:
 
 ```r
-tinytex::tlmgr_install("graphicx")
+tinytex::tlmgr_install("fancyhdr")
 ```
 
 ```r
