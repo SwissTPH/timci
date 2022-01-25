@@ -208,10 +208,16 @@ facility_device <- facility_data[facility_data$fid %in% research_facilities$faci
 facility_device <- facility_device %>%
   merge(research_facilities, by.x = 'fid', by.y = 'facility_id', all.x = TRUE) %>%
   dplyr::select(c('device_id', 'fid', 'facility_name'))
+```
 
-# Remove row for Senegal (RA used wrong QR codes)
-facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
+  # Remove row for Senegal (RA used wrong QR codes)
+  facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
+}
+```
 
+```{r, results='asis'}
 facility_device %>%
   knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
 ```
@@ -277,6 +283,10 @@ if (nrow(invalid_facilities) > 0) {
 ```{r, results='asis'}
 cat(paste0(nrow(invalid_facilities), " records with non-valid enrolment facilities were automatically detected and removed in the locked Day 0 database."))
 ```
+
+### Inconsistent facility information [Context check]
+
+To be completed soon
 
 ### Non-valid enrolment [compliance check]
 
@@ -599,6 +609,12 @@ if (!is.null(facility_data)) {
   }
 }
 ```
+
+### Clinical presentation [Mandatory check check]
+
+Description: all children should have an information about their clinical presentation.
+
+Check to be implemented soon.
 
 ### Data cleaning summary
 
@@ -979,6 +995,7 @@ format_nrow("There are", hospit_data, "records in the raw hospitalisation follow
 ```
 
 ```{r}
+hospit_fu <- NULL
 if (!is.null(pii)) {
   hospit_fu <- timci::generate_hospital_log(pii = pii,
                                             fu7df = raw_day7fu_data,
@@ -1267,7 +1284,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
                                       32,
                                       ext = TRUE,
                                       deidentify = TRUE)
-    timci::export_df2xlsx(fu28all, params$rctls_dir, "06d_timci_day28_fu_weekly_log_all")
+    fn <- timci::export_df2xlsx(fu28all, params$rctls_dir, "06d_timci_day28_fu_weekly_log_all")
   }
 }
 ```
