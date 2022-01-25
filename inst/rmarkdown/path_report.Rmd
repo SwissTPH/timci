@@ -119,7 +119,11 @@ stats <- stats %>%
                    female = sum(female),
                    yg_infant = sum(yg_infant),
                    yg_female = sum(yg_female))
-stats <- merge(x = stats, y = params$research_facilities %>% select(facility_id, facility_name, lvl2), by.x = 'facility_id', by.y = 'facility_id', all.x = TRUE)
+stats <- merge(x = stats,
+               y = params$research_facilities %>% select(facility_id, facility_name, lvl2),
+               by.x = 'facility_id',
+               by.y = 'facility_id',
+               all = FALSE)
 stats <- stats[!duplicated(stats$facility_id), ]
 tmp <- timci::export_df2xlsx(stats, path_dir, paste0("facility_stats_", Sys.Date()))
 ```
@@ -129,7 +133,9 @@ if (!is.null(wfa_data)) {
   
   if (nrow(wfa_data) > 0) {
     
-    tmp <- timci::export_df2xlsx(wfa_data, path_dir, paste0("weekly_facility_assessment_", Sys.Date()))
+    tmp <- timci::export_df2xlsx(wfa_data,
+                                 path_dir,
+                                 paste0("weekly_facility_assessment_", Sys.Date()))
     
     last_data <- timci::extract_last_fa_data(wfa_data, stats)
     soc_data <- last_data[last_data$arm == 0,]

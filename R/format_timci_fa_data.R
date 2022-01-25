@@ -32,14 +32,21 @@ extract_last_fa_data <- function(df, stats) {
 
   # Retrieve last assessment
   res <- plyr::ddply(df, 'fcode', head, 1)
-  res <- merge(x = res, y = stats, by.x = 'fcode', by.y = 'facility_id', all = TRUE)
+  res <- merge(x = res,
+               y = stats,
+               by.x = 'fcode',
+               by.y = 'facility_id',
+               all.y = TRUE)
 
   # Retrieve previous assessment
   prev <- plyr::ddply(df, 'fcode', head, 2)
   prev <- plyr::ddply(prev, 'fcode', tail, 1)
 
   # Add the date of the last assessment
-  res <- merge(x = res, y = prev[,c('date','fcode')], by = 'fcode', all = TRUE)
+  res <- merge(x = res,
+               y = prev[,c('date','fcode')],
+               by = 'fcode',
+               all = TRUE)
   res %>% dplyr::rename('date' = 'date.x',
                         'prev' = 'date.y')
 
