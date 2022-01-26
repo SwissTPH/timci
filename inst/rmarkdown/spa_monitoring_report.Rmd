@@ -161,7 +161,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
                   'Facility' = 'facility_name',
                   'Type' = 'type')
   
-}else{
+} else{
   # Sort by district then type of facility
   facility_disp <- facilities %>%
     dplyr::arrange(lvl2, type) %>%
@@ -177,6 +177,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == '
   hc_nb <- nrow(facilities %>% filter(type == "health center"))
   dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
   cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " health centres and ", dispensary_nb, " dispensaries"))
+} else if(Sys.getenv('TIMCI_COUNTRY') == 'India'){
+  hc_nb <- nrow(facilities %>% filter(type == "CHC"))
+  dispensary_nb <- nrow(facilities %>% filter(type == "PHC"))
+  cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " CHCs and ", dispensary_nb, " PHCs"))
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
+  cat(paste0(facility_nb, " postes de recherche"))
 } else{
   cat(paste0(facility_nb, " research facilities"))
 }
