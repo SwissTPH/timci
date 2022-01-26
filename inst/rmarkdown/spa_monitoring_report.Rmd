@@ -152,7 +152,16 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     dplyr::rename('District sanitaire' = 'lvl2',
                   'ID' = 'facility_id',
                   'Poste de santé' = 'facility_name')
-} else{
+} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+  # Sort by County then type of facility
+  facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('County' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+  
+}else{
   # Sort by district then type of facility
   facility_disp <- facilities %>%
     dplyr::arrange(lvl2, type) %>%
