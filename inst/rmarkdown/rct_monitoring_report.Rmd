@@ -11,7 +11,7 @@ params:
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
-  raw_day28fu_data: NULL
+  raw_day28fu_data: NULL<
   raw_withdrawal_data: NULL
   wfa_data: NULL
 output:
@@ -193,20 +193,62 @@ if (!is.null(params$facility_data)) {
 }
 
 # Add facility generic information to the RCT/LS facility data
-facility_data <- merge(x = facility_data,
-                       y = params$research_facilities[, c("deviceid", "facility_name")],
-                       by.x = 'device_id',
-                       by.y = 'deviceid',
-                       all.x = TRUE)
+if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+  facility_data <- merge(x = facility_data,
+                         y = params$research_facilities[, c("deviceid", "facility_name")],
+                         by.x = 'device_id',
+                         by.y = 'deviceid',
+                         all.x = TRUE)
+} else{
+  facility_data <- timci::allocate_screening_facility(facility_data,
+                                                      params$research_facilities)
+}
 
 # Extract personally identifiable information from RCT/LS facility data
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 # Add facility generic information to personally identifiable information
-pii <- merge(x = pii,
-             y = params$research_facilities[, c("deviceid", "facility_name")],
-             by.x = 'device_id',
-             by.y = 'deviceid',
-             all.x = TRUE)
+if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+  pii <- merge(x = pii,
+               y = params$research_facilities[, c("deviceid", "facility_name")],
+               by.x = 'device_id',
+               by.y = 'deviceid',
+               all.x = TRUE)
+} else{
+  pii <- timci::allocate_screening_facility(pii,
+                                            params$research_facilities)
+}
+
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    raw_day7fu_data <- merge(x = raw_day7fu_data,
+                             y = params$research_facilities[, c("facility_id", "facility_name")],
+                             by.x = 'a1-fid',
+                             by.y = 'facility_id',
+                             all = FALSE)
+  }
+}
+
+# if (!is.null(raw_hospit_data)) {
+#   if (nrow(raw_hospit_data) > 0) {
+#     raw_hospit_data <- merge(x = raw_hospit_data,
+#                              y = params$research_facilities[, c("facility_id", "facility_name")],
+#                              by.x = 'a1-fid',
+#                              by.y = 'facility_id',
+#                              all = FALSE)
+#   }
+#}
+
+if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  if (!is.null(raw_day28fu_data)) {
+    if (nrow(raw_day28fu_data) > 0) {
+      raw_day28fu_data <- merge(x = raw_day28fu_data,
+                               y = params$research_facilities[, c("facility_id", "facility_name")],
+                               by.x = 'a1-fid',
+                               by.y = 'facility_id',
+                               all = FALSE)
+    }
+  }
+}
 
 ```
 
@@ -306,11 +348,16 @@ noneligible <- timci::extract_noneligible(facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
-baseline_data <- merge(x = baseline_data,
-                       y = params$research_facilities[, c("deviceid", "facility_name")],
-                       by.x = 'device_id',
-                       by.y = 'deviceid',
-                       all.x = TRUE)
+if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
+  baseline_data <- merge(x = baseline_data,
+                         y = params$research_facilities[, c("deviceid", "facility_name")],
+                         by.x = 'device_id',
+                         by.y = 'deviceid',
+                         all.x = TRUE)
+} else{
+  baseline_data <- timci::allocate_screening_facility(baseline_data,
+                                                      params$research_facilities)
+}
 demog_data <- res[[1]]
 n_enrolled <- nrow(demog_data)
 n_enrolled7 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 6)))
@@ -1000,42 +1047,32 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-  
-  if (!is.null(pii)) {
-    if (nrow(pii) > 0) {
-      
-      all <- data.frame(pii)
-      all$phone_nb[!is.na(all$phone_nb)] <- 1
-      all$phone_nb[is.na(all$phone_nb)] <- 0
-      all$phone_nb2[!is.na(all$phone_nb2)] <- 1
-      all$phone_nb2[is.na(all$phone_nb2)] <- 0
-      all$cmty[is.na(all$cmty)] <- 0
-      all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
-      all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
-      all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
-      all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
-      
-      phone_stats <- list(
-        "Facility" = list(
-          "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, prec),
-          "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, prec),
-          "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), prec)
-          )
-      )
-      
-      out <- format_summary_table(all, phone_stats, facility_name)
-      out %>% 
-        kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-        kableExtra::row_spec(0, bold = TRUE) %>%
-        kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-        kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-      
-    }
+if (!is.null(pii)) {
+  if (nrow(pii) > 0) {
+    
+    all <- data.frame(pii)
+    all$phone_nb[!is.na(all$phone_nb)] <- 1
+    all$phone_nb[is.na(all$phone_nb)] <- 0
+    all$phone_nb2[!is.na(all$phone_nb2)] <- 1
+    all$phone_nb2[is.na(all$phone_nb2)] <- 0
+    
+    phone_stats <- list(
+      "Facility" = list(
+        "0 phone numbers" = ~qwraps2::n_perc(phone_nb == 0, prec),
+        "1 phone number" = ~qwraps2::n_perc(phone_nb == 1, prec),
+        "2 phone numbers" = ~qwraps2::n_perc((phone_nb == 1) & (phone_nb2 == 1), prec)
+        )
+    )
+    
+    out <- format_summary_table(all, phone_stats, facility_name)
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+    
   }
-} else{
-  cat("To be completed.")
 }
 ```
 
@@ -1047,6 +1084,12 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
       
       all <- all %>%
         dplyr::filter(all$phone_nb == 0)
+      
+      all$cmty[is.na(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
+      all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
+      all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
+      all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
       
       contact_details_stats <- list(
         "Facility" = list(
@@ -1365,10 +1408,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis"}
 # Add facility generic information to the RCT/LS facility data
 day7fu_data <- merge(x = day7fu_data,
-                       y = params$research_facilities[, c("facility_id", "facility_name")],
-                       by.x = 'fid',
-                       by.y = 'facility_id',
-                       all.x = TRUE)
+                     y = params$research_facilities[, c("facility_id", "facility_name")],
+                     by.x = 'fid',
+                     by.y = 'facility_id',
+                     all = FALSE)
 ```
 
 ```{r, results = "asis"}
@@ -1441,7 +1484,7 @@ if (!is.null(day7fu_data)) {
                               y = params$research_facilities[, c("facility_id", "facility_name")],
                               by.x = 'fid',
                               by.y = 'facility_id',
-                              all.x = TRUE)
+                              all = FALSE)
   }
 }
 ```

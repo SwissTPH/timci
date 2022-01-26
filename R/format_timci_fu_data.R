@@ -261,24 +261,44 @@ generate_ltfu_log <- function(df,
 
   # Order columns
   ltfu_log$date_maxfu <- as.Date(ltfu_log$date_maxfu, "%Y-%m-%d")
-  col_order <- c('child_id',
-                 'date_visit',
-                 'date_maxfu',
-                 'fu_attempts',
-                 'age_mo',
-                 'yg_infant',
-                 'yg_infant_ctg',
-                 'fid',
-                 'facility',
-                 'district',
-                 'phone_nb_avail',
-                 'referral_cg',
-                 'referral_hf',
-                 'urg_referral_hf',
-                 'ref_facility',
-                 'ref_facility_oth',
-                 'device_id',
-                 'sys_submit_id')
+  if(Sys.getenv('TIMCI_COUNTRY') == 'India'){
+    col_order <- c('child_id',
+                   'date_visit',
+                   'date_maxfu',
+                   'fu_attempts',
+                   'age_mo',
+                   'yg_infant',
+                   'yg_infant_ctg',
+                   'fid',
+                   'facility',
+                   'district',
+                   'referral_cg',
+                   'referral_hf',
+                   'urg_referral_hf',
+                   'ref_facility',
+                   'ref_facility_oth',
+                   'device_id',
+                   'sys_submit_id')
+  } else{
+    col_order <- c('child_id',
+                   'date_visit',
+                   'date_maxfu',
+                   'fu_attempts',
+                   'age_mo',
+                   'yg_infant',
+                   'yg_infant_ctg',
+                   'fid',
+                   'facility',
+                   'district',
+                   'phone_nb_avail',
+                   'referral_cg',
+                   'referral_hf',
+                   'urg_referral_hf',
+                   'ref_facility',
+                   'ref_facility_oth',
+                   'device_id',
+                   'sys_submit_id')
+  }
   ltfu_log <- ltfu_log[, col_order]
 
 }
@@ -288,7 +308,7 @@ generate_ltfu_log <- function(df,
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr magrittr lubridate
 
 format_day7_data <- function(df) {
 
@@ -309,6 +329,13 @@ format_day7_data <- function(df) {
 
   day7_df <- match_from_xls_dict(df, "day7_dict.xlsx")
   day7_df <- day7_df[sub$new]
+
+  # Change multiple date formats
+  mdyv <- lubridate::mdy(day7_df$date_day0)
+  dmyv <- lubridate::dmy(day7_df$date_day0)
+  mdyv[is.na(mdyv)] <- dmyv[is.na(mdyv)] # some dates are ambiguous, here we give mdy precedence over dmy
+  day7_df$date_day0 <- mdyv
+
   day7_df <- day7_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 

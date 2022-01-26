@@ -54,6 +54,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
   intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
   baseline_str <- "Visite primaire"
+  ch_title2 <- "## Cartes thermiques calendaires\n\n"
   facility_cap <- "Liste des poste de recherche"
   repeat_str <- "Visite secondaire"
   submission_str <- "Soumissions"
@@ -69,6 +70,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
   intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
   baseline_str <- "Baseline visit"
+  ch_title2 <- "## Calendar heatmaps\n\n"
   facility_cap <- "List of research facilities"
   repeat_str <- "Repeat visit"
   submission_str <- "Submissions"
@@ -192,6 +194,8 @@ facility_disp  %>%
   kableExtra::collapse_rows(columns = 1, valign = "top") 
 ```
 
+\newpage
+
 # Sick child observation protocol
 
 The objective of the sick child observation protocol is:
@@ -210,6 +214,8 @@ The objective of the sick child observation protocol is:
 \end{itemize}
 
 ```{r, results='asis', fig.cap = heatmap_cap}
+cat(ch_title2)
+
 timci::generate_calendar_heatmap2(spa_sco_data,
                                   date,
                                   legendtitle = "Number of submissions")
@@ -267,71 +273,51 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-# Caregiver exit interview
+\newpage
 
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
+```{r cgei-subsection, results="asis"}
+if (!is.null(spa_cgei_data)) {
+  
+  write(formats2h2("Generate the caregiver exit interview subsection"), stderr())
+  
+  out <- knitr::knit_child('spa_monitoring_report_cgei_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+  
 }
-
-timci::generate_calendar_heatmap2(spa_cgei_data,
-                                  date,
-                                  legendtitle = "Number of submissions")
 ```
 
-```{r, results = "asis"}
-all <- spa_cgei_data %>% 
-  rename(referral = "g5-i4_1",
-         facility_name = "fname")
+\newpage
 
-summary <- list(
-  "Summary" = list(
-    "Yes" = ~qwraps2::n_perc(referral == 1, prec),
-    "No" = ~qwraps2::n_perc(referral == 0, prec),
-    "Not sure" = ~qwraps2::n_perc(referral == 98, prec),
-    "Declined" = ~qwraps2::n_perc(referral == 97, prec)
-    )
-)
-out <- format_summary_table(all, summary, facility_name)
-out %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  linesep = "",
-                  align = c("c", "c", "c", "c"),
-                  caption = "Referral") %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```{r fa-subsection, results="asis"}
+if (!is.null(spa_fa_data)) {
+  if (nrow(spa_fa_data) > 0) {
+  
+    write(formats2h2("Generate the faciliy assessment subsection"), stderr())
+    
+    out <- knitr::knit_child('spa_monitoring_report_fa_sub.Rmd',
+                             envir = environment(),
+                             quiet = TRUE)
+    cat(out, sep = '\n')
+    
+  }
+}
 ```
 
-# Facility assessment
+\newpage
 
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
+```{r hcpi-subsection, results="asis"}
+if (!is.null(spa_hcpi_data)) {
+  
+  write(formats2h2("Generate the healthcare provider interview subsection"), stderr())
+  
+  out <- knitr::knit_child('spa_monitoring_report_hcpi_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+  
 }
-
-timci::generate_calendar_heatmap2(spa_fa_data,
-                                  date,
-                                  legendtitle = "Number of submissions")
-```
-
-# Healthcare provider interview
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
-}
-
-timci::generate_calendar_heatmap2(spa_hcpi_data,
-                                  date,
-                                  legendtitle = "Number of submissions")
 ```
 
 \newpage

@@ -22,6 +22,8 @@ generate_cg_log <- function(main_data, day7fu) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
   } else{
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
   }
