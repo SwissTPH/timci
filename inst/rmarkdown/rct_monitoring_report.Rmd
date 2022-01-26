@@ -200,11 +200,8 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
                          by.y = 'deviceid',
                          all.x = TRUE)
 } else{
-  facility_data <- merge(x = facility_data,
-                         y = params$research_facilities[, c("deviceid", "facility_name")],
-                         by.x = 'device_id',
-                         by.y = 'deviceid',
-                         all = FALSE)
+  facility_data <- timci::allocate_screening_facility(facility_data,
+                                                      params$research_facilities)
 }
 
 # Extract personally identifiable information from RCT/LS facility data
@@ -217,11 +214,8 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
                by.y = 'deviceid',
                all.x = TRUE)
 } else{
-  pii <- merge(x = pii,
-               y = params$research_facilities[, c("deviceid", "facility_name")],
-               by.x = 'device_id',
-               by.y = 'deviceid',
-               all = FALSE)
+  pii <- timci::allocate_screening_facility(pii,
+                                            params$research_facilities)
 }
 
 if (!is.null(raw_day7fu_data)) {
@@ -361,11 +355,8 @@ if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
                          by.y = 'deviceid',
                          all.x = TRUE)
 } else{
-  baseline_data <- merge(x = baseline_data,
-                         y = params$research_facilities[, c("deviceid", "facility_name")],
-                         by.x = 'device_id',
-                         by.y = 'deviceid',
-                         all = FALSE)
+  baseline_data <- timci::allocate_screening_facility(baseline_data,
+                                                      params$research_facilities)
 }
 demog_data <- res[[1]]
 n_enrolled <- nrow(demog_data)

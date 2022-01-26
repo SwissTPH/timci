@@ -242,13 +242,23 @@ write("Export Day 0 data and run corresponding quality checks", stderr())
 
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
+```
 
-if (Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') {
-  screening_data <- screening_data %>%
-    merge(facility_device, by = 'device_id', all.x = TRUE) %>%
-    dplyr::rename('facility.x' = 'facility',
-                  'facility.y' = 'facility_name')
-}
+### Non-valid device IDs
+
+```{r}
+# Added for India - check
+screening_data <- timci::allocate_screening_facility(screening_data,
+                                                     research_facilities)
+
+# if (Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') {
+#   screening_data <- screening_data %>%
+#     merge(facility_device,
+#           by = 'device_id',
+#           all.x = TRUE) %>%
+#     dplyr::rename('facility.x' = 'facility',
+#                   'facility.y' = 'facility_name')
+# }
 
 # Order entries by date
 screening_data <- screening_data %>%
@@ -257,6 +267,18 @@ res <- timci::extract_enrolled_participants(facility_data)
 day0_data <- res[[1]]
 pii <- res[[2]]
 n_enrolled <- nrow(day0_data)
+```
+
+```{r}
+# Added for India - check
+day0_data <- timci::allocate_screening_facility(day0_data,
+                                                research_facilities)
+```
+
+```{r}
+# Added for India - check
+pii <- timci::allocate_screening_facility(pii,
+                                          research_facilities)
 ```
 
 ```{r, results = 'asis'}
@@ -275,18 +297,21 @@ cat("Rule: records from facilities different from the ones listed in the first s
 ```{r, results='asis'}
 invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
 locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_facilities$facility_id, ]
+```
+
+```{r, results='asis'}
+cat(paste0(nrow(invalid_facilities), " record(s) with non-valid enrolment facilities were automatically detected and removed in the locked Day 0 database."))
+```
+
+```{r, results='asis'}
 if (nrow(invalid_facilities) > 0) {
   invalid_facilities$child_id %>% knitr::kable(col.names = c("child_id"))
 }
 ```
 
-```{r, results='asis'}
-cat(paste0(nrow(invalid_facilities), " records with non-valid enrolment facilities were automatically detected and removed in the locked Day 0 database."))
-```
-
 ### Inconsistent facility information [Context check]
 
-To be completed soon
+To be completed soon for India/Tanzania
 
 ### Non-valid enrolment [compliance check]
 
@@ -531,7 +556,8 @@ if (!is.null(facility_data)) {
 
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {
-  fn <- timci::export_df2xlsx(day0_qc, params$rctls_dir,
+  fn <- timci::export_df2xlsx(day0_qc,
+                              params$rctls_dir,
                               "07_data_quality_checks")
 }
 ```
