@@ -988,19 +988,19 @@ if (!is.null(locked_ltfu)) {
 ```
 
 ```{r}
-if (!is.null(pii) & !is.null(raw_day7fu_data)) {
-  fu7all <- timci::generate_fu_log(pii,
-                                   raw_day7fu_data,
-                                   0,
-                                   12,
-                                   7,
-                                   10,
-                                   ext = TRUE,
-                                   deidentify = TRUE)
-  fn <- timci::export_df2xlsx(fu7all,
-                              params$rctls_dir,
-                              "04d_timci_deidentified_day7_fu_weekly_log_all")
-}
+# if (!is.null(pii) & !is.null(raw_day7fu_data)) {
+#   fu7all <- timci::generate_fu_log(pii,
+#                                    raw_day7fu_data,
+#                                    0,
+#                                    12,
+#                                    7,
+#                                    10,
+#                                    ext = TRUE,
+#                                    deidentify = TRUE)
+#   fn <- timci::export_df2xlsx(fu7all,
+#                               params$rctls_dir,
+#                               "04d_timci_deidentified_day7_fu_weekly_log_all")
+# }
 ```
 
 ## Hospitalisation data quality checks
