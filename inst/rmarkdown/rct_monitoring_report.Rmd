@@ -193,30 +193,14 @@ if (!is.null(params$facility_data)) {
 }
 
 # Add facility generic information to the RCT/LS facility data
-if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-  facility_data <- merge(x = facility_data,
-                         y = params$research_facilities[, c("deviceid", "facility_name")],
-                         by.x = 'device_id',
-                         by.y = 'deviceid',
-                         all.x = TRUE)
-} else{
-  facility_data <- timci::allocate_screening_facility(facility_data,
-                                                      params$research_facilities)
-}
+facility_data <- timci::allocate_screening_facility(facility_data,
+                                                    params$research_facilities)
 
 # Extract personally identifiable information from RCT/LS facility data
 pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 # Add facility generic information to personally identifiable information
-if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-  pii <- merge(x = pii,
-               y = params$research_facilities[, c("deviceid", "facility_name")],
-               by.x = 'device_id',
-               by.y = 'deviceid',
-               all.x = TRUE)
-} else{
-  pii <- timci::allocate_screening_facility(pii,
-                                            params$research_facilities)
-}
+pii <- timci::allocate_screening_facility(pii,
+                                          params$research_facilities)
 
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
@@ -289,6 +273,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     dplyr::rename('District sanitaire' = 'lvl2',
                   'ID' = 'facility_id',
                   'Poste de santé' = 'facility_name')
+} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+  # Sort by County then type of facility
+  facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('County' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+  
 } else{
   # Sort by district then type of facility
   facility_disp <- facilities %>%
@@ -309,12 +302,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
   hc_nb <- nrow(facilities %>% filter(type == "CHC"))
   dispensary_nb <- nrow(facilities %>% filter(type == "PHC"))
   cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " CHCs and ", dispensary_nb, " PHCs"))
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
+  cat(paste0(facility_nb, " postes de recherche"))
 } else{
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
-    cat(paste0(facility_nb, " postes de recherche"))
-  } else{
-    cat(paste0(facility_nb, " research facilities"))
-  }
+  cat(paste0(facility_nb, " research facilities"))
 }
 ```
 
@@ -348,16 +339,9 @@ noneligible <- timci::extract_noneligible(facility_data)
 
 # Baseline data
 baseline_data <- timci::extract_baseline_visits(study_data)
-if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-  baseline_data <- merge(x = baseline_data,
-                         y = params$research_facilities[, c("deviceid", "facility_name")],
-                         by.x = 'device_id',
-                         by.y = 'deviceid',
-                         all.x = TRUE)
-} else{
-  baseline_data <- timci::allocate_screening_facility(baseline_data,
-                                                      params$research_facilities)
-}
+baseline_data <- timci::allocate_screening_facility(baseline_data,
+                                                    params$research_facilities)
+
 demog_data <- res[[1]]
 n_enrolled <- nrow(demog_data)
 n_enrolled7 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 6)))
