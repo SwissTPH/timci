@@ -68,7 +68,7 @@ tinytex::parse_install(
 )
 ```
 
-To avoid the warning `No hyphenation patterns were preloaded for the language French into the format.`, install `hyphen-french`
+In order to avoid the warning *No hyphenation patterns were preloaded for the language French into the format.*, please consider installing the package `hyphen-french`
 ```r
 tinytex::tlmgr_install("hyphen-french")
 ```
