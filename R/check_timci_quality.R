@@ -14,7 +14,7 @@ detect_non_timely_submission <- function(df) {
   df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
   df$end <- as.Date(as.character(df$end), format="%Y-%m-%d")
   df$submission_date <- as.Date(as.character(df$submission_date), format="%Y-%m-%d")
-  qc <- df[c("fid", "child_id", "start", "end", "submission_date", "diff")] %>%
+  qc <- df[c("fid", "child_id", "start", "end", "submission_date", "diff", "uuid")] %>%
     dplyr::arrange(diff, fid)
 
 }
@@ -34,7 +34,7 @@ detect_non_timely_completion <- function(df) {
   df$diff <- as.Date(as.character(df$end), format="%Y-%m-%d %T") - as.Date(as.character(df$start), format="%Y-%m-%d %T")
   df$start <- as.Date(as.character(df$start), format="%Y-%m-%d")
   df$end <- as.Date(as.character(df$end), format="%Y-%m-%d")
-  qc <- df[c("fid", "child_id", "start", "end", "diff")] %>%
+  qc <- df[c("fid", "child_id", "start", "end", "diff", "uuid")] %>%
     dplyr::arrange(diff, fid)
 
 }

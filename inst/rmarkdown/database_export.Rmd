@@ -1,6 +1,6 @@
 ---
 title: "TIMCI Data Quality Report"
-author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 output:
   pdf_document:
@@ -192,11 +192,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
                   'Type' = 'type')
   
 }
-facilities %>% knitr::kable()
 ```
 
 ```{r, results='asis'}
-cat(paste0("Data collection is planned in ", nrow(facilities), " facilities."))
+cat(paste0("Data collection was planned in **", nrow(facilities), "** facilities."))
+```
+
+```{r, results='asis'}
+facilities %>%
+  knitr::kable()
 ```
 
 ## Facility / device correspondence
@@ -218,12 +222,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
 ```
 
 ```{r, results='asis'}
-facility_device %>%
-  knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
+cat(paste0("Data collection has been done using **", nrow(facility_device), "** tablets."))
 ```
 
 ```{r, results='asis'}
-cat(paste0("Data collection has been done using ", nrow(facility_device), " tablets."))
+facility_device %>%
+  knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
 ```
 
 \newpage
@@ -242,15 +246,26 @@ write("Export Day 0 data and run corresponding quality checks", stderr())
 
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
+n_screening <- nrow(facility_data)
+res <- timci::extract_enrolled_participants(facility_data)
+day0_data <- res[[1]]
+n_day0 <- nrow(day0_data)
+pii <- res[[2]]
 ```
 
-### Non-valid device IDs
+```{r, results = 'asis'}
+cat(paste0("Initially, there are **", n_screening, "** record(s) in the raw facility database from the start of the study on ", start_date, ", including **", n_day0, "** Day 0 record(s)."))
+```
+
+### Non-valid device IDs [context check]
+
+**Rule:** records from devices different from the ones listed in the first section of this report are removed in the locked database. These *non-valid* devices were either used to collect training data or to collect data for another study than the one considered for this report.
 
 ```{r}
 # Added for India - check
-screening_data <- timci::allocate_screening_facility(screening_data,
-                                                     research_facilities)
-
+locked_screening_data <- timci::allocate_screening_facility(screening_data,
+                                                            research_facilities)
+n_locked_screening <- nrow(locked_screening_data)
 # if (Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') {
 #   screening_data <- screening_data %>%
 #     merge(facility_device,
@@ -259,40 +274,42 @@ screening_data <- timci::allocate_screening_facility(screening_data,
 #     dplyr::rename('facility.x' = 'facility',
 #                   'facility.y' = 'facility_name')
 # }
-
-# Order entries by date
-screening_data <- screening_data %>%
-  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
-res <- timci::extract_enrolled_participants(facility_data)
-day0_data <- res[[1]]
-pii <- res[[2]]
-n_enrolled <- nrow(day0_data)
 ```
 
 ```{r}
 # Added for India - check
-day0_data <- timci::allocate_screening_facility(day0_data,
-                                                research_facilities)
-```
-
-```{r}
-# Added for India - check
-pii <- timci::allocate_screening_facility(pii,
-                                          research_facilities)
+locked_day0_data <- timci::allocate_screening_facility(day0_data,
+                                                       research_facilities)
+n_locked_day0 <- nrow(locked_day0_data)
+locked_pii <- timci::allocate_screening_facility(pii,
+                                                 research_facilities)
 ```
 
 ```{r, results = 'asis'}
-locked_screening_data <- screening_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
-locked_day0_data <- day0_data %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
-locked_pii <- pii %>% dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
-cat(paste0("There are ", nrow(locked_day0_data), " records between ", start_date, " and ", lock_date, " in the raw Day 0 database."))
+cat(paste0("**", n_screening - n_locked_screening, "** record(s) with non-valid device IDs were detected and removed in the locked facility database, including **", n_day0 - n_locked_day0, "** Day 0 records."))
 ```
 
-### Non-valid enrolment facilities [compliance check]
+### Lock date [context check]
 
-```{r, results='asis'}
-cat("Rule: records from facilities different from the ones listed in the first section of this report are removed from the locked database.")
+**Rule:** records entered after the lock date on `r lock_date` are removed in the locked database.
+
+```{r}
+locked_screening_data <- locked_screening_data %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+locked_day0_data <- locked_day0_data %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
+locked_pii <- locked_pii %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 ```
+
+```{r, results = 'asis'}
+cat(paste0("**", n_locked_screening - nrow(locked_screening_data), "** record(s) with an entry date posterior to the lock date on ", lock_date, " were detected and removed in the locked facility database, including **", n_locked_day0 - nrow(locked_day0_data), "** Day 0 record(s)."))
+```
+
+### Non-valid enrolling facility IDs [compliance check]
+
+**Rule:** records from facility IDs not listed in the first section of this report are removed in the locked database.
 
 ```{r, results='asis'}
 invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
@@ -300,49 +317,87 @@ locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_faciliti
 ```
 
 ```{r, results='asis'}
-cat(paste0(nrow(invalid_facilities), " record(s) with non-valid enrolment facilities were automatically detected and removed in the locked Day 0 database."))
+cat(paste0("**", nrow(invalid_facilities), "** record(s) with non-valid enrolling facility IDs were detected and removed in the locked Day 0 database."))
 ```
 
 ```{r, results='asis'}
 if (nrow(invalid_facilities) > 0) {
-  invalid_facilities$child_id %>% knitr::kable(col.names = c("child_id"))
+  invalid_facilities[c("child_id", "uuid")] %>%
+    knitr::kable(row.names = FALSE)
 }
 ```
 
-### Inconsistent facility information [Context check]
 
-To be completed soon for India/Tanzania
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  cat("### Inconsistent facility information [Context check]\n\n")
+  cat("**Rule**: records with inconsistent facility information are kept in the locked database, but will need to be checked more carefully (e.g: GPS data).\n\n")
+}
+```
+
+```{r}
+qc_inconsistent_facility <- NULL
+if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  if (!is.null(locked_day0_data)) {
+    if (nrow(locked_day0_data) > 0) {
+      qc_inconsistent_facility <- locked_day0_data[locked_day0_data$fid != locked_day0_data$fid_ra, ]
+      qc_inconsistent_facility <- qc_inconsistent_facility[c("child_id", "fid", "fid_ra", "uuid")]
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    cat(paste0("**", nrow(qc_inconsistent_facility), "** record(s) with inconsistent facility information were detected."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    qc_inconsistent_facility %>%
+      knitr::kable(row.names = FALSE)
+  }
+}
+```
 
 ### Non-valid enrolment [compliance check]
 
 #### Caregiver eligibility
 
-```{r, results='asis'}
-cat("Rule: Participants with a caregiver below 18 years old are removed from the locked database.")
-```
+**Rule:** Participants with a caregiver below 18 years old are removed in the locked database.
 
 ```{r, results='asis'}
 underaged_cg <- locked_day0_data[locked_day0_data$cg_eligibility == 0, ]
-underaged_cg[c('child_id', 'main_cg_lbl', 'cg_age_yr', 'cg_age_ctg')] %>% knitr::kable(caption = "Underaged caregivers", row.names = FALSE)
-```
-
-```{r, results='asis'}
-locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
 ```
 
 ```{r, results='asis'}
 if (nrow(underaged_cg) == 1) {
-  cat(nrow(underaged_cg), "participant with an ineligible caregiver was detected and removed from the locked database.")
+  cat("**1** record with a consenting caregiver below 18 years old was detected and removed in the locked database.")
 } else{
-  cat(nrow(underaged_cg), "participants with an ineligible caregiver were detected and removed from the locked database.")
+  cat(paste0("**", nrow(underaged_cg), "** records with a consenting caregiver below 18 years old were detected and removed in the locked database."))
 }
 ```
 
-### Submission timeliness [compliance check]
+```{r, results='asis'}
+if (nrow(underaged_cg) > 0) {
+  underaged_cg[c('child_id', 'main_cg_lbl', 'cg_age_yr', 'cg_age_ctg')] %>%
+    knitr::kable(row.names = FALSE)
+}
+```
 
-#### Non-timely completion
+```{r}
+locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
+```
 
-Definition: delayed completion of a submission, either finalisation not done on the same day the submission was started (i.e., duration from start to end superior to 0 day) or finalisation 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
+### Submission timeliness [compliance checks]
+
+#### Non-timely completion [compliance check]
+
+**Definition:** delayed completion of a submission, either finalisation not done on the same day the submission was started (i.e., duration from start to end superior to 0 day) or finalisation 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
 
 ```{r}
 qc_completion_ab1day <- NULL
@@ -375,7 +430,8 @@ if (!is.null(qc_completion_ab2days)) {
 ```{r, results='asis'}
 if (!is.null(qc_completion_ab2days)) {
   if (nrow(qc_completion_ab2days) > 0) {
-    qc_completion_ab2days %>% knitr::kable(caption = "Submissions finalised after 2 days and more", row.names = FALSE)
+    qc_completion_ab2days %>%
+      knitr::kable(row.names = FALSE)
   }
 }
 ```
@@ -443,7 +499,7 @@ if (!is.null(qc_transfer_ab12days)) {
 
 #### Child ID duplicates [compliance check] 
 
-Rule: child ID duplicates are removed from the locked database.
+Rule: child ID duplicates are removed in the locked database.
 
 ```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
 day0_qc <- NULL
@@ -466,7 +522,7 @@ if (!is.null(facility_data)) {
       # Remove duplicate child IDs from the clean database
       day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
       locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      cat(paste0("", nrow(id_duplicates), " duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were automatically detected and removed in the locked Day 0 database."))
+      cat(paste0("", nrow(id_duplicates), " duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected and removed in the locked Day 0 database."))
     } else {
       cat("No duplicated IDs were detected.")
     }
@@ -565,7 +621,7 @@ if (!is.null(day0_qc)) {
 ### Withdrawal management
 
 ```{r, results='asis'}
-cat("Rule: withdrawals with documented child IDs are kept in the locked Day 0 database, then removed from all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.")
+cat("Rule: withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.")
 ```
 
 ```{r, results='asis'}
@@ -770,6 +826,8 @@ if (!is.null(raw_withdrawal_data)) {
 }
 ```
 
+\newpage
+
 ## Day 7 data quality checks
 
 ```{r}
@@ -816,7 +874,7 @@ if (!is.null(raw_day7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(allday7fu_data)) {
   if (nrow(allday7fu_data) > 0) {
-    format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 7 follow-up database.")
+    format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked Day 7 follow-up database.")
   }
 }
 ```
@@ -824,7 +882,7 @@ if (!is.null(allday7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
-    format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 7 follow-up database.")
+    format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
   }
 }
 ```
@@ -1003,6 +1061,8 @@ if (!is.null(locked_ltfu)) {
 # }
 ```
 
+\newpage
+
 ## Hospitalisation data quality checks
 
 ```{r}
@@ -1045,7 +1105,7 @@ if (!is.null(hospit_data)) {
 ```
 
 ```{r, results = 'asis'}
-format_nrow("", hospit_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked hospitalisation database.")
+format_nrow("", hospit_data_uids, "records with non-valid participant IDs were detected and removed in the locked hospitalisation database.")
 ```
 
 ### Duplicate management
@@ -1074,7 +1134,7 @@ if (!is.null(hospit_data)) {
 ```
 
 ```{r, results = 'asis'}
-format_nrow("", hospit_data_duplicates, "duplicated IDs were automatically detected and removed in the locked hospitalisation database.")
+format_nrow("", hospit_data_duplicates, "duplicated IDs were detected and removed in the locked hospitalisation database.")
 ```
 
 ### Data export
@@ -1111,13 +1171,7 @@ if (!is.null(hospit_fu)) {
 }
 ```
 
-```{r, results = 'asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat("## Day 28 data quality checks")
-}
-```
-
-`r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'## Day 28 data quality checks'}`
+`r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'\\newpage ## Day 28 data quality checks'}`
 
 ```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
@@ -1176,13 +1230,13 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  format_nrow("", allday28fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked Day 28 follow-up database.")
+  format_nrow("", allday28fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked Day 28 follow-up database.")
 }
 ```
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  format_nrow("", day28fu_data_uids, "records with non-valid participant IDs were automatically detected and removed in the locked successful Day 28 follow-up database.")
+  format_nrow("", day28fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 28 follow-up database.")
 }
 ```
 
@@ -1401,11 +1455,11 @@ if (!is.null(spa_sco_data)) {
 if (!is.null(spa_sco_data_uids)) {
   n <- nrow(spa_sco_data_uids)
   if (n > 1) {
-    cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA sick child observation database."))
+    cat(paste0(n, " records with non-valid participant IDs were detected and removed in the locked SPA sick child observation database."))
   } else if (n == 1) {
-    cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA sick child observation database."))
+    cat(paste0(n, " record with non-valid participant IDs was detected and removed in the locked SPA sick child observation database."))
   } else{
-    cat("No records with non-valid participant IDs were automatically detected.")
+    cat("No records with non-valid participant IDs were detected.")
   }
 }
 ```
@@ -1435,9 +1489,9 @@ if (!is.null(spa_sco_data)) {
 ```{r, results='asis'}
 if (!is.null(spa_sco_data)) {
   if (length(spa_sco_data_duplicates) > 0) { 
-    cat(paste0(nrow(spa_sco_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
+    cat(paste0(nrow(spa_sco_data_duplicates), " duplicated IDs were detected. No action was taken in the locked SPA sick child observation database."))
   } else {
-    cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA sick child observation database."))
+    cat(paste0("No duplicated IDs were detected. No action was taken in the locked SPA sick child observation database."))
   }
 }
 ```
@@ -1518,11 +1572,11 @@ if (!is.null(spa_hcpi_data)) {
 if (!is.null(spa_hcpi_data)) {
   n <- nrow(spa_hcpi_data_uids)
   if (n > 1) {
-    cat(paste0(n, " records with non-valid participant IDs were automatically detected and removed in the locked SPA healthcare provider interview database."))
+    cat(paste0(n, " records with non-valid participant IDs were detected and removed in the locked SPA healthcare provider interview database."))
   } else if (n == 1) {
-    cat(paste0(n, " record with non-valid participant IDs was automatically detected and removed in the locked SPA healthcare provider interview database."))
+    cat(paste0(n, " record with non-valid participant IDs was detected and removed in the locked SPA healthcare provider interview database."))
   } else{
-    cat("No records with non-valid participant IDs were automatically detected.")
+    cat("No records with non-valid participant IDs were detected.")
   }
 }
 ```
@@ -1552,9 +1606,9 @@ if (!is.null(spa_hcpi_data)) {
 ```{r, results='asis'}
 if (!is.null(spa_hcpi_data)) {
   if (length(spa_hcpi_data_duplicates) > 0) { 
-    cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
+    cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs were detected. No action was taken in the locked SPA healthcare provider interview database."))
   } else {
-    cat(paste0("No duplicated IDs were automatically detected. No action was taken in the locked SPA healthcare provider interview database."))
+    cat(paste0("No duplicated IDs were detected. No action was taken in the locked SPA healthcare provider interview database."))
   }
 }
 ```
