@@ -474,7 +474,8 @@ if (!is.null(qc_transfer_ab7days)) {
 ```{r, results='asis'}
 if (!is.null(qc_transfer_ab7days)) {
   if (nrow(qc_transfer_ab7days) > 0) {
-    qc_transfer_ab7days %>% knitr::kable(caption = "Participants with a submission transfer after 7 days and more", row.names = FALSE)
+    qc_transfer_ab7days %>%
+      knitr::kable(row.names = FALSE)
   }
 }
 ```
@@ -490,7 +491,8 @@ if (!is.null(qc_transfer_ab12days)) {
 ```{r, results='asis'}
 if (!is.null(qc_transfer_ab12days)) {
   if (nrow(qc_transfer_ab12days) > 0) {
-    qc_transfer_ab12days %>% knitr::kable(caption = "Participants with a submissions transfer after 12 days and more", row.names = FALSE)
+    qc_transfer_ab12days %>%
+      knitr::kable(row.names = FALSE)
   }
 }
 ```
@@ -508,7 +510,7 @@ if (!is.null(facility_data)) {
     day0_qc <- timci::detect_id_duplicates(locked_day0_data)
     id_duplicates <- day0_qc[day0_qc$id_fq > 1,]
     if (nrow(id_duplicates) > 0) { 
-      id_duplicates %>% knitr::kable(caption = "ID duplicates", row.names = FALSE)
+      id_duplicates %>% knitr::kable(row.names = FALSE)
     }
   }
 }
@@ -670,7 +672,7 @@ if (!is.null(facility_data)) {
         if (nrow(day0_data_id_withdrawal) > 0) { 
           day0_data_id_withdrawal %>%
             dplyr::select(c("child_id", "date_visit", "date")) %>%
-            knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date"))
+            knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date", "uuid"))
         }
       }
     }
@@ -692,11 +694,17 @@ if (!is.null(facility_data)) {
 }
 ```
 
-### Clinical presentation [Mandatory check check]
+### Clinical presentation [Mandatory check]
 
-Description: all children should have an information about their clinical presentation.
+Description: all participants should have complete information about their clinical presentation.
 
-Check to be implemented soon.
+Check not implemented yet.
+
+### Diagnosis [Mandatory check]
+
+Description: all participants should have complete information about their diagnosis.
+
+Check not implemented yet.
 
 ### Data cleaning summary
 
@@ -866,7 +874,8 @@ if (!is.null(raw_day7fu_data)) {
     day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
     locked_day7fu_data <- locked_day7fu_data %>% dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
     
-    allday7fu_data_uids$child_id %>% knitr::kable(col.names = c("child_id"))
+    allday7fu_data_uids %>%
+      knitr::kable(row.names = FALSE)
   }
 }
 ```
