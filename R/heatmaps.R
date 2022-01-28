@@ -270,56 +270,56 @@ generate_calendar_heatmap <- function(df, datecol, date_max = Sys.Date(), date_m
 
 }
 
-#' Create a heatmap by day of Week and hour of day
+#' Generates a heat map of the number of submissions per weekday and hour.
 #'
-#' @param df Data frame to use for the plot
-#' @param datecol Column name in data frame `df` that contains dates
-#' @return This function returns a ggplot object which contains a heatmap by day of Week and hour of day.
+#' Takes any timestamp column in the data and aggregates by weekday and hour of the day. The generated plot then shows for each combination
+#' the frequency. Please note, that one and only one of the three data arguments (df, csv, svc) must be specified.
+#'
+#' @param df Data frame containing the ODK data that is to be used. Optional, defaults to NULL.
+#' @param date_col String that specifies the date or time stamp column in the data which is to be examined.
+#'
+#' @return ggplot2 object
+#'
+#' @import ggplot2 dplyr lubridate
 #' @export
-#' @import ggplot2 lubridate dplyr
+heatmap_wday_hourofday <- function(df, date_col) {
 
-generate_dh_heatmap <- function(df, datecol){
+  # loading and manipulating data-------------------------------------------------------------------------------------------------------------------------------
 
-  # Quote `datecol`
-  datecol <- dplyr::enquo(datecol)
+  # give specified date column default name
+  names(df)[names(df) == date_col] <- 'ndate'
 
-  # Add a column with the weekday and then abbreviate the weekday to be just
-  # the first 3 letters. Then, make that column a factor with the
-  # values in a specific order (the normal order for days of the week)
-  df <- df %>%
-    dplyr::mutate(hour = lubridate::hour(strptime(!!datecol, "%Y-%m-%d %H:%M:%S"))) %>%
-    dplyr::mutate(weekday = weekdays(as.Date(!!datecol)))
+  df_wday_hour <- df %>%
+    # add new columns containing day of the week and hour of the day for each submission
+    dplyr::mutate(wday = lubridate::wday(ndate, label = TRUE, week_start = 1, abbr = TRUE, locale = 'English'),
+                  hour = lubridate::hour(ndate)) %>%
+    # group by day of the week and hour of the day and summarize using count
+    dplyr::count(wday, hour, name="Count") %>%
+    dplyr::arrange(desc(wday))
 
-  # Count entries by weekday and hour
-  dh_counts <- df %>% dplyr::count(weekday, hour)
+  # plotting----------------------------------------------------------------------------------------------------------------------------------------------------
 
-  # Create a theme that is a bit more friendly. This isn't required to do the visualization,
-  # but it's a painful heatmap to look at otherwise. We start with a minimalist theme... and
-  # then basically make it even more minimalist. Thank you, Tufte and Few.
-  theme_heatmap <- theme_light() +                 # Start with a minimalist theme
-    theme(panel.grid = element_blank(),            # Remove the gridlines
-          panel.border = element_blank(),          # Remove the border around the heatmap
-          plot.title = element_text(face = "bold", # Make the title bold
-                                    size = 11,     # Adjust the title size
-                                    hjust = 0.5),  # Center the title
-          axis.ticks = element_blank(),            # Remove the axis tickmarks
-          axis.title.x = element_blank(),          # Turn off the x-axis title
-          axis.title.y = element_text(size=10),    # Adjust the size of the y-axis title
-          axis.text.y = element_text(size = 8),    # Adjust the size of the y-axis labels
-          axis.text.x = element_text(size = 10),   # Adjust the size of the x-axis labels
-          legend.position = "none")                # Turn off the legend
+  # define theme for heat map
+  theme_heatmap <- ggplot2::theme_light() +
+    ggplot2::theme(
+      panel.grid = element_blank(),
+      panel.border = element_blank(),
+      plot.title = element_text(face = "bold", size = 11, hjust = 0.5),
+      axis.ticks = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_text(size=10),
+      axis.text.y = element_text(size = 8),
+    )
 
-  # Create the plot.
-  dh_counts  %>% ggplot(dh_counts,
-                        mapping = aes(x = weekday,
-                                      y = hour,
-                                      fill = n)) +
-    geom_tile(colour="white") +  # This makes the heatmap (the colour is the lines in the grid)
-    scale_fill_gradient(low = "#f4fff6", high="#0bb730") +  # The colour range to use
-    scale_y_reverse(breaks=c(23:0), labels=c(23:0),    # Put the 0 at the top of the y-axis
-                    expand = c(0,0)) +                 # Remove padding around the heatmap
-    scale_x_discrete(expand = c(0,0), position = "top") +
-    labs(title = "Average Visits by Day of Week / Hour of Day", y = "Hour of Day") +
-    theme_heatmap  # Apply the theme defined earlier for styling
+  ggp <- ggplot2::ggplot(df_wday_hour, aes(x = wday, y = hour, fill = Count)) +
+    ggplot2::geom_tile(colour="white") +
+    # set fill colors
+    ggplot2::scale_fill_gradientn(colours = terrain.colors(10)) +
+    ggplot2::scale_y_reverse(breaks=c(23:0), labels=c(23:0), expand = c(0,0)) +
+    ggplot2::scale_x_discrete(expand = c(0,0)) +
+    ggplot2::labs(y = "Hour of Day") +
+    theme_heatmap
+
+  return(ggp)
 
 }

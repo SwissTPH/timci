@@ -565,6 +565,20 @@ if (n_due_day7fu > 0) {
 }
 ```
 
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  if (n_due_day7fu > 0) {
+    cat(paste0("**", n_due_day7fu, "** participants devraient avoir complété leur suivi à Jour 7.\n\n"))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) ont complété leur suivi à Jour 7."))
+  }
+} else {
+  if (n_due_day7fu > 0) {
+    cat(paste0("**", n_due_day7fu, "** participants should have completed their Day 7 follow-up.\n\n"))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) completed their Day 7 follow-up."))
+  }
+}
+```
+
 ```{r submissions-1, results = "asis"}
 visit_names <- c(all_str, visit_names)
 submissions <- c(n_total, submissions)
@@ -1291,7 +1305,6 @@ if (nrow(baseline_data) > 0) {
 \newpage
 
 ```{r, results = "asis"}
-
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("# Suivi à Jour 7\n\n"))
   cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
