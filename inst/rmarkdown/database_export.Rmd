@@ -671,7 +671,7 @@ if (!is.null(facility_data)) {
           merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
         if (nrow(day0_data_id_withdrawal) > 0) { 
           day0_data_id_withdrawal %>%
-            dplyr::select(c("child_id", "date_visit", "date")) %>%
+            dplyr::select(c("child_id", "date_visit", "date", "uuid")) %>%
             knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date", "uuid"))
         }
       }
@@ -874,7 +874,7 @@ if (!is.null(raw_day7fu_data)) {
     day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
     locked_day7fu_data <- locked_day7fu_data %>% dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
     
-    allday7fu_data_uids %>%
+    allday7fu_data_uids[c("child_id", "uuid")] %>%
       knitr::kable(row.names = FALSE)
   }
 }
@@ -1182,6 +1182,12 @@ if (!is.null(hospit_fu)) {
 
 `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'\\newpage ## Day 28 data quality checks'}`
 
+```{r}
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  write("Export Day 28 data and run corresponding quality checks", stderr())
+}
+```
+
 ```{r format-RCT-LS-ODK-fu-day28-data}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   day28fu_data <- NULL
@@ -1206,15 +1212,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'### Non-valid participant IDs'}`
 
-```{r}
-if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  write("Export Day 28 data and run corresponding quality checks", stderr())
-}
-```
-
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat("### Non-valid participant IDs\n\n")
   cat("Rule: keep only IDs of children who are enrolled in the locked Day 0 database.")
 }
 ```
