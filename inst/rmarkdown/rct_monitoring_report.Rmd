@@ -492,7 +492,7 @@ if (n_due_day7fu > 0) {
   n_day7fu_rate <- n_completed_day7fu/n_due_day7fu
   n_day7fu_rate100 <- round(100 * n_day7fu_rate, prec)
   plot4 <- timci::plot_gauge(n_day7fu_rate, plot4_str, 100, 85, 95, scale = 0.4)
-  plot5 <- timci::plot_gauge(n_valid_day7fu/n_due_day7fu, plot5_str, 100, 80, 90, scale = 0.4)
+  plot5 <- timci::plot_gauge(n_valid_day7fu/n_due_day7fu, plot5_str, 100, 85, 95, scale = 0.4)
 }
 ```
 
@@ -532,7 +532,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   if (n_due_day28fu > 0) {
     plot7 <- timci::plot_gauge(n_completed_day28fu/n_due_day28fu, "Day 28 follow-up rate", 100, 85, 95, scale = 0.4)
-    plot8 <- timci::plot_gauge(n_valid_day28fu/n_due_day28fu, "Day 28 follow-up rate\nwithin the time window", 100, 80, 90, scale = 0.4)
+    plot8 <- timci::plot_gauge(n_valid_day28fu/n_due_day28fu, "Day 28 follow-up rate\nwithin the time window", 100, 85, 95, scale = 0.4)
   } 
 }
 ```

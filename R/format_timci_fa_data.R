@@ -47,8 +47,9 @@ extract_last_fa_data <- function(df, stats) {
                y = prev[,c('date','fcode')],
                by = 'fcode',
                all = TRUE)
-  res %>% dplyr::rename('date' = 'date.x',
-                        'prev' = 'date.y')
+  res %>%
+    dplyr::rename('date' = 'date.x',
+                  'prev' = 'date.y')
 
 }
 
