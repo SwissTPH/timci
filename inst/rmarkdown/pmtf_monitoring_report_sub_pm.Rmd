@@ -1,0 +1,17 @@
+\newpage
+
+```{r pm-message}
+write(formats2h2("Generate the process mapping subsection"), stderr())
+```
+
+`r h1_processmapping`
+
+`r h2_calendar_heatmap`
+
+```{r, results='asis'}
+if (nrow(pm_data) > 0) {
+  timci::generate_calendar_heatmap2(pm_data,
+                                    date,
+                                    legendtitle = "Number of submissions")
+}
+```

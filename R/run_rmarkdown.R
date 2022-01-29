@@ -628,19 +628,60 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Generate SPA report"), stderr())
 
-  if (!is.null(spa_sco_data)) {
-    if (length(spa_sco_data) > 0) {
-      if (nrow(spa_sco_data) > 0) {
-        params <- list(research_facilities = research_facilities,
-                       facility_data = facility_data,
-                       spa_sco_data = spa_sco_data,
-                       spa_cgei_data = spa_cgei_data,
-                       spa_fa_data = spa_fa_data,
-                       spa_hcpi_data = spa_hcpi_data,
-                       raw_withdrawal_data = raw_withdrawal_data)
-        generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
-      }
-    }
+  # Filter research facilities to only keep those in which SPA activities are conducted
+  spa_research_facilities <- research_facilities %>%
+    filter(spa == 1)
+
+  # Check that at least one SPA database is not empty
+  spa_sco_is_not_null <- !is.null(spa_sco_data)
+  spa_cgei_is_not_null <- !is.null(spa_cgei_data)
+  spa_fa_is_not_null <- !is.null(spa_fa_data)
+  spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+  spa_report_condition <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
+
+  # Only keep data that corresponds to SPA facilities
+  if (spa_sco_is_not_null) {
+    spa_sco_data <- spa_sco_data %>%
+      merge(y = spa_research_facilities[, c("facility_id")],
+            by.x = 'facility_identification-fcode',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  if (spa_cgei_is_not_null) {
+    spa_cgei_data <- spa_cgei_data %>%
+      merge(y = spa_research_facilities[, c("facility_id")],
+            by.x = 'b1-fcode',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  if (spa_fa_is_not_null) {
+    spa_fa_data <- spa_fa_data %>%
+      merge(y = spa_research_facilities[, c("facility_id")],
+            by.x = 'facility_identification-a1_2',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  if (spa_hcpi_is_not_null) {
+    spa_hcpi_data <- spa_hcpi_data %>%
+      merge(y = spa_research_facilities[, c("facility_id")],
+            by.x = 'a1-fcode',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  # If at least one SPA database is not empty, generate the SPA report
+  if (spa_report_condition) {
+    params <- list(research_facilities = spa_research_facilities,
+                   facility_data = facility_data,
+                   spa_sco_data = spa_sco_data,
+                   spa_cgei_data = spa_cgei_data,
+                   spa_fa_data = spa_fa_data,
+                   spa_hcpi_data = spa_hcpi_data,
+                   raw_withdrawal_data = raw_withdrawal_data)
+    generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
   }
 
   #############################################
@@ -649,13 +690,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Generate process map & time-flow report"), stderr())
 
-  if (!is.null(tf_data) & !is.null(pm_data)) {
-    if (length(tf_data) > 0 & length(pm_data) > 0) {
-      if (length(tf_data[[1]]) > 0 & length(pm_data[[1]]) > 0) {
-        params <- list(research_facilities = research_facilities,
+  if (!is.null(tf_data) | !is.null(pm_data)) {
+    if (length(tf_data) > 0 | length(pm_data) > 0) {
+      if (length(tf_data[[1]]) > 0 | length(pm_data[[1]]) > 0) {
+        params <- list(research_facilities = spa_research_facilities,
                        facility_data = facility_data,
                        tf_data = tf_data[[1]],
-                       pm_data = pm_data[[1]],
+                       pm_data = NULL,
                        raw_withdrawal_data = raw_withdrawal_data)
         generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
       }
@@ -668,16 +709,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Generate qualitative report"), stderr())
 
-  if (!is.null(tf_data) & !is.null(pm_data)) {
-    if (length(tf_data) > 0 & length(pm_data) > 0) {
-      if (length(tf_data[[1]]) > 0 & length(pm_data[[1]]) > 0) {
-        params <- list(research_facilities = research_facilities,
-                       facility_data = facility_data,
-                       tf_data = tf_data[[1]],
-                       pm_data = pm_data[[1]],
-                       raw_withdrawal_data = raw_withdrawal_data)
-        generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
-      }
+  if (!is.null(hcpidi_interview_data)) {
+    if (length(hcpidi_interview_data) > 0) {
+      params <- list(research_facilities = research_facilities,
+                     facility_data = facility_data,
+                     hcpidi_interview_data = hcpidi_interview_data,
+                     raw_withdrawal_data = raw_withdrawal_data)
+      generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
     }
   }
 

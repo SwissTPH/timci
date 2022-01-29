@@ -79,8 +79,6 @@ calendar_heatmap <- function(dates, values, title = "", subtitle = "", legendtit
   df$year  <-  as.factor(format(df$date, "%Y"))
   df$month <- as.numeric(format(df$date, "%m"))
   df$doy   <- as.numeric(format(df$date, "%j"))
-  #df$dow  <- as.numeric(format(df$date, "%u"))
-  #df$woy  <- as.numeric(format(df$date, "%W"))
   df$dow <- as.numeric(format(df$date, "%w"))
   df$woy <- as.numeric(format(df$date, "%U")) + 1
 
@@ -272,8 +270,8 @@ generate_calendar_heatmap <- function(df, datecol, date_max = Sys.Date(), date_m
 
 #' Generates a heat map of the number of submissions per weekday and hour.
 #'
-#' Takes any timestamp column in the data and aggregates by weekday and hour of the day. The generated plot then shows for each combination
-#' the frequency. Please note, that one and only one of the three data arguments (df, csv, svc) must be specified.
+#' Takes any time stamp column in the data and aggregates by weekday and hour of the day. The generated plot then shows for each combination
+#' the frequency.
 #'
 #' @param df Data frame containing the ODK data that is to be used. Optional, defaults to NULL.
 #' @param date_col String that specifies the date or time stamp column in the data which is to be examined.
@@ -291,7 +289,7 @@ heatmap_wday_hourofday <- function(df, date_col) {
 
   df_wday_hour <- df %>%
     # add new columns containing day of the week and hour of the day for each submission
-    dplyr::mutate(wday = lubridate::wday(ndate, label = TRUE, week_start = 1, abbr = TRUE, locale = 'English'),
+    dplyr::mutate(wday = lubridate::wday(ndate, label = TRUE, week_start = 1, abbr = TRUE),
                   hour = lubridate::hour(ndate)) %>%
     # group by day of the week and hour of the day and summarize using count
     dplyr::count(wday, hour, name="Count") %>%
@@ -313,8 +311,11 @@ heatmap_wday_hourofday <- function(df, date_col) {
 
   ggp <- ggplot2::ggplot(df_wday_hour, aes(x = wday, y = hour, fill = Count)) +
     ggplot2::geom_tile(colour="white") +
+    geom_text(aes(label = Count)) +
     # set fill colors
-    ggplot2::scale_fill_gradientn(colours = terrain.colors(10)) +
+    scale_fill_gradientn(colours = c("#D61818", "#FFAE63", "#FFFFBD", "#B5E384"),
+                         na.value = "white",
+                         guide = guide_colorbar(direction = "vertical")) +
     ggplot2::scale_y_reverse(breaks=c(23:0), labels=c(23:0), expand = c(0,0)) +
     ggplot2::scale_x_discrete(expand = c(0,0)) +
     ggplot2::labs(y = "Hour of Day") +

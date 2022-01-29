@@ -1,0 +1,99 @@
+\clearpage
+
+```{r sco-message}
+write(formats2h2("Generate the sick child observation subsection"), stderr())
+```
+
+`r h1_spa_sco`
+
+The objective of the sick child observation protocol is:
+\begin{itemize}
+  \item to understand the impact of intervention(s) on healthcare provider's adherence to practice and quality of care
+  \begin{itemize}
+    \item critical components of IMCI assessment, diagnosis, management
+    \item inform understanding of correctness of severity classification
+    \item patient-centeredness of care (respectful care)
+  \end{itemize}
+  \item to evaluate the implementation of interventions
+  \begin{itemize}
+    \item functionality, use of and communication about pulse oximetry, including correctness of use
+    \item functionality, use of and communication about CDSA, including correctness of use
+  \end{itemize}
+\end{itemize}
+
+```{r spa-sco-condition}
+n <- nrow(spa_sco_data)
+cond <- n > 0
+```
+
+**`r n`** submissions
+
+```{r, eval = cond, results='asis', fig.cap = heatmap_cap}
+timci::generate_calendar_heatmap2(spa_sco_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
+```
+
+```{r, eval = cond, results = "asis"}
+all <- spa_sco_data %>% 
+  rename(young_infant = "child_identification-young_infant",
+         facility_name = "facility_identification-fname")
+
+if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
+  all <- all %>% 
+    rename(back_from_lab = "child_identification-back_from_lab")
+  
+  summary <- list(
+    "Summary" = list(
+      "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
+      "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
+      )
+  )
+  out <- format_summary_table(all,
+                              summary,
+                              facility_name)
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    linesep = "",
+                    align = c("c", "c"),
+                    caption = "Type of observation") %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+}
+```
+
+```{r, eval = cond, results='asis', fig.cap = heatmap2_cap, fig.height = figsize}
+if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
+  all <- all %>% dplyr::filter(back_from_lab == 0)
+}
+timci::heatmap_wday_hourofday(all,
+                              'start')
+```
+
+```{r, eval = cond}
+
+
+summary <- list(
+  "Summary" = list(
+    "0-59 days" = ~qwraps2::n_perc(young_infant == 1, prec),
+    "2-59 months" = ~qwraps2::n_perc(young_infant == 0, prec)
+    )
+)
+```
+
+```{r, eval = cond, results = "asis"}
+out <- format_summary_table(all,
+                            summary,
+                            facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Age category") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```

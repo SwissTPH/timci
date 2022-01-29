@@ -182,10 +182,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = figsize}
+```{r, results = "asis", fig.height = figsize, fig.caption = screening_times_str}
 if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
-  timci::generate_time_hist_plot(facility_data_tmp,
-                                 screening_times_str)
+  timci::heatmap_wday_hourofday(facility_data_tmp,
+                               'start')
 }
 ```
 

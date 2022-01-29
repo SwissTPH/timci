@@ -1,0 +1,24 @@
+\newpage
+
+```{r tf-message}
+write(formats2h2("Generate the time-flow subsection"), stderr())
+```
+
+`r h1_timeflow`
+
+`r h2_calendar_heatmap`
+
+```{r, results='asis'}
+if (nrow(tf_data) > 0) {
+  timci::generate_calendar_heatmap2(tf_data,
+                                    date,
+                                    legendtitle = "Number of submissions")
+}
+```
+
+```{r, results='asis', fig.height = figsize}
+if (nrow(tf_data) > 0) {
+  timci::heatmap_wday_hourofday(tf_data,
+                                'start')
+}
+```

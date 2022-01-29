@@ -1,0 +1,74 @@
+```{r context-message}
+write(formats2h2("Generate the context subsection"), stderr())
+```
+
+`r h1_context`
+
+```{r context-load-facilities, results='asis'}
+facilities <- params$research_facilities
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  facilities <- facilities[, c("lvl2", "facility_id", "facility_name")]
+  facilities <- facilities[!duplicated(facilities$facility_id), ]
+} else{
+  facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type")]
+  facilities <- facilities[!duplicated(facilities$facility_id), ]
+}
+```
+
+```{r context-format-facility-info, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  # Sort by district and rename columns
+  facility_disp <- facilities %>%
+    dplyr::arrange(lvl2) %>%
+    dplyr::rename('District sanitaire' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Poste de santé' = 'facility_name')
+} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+  # Sort by County then type of facility
+  facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('County' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+  
+} else{
+  # Sort by district then type of facility
+  facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('District' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+}
+```
+
+```{r context-facility-type, results='asis'}
+facility_nb <- nrow(facilities)
+if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  facilities$type <- tolower(facilities$type)
+  hc_nb <- nrow(facilities %>% filter(type == "health center"))
+  dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
+  cat(paste0("**", facility_nb, "** research facilities, among which **", hc_nb, "** health centres and **", dispensary_nb, "** dispensaries"))
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  hc_nb <- nrow(facilities %>% filter(type == "CHC"))
+  dispensary_nb <- nrow(facilities %>% filter(type == "PHC"))
+  cat(paste0("**", facility_nb, "** research facilities, among which **", hc_nb, "** community health centres (CHCs) and **", dispensary_nb, "** primary health centres (PHCs)"))
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
+  cat(paste0("**", facility_nb, "** postes de recherche"))
+} else{
+  cat(paste0("**", facility_nb, "** research facilities"))
+}
+```
+
+```{r context-diplay-facility-table, results = "asis"}
+facility_disp  %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  caption = facility_cap,
+                  align = c("c", "c", "c")) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
+```

@@ -1,0 +1,90 @@
+\newpage
+
+# Day 28 follow-up
+
+```{r, results = "asis"}
+n_day28fu_rate <- round(100 * n_completed_day28fu/n_due_day28fu, prec)
+cat(paste0("The valid Day 28 follow-up period is **", day28_wmin, "** to **", day28_wmax, "** days.\n\n"))
+if (n_due_day28fu > 0) {
+  cat(paste0("**", n_due_day28fu, "** participants should have completed their Day 28 follow-up.\n\n"))
+  cat(paste0("**", n_completed_day28fu, "** participants (", n_day28fu_rate, "%) completed their Day 28 follow-up."))
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(raw_day28fu_data)) {
+  if (nrow(raw_day28fu_data) > 0) {
+    day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
+    day28fu_data <- day28fu_data %>%
+      dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+    
+    all <- data.frame(day28fu_data)
+    all$a1_contact_a4_d_1b[is.na(all$cg_ok)] <- 0
+    all$o1_o1_1a[is.na(all$status_day28)] <- 0
+    all$o1_o1_1[is.na(all$cure_day28)] <- 0
+    all$n1_o3_1[is.na(all$hf_visit_day28)] <- 0
+    
+    day28_call_ss <- list(
+      "District" = list(
+        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec)
+        )
+    )
+    out <- format_summary_table(all, day28_call_ss, district)
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+  }
+}
+```
+
+## Weekly calls
+
+```{r, results='asis', fig.height = figsize}
+if (!is.null(raw_day28fu_data)) {
+  if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 0){
+    p <- timci::generate_week_bar_plot(date_vec = raw_day28fu_data$date,
+                                       date_min = as.Date(start_date),
+                                       date_max = as.Date(Sys.Date() + 7),
+                                       ylbl = paste0(enrolment_str))
+    plot(p)
+  }
+}
+```
+
+## Number of submissions during the last 30 days
+
+```{r, results='asis', fig.height = figsize}
+if (!is.null(raw_day28fu_data)) {
+  if (nrow(raw_day28fu_data) > 0) {
+    plot(timci::generate_day_bar_plot(raw_day28fu_data$date,
+                                      as.Date(Sys.Date() - w),
+                                      as.Date(Sys.Date() + 1),
+                                      ylbl = submission_str,
+                                      date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 28)))
+  } else {
+    cat('0 submissions since the start of the study.\n\n')
+  }
+} else{
+  cat('0 submissions since the start of the study.\n\n')
+}
+```
+
+## Calendar heatmap
+
+```{r, results='asis'}
+if (!is.null(raw_day28fu_data)) {
+  if (nrow(raw_day28fu_data) > 0) {
+    timci::generate_calendar_heatmap2(raw_day28fu_data,
+                                      date,
+                                      legendtitle = "Number of day 28 follow-up phone calls")
+  } else{
+    cat('N/A\n\n')
+  }
+} else{
+  cat('N/A\n\n')
+}
+```

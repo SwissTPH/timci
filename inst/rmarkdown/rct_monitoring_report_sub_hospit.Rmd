@@ -1,0 +1,69 @@
+\newpage
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("# Suivi des visites à l'hôpital\n\n"))
+} else {
+  cat(paste0("# Hospital follow-up\n\n"))
+}
+```
+
+```{r, results='asis', fig.height = figsize}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("## Visite à l'hôpital\n\n"))
+} else {
+  cat(paste0("## Hospital visit\n\n"))
+}
+
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    p <- timci::generate_week_bar_plot(date_vec = raw_hospit_data$date,
+                                       date_min = as.Date(start_date),
+                                       date_max = as.Date(Sys.Date() + 7),
+                                       ylbl = submission_str)
+    plot(p)
+  } else{
+    cat('0 hospital submissions since the start of the study.\n\n')
+  }
+} else{
+  cat('0 hospital submissions since the start of the study.\n\n')
+}
+```
+
+```{r, results='asis'}
+cat(calendar_heatmap_title_str)
+
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    timci::generate_calendar_heatmap2(raw_hospit_data,
+                                      date,
+                                      legendtitle = "Number of hospital submissions")
+  } else{
+    cat('N/A\n\n')
+  }
+} else{
+    cat('N/A\n\n')
+  }
+```
+
+```{r hospit-stat-summary, results = "asis"}
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    
+    all <- timci::format_hospital_data(raw_hospit_data)
+    all$hospit[is.na(all$hospit)] <- 0
+    
+    hospit_summary <- list(
+      "summary" = list(
+        "Found" = ~qwraps2::n_perc(found == 1, prec),
+        "Hospitalisation" = ~qwraps2::n_perc(hospit == 1, prec)
+        )
+      )
+    out <- format_summary_table(all, hospit_summary) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE)
+  }
+}
+```

@@ -1,24 +1,27 @@
----
-title: "SPA monitoring report - Caregiver exit interview subsection"
-author: "H. LANGET"
-date: "2021-12-22"
-output: pdf_document
----
+\clearpage
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
-                      warning = FALSE,
-                      message = FALSE)
+```{r cgei-message}
+write(formats2h2("Generate the caregiver exit interview subsection"), stderr())
 ```
 
-# Caregiver exit interview
+`r h1_spa_cgei`
 
-```{r, results='asis'}
-cat(ch_title2)
+```{r spa-cgeu-condition}
+n <- nrow(spa_cgei_data)
+cond <- n > 0
+```
 
+**`r n`** submissions
+
+```{r, eval = cond, results='asis', fig.cap = heatmap_cap}
 timci::generate_calendar_heatmap2(spa_cgei_data,
                                   date,
                                   legendtitle = "Number of submissions")
+```
+
+```{r, results='asis', fig.cap = heatmap2_cap, fig.height = figsize}
+timci::heatmap_wday_hourofday(spa_cgei_data,
+                              'start')
 ```
 
 ```{r, results = "asis"}

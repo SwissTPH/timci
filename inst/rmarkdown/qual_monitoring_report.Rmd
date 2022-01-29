@@ -5,8 +5,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 params:
   research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
-  tf_data: NULL
-  pm_data: NULL
+  hcpidi_interview_data: NULL
   raw_withdrawal_data: NULL
 output:
   word_document:
@@ -33,55 +32,33 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       fig.pos='!H')
 options(qwraps2_markup = 'markdown')
+
+# Qwraps2 parameters
+prec <- 1
+
+#kableExtra table parameters
 table_fs <- 7
-pres <- 1
+figsize <- 3
+total_row_ft <- "gray"
+total_row_ft2 <- "white"
+striped_row_bg <- "gray!10"
+total_row_bg2 <- "gray"
 ```
 
-```{r translations}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
-  intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
-  baseline_str <- "Visite primaire"
-  facility_cap <- "Liste des poste de recherche"
-  repeat_str <- "Visite secondaire"
-  submission_str <- "Soumissions"
-  enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
-  enrolment_str <- "Recrutement"
-  screening_str <- "Screening"
-  withdrawal_str <- "Désistement"
-  appendix_title <- "# Annexe\n\n"
-  screening_times_str <- "Heures de screening"
-} else {
-  notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
-  intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
-  baseline_str <- "Baseline visit"
-  facility_cap <- "List of research facilities"
-  repeat_str <- "Repeat visit"
-  submission_str <- "Submissions"
-  enrolment_rate_str <- "Enrolment rate vs. target"
-  enrolment_str <- "Enrolment"
-  screening_str <- "Screening"
-  withdrawal_str <- "Withdrawal"
-  appendix_title <- "# Appendix\n\n"
-  screening_times_str <- "Screening times"
-}
+```{r translations-subsection, child = 'translations.Rmd'}
 ```
 
-```{r notice-text, results='asis'}
-cat("\\newpage")
-cat(notice_str)
-```
+\newpage
 
-```{r introduction-text, results='asis'}
-cat(intro_str)
-```
+`r notice_str`
+
+`r intro_str`
 
 ```{r setup-variables}
 if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
-  tf_data <- params$tf_data
-  pm_data <- params$pm_data
+  hcpidi_interview_data <- params$hcpidi_interview_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   
 }
@@ -96,9 +73,9 @@ facility_data <- merge(facility_data, params$research_facilities[, c("deviceid",
 ```{r process-facility-data, results='asis'}
 start_date <- NULL
 end_date <- NULL
-if (nrow(tf_data) > 0) {
-  start_date <- min(tf_data$date)
-  end_date <- max(tf_data$date)
+if (nrow(hcpidi_interview_data) > 0) {
+  start_date <- min(hcpidi_interview_data$date)
+  end_date <- max(hcpidi_interview_data$date)
   week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
   days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -109,106 +86,17 @@ if (nrow(tf_data) > 0) {
 }
 ```
 
-```{r context-title, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  title_str <- "# Contexte\n\n"
-} else {
-  title_str <- "# Context\n\n"
-}
-cat(title_str)
+```{r context-subsection, child = 'context.Rmd'}
 ```
 
-```{r context-load-facilities, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name")]
-  facilities <- facilities[!duplicated(facilities$facility_id), ]
-} else{
-  facilities <- params$research_facilities[, c("lvl2", "facility_id", "facility_name", "type")]
-  facilities <- facilities[!duplicated(facilities$facility_id), ]
-}
+```{r hcpidi-subsection, child = if (!is.null(hcpidi_interview_data)) 'qual_monitoring_report_sub_hcpidi.Rmd'}
 ```
 
-```{r context-display-facilities, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  # Sort by district and rename columns
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2) %>%
-    dplyr::rename('District sanitaire' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Poste de santé' = 'facility_name')
-}  else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
-  # Sort by County then type of facility
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2, type) %>%
-    dplyr::rename('County' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Facility' = 'facility_name',
-                  'Type' = 'type')
-  
-} else{
-  # Sort by district then type of facility
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2, type) %>%
-    dplyr::rename('District' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Facility' = 'facility_name',
-                  'Type' = 'type')
-  
-}
-facility_nb <- nrow(facilities)
-if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-  facilities$type <- tolower(facilities$type)
-  hc_nb <- nrow(facilities %>% filter(type == "health center"))
-  dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
-  cat(paste0(facility_nb, " research facilities, among which ", hc_nb, " health centres and ", dispensary_nb, " dispensaries"))
-} else{
-  cat(paste0(facility_nb, " research facilities"))
-}
-```
+\newpage
+\listoftables
 
-```{r context-facilities, results = "asis"}
-facility_disp  %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  linesep = "",
-                  caption = facility_cap,
-                  align = c("c", "c", "c")) %>% 
-  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"),
-                            font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE)
-```
+\newpage
+\listoffigures
 
-# Process mapping
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
-}
-
-if (!is.null(pm_data)){
-  if (nrow(pm_data) > 0) {
-    timci::generate_calendar_heatmap2(pm_data,
-                                      date,
-                                      legendtitle = "Number of submissions")
-  }
-}
-```
-
-# Time-flow
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Cartes thermiques calendaires\n\n")
-} else {
-  cat("## Calendar heatmaps\n\n")
-}
-
-if (!is.null(tf_data)){
-  if (nrow(tf_data) > 0) {
-    timci::generate_calendar_heatmap2(tf_data,
-                                      date,
-                                      legendtitle = "Number of submissions")
-  }
-}
+```{r technical-info-subsection, child = 'technical_info.Rmd'}
 ```

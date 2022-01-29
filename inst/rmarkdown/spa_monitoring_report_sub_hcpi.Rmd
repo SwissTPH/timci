@@ -1,0 +1,20 @@
+\clearpage
+
+```{r hcpi-message}
+write(formats2h2("Generate the healthcare provider interview subsection"), stderr())
+```
+
+`r h1_spa_hcpi`
+
+```{r spa-hcpi-condition}
+n <- nrow(spa_hcpi_data)
+cond <- n > 0
+```
+
+**`r n`** submissions
+
+```{r, eval = cond, results='asis', fig.cap = heatmap_cap}
+timci::generate_calendar_heatmap2(spa_hcpi_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
+```

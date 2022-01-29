@@ -1,0 +1,58 @@
+```{r default}
+notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
+  intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
+baseline_str <- "Baseline visit"
+facility_cap <- "List of research facilities"
+repeat_str <- "Repeat visit"
+submission_str <- "Submissions"
+enrolment_rate_str <- "Enrolment rate vs. target"
+enrolment_str <- "Enrolment"
+heatmap_cap <- "Calendar heatmap"
+heatmap2_cap <- "Day/hour heatmap"
+screening_str <- "Screening"
+withdrawal_str <- "Withdrawal"
+screening_times_str <- "Screening times"
+
+appendix_title <- "# Appendix\n\n"
+h1_context <- "# Context\n\n"
+h1_processmapping <- "# Process mapping\n\n"
+h1_spa_cgei <- "# Caregiver exit interview\n\n"
+h1_spa_fa <- "# Facility assessment\n\n"
+h1_spa_hcpi <- "# Healthcare provider interview\n\n"
+h1_spa_sco <- "# Sick child observation protocol\n\n"
+h1_tech_info <- "# Technical information\n\n"
+h1_timeflow <- "# Time-flow\n\n"
+
+h2_calendar_heatmap <- "## Calendar heatmap\n\n"
+```
+
+```{r french}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
+  intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
+  
+  baseline_str <- "Visite primaire"
+  facility_cap <- "Liste des poste de recherche"
+  repeat_str <- "Visite secondaire"
+  submission_str <- "Soumissions"
+  enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
+  enrolment_str <- "Recrutement"
+  heatmap_cap <- "Carte thermique calendaire"
+  heatmap2_cap <- "Carte thermique jour/heure"
+  screening_str <- "Screening"
+  withdrawal_str <- "Désistement"
+  screening_times_str <- "Heures de screening"
+  
+  appendix_title <- "# Annexe\n\n"
+  h1_context <- "# Contexte\n\n"
+  h1_processmapping <- "# Cartographie des processus\n\n"
+  h1_spa_cgei <- "# Entretien de sortie avec l'accompagnant\n\n"
+  h1_spa_fa <- "# Evaluation du poste\n\n"
+  h1_spa_hcpi <- "# Entretien avec le prestataire de soins\n\n"
+  h1_spa_sco <- "# Observation de la consultation de l'enfant malade\n\n"
+  h1_tech_info <- "# Informations techniques\n\n"
+  h1_timeflow <- "# Flux temporels\n\n"
+  
+  h2_calendar_heatmap <- "## Carte thermique calendaire\n\n"
+}
+```

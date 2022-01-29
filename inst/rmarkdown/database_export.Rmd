@@ -51,6 +51,8 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE)
 options(knitr.table.format = "pipe")
 library(dplyr)
+library(skimr)
+library(DataExplorer)
 ```
 
 ```{r translations}
@@ -1748,4 +1750,22 @@ if (!is.null(online_survey_data)) {
                                  qualos_dir,
                                  "01_timci_online_survey_data")
 }
+```
+
+\newpage
+
+# Appendix
+
+```{r data-explore-verbose}
+write(formats2h2("Explore Day 0 data"), stderr())
+```
+
+## Day 0 data
+
+```{r, results = 'asis'}
+skimr::skim(locked_day0_data)
+```
+
+```{r, results = 'asis'}
+DataExplorer::plot_histogram(locked_day0_data)
 ```

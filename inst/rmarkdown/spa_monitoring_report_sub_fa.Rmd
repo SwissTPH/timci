@@ -1,0 +1,54 @@
+\clearpage
+
+```{r fa-message}
+write(formats2h2("Generate the faciliy assessment subsection"), stderr())
+```
+
+`r h1_spa_fa`
+
+```{r spa-fa-condition}
+n <- nrow(spa_fa_data)
+cond <- n > 0
+```
+
+**`r n`** submissions
+
+```{r, eval = cond, results='asis', fig.cap = heatmap_cap}
+timci::generate_calendar_heatmap2(spa_fa_data,
+                                  date,
+                                  legendtitle = "Number of submissions")
+```
+
+## Basic services
+
+```{r, results = "asis"}
+all <- spa_fa_data %>% 
+  rename(facility_name = "facility_identification-fname",
+         upgraded_from_designation = "facility_identification-b2_2",
+         inpatient_beds = "b2-b2_7")
+
+summary <- list(
+  "Summary" = list(
+    "Upgraded" = ~qwraps2::n_perc(upgraded_from_designation == 1, prec),
+    "Number of inpatient beds" = ~qwraps2::mean_sd(inpatient_beds, denote_sd = "paren", na_rm = TRUE)
+    )
+)
+out <- format_summary_table(all, summary, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c", "c"),
+                  caption = "Statistical summary of basic services") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+## Services for children 0-59 months
+
+To be completed
+
+## Ambulance services
+
+To be completed
