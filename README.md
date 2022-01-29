@@ -1,5 +1,5 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/Thaliehln/timci/commits/master)
+[![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/SwissTPH/timci/commits/master)
 
 # Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
@@ -18,12 +18,12 @@ The overall goal of the TIMCI project is to reduce morbidity and mortality in si
 |Tanzania|Ifakara Health Institute (IHI)|
 
 ## Table of contents
-* [Getting started](https://github.com/Thaliehln/timci#getting-started)
-* [Run a generic Shiny app](https://github.com/Thaliehln/timci#run-a-generic-shiny-app)
-* [Run the TIMCI Shiny app](https://github.com/Thaliehln/timci#run-the-timci-shiny-app)
-* [Generate R Markdown reports for TIMCI (manual)](https://github.com/Thaliehln/timci#generate-r-markdown-reports-for-timci-manual)
-* [Generate R Markdown reports for TIMCI (automated pipeline)](https://github.com/Thaliehln/timci#generate-r-markdown-reports-for-timci-automated-pipeline)
-* [Valuable resources](https://github.com/Thaliehln/timci#valuable-resources)
+* [Getting started](https://github.com/SwissTPH/timci#getting-started)
+* [Run a generic Shiny app](https://github.com/SwissTPH/timci#run-a-generic-shiny-app)
+* [Run the TIMCI Shiny app](https://github.com/SwissTPH/timci#run-the-timci-shiny-app)
+* [Generate R Markdown reports for TIMCI (manual)](https://github.com/SwissTPH/timci#generate-r-markdown-reports-for-timci-manual)
+* [Generate R Markdown reports for TIMCI (automated pipeline)](https://github.com/SwissTPH/timci#generate-r-markdown-reports-for-timci-automated-pipeline)
+* [Valuable resources](https://github.com/SwissTPH/timci#valuable-resources)
 
 ## Getting started
 This package was developed on a Windows 10 operating system, with R version 4.0.2 (2020-06-22), RStudio version 1.4.1106 and Rtools40.
@@ -124,7 +124,7 @@ install.packages("devtools")
 ```
 ```r
 library(devtools)
-devtools::install_github("thaliehln/timci")
+devtools::install_github("SwissTPH/timci")
 ```
 
 An index of available documentation for the `timci` is displayed using the `help()` function
