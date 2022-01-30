@@ -1,0 +1,246 @@
+\newpage
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("# Suivi à Jour 7\n\n"))
+  cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
+  if (n_due_day7fu > 0) {
+    cat(paste0("**", n_due_day7fu, "** participants devraient avoir complété leur suivi à Jour 7.\n\n"))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) ont complété leur suivi à Jour 7."))
+  }
+} else {
+  cat(paste0("# Day 7 follow-up\n\n"))
+  cat(paste0("The valid Day 7 follow-up period is **", day7_wmin, "** to **", day7_wmax, "** days.\n\n"))
+  if (n_due_day7fu > 0) {
+    cat(paste0("**", n_due_day7fu, "** participants should have completed their Day 7 follow-up.\n\n"))
+    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) completed their Day 7 follow-up."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Appels hebdomadaires\n\n")
+} else {
+  cat("## Weekly calls\n\n")
+}
+```
+
+```{r, results = "asis", fig.height = figsize, fig.cap = "Weekly Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)"}
+if (!is.null(raw_day7fu_data) & length(raw_day7fu_data) > 0 & nrow(raw_day7fu_data) > 0) {
+  p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data$date,
+                                     date_min = as.Date(start_date),
+                                     date_max = as.Date(Sys.Date() + 7),
+                                     ylbl = paste0(enrolment_str),
+                                     date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 7))
+  plot(p)
+}
+```
+
+```{r, results='asis'}
+raw_day7fu_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(raw_day7fu_data$date),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  dplyr::group_by(week) %>%
+  dplyr::tally() %>%
+  dplyr::rename('N' = 'n') %>%
+  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE)
+```
+
+```{r, results='asis', fig.height = figsize, fig.cap = "Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)  over the last 30 days"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
+} else {
+  cat("## Number of submissions during the last 30 days\n\n")
+}
+
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+
+    p <- timci::generate_day_bar_plot(raw_day7fu_data$date,
+                                      as.Date(Sys.Date() - w),
+                                      as.Date(Sys.Date() + 1),
+                                      ylbl = submission_str,
+                                      date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 7))
+    plot(p)
+  } else{
+    cat('0 submissions since the start of the study.\n\n')
+  }
+} else {
+  cat('0 submissions since the start of the study.\n\n')
+  }
+```
+
+```{r, results='asis'}
+cat(calendar_heatmap_title_str)
+
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    timci::generate_calendar_heatmap2(raw_day7fu_data,
+                                      date,
+                                      legendtitle = "Number of day 7 follow-up phone calls")
+  } else{
+    cat('N/A\n\n')
+  }
+} else{
+    cat('N/A\n\n')
+  }
+```
+
+```{r day7-data-monitoring-title, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Tentatives d'appel enregistrées")
+} else {
+  cat("## Recorded call attempts")
+}
+```
+
+```{r, results = "asis"}
+# Add facility generic information to the RCT/LS facility data
+day7fu_data <- merge(x = day7fu_data,
+                     y = params$research_facilities[, c("facility_id", "facility_name")],
+                     by.x = 'fid',
+                     by.y = 'facility_id',
+                     all = FALSE)
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(day7fu_data)
+    all$cg_reached[is.na(all$cg_reached)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Successful call" = ~qwraps2::n_perc(call_ok == 1, prec),
+        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all$respondent_ok[is.na(all$respondent_ok)] <- 0
+    all$cg_ok[is.na(all$cg_ok)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
+        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r day7-successful-follow-up-title, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("## Suivis réalisés")
+} else {
+  cat("## Completed follow-ups")
+}
+```
+
+```{r}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    succ_day7fu_data <- merge(x = succ_day7fu_data,
+                              y = params$research_facilities[, c("facility_id", "facility_name")],
+                              by.x = 'fid',
+                              by.y = 'facility_id',
+                              all = FALSE)
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(succ_day7fu_data)
+    
+    day7_outcome_ss <- list(
+      "summary" = list(
+        "Before day 7" = ~qwraps2::n_perc(days == 6, prec),
+        "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec),
+        "Day 11-12" = ~qwraps2::n_perc(days >= 11 & days <= 12, prec),
+        "Above day 12" = ~qwraps2::n_perc(days > 12, prec),
+        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren")
+        )
+      )
+    out <- format_summary_table(all, day7_outcome_ss, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format \\\\textit{mean (SD)}.",
+                           escape = FALSE)
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(succ_day7fu_data)
+    
+    all$cure_day7[is.na(all$cure_day7)] <- 0
+    
+    day7_outcome_ss <- list(
+      "summary" = list(
+        "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec),
+        "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
+        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value), prec)
+        )
+      )
+    out <- format_summary_table(all, day7_outcome_ss, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      # kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+  }
+}
+```

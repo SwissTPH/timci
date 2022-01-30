@@ -54,6 +54,12 @@ total_row_ft <- "gray"
 total_row_ft2 <- "white"
 striped_row_bg <- "gray!10"
 total_row_bg2 <- "gray"
+
+if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+  hospit_value <- 13
+} else{
+  hospit_value <- 1
+}
 ```
 
 \fancypagestyle{plain}{\pagestyle{fancy}}
@@ -65,107 +71,7 @@ total_row_bg2 <- "gray"
 \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
 \fancyfoot[L]{TIMCI Data Monitoring Report v1.0 - Template: H. LANGET (Swiss TPH)}
 
-```{r default}
-age_eligibility_table_cap <- "Age of the child at screening."
-age_eligibility_table_gfn <- "Screening number are extracted using the device ID associated with a given facility."
-all_str <- "All"
-appendix_title <- "# Appendix\n\n"
-baseline_str <- "Baseline visit"
-baseline_visit_title_str <- "### Baseline visits\n\n"
-calendar_heatmap_title_str <- "## Calendar heatmap\n\n"
-clinical_presentation_title_str <- "## Clinical presentation\n\n"
-completion_table_cap <- "Number of patients with latest completed visit."
-consent_cap <- "Informed consent"
-consultation_nonsick_cap <- "Primary reason for consultation for non sick children."
-consultion_sick_cap <- "Primary reason for consultation for sick children."
-day7_phone_call_str <- "Day 7 phone call"
-eligibility_str <- "Individual child inclusion:\\begin{itemize}\\item Children 0 – 59 months for whom caregivers provide consent;\\item Consulting for an illness, or reported to be unwell when attending for a routine visit (e.g. vaccination, growth or chronic disease monitoring).\\end{itemize}Individual child exclusion:\\begin{itemize}\\item Children in the immediate post-natal period or first day of life;\\item Attending for a consultation related to trauma only (including new and follow-up presentations for burns, injuries, wounds);\\item Admitted within an inpatient part of the facility (including neonates delivered at the facility admitted with their mother);\\item Enrolled in the study within the preceding 28 days at any study facility.\\end{itemize}"
-eligibility_title <- "# Eligibility\n\n"
-enrolment_rate_str <- "Enrolment rate vs. target"
-enrolment_str <- "Enrolment"
-facility_cap <- "List of research facilities"
-intro_str <- "The overall goal of the Tools for the Management of Childhood Illness (TIMCI) project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The evaluation component of the project seeks to generate evidence on the health impact, operational priorities, cost and cost-effectiveness of introducing pulse oximetry, alone or embedded into a Clinical Decision Support Algorithm (CDSA), at primary care level in LMICs, for children 0 – 59 months of age, to facilitate national and international decision-making on scale-up."
-hospital_submission_str <- "Hospital visit"
-multi_rec_cap <- "Multiple enrolments"
-nonenrolment_cap <- "Non-enrolment causes"
-notice_str <- "\\begin{center}\\textbf{For internal use only. Do not share outside research teams. Tables and figures are generated from raw databases, not from the cleaned databases, and findings of this report can therefore be slightly different from those of the formal statistical analysis.}\\end{center}"
-plot0_str <- "Total enrolment\nvs. target sample size"
-plot1_str <- "Monthly enrolment\nvs. monthly target"
-plot2_str <- "Weekly enrolment\nvs. weekly target"
-plot3_str <- "Enrolment rate\n(excl. repeat visits)"
-plot4_str <- "Day 7 follow-up rate"
-plot5_str <- "Day 7 follow-up rate\nwithin the statistical window"
-pox_title_str <- "## Pulse oximetry\n\n"
-referral_title_str <- "## Referrals\n\n"
-repeat_str <- "Repeat visit"
-sample_size_str <- "Target sample size: "
-screening_str <- "Screening"
-screening_times_str <- "Screening times"
-sick_cap <- "Sickness at screening"
-submission_table_cap <- "Number of visits."
-submission_str <- "Submissions"
-title_str <- "# Global indicators\n\n"
-u18_mother_cap <- "Proportion of underaged mothers if the mother is not the main caregiver"
-weekly_enrolment_cap <- "Weekly recruitment for each week of the study."
-weekly_enrolment_hdr2 <- "## Weekly enrolment\n\n"
-withdrawal_str <- "Withdrawal"
-
-h1_context <- "# Context\n\n"
-h1_tech_info <- "# Technical information\n\n"
-```
-
-```{r french, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  
-  cat("\\selectlanguage{french}")
-  
-  age_eligibility_table_cap <-"Âge de l'enfant lors du screening."
-  age_eligibility_table_gfn <- "Le nombre de screenings est déterminé à l'aide de l'ID de la tablette associée à un poste donné."
-  all_str <- "Total"
-  appendix_title <- "# Annexe\n\n"
-  baseline_str <- "Visite primaire"
-  baseline_visit_title_str <- "### Visites primaires\n\n"
-  calendar_heatmap_title_str <- "## Cartes thermiques calendaires\n\n"
-  clinical_presentation_title_str <- "## Présentation clinique\n\n"
-  completion_table_cap <- "Nombre de patients dont la dernière visite est terminée."
-  consent_cap <- "Consentement éclairé"
-  consultation_nonsick_cap <- "Principal motif de consultation pour les enfants non malades."
-  consultion_sick_cap <- "Principal motif de consultation pour les enfants malades."
-  day7_phone_call_str <- "Appel téléphonique à Jour 7"
-  eligibility_str <- "Individual child inclusion:\\begin{itemize}\\item Children 0 – 59 months for whom caregivers provide consent;\\item Consulting for an illness, or reported to be unwell when attending for a routine visit (e.g. vaccination, growth or chronic disease monitoring).\\end{itemize}Individual child exclusion:\\begin{itemize}\\item Children in the immediate post-natal period or first day of life;\\item Attending for a consultation related to trauma only (including new and follow-up presentations for burns, injuries, wounds);\\item Admitted within an inpatient part of the facility (including neonates delivered at the facility admitted with their mother);\\item Enrolled in the study within the preceding 28 days at any study facility.\\end{itemize}"
-  eligibility_title <- "# Eligibilité\n\n"
-  enrolment_rate_str <- "Taux de recrutement par rapport à l'objectif"
-  enrolment_str <- "Recrutement"
-  facility_cap <- "Liste des poste de recherche"
-  intro_str <- "L’objectif global du projet TIMCI (Outils pour la prise en charge intégrée des maladies de l’enfant) est de réduire la morbidité et la mortalité chez les enfants malades dans les structures de soins primaires, tout en soutenant l’utilisation rationnelle et efficace des moyens diagnostiques et des médicaments par les prestataires de soins de santé. Le volet évaluation du projet vise à apporter des preuves de l’impact de l’introduction de l’oxymètre de pouls, associé à un Algorithme d’aide à la décision clinique (CDSA), sur la santé, les priorités opérationnelles, le coût et l’analyse cout-efficacité modélisée dans le contexte des soins primaires, pour les enfants âgés de 0 à 59 mois des pays à revenu faible ou intermédiaire (PRFI), en vue de faciliter la prise de décision et la mise à l’échelle aux niveaux national et international."
-  hospital_submission_str <- "Hospitalisation"
-  multi_rec_cap <- "Recrutements multiples"
-  nonenrolment_cap <- "Causes de non-recrutement"
-  notice_str <- "\\begin{center}\\textbf{Pour usage interne uniquement. Ne pas partager en dehors des équipes recherche. Les tableaux et les figures sont générés à partir des bases de données brutes, et non à partir des bases de données nettoyées, et les résultats de ce rapport peuvent donc être légèrement différents de ceux de l'analyse statistique formelle.}\\end{center}"
-  plot0_str <- "Recrutement total\nvs. taille d'échantillon cible"
-  plot1_str <- "Recrutement mensuel\nvs. cible mensuelle"
-  plot2_str <- "Recrutement hebdomadaire\nvs. cible hebdomadaire"
-  plot3_str <- "Taux de recrutement\n(hors visites secondaires)"
-  plot4_str <- "Taux de suivi à Jour 7"
-  plot5_str <- "Taux de suivi à Jour 7\ndans la fenêtre statistique"
-  pox_title_str <- "## Oxymètre de pouls\n\n"
-  referral_title_str <- "## Orientation vers un centre de référence\n\n"
-  repeat_str <- "Visite secondaire"
-  sample_size_str <- "Taille d'échantillon cible : "
-  screening_str <- "Screening"
-  screening_times_str <- "Heures de screening"
-  sick_cap <- "Enfant malade lors du screening"
-  submission_str <- "Soumissions"
-  submission_table_cap <- "Nombre de visites."
-  title_str <- "# Indicateurs globaux\n\n"
-  u18_mother_cap <- "Proportion de mères adolescentes si la mère n'est pas l'accompagnant principal"
-  weekly_enrolment_cap <- "Recrutement hebdomadaire pour chaque semaine de l'étude."
-  weekly_enrolment_hdr2 <- "## Recrutement hebdomadaire\n\n"
-  withdrawal_str <- "Retrait"
-  
-  h1_context <- "# Contexte\n\n"
-  h1_tech_info <- "# Informations techniques\n\n"
-}
+```{r translations-subsection, child = 'translations.Rmd'}
 ```
 
 \setcounter{tocdepth}{2}
@@ -225,7 +131,11 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+rct_cond <- (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') | (Sys.getenv('TIMCI_COUNTRY') == 'India')
+```
+
+```{r}
+if (rct_cond) {
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       raw_day28fu_data <- merge(x = raw_day28fu_data,
@@ -326,7 +236,7 @@ if (!is.null(raw_withdrawal_data)) {
 
 `r title_str`
 
-```{r, results='asis'}
+```{r, eval = FALSE, results='asis'}
 #timci::text_2_plot(paste0(days_nb))
 ```
 
@@ -498,20 +408,6 @@ if (n_due_day7fu > 0) {
 }
 ```
 
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  if (n_due_day7fu > 0) {
-    cat(paste0("**", n_due_day7fu, "** participants devraient avoir complété leur suivi à Jour 7.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) ont complété leur suivi à Jour 7."))
-  }
-} else {
-  if (n_due_day7fu > 0) {
-    cat(paste0("**", n_due_day7fu, "** participants should have completed their Day 7 follow-up.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) completed their Day 7 follow-up."))
-  }
-}
-```
-
 ```{r submissions-1, results = "asis"}
 visit_names <- c(all_str, visit_names)
 submissions <- c(n_total, submissions)
@@ -534,34 +430,154 @@ out %>%
                        escape = FALSE)
 ```
 
-```{r completion}
+```{r ls-full-participant-journey}
+all <- baseline_data[, c("child_id", "facility_name", "date_visit")]
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
-    # full_df <- merge(x = baseline_data[, c("child_id", "facility_name")],
-    #                  y = day7fu_data[, c("child_id", "proceed_day7")],
-    #                  by = 'child_id',
-    #                  all.x = TRUE)
-    # 
-    # full_df %>%
-    #   knitr::kable(head(full_df, n = 10))
-  
-    # completion_statistics <- list(
-    #   "" = list(
-    #     "Day 7" = ~qwraps2::n_perc(day7_done == 1, prec),
-    #     )
-    # )
-    # out <- format_summary_table(full_df, completion_statistics, facility_name)
-    # out %>%
-    #   kableExtra::kbl(booktabs = TRUE,
-    #                   linesep = "",
-    #                   caption = completion_table_cap) %>%
-    #   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
-    #                             font_size = table_fs) %>%
-    #   kableExtra::row_spec(0, bold = TRUE) %>%
-    #   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-    #   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+    all <- all %>%
+      merge(y = succ_day7fu_data[, c("child_id", "proceed_day7", "hf_visit_type", "status_day7")],
+            by = 'child_id',
+            all.x = TRUE)
   }
 }
+
+# Create an empty column if Day 7 follow-up has not started yet
+all["proceed_day7"[!("proceed_day7" %in% colnames(all))]] <- 0
+all["hf_visit_type"[!("hf_visit_type" %in% colnames(all))]] <- 0
+all["status_day7"[!("status_day7" %in% colnames(all))]] <- 0
+
+all$due_day7 <- (as.Date(all$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date()
+all$proceed_day7[is.na(all$proceed_day7)] <- 0
+all$lost_day7 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day7_wmax) <= Sys.Date()) & (all$proceed_day7 == 0)
+
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    hospit_data <- format_hospital_data(raw_hospit_data) %>%
+      dplyr::distinct_at(dplyr::vars(child_id),
+                         .keep_all = TRUE)
+    all <- all %>%
+      merge(y = hospit_data[, c("child_id", "found")],
+            by = 'child_id',
+            all.x = TRUE)
+  }
+}
+
+# Create an empty column if hospital follow-up has not started yet
+all["found"[!("found" %in% colnames(all))]] <- 0
+all$found[is.na(all$found)] <- 0
+all$hospitalised <- (all$status_day7 == 2) | (all$hf_visit_type == hospit_value)
+all$hospitalised[is.na(all$hospitalised)] <- 0
+```
+
+```{r rct-full-participant-journey, eval = rct_cond}
+if (!is.null(day28fu_data)) {
+  if (nrow(day28fu_data) > 0) {
+    all <- all %>%
+      merge(y = succ_day28fu_data[, c("child_id", "proceed_day28")],
+            by = 'child_id',
+            all.x = TRUE)
+  }
+}
+
+# Create an empty column if Day 28 follow-up has not started yet
+all["proceed_day28"[!("proceed_day28" %in% colnames(all))]] <- 0
+
+all$due_day28 <- (as.Date(all$date_visit, "%Y-%m-%d") + day28_wmin) <= Sys.Date()
+all$proceed_day28[is.na(all$proceed_day28)] <- 0
+all$lost_day28 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day28_wmax) <= Sys.Date()) & (all$proceed_day28 == 0)
+```
+
+```{r all-completion, eval = rct_cond}
+completion_summary <- list(
+  "Summary" = list(
+    "Day 7 and Day 28" = ~qwraps2::n_perc(proceed_day7 == 1 & proceed_day28 == 1, prec),
+    "Day 7 or Day 28" = ~qwraps2::n_perc(proceed_day7 == 1 | proceed_day28 == 1, prec),
+    "None" = ~qwraps2::n_perc(proceed_day7 == 0 & proceed_day28 == 0, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_all_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r day7fu-completion}
+completion_summary <- list(
+  "Summary" = list(
+    "Due" = ~qwraps2::n_perc(due_day7 == 1, prec),
+    "Completed" = ~qwraps2::n_perc(proceed_day7 == 1, prec),
+    "Lost" = ~qwraps2::n_perc(lost_day7 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = tcap_day7fu_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r hospit-completion}
+completion_summary <- list(
+  "Summary" = list(
+    "Due" = ~qwraps2::n_perc(hospitalised == 1, prec),
+    "Completed" = ~qwraps2::n_perc(found == 1 & hospitalised == 1, prec),
+    "Completed (not due)" = ~qwraps2::n_perc(found == 1 & hospitalised == 0, prec),
+    "Lost" = ~qwraps2::n_perc(found == 0 & hospitalised == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c", "c"),
+                  caption = tcap_hospit_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r day28fu-completion, eval = rct_cond}
+completion_summary <- list(
+  "Summary" = list(
+    "Due" = ~qwraps2::n_perc(due_day28 == 1, prec),
+    "Completed" = ~qwraps2::n_perc(proceed_day28 == 1, prec),
+    "Lost" = ~qwraps2::n_perc(lost_day28 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_day28fu_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
 \newpage
@@ -1232,263 +1248,13 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
-\newpage
-
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("# Suivi à Jour 7\n\n"))
-  cat(paste0("La période valable pour le suivi à Jour 7 est de **", day7_wmin, "** à **", day7_wmax, "** jours.\n\n"))
-  if (n_due_day7fu > 0) {
-    cat(paste0("**", n_due_day7fu, "** participants devraient avoir complété leur suivi à Jour 7.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) ont complété leur suivi à Jour 7."))
-  }
-} else {
-  cat(paste0("# Day 7 follow-up\n\n"))
-  cat(paste0("The valid Day 7 follow-up period is **", day7_wmin, "** to **", day7_wmax, "** days.\n\n"))
-  if (n_due_day7fu > 0) {
-    cat(paste0("**", n_due_day7fu, "** participants should have completed their Day 7 follow-up.\n\n"))
-    cat(paste0("**", n_completed_day7fu, "** participants (", n_day7fu_rate100,"%) completed their Day 7 follow-up."))
-  }
-}
-```
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Appels hebdomadaires\n\n")
-} else {
-  cat("## Weekly calls\n\n")
-}
-```
-
-```{r, results = "asis", fig.height = figsize, fig.cap = "Weekly Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)"}
-if (!is.null(raw_day7fu_data) & length(raw_day7fu_data) > 0 & nrow(raw_day7fu_data) > 0) {
-  p <- timci::generate_week_bar_plot(date_vec = raw_day7fu_data$date,
-                                     date_min = as.Date(start_date),
-                                     date_max = as.Date(Sys.Date() + 7),
-                                     ylbl = paste0(enrolment_str),
-                                     date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 7))
-  plot(p)
-}
-```
-
-```{r, results='asis'}
-raw_day7fu_data %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(raw_day7fu_data$date),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  dplyr::group_by(week) %>%
-  dplyr::tally() %>%
-  dplyr::rename('N' = 'n') %>%
-  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-  kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE)
-```
-
-```{r, results='asis', fig.height = figsize, fig.cap = "Day 7 follow-up submissions (plain bars) vs. expected number of submissions (gray line)  over the last 30 days"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Nombre de soumissions au cours des 30 derniers jours\n\n")
-} else {
-  cat("## Number of submissions during the last 30 days\n\n")
-}
-
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-
-    p <- timci::generate_day_bar_plot(raw_day7fu_data$date,
-                                      as.Date(Sys.Date() - w),
-                                      as.Date(Sys.Date() + 1),
-                                      ylbl = submission_str,
-                                      date_vec_ref = as.Date(as.Date(baseline_data$date_visit) + 7))
-    plot(p)
-  } else{
-    cat('0 submissions since the start of the study.\n\n')
-  }
-} else {
-  cat('0 submissions since the start of the study.\n\n')
-  }
-```
-
-```{r, results='asis'}
-cat(calendar_heatmap_title_str)
-
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    timci::generate_calendar_heatmap2(raw_day7fu_data,
-                                      date,
-                                      legendtitle = "Number of day 7 follow-up phone calls")
-  } else{
-    cat('N/A\n\n')
-  }
-} else{
-    cat('N/A\n\n')
-  }
-```
-
-```{r day7-data-monitoring-title, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Tentatives d'appel enregistrées")
-} else {
-  cat("## Recorded call attempts")
-}
-```
-
-```{r, results = "asis"}
-# Add facility generic information to the RCT/LS facility data
-day7fu_data <- merge(x = day7fu_data,
-                     y = params$research_facilities[, c("facility_id", "facility_name")],
-                     by.x = 'fid',
-                     by.y = 'facility_id',
-                     all = FALSE)
-```
-
-```{r, results = "asis"}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    
-    all <- data.frame(day7fu_data)
-    all$cg_reached[is.na(all$cg_reached)] <- 0
-    
-    day7_call_stats <- list(
-      "District" = list(
-        "Successful call" = ~qwraps2::n_perc(call_ok == 1, prec),
-        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec)
-        )
-    )
-    
-    out <- format_summary_table(all, day7_call_stats, facility_name) 
-    out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-      kableExtra::row_spec(0, bold = TRUE) %>%
-      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
-      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
-    
-  }
-}
-```
-
-```{r, results = "asis"}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    
-    all$respondent_ok[is.na(all$respondent_ok)] <- 0
-    all$cg_ok[is.na(all$cg_ok)] <- 0
-    
-    day7_call_stats <- list(
-      "District" = list(
-        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
-        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
-        )
-    )
-    
-    out <- format_summary_table(all, day7_call_stats, facility_name) 
-    out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-      kableExtra::row_spec(0, bold = TRUE) %>%
-      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
-      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
-    
-  }
-}
-```
-
-```{r day7-successful-follow-up-title, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat("## Suivis réalisés")
-} else {
-  cat("## Completed follow-ups")
-}
-```
-
-```{r}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    succ_day7fu_data <- merge(x = succ_day7fu_data,
-                              y = params$research_facilities[, c("facility_id", "facility_name")],
-                              by.x = 'fid',
-                              by.y = 'facility_id',
-                              all = FALSE)
-  }
-}
-```
-
-```{r, results = "asis"}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    
-    all <- data.frame(succ_day7fu_data)
-    
-    day7_outcome_ss <- list(
-      "summary" = list(
-        "Before day 7" = ~qwraps2::n_perc(days == 6, prec),
-        "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec),
-        "Day 11-12" = ~qwraps2::n_perc(days >= 11 & days <= 12, prec),
-        "Above day 12" = ~qwraps2::n_perc(days > 12, prec),
-        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren")
-        )
-      )
-    out <- format_summary_table(all, day7_outcome_ss, facility_name) 
-    out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-      kableExtra::row_spec(0, bold = TRUE) %>%
-      # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
-      #                                           "red",
-      #                                           "black")) %>%
-      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
-      kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format \\\\textit{mean (SD)}.",
-                           escape = FALSE)
-  }
-}
-```
-
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == "India") {
-  hospit_value <- 13
-} else{
-  hospit_value <- 1
-}
-
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    
-    all <- data.frame(succ_day7fu_data)
-    
-    all$cure_day7[is.na(all$cure_day7)] <- 0
-    
-    day7_outcome_ss <- list(
-      "summary" = list(
-        "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec),
-        "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
-        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value), prec)
-        )
-      )
-    out <- format_summary_table(all, day7_outcome_ss, facility_name) 
-    out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
-      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-      kableExtra::row_spec(0, bold = TRUE) %>%
-      # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
-      #                                           "red",
-      #                                           "black")) %>%
-      # kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
-      #                                           "red",
-      #                                           "black")) %>%
-      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-  }
-}
+```{r day7fu-subsection, child = if (!is.null(raw_day7fu_data)) 'rct_monitoring_report_sub_day7.Rmd'}
 ```
 
 ```{r hospit-subsection, child = if (!is.null(raw_hospit_data)) 'rct_monitoring_report_sub_hospit.Rmd'}
 ```
 
-```{r day28-subsection, child = if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") 'rct_monitoring_report_sub_day28.Rmd'}
+```{r day28fu-subsection, child = if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") 'rct_monitoring_report_sub_day28.Rmd'}
 ```
 
 \newpage
