@@ -2,21 +2,22 @@
 #'
 #' @param facility_data dataframe containing the processed facility data
 #' @param research_facilities dataframe containing the list of research facilities and their characteristics
-#' @return
+#'
 #' @export
 #' @import dplyr
-#'
-#' @examples
 
 extract_daily_facility_for_deviceid <- function(facility_data,
                                                 research_facilities) {
+
+  uq_facilities <- research_facilities[, c("facility_id", "facility_name")] %>%
+    distinct()
 
   facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
     dplyr::select(c('date_visit', 'device_id', 'fid')) %>%
     dplyr::group_by(date_visit, device_id, fid) %>%
     dplyr::mutate(n = n()) %>%
     ungroup %>%
-    merge(y = research_facilities[, c("facility_id", "facility_name")],
+    merge(y = uq_facilities,
           by.x = 'fid',
           by.y = 'facility_id',
           all.x = TRUE) %>%
@@ -35,11 +36,9 @@ extract_daily_facility_for_deviceid <- function(facility_data,
 #'
 #' @param facility_data dataframe containing the processed facility data
 #' @param research_facilities dataframe containing the list of research facilities and their characteristics
-#' @return
+#'
 #' @export
 #' @import dplyr
-#'
-#' @examples
 
 allocate_screening_facility <- function(facility_data,
                                         research_facilities) {

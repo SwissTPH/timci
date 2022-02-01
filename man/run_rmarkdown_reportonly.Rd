@@ -21,6 +21,7 @@ run_rmarkdown_reportonly(
   path_dir,
   start_date = NULL,
   end_date = NULL,
+  spa_pid2 = NULL,
   spa_start_date = NULL,
   lock_date = NULL,
   cost_pid = NULL,
@@ -63,6 +64,8 @@ run_rmarkdown_reportonly(
 \item{start_date}{RCT/LS data collection start date (optional)}
 
 \item{end_date}{RCT/LS data collection end date (optional)}
+
+\item{spa_pid2}{Numeric value (optional) that refers to another ID of the SPA / time-flow / process mapping project on the ODK Central server if data have been split between 2 projects}
 
 \item{spa_start_date}{SPA data collection start date (optional)}
 

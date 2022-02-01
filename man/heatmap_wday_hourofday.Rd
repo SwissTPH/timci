@@ -15,6 +15,6 @@ heatmap_wday_hourofday(df, date_col)
 ggplot2 object
 }
 \description{
-Takes any timestamp column in the data and aggregates by weekday and hour of the day. The generated plot then shows for each combination
-the frequency. Please note, that one and only one of the three data arguments (df, csv, svc) must be specified.
+Takes any time stamp column in the data and aggregates by weekday and hour of the day. The generated plot then shows for each combination
+the frequency.
 }

@@ -9,16 +9,18 @@ params:
   pm_data: NULL
   raw_withdrawal_data: NULL
 output:
-  word_document:
-    reference_docx: word_styles1.docx
-    fig_width: 7.5
-  html_document:
-    number_sections: true
   pdf_document:
     number_sections: true
-    toc: true
-    toc_depth: 3
-    extra_dependencies: ["float", "flafter", "bm"]
+    extra_dependencies:
+      float: null
+      flafter: null
+      bm: null
+      tocbibind: ["nottoc"]
+      babel: ["french","english"]
+      graphicx: null
+      fancyhdr: null
+      lastpage: null
+classoption: table
 ---
 
 ```{r setup-rmd, include=FALSE}
@@ -46,8 +48,20 @@ striped_row_bg <- "gray!10"
 total_row_bg2 <- "gray"
 ```
 
+\fancypagestyle{plain}{\pagestyle{fancy}}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{32pt}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[C]{\includegraphics[width=10cm]{banner.png}}
+\fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[L]{TIMCI PM \& T-F Operational Report v1.0 - Template: H. LANGET (Swiss TPH)}
+
 ```{r translations-subsection, child = 'translations.Rmd'}
 ```
+
+\setcounter{tocdepth}{2}
+\tableofcontents
 
 \newpage
 
@@ -88,14 +102,27 @@ if (nrow(tf_data) > 0) {
 }
 ```
 
-
 ```{r context-subsection, child = 'context.Rmd'}
 ```
 
-```{r pm-subsection, child = if (!is.null(pm_data)) 'pmtf_monitoring_report_sub_pm.Rmd'}
+```{r}
+pm_is_not_null <- !is.null(pm_data)
+if (pm_is_not_null) {
+  pm_is_not_null <- length(pm_data) > 0
+}
 ```
 
-```{r tf-subsection, child = if (!is.null(tf_data)) 'pmtf_monitoring_report_sub_tf.Rmd'}
+```{r pm-subsection, child = if (pm_is_not_null) 'pmtf_monitoring_report_sub_pm.Rmd'}
+```
+
+```{r}
+tf_is_not_null <- !is.null(tf_data)
+if (tf_is_not_null) {
+  tf_is_not_null <- length(tf_data) > 0
+}
+```
+
+```{r tf-subsection, child = if (tf_is_not_null) 'pmtf_monitoring_report_sub_tf.Rmd'}
 ```
 
 \newpage

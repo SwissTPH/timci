@@ -24,11 +24,11 @@ export_cost_studies(
 
 \item{report_dir}{Path to the output folder for the generated Rmarkdown reports}
 
-\item{cost_start_date}{SPA data collection start date (optional)}
+\item{cost_start_date}{Cost data collection start date (optional)}
 
-\item{cost_end_date}{RCT/LS data collection end date (optional)}
+\item{cost_end_date}{Cost data collection end date (optional)}
 
-\item{cost_lock_date}{RCT/LS data collection cleaning end date for database lock (optional)}
+\item{cost_lock_date}{Cost data collection cleaning end date for database lock (optional)}
 
 \item{short}{Short version of the export}
 }

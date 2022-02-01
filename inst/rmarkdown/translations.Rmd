@@ -62,9 +62,7 @@ tcap_day28fu_completion <- "Number of participants with a complete Day 28 follow
 tcap_all_completion <- "Number of participants with complete follow-up visits."
 ```
 
-```{r french, eval = (Sys.getenv('TIMCI_COUNTRY') == 'Senegal')}
-cat("\\selectlanguage{french}")
-
+```{r french, eval = (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'), results = "asis"}
 cat("\\selectlanguage{french}")
   
 age_eligibility_table_cap <-"Âge de l'enfant lors du screening."

@@ -44,6 +44,114 @@ set_odkc_connection <- function(verbose = FALSE) {
 
 }
 
+#' Load Service Provision Assessment (SPA), process mapping & time-flow (PM&TF) data
+#'
+#' This function loads SPA data for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#'
+#' @param odkc_project_list List of ODK project IDs on the ODK Central server
+#' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
+#' @param spa_start_date SPA data collection start date
+#' @param spa_end_date SPA data collection end date
+#'
+#' @return list of ODK central project IDs
+#' @export
+
+load_spapmtf_data <- function(odkc_project_list,
+                              spa_pid,
+                              spa_start_date,
+                              spa_end_date) {
+
+  # SPA and PM&TF environment variables ---------------------------
+  cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
+  fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
+  sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
+  hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
+  tf_fid <- Sys.getenv("TIMCI_TF_FID")
+  pm_fid <- Sys.getenv("TIMCI_PM_FID")
+
+  # List SPA and PM&TF forms ---------------------------
+  spa_form_list <- NULL
+  if (spa_pid %in% odkc_project_list) {
+    spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
+  }
+
+  # Initialise SPA and PM&TF datasets to NULL ---------------------------
+  spa_cgei_data <- NULL
+  spa_fa_data <- NULL
+  spa_hcpi_data <- NULL
+  spa_sco_data <- NULL
+  tf_data <- NULL
+  pm_data <- NULL
+
+  # Load SPA and PM&TF datasets ---------------------------
+  if (spa_pid %in% odkc_project_list) {
+
+    # Load SPA caregiver exit interview data
+    write(formats2h3("Load SPA caregiver exit interview data"), stderr())
+    spa_cgei_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                  cpid_forms = spa_form_list,
+                                                  cfid = cgei_fid,
+                                                  start_date = spa_start_date,
+                                                  end_date = spa_end_date,
+                                                  verbose = TRUE)
+
+    # Load SPA facility assessment data
+    write(formats2h3("Load SPA facility assessment data"), stderr())
+    spa_fa_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                cpid_forms = spa_form_list,
+                                                cfid = fa_fid,
+                                                start_date = spa_start_date,
+                                                end_date = spa_end_date,
+                                                verbose = TRUE)
+
+    # Load SPA healthcare provider interview data
+    write(formats2h3("Load SPA healthcare provider interview data"), stderr())
+    spa_hcpi_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                  cpid_forms = spa_form_list,
+                                                  cfid = hcpi_fid,
+                                                  start_date = spa_start_date,
+                                                  end_date = spa_end_date,
+                                                  verbose = TRUE)
+
+    # Load SPA sick child observation protocol data
+    write(formats2h3("Load SPA sick child observation protocol data"), stderr())
+    spa_sco_data <- extract_data_from_odk_server(cpid = spa_pid,
+                                                 cpid_forms = spa_form_list,
+                                                 cfid = sco_fid,
+                                                 start_date = spa_start_date,
+                                                 end_date = spa_end_date,
+                                                 verbose = TRUE)
+
+    # Load time-flow data
+    write(formats2h3("Load time-flow data"), stderr())
+    tf_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                    cpid_forms = spa_form_list,
+                                                    cfid = tf_fid,
+                                                    start_date = spa_start_date,
+                                                    end_date = spa_end_date,
+                                                    verbose = TRUE)
+
+    # Load process-mapping data
+    write(formats2h3("Load process mapping data"), stderr())
+    pm_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                    cpid_forms = spa_form_list,
+                                                    cfid = pm_fid,
+                                                    start_date = spa_start_date,
+                                                    end_date = spa_end_date,
+                                                    verbose = TRUE)
+
+  }
+
+  # Return SPA and PM&TF datasets ---------------------------
+  list(spa_cgei_data,
+       spa_fa_data,
+       spa_hcpi_data,
+       spa_sco_data,
+       tf_data,
+       pm_data)
+
+}
+
 #' Run Rmarkdown files
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
@@ -51,6 +159,7 @@ set_odkc_connection <- function(verbose = FALSE) {
 #' @param rctls_pid Numeric value that refers ID of the RCT/LS ODK Central project
 #' @param rctls_pp Passphrase
 #' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
+#' @param spa_pid2 Numeric value (optional) that refers to another ID of the SPA / time-flow / process mapping project on the ODK Central server if data have been split between 2 projects
 #' @param cost_pid Numeric value (optional) that refers to the ID of the cost and cost-effectiveness project on the ODK Central server
 #' @param qpid Numeric ID of the qualitative ODK Central project
 #' @param qual_pp Passphrase
@@ -91,6 +200,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      path_dir,
                                      start_date = NULL,
                                      end_date = NULL,
+                                     spa_pid2 = NULL,
                                      spa_start_date = NULL,
                                      lock_date = NULL,
                                      cost_pid = NULL,
@@ -146,14 +256,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
-  # SPA environment variables ---------------------------
-  cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
-  fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
-  sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
-  hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
-  tf_fid <- Sys.getenv("TIMCI_TF_FID")
-  pm_fid <- Sys.getenv("TIMCI_PM_FID")
-
   # Cost environment variables ---------------------------
   medical_cost_fid <- Sys.getenv("TIMCI_COST_MEDICAL_FID")
   hospital_cost_fid <- Sys.getenv("TIMCI_COST_HOSPITAL_FID")
@@ -174,12 +276,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   # List RCT/LS forms ---------------------------
   rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
-
-  # List SPA forms ---------------------------
-  spa_form_list <- NULL
-  if (spa_pid %in% odkc_project_list) {
-    spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
-  }
 
   # List cost forms ---------------------------
   cost_form_list <- NULL
@@ -376,68 +472,66 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h2("Load TIMCI SPA data"), stderr())
 
-  spa_cgei_data <- NULL
-  spa_fa_data <- NULL
-  spa_hcpi_data <- NULL
-  spa_sco_data <- NULL
-  tf_data <- NULL
-  pm_data <- NULL
+  spapmtf_dfs <- timci::load_spapmtf_data(odkc_project_list = odkc_project_list,
+                                          spa_pid = spa_pid,
+                                          spa_start_date = spa_start_date,
+                                          spa_end_date = end_date)
+  spa_cgei_data <- spapmtf_dfs[[1]]
+  spa_fa_data <- spapmtf_dfs[[2]]
+  spa_hcpi_data <- spapmtf_dfs[[3]]
+  spa_sco_data <- spapmtf_dfs[[4]]
+  tf_data <- spapmtf_dfs[[5]]
+  pm_data <- spapmtf_dfs[[6]]
 
-  if (spa_pid %in% odkc_project_list) {
+  # If SPA, process mapping and tine-flow data have been split between two different ODK projects, additionally extract data from the 2nd project and combine both datasets in a single dataset.
+  if (!is.null(spa_pid2)) {
 
-    # Load SPA caregiver exit interview data
-    write(formats2h3("Load SPA caregiver exit interview data"), stderr())
-    spa_cgei_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                  cpid_forms = spa_form_list,
-                                                  cfid = cgei_fid,
-                                                  start_date = spa_start_date,
-                                                  end_date = end_date,
-                                                  verbose = TRUE)
+    write(formats2h3("SPA, process mapping and time-flow data split in 2 ODK projects"), stderr())
+    write("Now loading data from the 2nd project", stderr())
 
-    # Load SPA facility assessment data
-    print("Load SPA facility assessment data")
-    spa_fa_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                cpid_forms = spa_form_list,
-                                                cfid = fa_fid,
-                                                start_date = spa_start_date,
-                                                end_date = end_date,
-                                                verbose = TRUE)
+    spapmtf_dfs2 <- timci::load_spapmtf_data(odkc_project_list = odkc_project_list,
+                                            spa_pid = spa_pid2,
+                                            spa_start_date = spa_start_date,
+                                            spa_end_date = end_date)
 
-    # Load SPA healthcare provider interview data
-    print("Load SPA healthcare provider interview data")
-    spa_hcpi_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                  cpid_forms = spa_form_list,
-                                                  cfid = hcpi_fid,
-                                                  start_date = spa_start_date,
-                                                  end_date = end_date,
-                                                  verbose = TRUE)
+    spa_cgei_data2 <- spapmtf_dfs2[[1]]
+    spa_fa_data2 <- spapmtf_dfs2[[2]]
+    spa_hcpi_data2 <- spapmtf_dfs2[[3]]
+    spa_sco_data2 <- spapmtf_dfs2[[4]]
+    tf_data2 <- spapmtf_dfs2[[5]]
+    pm_data2 <- spapmtf_dfs2[[6]]
 
-    # Load SPA sick child observation protocol data
-    print("Load SPA sick child observation protocol data")
-    spa_sco_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                 cpid_forms = spa_form_list,
-                                                 cfid = sco_fid,
-                                                 start_date = spa_start_date,
-                                                 end_date = end_date,
-                                                 verbose = TRUE)
+    write("Combine SPA CGEI data", stderr())
+    spa_cgei_data <- timci::combine_dataframes(df1 = spa_cgei_data,
+                                               df2 = spa_cgei_data2,
+                                               verbose = TRUE)
 
-    # Load time-flow data
-    write(formats2h3("Load time-flow data"), stderr())
-    tf_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
-                                                    cpid_forms = spa_form_list,
-                                                    cfid = tf_fid,
-                                                    start_date = spa_start_date,
-                                                    end_date = end_date,
-                                                    verbose = TRUE)
+    write("Combine SPA FA data", stderr())
+    spa_fa_data <- timci::combine_dataframes(df1 = spa_fa_data,
+                                             df2 = spa_fa_data2,
+                                             verbose = TRUE)
 
-    # Load process-mapping data
-    write(formats2h3("Load process mapping data"), stderr())
-    pm_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
-                                                    cpid_forms = spa_form_list,
-                                                    cfid = pm_fid,
-                                                    start_date = spa_start_date,
-                                                    end_date = end_date,
-                                                    verbose = TRUE)
+    write("Combine SPA HCPI data", stderr())
+    spa_hcpi_data <- timci::combine_dataframes(df1 = spa_hcpi_data,
+                                               df2 = spa_hcpi_data2,
+                                               verbose = TRUE)
+
+    write("Combine SPA sick child observation data", stderr())
+    spa_sco_data <- timci::combine_dataframes(df1 = spa_sco_data,
+                                              df2 = spa_sco_data2,
+                                              verbose = TRUE)
+
+    write("Combine PM & TF data", stderr())
+    tf_data <- lapply(seq_along(tf_data),
+                      function(x) timci::combine_dataframes(df1 = tf_data[[x]],
+                                                            df2 = tf_data2[[x]],
+                                                            verbose = FALSE))
+
+
+    pm_data <- lapply(seq_along(pm_data),
+                      function(x) timci::combine_dataframes(df1 = pm_data[[x]],
+                                                            df2 = pm_data2[[x]],
+                                                            verbose = FALSE))
 
   }
 
@@ -563,7 +657,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  qualkii_dir = qualkii_dir,
                  qualos_dir = qualos_dir,
                  facility_data = facility_data,
-                 lock_date = lock_date,
                  facility_data_audit = facility_data_audit,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
@@ -631,6 +724,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Filter research facilities to only keep those in which SPA activities are conducted
   spa_research_facilities <- research_facilities %>%
     filter(spa == 1)
+  spa_facility_ids <- spa_research_facilities[, c("facility_id")] %>%
+    distinct()
 
   # Check that at least one SPA database is not empty
   spa_sco_is_not_null <- !is.null(spa_sco_data)
@@ -642,7 +737,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # Only keep data that corresponds to SPA facilities
   if (spa_sco_is_not_null) {
     spa_sco_data <- spa_sco_data %>%
-      merge(y = spa_research_facilities[, c("facility_id")],
+      merge(y = spa_facility_ids,
             by.x = 'facility_identification-fcode',
             by.y = 'facility_id',
             all = FALSE)
@@ -650,7 +745,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   if (spa_cgei_is_not_null) {
     spa_cgei_data <- spa_cgei_data %>%
-      merge(y = spa_research_facilities[, c("facility_id")],
+      merge(y = spa_facility_ids,
             by.x = 'b1-fcode',
             by.y = 'facility_id',
             all = FALSE)
@@ -658,7 +753,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   if (spa_fa_is_not_null) {
     spa_fa_data <- spa_fa_data %>%
-      merge(y = spa_research_facilities[, c("facility_id")],
+      merge(y = spa_facility_ids,
             by.x = 'facility_identification-a1_2',
             by.y = 'facility_id',
             all = FALSE)
@@ -666,7 +761,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   if (spa_hcpi_is_not_null) {
     spa_hcpi_data <- spa_hcpi_data %>%
-      merge(y = spa_research_facilities[, c("facility_id")],
+      merge(y = spa_facility_ids,
             by.x = 'a1-fcode',
             by.y = 'facility_id',
             all = FALSE)
@@ -690,16 +785,61 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Generate process map & time-flow report"), stderr())
 
-  if (!is.null(tf_data) | !is.null(pm_data)) {
-    if (length(tf_data) > 0 | length(pm_data) > 0) {
-      if (length(tf_data[[1]]) > 0 | length(pm_data[[1]]) > 0) {
-        params <- list(research_facilities = spa_research_facilities,
-                       facility_data = facility_data,
-                       tf_data = tf_data[[1]],
-                       pm_data = NULL,
-                       raw_withdrawal_data = raw_withdrawal_data)
-        generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
+  # Select relevant research facilities to only keep those in which process mapping & time-flow activities are conducted
+  pmtf_research_facilities <- spa_research_facilities
+  pmtf_facility_ids <- pmtf_research_facilities[, c("facility_id")] %>%
+    distinct()
+
+  # Check that at least one PMTF database is not empty
+  pm_is_not_null <- !is.null(pm_data)
+  if (pm_is_not_null) {
+    pm_is_not_null <- length(pm_data) > 0
+    if (pm_is_not_null) {
+      pm_is_not_null <- !is.null(pm_data[[1]])
+      if (pm_is_not_null) {
+        pm_is_not_null <- length(pm_data[[1]]) > 0
       }
+    }
+  }
+  tf_is_not_null <- !is.null(tf_data)
+  if (tf_is_not_null) {
+    tf_is_not_null <- length(tf_data) > 0
+    if (tf_is_not_null) {
+      tf_is_not_null <- !is.null(tf_data[[1]])
+      if (tf_is_not_null) {
+        tf_is_not_null <- length(tf_data[[1]]) > 0
+      }
+    }
+  }
+  pmtf_report_condition <- pm_is_not_null | tf_is_not_null
+
+  # Only keep data that corresponds to relevant facilities
+  pm_df <- NULL
+  if (pm_is_not_null) {
+    pm_df <- pm_data[[1]] %>%
+      merge(y = pmtf_facility_ids,
+            by.x = 'visit_start-fcode',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  tf_df <- NULL
+  if (tf_is_not_null) {
+    tf_df <- tf_data[[1]] %>%
+      merge(y = pmtf_facility_ids,
+            by.x = 'visit_start-fcode',
+            by.y = 'facility_id',
+            all = FALSE)
+  }
+
+  if (pmtf_report_condition) {
+    if (length(tf_df) > 0 | length(pm_df) > 0) {
+      params <- list(research_facilities = pmtf_research_facilities,
+                     facility_data = facility_data,
+                     tf_data = tf_df,
+                     pm_data = pm_df,
+                     raw_withdrawal_data = raw_withdrawal_data)
+      generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
     }
   }
 
@@ -723,15 +863,331 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
 #' Run Rmarkdown files
 #'
+#' This function runs several Rmarkdown files to generate standardised automated reports for the longitudinal study (LS) and the randomised controlled trial (RCT) for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#'
+#' @param rctls_pid Numeric value that refers ID of the RCT/LS ODK Central project
+#' @param rctls_pp Passphrase
+#' @param research_facilities Dataframe that contains the research facilities
+#' @param report_dir Path to the output folder for the generated Rmarkdown reports
+#' @param participant_zip Path to the encrypted zip archive that stores participant data
+#' @param mdb_dir Path to the output folder for the RCT / LS database exports
+#' @param path_dir Path to the output folder for the M&E exports to be shared with PATH
+#' @param start_date RCT/LS data collection start date (optional)
+#' @param end_date RCT/LS data collection end date (optional)
+#' @param lock_date RCT/LS data collection cleaning end date for database lock (optional)
+#' @param sample_size Numeric value, sample size for RCT/LS enrolment
+#' @param short Short version of the export
+#' @import rmarkdown ruODK
+#' @export
+
+run_rmarkdown_rctls <- function(rctls_pid,
+                                rctls_pp,
+                                research_facilities,
+                                report_dir,
+                                participant_zip,
+                                mdb_dir,
+                                path_dir,
+                                start_date = NULL,
+                                end_date = NULL,
+                                lock_date = NULL,
+                                sample_size = 100000,
+                                short = FALSE) {
+
+  ###########################
+  # Set up current language #
+  ###########################
+
+  timci::set_language_settings()
+
+  ######################
+  # Set up study dates #
+  ######################
+
+  if (is.null(end_date)) {
+    end_date = Sys.Date()
+  } else{
+    end_date = as.Date(end_date, "%Y-%m-%d")
+  }
+
+  day7fu_end_date <- min(as.Date(end_date + 14), Sys.Date())
+  hospitfu_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  day28fu_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  withdrawal_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  wfa_end_date <- min(as.Date(end_date + 6), Sys.Date())
+
+  ################
+  # Set up ruODK #
+  ################
+
+  # Connection to ODK Central through ruODK
+  odkc_project_list <- set_odkc_connection()
+
+  # Environment variables which may be shared between different projects ---------------------------
+  wd_fid <- Sys.getenv("TIMCI_WD_FID")
+  problem_fid <- Sys.getenv("TIMCI_PROBLEM_FID")
+
+  # RCT / LS environment variables ---------------------------
+  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
+  crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+    crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
+  }
+  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  write(formats2h1("Load TIMCI ODK data"), stderr())
+
+  # List RCT/LS forms ---------------------------
+  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
+
+  # Load facility data ---------------------------
+  write(formats2h2("Load RCT/LS facility data"), stderr())
+
+  write(formats2h3("Load day 0 data"), stderr())
+
+  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                               pid = rctls_pid,
+                                               fid = crf_facility_fid,
+                                               pp = rctls_pp,
+                                               media = FALSE)
+  # Dirty fix - To be moved when time allows
+  col_specs <- list(
+    'a4_c_10a' = col_integer(),
+    'crfs-t04a-b2_3' = col_integer(),
+    'crfs-t03-m3_1b' = col_integer(),
+    'crfs-t03-m3_3' = col_integer(),
+    'crfs-t03-m3_3o' = col_character(),
+    'crfs-t03-m3_4' = col_integer(),
+    'crfs-t03-m3_6' = col_integer(),
+    'crfs-t03-m3_7' = col_integer(),
+    'crfs-t03-m3_8a' = col_integer(),
+    'crfs-t03-m3_9a' = col_integer(),
+    'crfs-t09a1-medication_injection' = col_integer(),
+    'crfs-t09a1-injection_types' = col_integer(),
+    'crfs-t09a1-injection_typeso' = col_character(),
+    'crfs-t09a2-g3_1' = col_character(),
+    'crfs-t09a2-g3_1o' = col_character(),
+    'crfs-t09a2-i2_1' = col_integer(),
+    'crfs-t09a2-i2_1a' = col_integer(),
+    'crfs-t09a2-i2_1b' = col_integer(),
+    'crfs-t09a2-i2_1o' = col_character(),
+    'crfs-t09a2-j2_1' = col_integer(),
+    'crfs-t09a2-j2_1c' = col_integer(),
+    'crfs-t09a2-h2_2a' = col_character(),
+    'crfs-t09a2-h2_2ao' = col_character(),
+    'crfs-t07a-tt07a-e2_1' = col_integer(),
+    'crfs-t07a-tt07a-e2_1a' = col_integer(),
+    'crfs-t07a-tt07a-e2_2' = col_integer(),
+    'crfs-t07a-tt07a-e2_2a' = col_integer(),
+    'crfs-t07a-tt07a-e2_3' = col_integer(),
+    'crfs-t07a-tt07a-e2_3a' = col_integer(),
+    'crfs-t07a-tt07a-e2_4' = col_integer(),
+    'crfs-t07a-tt07a-e2_4a' = col_integer(),
+    'crfs-t06a-tt06a-d2_6' = col_integer(),
+    'crfs-t06a-d2_6b' = col_integer(),
+    'crfs-t06a-tt06a-d2_1' = col_integer(),
+    'crfs-t06a-d2_1a' = col_integer(),
+    'crfs-t06a-tt06a-d2_4' = col_integer(),
+    'crfs-t06a-d2_4a' = col_integer(),
+    'crfs-t06a-tt06a-d2_5' = col_integer(),
+    'crfs-t06a-d2_5a' = col_integer(),
+    'crfs-t06a-tt06a-d2_2' = col_integer(),
+    'crfs-t06a-d2_2b' = col_integer(),
+    'crfs-t06a-tt06a-d2_3' = col_integer(),
+    'crfs-t06a-d2_3b' = col_integer(),
+    'crfs-t08a-f2_1' = col_character(),
+    'crfs-t08a-f2_1o' = col_character(),
+    'crfs-t08a-f2_2' = col_integer(),
+    'crfs-t08a-f2_3' = col_integer(),
+    'crfs-t08a-f2_4' = col_integer(),
+    'crfs-t08a-f2_5' = col_double(),
+    'crfs-t08a-f2_6' = col_integer(),
+    'crfs-t08a-f2_7' = col_integer(),
+    'crfs-t08a-f2_8' = col_integer(),
+    'crfs-t08a-f2_9' = col_integer(),
+    'crfs-t08a-f2_10a' = col_integer(),
+    'crfs-t05b-c3_1' = col_integer(),
+    'crfs-t05b-c3_2' = col_integer(),
+    'crfs-t05b-c3_3' = col_integer(),
+    'crfs-t05b-c3_3a' = col_integer(),
+    'crfs-t05b-c3_4' = col_integer(),
+    'crfs-t05b-c3_6a' = col_integer(),
+    'crfs-t05b-c3_6' = col_integer(),
+    'crfs-t05b-c3_6o' = col_character()
+  )
+
+  # SANITY CHECK: export raw LS/RCT data from ODK
+  t <- tempdir()
+  utils::unzip(raw_facility_zip, exdir = t)
+  fs::dir_ls(t)
+  if (!is.null(col_specs)) {
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")), col_types = col_specs))
+  } else{
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv"))))
+  }
+  fn <- timci::export_df2xlsx(raw_odk_data,
+                              mdb_dir,
+                              "01a_screening_raw")
+
+  raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
+                                                        csv_name = paste0(crf_facility_fid,".csv"),
+                                                        start_date = start_date,
+                                                        end_date = end_date,
+                                                        local_dir = t,
+                                                        col_specs = col_specs)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+  } else{
+    facility_data <- timci::process_facility_data(raw_facility_data)
+  }
+
+  # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
+  facility_data_audit <- timci::extract_additional_data_from_odk_zip(odk_zip = raw_facility_zip,
+                                                                     csv_name = paste0(crf_facility_fid, " - audit.csv"),
+                                                                     local_dir = t)
+
+  # Load day 7 follow-up data
+  write(formats2h3("Load day 7 follow-up data"), stderr())
+  raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                  cpid_forms = rct_ls_form_list,
+                                                  cpp = rctls_pp,
+                                                  cfid = crf_day7_fid,
+                                                  start_date = start_date,
+                                                  end_date = day7fu_end_date,
+                                                  verbose = TRUE)
+
+  # Load hospital visit follow-up data
+  write(formats2h3("Load hospital visit data"), stderr())
+  raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                  cpid_forms = rct_ls_form_list,
+                                                  cpp = rctls_pp,
+                                                  cfid = crf_hospit_fid,
+                                                  start_date = start_date,
+                                                  end_date = hospitfu_end_date,
+                                                  verbose = TRUE)
+
+  # [Tanzania and India only] Load day 28 follow-up data
+  raw_day28fu_data <- NULL
+  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+    write(formats2h3("Load day 28 follow-up data"), stderr())
+    if (crf_day28_fid %in% rct_ls_form_list) {
+      raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
+                                                  pid = rctls_pid,
+                                                  fid = crf_day28_fid,
+                                                  pp = rctls_pp,
+                                                  media = FALSE)
+      raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
+                                                           csv_name = paste0(crf_day28_fid,".csv"),
+                                                           start_date = start_date,
+                                                           end_date = day28fu_end_date)
+    }
+  }
+
+  # Load widthdrawal data
+  write(formats2h3("Load withdrawal data"), stderr())
+  raw_withdrawal_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                      cpid_forms = rct_ls_form_list,
+                                                      cpp = rctls_pp,
+                                                      cfid = wd_fid,
+                                                      start_date = start_date,
+                                                      end_date = withdrawal_end_date,
+                                                      verbose = TRUE)
+
+  # Load weekly facility assessment data
+  write(formats2h3("Load weekly facility assessment data"), stderr())
+  raw_wfa_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                               cpid_forms = rct_ls_form_list,
+                                               cpp = rctls_pp,
+                                               cfid = crf_wfa_fid,
+                                               start_date = start_date,
+                                               end_date = wfa_end_date,
+                                               verbose = TRUE)
+  wfa_data <- NULL
+  if (!is.null(raw_wfa_data)) {
+    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+  }
+
+  # Load problem report data
+  write(formats2h3("Load problem report data"), stderr())
+  raw_problem_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                   cpid_forms = rct_ls_form_list,
+                                                   cpp = rctls_pp,
+                                                   cfid = problem_fid,
+                                                   start_date = start_date,
+                                                   end_date = end_date,
+                                                   verbose = TRUE)
+
+  ###########################
+  # RCT data quality report #
+  ###########################
+
+  write(formats2h1("Export data and generate data quality report"), stderr())
+
+  params <- list(rctls_dir = mdb_dir,
+                 research_facilities = research_facilities,
+                 participant_zip = participant_zip,
+                 facility_data = facility_data,
+                 facility_data_audit = facility_data_audit,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_day28fu_data = raw_day28fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 raw_problem_data = raw_problem_data,
+                 lock_date = lock_date)
+  generate_word_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
+
+  #########################
+  # RCT monitoring report #
+  #########################
+
+  write(formats2h1("Generate monitoring report"), stderr())
+
+  params <- list(research_facilities = research_facilities,
+                 start_date = start_date,
+                 end_date = end_date,
+                 sample_target = sample_size,
+                 facility_data = facility_data,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_day28fu_data = raw_day28fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 wfa_data = wfa_data)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    rname <- "timci_rct_monitoring_report"
+  } else{
+    rname <- "timci_ls_monitoring_report"
+  }
+  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
+
+  ###################
+  # PATH M&E report #
+  ###################
+
+  write(formats2h1("Generate PATH M&E report"), stderr())
+
+  params <- list(path_dir = path_dir,
+                 facility_data = facility_data,
+                 research_facilities = research_facilities,
+                 wfa_data = wfa_data)
+  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
+
+}
+
+#' Run Rmarkdown files
+#'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
 #' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project (optional)
 #' @param research_facilities Dataframe that contains the research facilities
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param cost_dir Path to the output folder for the cost and cost effectiveness database exports (optional)
-#' @param cost_start_date SPA data collection start date (optional)
-#' @param cost_end_date RCT/LS data collection end date (optional)
-#' @param cost_lock_date RCT/LS data collection cleaning end date for database lock (optional)
+#' @param cost_start_date Cost data collection start date (optional)
+#' @param cost_end_date Cost data collection end date (optional)
+#' @param cost_lock_date Cost data collection cleaning end date for database lock (optional)
 #' @param short Short version of the export
 #' @import rmarkdown ruODK
 #' @export

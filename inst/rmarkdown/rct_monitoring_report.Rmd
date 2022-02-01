@@ -109,10 +109,13 @@ pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 pii <- timci::allocate_screening_facility(pii,
                                           params$research_facilities)
 
+uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
+  distinct()
+
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     raw_day7fu_data <- merge(x = raw_day7fu_data,
-                             y = params$research_facilities[, c("facility_id", "facility_name")],
+                             y = uq_facilities,
                              by.x = 'a1-fid',
                              by.y = 'facility_id',
                              all = FALSE)
@@ -139,7 +142,7 @@ if (rct_cond) {
   if (!is.null(raw_day28fu_data)) {
     if (nrow(raw_day28fu_data) > 0) {
       raw_day28fu_data <- merge(x = raw_day28fu_data,
-                               y = params$research_facilities[, c("facility_id", "facility_name")],
+                               y = uq_facilities,
                                by.x = 'a1-fid',
                                by.y = 'facility_id',
                                all = FALSE)

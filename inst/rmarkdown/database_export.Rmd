@@ -1457,7 +1457,8 @@ if (!is.null(spa_sco_data)) {
   spa_sco_data_uids <- locked_spa_sco_data[!locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
   locked_spa_sco_data <- locked_spa_sco_data[locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
   
-  spa_sco_data_uids$'child_identification-pid' %>% knitr::kable(col.names = c("child_id"))
+  spa_sco_data_uids$'child_identification-pid' %>%
+    knitr::kable(col.names = c("child_id"))
 }
 ```
 
@@ -1555,7 +1556,6 @@ cat(paste0("* Locked SPA sick child observation data are exported in ", spa_sco_
 ```
 
 ## Healthcare provider interview data quality checks
-
 
 ```{r, results = 'asis'}
 if (!is.null(spa_hcpi_data)) {
@@ -1666,7 +1666,14 @@ if (!is.null(spa_hcpi_data)) {
 write(formats2h2("Export process mapping & time-flow data"), stderr())
 ```
 
-```{r timeflow-subsection, results="asis"}
+```{r}
+tf_cond <- !is.null(tf_data)
+if (tf_cond) {
+  tf_cond <- length(tf_data) > 0
+}
+```
+
+```{r timeflow-subsection, eval=tf_cond, results="asis"}
 if (!is.null(tf_data)){
   out <- knitr::knit_child('database_export_timeflow_sub.Rmd',
                            envir = environment(),
@@ -1675,7 +1682,14 @@ if (!is.null(tf_data)){
 }
 ```
 
-```{r process-mapping-subsection, results="asis"}
+```{r}
+pm_cond <- !is.null(pm_data)
+if (pm_cond) {
+  pm_cond <- length(pm_data) > 0
+}
+```
+
+```{r process-mapping-subsection, eval=pm_cond, results="asis"}
 if (!is.null(pm_data)){
   out <- knitr::knit_child('database_export_processmap_sub.Rmd',
                            envir = environment(),

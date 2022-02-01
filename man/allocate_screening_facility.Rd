@@ -11,9 +11,6 @@ allocate_screening_facility(facility_data, research_facilities)
 
 \item{research_facilities}{dataframe containing the list of research facilities and their characteristics}
 }
-\value{
-
-}
 \description{
 Several information can be triangulated to:
 the device ID,

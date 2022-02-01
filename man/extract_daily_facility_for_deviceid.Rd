@@ -11,9 +11,6 @@ extract_daily_facility_for_deviceid(facility_data, research_facilities)
 
 \item{research_facilities}{dataframe containing the list of research facilities and their characteristics}
 }
-\value{
-
-}
 \description{
 Extract device IDs
 }
