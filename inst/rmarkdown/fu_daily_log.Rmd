@@ -13,6 +13,7 @@ params:
   raw_withdrawal_data: NULL
   fu_start: 6
   fu_end: 12
+  physicalday7fu_end: 35
   fu_vstart: 7
   fu_vend: 10
 output:
@@ -31,6 +32,7 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r setup-variables}
 fu_start <- params$fu_start
 fu_end <- params$fu_end
+physicalday7fu_end <- params$physicalday7fu_end
 fu_vstart <- params$fu_vstart
 fu_vend <- params$fu_vend
 rctls_pid <- params$rctls_pid
@@ -51,81 +53,6 @@ if (!is.null(params$facility_data)) {
   raw_withdrawal_data <- params$raw_withdrawal_data
   rct_ls_form_list <- params$rct_ls_form_list
   
-} else {
-
-  ################
-  # Set up ruODK #
-  ################
-
-  ruODK::ru_setup(
-    svc = Sys.getenv("ODKC_SVC"),
-    un = Sys.getenv("ODKC_UN"),
-    pw = Sys.getenv("ODKC_PW"),
-    tz = Sys.getenv("TZ"),
-    verbose = TRUE # Can be switched to TRUE for demo or debugging
-  )
-
-  # List of projects visible with the credentials `ODKC_UN` and `ODKC_PW`
-  odkc_project_list <- ruODK::project_list()$id
-
-  wd_fid <- Sys.getenv("TIMCI_WD_FID")
-
-  # RCT / LS environment variables
-  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  rctls_pid <- Sys.getenv("TIMCI_PILOT_RCTLS_PID")
-  rctls_pp <- Sys.getenv("TIMCI_PILOT_RCTLS_PP")
-
-  #######################
-  # Load TIMCI ODK data #
-  #######################
-
-  # List of forms visible in the RCT / LS project
-  rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
-
-  # Load facility data
-  print("Load facility data")
-
-  raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = crf_facility_fid,
-                                               pp = rctls_pp)
-  raw_facility_data <- timci::extract_data_from_odk_zip(raw_facility_zip,
-                                                        paste0(crf_facility_fid,".csv"),
-                                                        start_date = as.Date("2021-07-05"),
-                                                        end_date = NULL)
-  facility_data <- timci::process_facility_data(raw_facility_data)
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-
-  # Load day 7 follow-up data
-  print("Load day 7 follow-up data")
-  raw_fu_data <- NULL
-  if (fu_fid %in% rct_ls_form_list) {
-    raw_day7fu_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                               pid = rctls_pid,
-                                               fid = fu_fid,
-                                               pp = rctls_pp,
-                                               media = FALSE)
-    raw_fu_data <- timci::extract_data_from_odk_zip(raw_day7fu_zip,
-                                                        paste0(fu_fid,".csv"),
-                                                        start_date = as.Date("2021-07-05"),
-                                                        end_date = NULL)
-  }
-
-  # Load widthdrawal data
-  print("Load withdrawal data")
-  raw_withdrawal_data <- NULL
-  if (wd_fid %in% rct_ls_form_list) {
-    raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                   pid = rctls_pid,
-                                                   fid = wd_fid,
-                                                   pp = rctls_pp,
-                                                   media = FALSE)
-    raw_withdrawal_data <- timci::extract_data_from_odk_zip(raw_withdrawal_zip,
-                                                            paste0(wd_fid,".csv"),
-                                                            start_date = as.Date("2021-07-05"),
-                                                            end_date = NULL)
-  }
-  
 }
 ```
 
@@ -136,6 +63,18 @@ fu <- timci::generate_fu_log_csv(pii,
                                  fu_end,
                                  fu_vstart,
                                  fu_vend)
+```
+
+```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
+physicalday7fu <- timci::generate_physical_fu_log_csv(pii,
+                                                      raw_fu_data,
+                                                      fu_start,
+                                                      physicalday7fu_end,
+                                                      fu_vstart,
+                                                      fu_vend)
+```
+
+```{r}
 if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
   if (!is.null(raw_oth_fu_data)) {
     if (nrow(raw_oth_fu_data) > 0) {
@@ -203,6 +142,10 @@ if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   csv_filename <- file.path(output_dir, "odk_external_files", "day7fu.csv")
   write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    csv_filename2 <- file.path(output_dir, "odk_external_files", "day7physicalfu.csv")
+    write.csv(physicalday7fu, csv_filename2, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
+  }
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
   csv_filename <- file.path(output_dir, "odk_external_files", "day28fu.csv")
   write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")

@@ -18,6 +18,13 @@ generate_fu_logs <- function(rctls_pid,
                              start_date = NULL,
                              end_date = NULL) {
 
+
+  ###########################
+  # Set up current language #
+  ###########################
+
+  timci::set_language_settings()
+
   ################
   # Set up ruODK #
   ################
