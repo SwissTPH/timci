@@ -1,6 +1,6 @@
 \clearpage
 
-```{r sco-message}
+```{r spa-sco-message}
 write(formats2h2("Generate the sick child observation subsection"), stderr())
 ```
 
@@ -24,11 +24,12 @@ The objective of the sick child observation protocol is:
 ```{r spa-sco-condition}
 n <- nrow(spa_sco_data)
 cond <- n > 0
+spa_sco_heatmap_cap <- paste("Sick child observation",heatmap_cap,sep='-')
 ```
 
 **`r n`** submissions
 
-```{r, eval = cond, results='asis', fig.cap = heatmap_cap}
+```{r, eval = cond, results='asis', fig.cap=spa_sco_heatmap_cap}
 timci::generate_calendar_heatmap2(spa_sco_data,
                                   date,
                                   legendtitle = "Number of submissions")
@@ -37,53 +38,58 @@ timci::generate_calendar_heatmap2(spa_sco_data,
 ```{r, eval = cond, results = "asis"}
 all <- spa_sco_data %>% 
   rename(young_infant = "child_identification-young_infant",
-         facility_name = "facility_identification-fname")
-
-if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
-  all <- all %>% 
-    rename(back_from_lab = "child_identification-back_from_lab")
-  
-  summary <- list(
-    "Summary" = list(
-      "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
-      "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
-      )
-  )
-  out <- format_summary_table(all,
-                              summary,
-                              facility_name)
-  out %>% 
-    kableExtra::kbl(booktabs = TRUE,
-                    linesep = "",
-                    align = c("c", "c"),
-                    caption = "Type of observation") %>% 
-    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-    kableExtra::row_spec(0, bold = TRUE) %>%
-    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-}
+         facility_name = "facility_identification-fname",
+         unconscious = "symptoms-unconscious",
+         lethargic = "symptoms-lethargic",
+         convulsing = "symptoms-convulsing",
+         conv_hist_asked = "symptoms-conv_hist_asked",
+         conv_hist_present = "symptoms-conv_hist_present",
+         resp_asked = "symptoms-resp_asked",
+         resp_present = "symptoms-resp_present",
+         resp_onset_asked = "symptoms-resp_onset_asked")
 ```
 
-```{r, eval = cond, results='asis', fig.cap = heatmap2_cap, fig.height = figsize}
-if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {
-  all <- all %>% dplyr::filter(back_from_lab == 0)
-}
-timci::heatmap_wday_hourofday(all,
-                              'start')
+```{r, eval=cond & (Sys.getenv('TIMCI_COUNTRY') != 'Senegal'), results='asis'}
+all <- all %>% 
+  rename(back_from_lab = "child_identification-back_from_lab")
+
+summary <- list(
+  "Summary" = list(
+    "Initial consultation" = ~qwraps2::n_perc(back_from_lab == 0, prec),
+    "Back from lab" = ~qwraps2::n_perc(back_from_lab == 1, prec)
+    )
+)
+
+out <- format_summary_table(all,
+                            summary,
+                            facility_name)
+
+all <- all %>%
+  dplyr::filter(back_from_lab == 0)
+
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Type of observation") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval = cond}
+```{r, eval=cond, results='asis', fig.cap=heatmap2_cap, fig.height=figsize}
+timci::heatmap_wday_hourofday(all, 'start')
+```
 
-
+```{r, eval=cond, results="asis"}
 summary <- list(
   "Summary" = list(
     "0-59 days" = ~qwraps2::n_perc(young_infant == 1, prec),
     "2-59 months" = ~qwraps2::n_perc(young_infant == 0, prec)
     )
 )
-```
 
-```{r, eval = cond, results = "asis"}
 out <- format_summary_table(all,
                             summary,
                             facility_name)
@@ -91,7 +97,85 @@ out %>%
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
                   align = c("c", "c"),
-                  caption = "Age category") %>% 
+                  caption = tcap_age_category) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval=cond, results="asis"}
+all$lethargic[is.na(all$lethargic)] <- 0
+all$convulsing[is.na(all$convulsing)] <- 0
+
+summary <- list(
+  "Summary" = list(
+    "Unconscious" = ~qwraps2::n_perc("unconscious" == 1, prec),
+    "Lethargic" = ~qwraps2::n_perc("lethargic" == 1, prec),
+    "Convulsing" = ~qwraps2::n_perc("convulsing" == 1, prec)
+    )
+)
+
+out <- format_summary_table(all,
+                            summary,
+                            facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_observed_danger_signs) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval=cond, results="asis"}
+all$conv_hist_asked[is.na(all$conv_hist_asked)] <- 0
+all$conv_hist_present[is.na(all$conv_hist_present)] <- 0
+
+summary <- list(
+  "Summary" = list(
+    "Asked" = ~qwraps2::n_perc("conv_hist_asked" == 1, prec),
+    "Present" = ~qwraps2::n_perc("conv_hist_present" == 1, prec)
+    )
+)
+
+out <- format_summary_table(all,
+                            summary,
+                            facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "History of convulsions") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval=cond, results="asis"}
+all$resp_asked[is.na(all$resp_asked)] <- 0
+all$resp_present[is.na(all$resp_present)] <- 0
+all$resp_onset_asked[is.na(all$resp_onset_asked)] <- 0
+
+summary <- list(
+  "Summary" = list(
+    "Asked" = ~qwraps2::n_perc("resp_asked" == 1, prec),
+    "Present" = ~qwraps2::n_perc("resp_present" == 1, prec),
+    "Onset asked" = ~qwraps2::n_perc("resp_onset_asked" == 1, prec)
+    )
+)
+
+out <- format_summary_table(all,
+                            summary,
+                            facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = "Cough/Difficulty breathing") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
