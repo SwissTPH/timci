@@ -1,0 +1,73 @@
+```{r maps-message}
+write(timci::formats2h2("Generate context maps"), stderr())
+```
+
+```{r load-libraries}
+library(sf)     # classes and functions for vector data
+library(raster) # classes and functions for raster data
+library(spData)        # load geographic data
+library(ggplot2)
+library(gridExtra)
+library(graphics)
+```
+
+```{r india-loads-maps, eval=is_india}
+shape_pathname <- system.file(file.path('extdata', "maps", "India", "gadm36_IND_2.shp"), package = 'timci')
+indian_districts <- sf::st_read(shape_pathname,
+                                stringsAsFactors=FALSE,
+                                quiet = TRUE)
+up_districts <- indian_districts[indian_districts$NAME_1 == "Uttar Pradesh", ]
+deoria_dc <- up_districts[up_districts$NAME_2 == "Deoria", ]
+sitapur_dc <- up_districts[up_districts$NAME_2 == "Sitapur", ]
+unnao_dc <- up_districts[up_districts$NAME_2 == "Unnao", ]
+
+screening_points <- sf::st_as_sf(gps_coordinates, coords = c("longitude", "latitude"), crs = 4326)
+```
+
+```{r india-plots-maps, eval = is_india, fig.cap = fcap_up_maps}
+# Set plot layout
+layout(mat = matrix(c(1, 1, 1,
+                      1, 1, 1,
+                      2, 3, 4,
+                      2, 3, 4),
+                    nrow = 4,
+                    byrow = TRUE))
+
+# Plot 1: Uttar Pradesh map
+graphics::par(mar = c(0, 0, 0, 0))
+plot(sf::st_geometry(up_districts), col="gray81", border="gray70")
+plot(sf::st_geometry(deoria_dc), col = "#fc7969", lwd = 1, add=TRUE)
+text(sf::st_coordinates(st_centroid(st_geometry(deoria_dc), of_largest_polygon=TRUE)+c(0, 0.7)), label="Deoria", cex=1, font=2)
+plot(sf::st_geometry(sitapur_dc), col = "#fc7969", lwd = 1, add=TRUE)
+text(sf::st_coordinates(st_centroid(st_geometry(sitapur_dc), of_largest_polygon=TRUE)+c(0, 0.7)), label="Sitapur", cex=1, font=2)
+plot(sf::st_geometry(unnao_dc), col = "#fc7969", lwd = 1, add=TRUE)
+text(sf::st_coordinates(st_centroid(st_geometry(unnao_dc), of_largest_polygon=TRUE)+c(0, -0.7)), label="Unnao", cex=1, font=2)
+points(sf::st_coordinates(screening_points))
+
+# Plot 2: Deoria
+graphics::par(mar = c(0, 0, 0, 0))
+plot(sf::st_geometry(deoria_dc),
+     col="gray81",
+     border="gray70",
+     lwd = 1)
+points(sf::st_coordinates(screening_points))
+title("Deoria", line = -1)
+
+# Plot 3: Sitapur
+graphics::par(mar = c(0, 0, 0, 0))
+plot(sf::st_geometry(sitapur_dc),
+     col="gray81",
+     border="gray70",
+     lwd = 1)
+points(sf::st_coordinates(screening_points))
+title("Sitapur", line = -1)
+
+# Plot 3: Unnao
+graphics::par(mar = c(0, 0, 0, 0))
+plot(sf::st_geometry(unnao_dc),
+     col="gray81",
+     border="gray70",
+     lwd = 1)
+points(sf::st_coordinates(screening_points))
+title("Unnao", line = -1)
+```
