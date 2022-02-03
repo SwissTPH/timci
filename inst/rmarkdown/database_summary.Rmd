@@ -1,0 +1,66 @@
+---
+title: "TIMCI Data Quality Report"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+output:
+  pdf_document:
+    number_sections: true
+    toc: true
+    toc_depth: 3
+  word_document:
+    toc: true
+    reference_docx: word_styles1.docx
+    fig_width: 7.5
+params:
+  locked_day0_data: NULL
+  locked_spa_sco_data: NULL
+---
+
+```{r setup-rmd, include=FALSE}
+library(magrittr)
+library(skimr)
+library(DataExplorer)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+options(knitr.table.format = "pipe")
+```
+
+```{r}
+locked_day0_data <- params$locked_day0_data
+locked_spa_sco_data <- params$locked_spa_sco_data
+```
+
+```{r translations-subsection, child = 'translations.Rmd'}
+```
+
+\newpage
+
+`r intro_str`
+
+```{r data-explore-verbose}
+write(formats2h2("Explore Day 0 data"), stderr())
+```
+# Randomised Controlled Trial (RCT) / Longitudinal Observational Sztudy (LS)
+
+## Day 0 data
+
+```{r, results = 'asis'}
+skimr::skim(locked_day0_data)
+```
+
+```{r, results = 'asis'}
+DataExplorer::plot_histogram(locked_day0_data)
+```
+
+# Service Provision Assessment (SPA)
+
+## Sick child observation data
+
+```{r, results = 'asis'}
+skimr::skim(locked_spa_sco_data)
+```
+
+```{r, results = 'asis'}
+DataExplorer::plot_histogram(locked_spa_sco_data)
+```
