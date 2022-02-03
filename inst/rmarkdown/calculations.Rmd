@@ -151,3 +151,7 @@ if (!is.null(raw_day7fu_data)) {
 ```{r}
 n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date())
 ```
+
+```{r}
+n_due_hospitfu <- sum(succ_day7fu_data$hospitalised == 1)
+```
