@@ -16,20 +16,26 @@ cfid <- facilities[[i, 'facility_id']]
 fname <- facilities[[i, 'facility_name']]
 ftype <- tolower(facilities[[i, 'type']])
 
-noneligible_tmp <- noneligible %>% dplyr::filter(fid == cfid)
-baseline_data_tmp <- baseline_data %>% dplyr::filter(fid == cfid)
-repeat_data_tmp <- repeat_data %>% dplyr::filter(fid == cfid)
-facility_data_tmp <- facility_data %>% dplyr::filter(fid == cfid)
+noneligible_tmp <- noneligible %>% 
+  dplyr::filter(fid == cfid)
+baseline_data_tmp <- baseline_data %>% 
+  dplyr::filter(fid == cfid)
+repeat_data_tmp <- repeat_data %>% 
+  dplyr::filter(fid == cfid)
+facility_data_tmp <- facility_data %>% 
+  dplyr::filter(fid == cfid)
 
 wfa_data_tmp <- NULL
 if (!is.null(wfa_data)) {
   if (length(wfa_data) > 0 & nrow(wfa_data) > 0) {
-    wfa_data_tmp <- wfa_data %>% dplyr::filter(fcode == cfid)
+    wfa_data_tmp <- wfa_data %>% 
+      dplyr::filter(fcode == cfid)
   }
 }
 
 # Day 7 follow-up
-raw_day7fu_data_tmp <- raw_day7fu_data %>% dplyr::filter(raw_day7fu_data$'a1-fid' == cfid)
+raw_day7fu_data_tmp <- raw_day7fu_data %>%
+  dplyr::filter(raw_day7fu_data$'a1-fid' == cfid)
 ```
 
 ## `r fname`
@@ -69,19 +75,40 @@ if (!is.null(baseline_data_tmp)){
 if (!is.null(baseline_data_tmp)){
     if (length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
        baseline_data_tmp %>%
-        dplyr::mutate(week = lubridate::floor_date(as.Date(baseline_data_tmp$date_visit),
+        dplyr::mutate(Week = lubridate::floor_date(as.Date(baseline_data_tmp$date_visit),
                                                    "week",
                                                    week_start = getOption("lubridate.week.start", 1))) %>%
-        dplyr::group_by(week) %>%
-        dplyr::tally() %>%
-        dplyr::rename('N' = 'n') %>%
+        dplyr::count(Week) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Weekly recruitment' = 'n') %>%
+        dplyr::rename('Cumulative recruitment' = 'csum') %>%
         kableExtra::kbl(booktabs = TRUE,
                         linesep = "",
-                        align = c("l", "c"),
-                        caption = paste0(fname, " - ", weekly_enrolment_cap)) %>% 
+                        align = c("l", "c", "c"),
+                        caption = paste0(fname, " - ", tcap_weekly_enrolment)) %>% 
         kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
         kableExtra::row_spec(0, bold = TRUE) %>%
-        kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+        kableExtra::row_spec(1:(nrow(baseline_data_tmp)/2) * 2, background = striped_row_bg)
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(baseline_data_tmp)){
+    if (length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
+       baseline_data_tmp %>%
+        dplyr::mutate(Month = format.Date(as.Date(date_visit), "%Y-%m")) %>%
+        dplyr::count(Month) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Monthly recruitment' = 'n') %>%
+        dplyr::rename('Cumulative recruitment' = 'csum') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        linesep = "",
+                        align = c("l", "c", "c"),
+                        caption = tcap_monthly_enrolment) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(baseline_data_tmp)/2) * 2, background = striped_row_bg)
   }
 }
 ```
@@ -208,4 +235,11 @@ if (!is.null(raw_day7fu_data_tmp) & length(raw_day7fu_data_tmp) > 0 & nrow(raw_d
 } else {
   cat("To be completed\n\n")
 }
+```
+
+```{r}
+rm(facility_data_tmp)
+rm(baseline_data_tmp)
+rm(repeat_data_tmp)
+rm(raw_day7fu_data_tmp)
 ```
