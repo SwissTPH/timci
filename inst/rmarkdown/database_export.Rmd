@@ -1748,38 +1748,21 @@ cat(out, sep = '\n')
 
 ## Key informant interview
 
-```{r kii-export}
-if (!is.null(kii_interview_data)) {
-  fn <- timci::export_df2csvxlsx(kii_interview_data,
-                                 qualkii_dir,
-                                 "01_timci_kii_interview_data")
-}
+```{r kii-export, eval = !is.null(kii_interview_data)}
+fn <- timci::export_df2csvxlsx(kii_interview_data,
+                               qualkii_dir,
+                               "01_timci_kii_interview_data")
 ```
 
 ## Online survey
 
-```{r online-survey-export}
-if (!is.null(online_survey_data)) {
-  fn <- timci::export_df2csvxlsx(online_survey_data,
-                                 qualos_dir,
-                                 "01_timci_online_survey_data")
-}
+```{r online-survey-export, eval = !is.null(online_survey_data)}
+fn <- timci::export_df2csvxlsx(online_survey_data,
+                               qualos_dir,
+                               "01_timci_online_survey_data")
 ```
 
-\newpage
-
-# Appendix
-
-```{r data-explore-verbose}
-write(formats2h2("Explore Day 0 data"), stderr())
-```
-
-## Day 0 data
-
-```{r, results = 'asis'}
-skimr::skim(locked_day0_data)
-```
-
-```{r, results = 'asis'}
-DataExplorer::plot_histogram(locked_day0_data)
+```{r}
+# Save locked data to *.rda file to be reused in other rmarkdown documents if needed
+save(locked_day0_data, locked_spa_sco_data, file = "timci_locked_data.rda")
 ```
