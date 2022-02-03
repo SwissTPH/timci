@@ -497,3 +497,34 @@ text_2_plot <- function(string){
   #         panel.grid = element_blank())
 
 }
+
+#' Create a numeric indicator
+#'
+#' plot_numeric_indicator() creates an image that contains a numeric indicator as well as a short description of the variable it represents.
+#'
+#' @param val Value
+#' @param lbl Label
+#' @param scale Numeric value (optional, default 1), must vary between 0 and 1 to scale the text size
+#' @return This function returns a ggplot2 object.
+#' @import ggplot2
+#' @export
+
+plot_numeric_indicator <- function(val, lbl, scale = 1){
+
+  ggplot2::ggplot() +
+    ggplot2::geom_rect(aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1),
+                       fill = "white") +
+    ggplot2::annotate("text",
+                      x = 0.5,
+                      y = 0.7,
+                      size = 10 * scale,
+                      label = val,
+                      colour = "#7dbbd6") +
+    ggplot2::annotate("text",
+                      x = 0.5,
+                      y = 0.4,
+                      size = 2 * scale,
+                      label = lbl) +
+    ggplot2::theme_void()
+
+}
