@@ -17,14 +17,16 @@ indian_districts <- sf::st_read(shape_pathname,
                                 stringsAsFactors=FALSE,
                                 quiet = TRUE)
 up_districts <- indian_districts[indian_districts$NAME_1 == "Uttar Pradesh", ]
+rm(indian_districts)
 deoria_dc <- up_districts[up_districts$NAME_2 == "Deoria", ]
 sitapur_dc <- up_districts[up_districts$NAME_2 == "Sitapur", ]
 unnao_dc <- up_districts[up_districts$NAME_2 == "Unnao", ]
 
+# Convert GPS coordinates to an sf object
 screening_points <- sf::st_as_sf(gps_coordinates, coords = c("longitude", "latitude"), crs = 4326)
 ```
 
-```{r india-plots-maps, eval = is_india, fig.cap = fcap_up_maps}
+```{r india-plots-maps, eval=is_india, fig.cap=fcap_up_maps}
 # Set plot layout
 layout(mat = matrix(c(1, 1, 1,
                       1, 1, 1,
@@ -35,14 +37,27 @@ layout(mat = matrix(c(1, 1, 1,
 
 # Plot 1: Uttar Pradesh map
 graphics::par(mar = c(0, 0, 0, 0))
-plot(sf::st_geometry(up_districts), col="gray81", border="gray70")
-plot(sf::st_geometry(deoria_dc), col = "#fc7969", lwd = 1, add=TRUE)
-text(sf::st_coordinates(st_centroid(st_geometry(deoria_dc), of_largest_polygon=TRUE)+c(0, 0.7)), label="Deoria", cex=1, font=2)
-plot(sf::st_geometry(sitapur_dc), col = "#fc7969", lwd = 1, add=TRUE)
-text(sf::st_coordinates(st_centroid(st_geometry(sitapur_dc), of_largest_polygon=TRUE)+c(0, 0.7)), label="Sitapur", cex=1, font=2)
+plot(sf::st_geometry(up_districts),
+     col="gray81",
+     border="gray70")
+plot(sf::st_geometry(deoria_dc),
+     col = "#fc7969",
+     lwd = 1,
+     add=TRUE)
+text(sf::st_coordinates(st_centroid(st_geometry(deoria_dc), of_largest_polygon=TRUE)+c(0, 0.7)),
+     label = "Deoria",
+     cex = 1,
+     font = 2)
+plot(sf::st_geometry(sitapur_dc),
+     col = "#fc7969",
+     lwd = 1,
+     add=TRUE)
+text(sf::st_coordinates(st_centroid(st_geometry(sitapur_dc), of_largest_polygon=TRUE)+c(0, 0.7)), label = "Sitapur", cex = 1, font = 2)
 plot(sf::st_geometry(unnao_dc), col = "#fc7969", lwd = 1, add=TRUE)
-text(sf::st_coordinates(st_centroid(st_geometry(unnao_dc), of_largest_polygon=TRUE)+c(0, -0.7)), label="Unnao", cex=1, font=2)
-points(sf::st_coordinates(screening_points))
+text(sf::st_coordinates(st_centroid(st_geometry(unnao_dc), of_largest_polygon=TRUE)+c(0, -0.7)), label = "Unnao", cex = 1, font = 2)
+points(sf::st_coordinates(screening_points),
+       pch = 21,
+       bg = "#000000")
 
 # Plot 2: Deoria
 graphics::par(mar = c(0, 0, 0, 0))
@@ -50,7 +65,9 @@ plot(sf::st_geometry(deoria_dc),
      col="gray81",
      border="gray70",
      lwd = 1)
-points(sf::st_coordinates(screening_points))
+points(sf::st_coordinates(screening_points),
+       pch = 21,
+       bg = "#000000")
 title("Deoria", line = -1)
 
 # Plot 3: Sitapur
@@ -59,7 +76,9 @@ plot(sf::st_geometry(sitapur_dc),
      col="gray81",
      border="gray70",
      lwd = 1)
-points(sf::st_coordinates(screening_points))
+points(sf::st_coordinates(screening_points),
+       pch = 21,
+       bg = "black")
 title("Sitapur", line = -1)
 
 # Plot 3: Unnao
@@ -68,6 +87,32 @@ plot(sf::st_geometry(unnao_dc),
      col="gray81",
      border="gray70",
      lwd = 1)
-points(sf::st_coordinates(screening_points))
+points(sf::st_coordinates(screening_points),
+       pch = 21,
+       bg = "black")
 title("Unnao", line = -1)
+```
+
+```{r india-plots-clear-memory, eval=is_india}
+detach("package:raster", unload=TRUE)
+detach("package:spData", unload=TRUE)
+detach("package:sf", unload=TRUE)
+rm(up_districts)
+rm(deoria_dc)
+rm(sitapur_dc)
+rm(unnao_dc)
+```
+
+```{r kenya-loads-maps, eval=is_kenya}
+shape_pathname <- system.file(file.path('extdata', "maps", "Kenya", "gadm36_KEN_1.shp"), package = 'timci')
+kenyan_counties <- sf::st_read(shape_pathname,
+                               stringsAsFactors=FALSE,
+                               quiet = TRUE)
+kakamega <- kenyan_counties[kenyan_counties$NAME_1 == "Kakamega", ]
+uasingishu <- kenyan_counties[kenyan_counties$NAME_1 == "Uasin Gishu", ]
+kitui <- kenyan_counties[kenyan_counties$NAME_1 == "Kitui", ]
+rm(kenyan_counties)
+
+# Convert GPS coordinates to an sf object
+screening_points <- sf::st_as_sf(gps_coordinates, coords = c("longitude", "latitude"), crs = 4326)
 ```
