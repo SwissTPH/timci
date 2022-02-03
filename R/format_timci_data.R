@@ -7,17 +7,17 @@
 match_from_day0_xls_dict <- function(df) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    df <- match_from_xls_dict(df, "main_dict_senegal.xlsx")
+    xls_filename <- "main_dict_senegal.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    df <- match_from_xls_dict(df, "main_dict_kenya.xlsx")
+    xls_filename <- "main_dict_kenya.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    df <- match_from_xls_dict(df, "main_dict_india.xlsx")
+    xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    df <- match_from_xls_dict(df, "main_dict.xlsx")
+    xls_filename <- "main_dict.xlsx"
   } else{
-    df <- match_from_xls_dict(df, "main_dict.xlsx")
+    xls_filename <- "main_dict.xlsx"
   }
-  df
+  df <- match_from_xls_dict(df, xls_filename)
 
 }
 
@@ -29,17 +29,18 @@ match_from_day0_xls_dict <- function(df) {
 read_day0_xls_dict <- function() {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_senegal.xlsx"), package = 'timci'))
+    xls_filename <- "main_dict_senegal.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
+    xls_filename <- "main_dict_kenya.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
+    xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+    xls_filename <- "main_dict.xlsx"
   } else{
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+    xls_filename <- "main_dict.xlsx"
   }
-  dictionary
+  xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
+  dictionary <- readxl::read_excel(xls_pathname)
 
 }
 

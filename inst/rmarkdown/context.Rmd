@@ -43,8 +43,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r context-facility-type, results='asis'}
+```{r}
 facility_nb <- nrow(facilities)
+```
+
+```{r context-facility-type, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
   facilities$type <- tolower(facilities$type)
   hc_nb <- nrow(facilities %>% filter(type == "health center"))

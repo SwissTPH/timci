@@ -54,12 +54,27 @@ total_row_ft <- "gray"
 total_row_ft2 <- "white"
 striped_row_bg <- "gray!10"
 total_row_bg2 <- "gray"
+```
 
-if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+```{r}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
+```
+
+```{r}
+if (is_india) {
   hospit_value <- 13
 } else{
   hospit_value <- 1
 }
+
+day7_wmin <- 7
+day7_wmax <- 10
+day28_wmin <- 28
+day28_wmax <- 32
 ```
 
 \fancypagestyle{plain}{\pagestyle{fancy}}
@@ -98,57 +113,9 @@ if (!is.null(params$facility_data)) {
   wfa_data <- params$wfa_data
   
 }
-
-# Add facility generic information to the RCT/LS facility data
-facility_data <- timci::allocate_screening_facility(facility_data,
-                                                    params$research_facilities)
-
-# Extract personally identifiable information from RCT/LS facility data
-pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-# Add facility generic information to personally identifiable information
-pii <- timci::allocate_screening_facility(pii,
-                                          params$research_facilities)
-
-uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
-  distinct()
-
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    raw_day7fu_data <- merge(x = raw_day7fu_data,
-                             y = uq_facilities,
-                             by.x = 'a1-fid',
-                             by.y = 'facility_id',
-                             all = FALSE)
-  }
-}
-
-# if (!is.null(raw_hospit_data)) {
-#   if (nrow(raw_hospit_data) > 0) {
-#     raw_hospit_data <- merge(x = raw_hospit_data,
-#                              y = params$research_facilities[, c("facility_id", "facility_name")],
-#                              by.x = 'a1-fid',
-#                              by.y = 'facility_id',
-#                              all = FALSE)
-#   }
-#}
 ```
 
-```{r}
-rct_cond <- (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') | (Sys.getenv('TIMCI_COUNTRY') == 'India')
-```
-
-```{r}
-if (rct_cond) {
-  if (!is.null(raw_day28fu_data)) {
-    if (nrow(raw_day28fu_data) > 0) {
-      raw_day28fu_data <- merge(x = raw_day28fu_data,
-                               y = uq_facilities,
-                               by.x = 'a1-fid',
-                               by.y = 'facility_id',
-                               all = FALSE)
-    }
-  }
-}
+```{r calculation-subsection, child = 'calculations.Rmd'}
 ```
 
 ```{r process-facility-data, results='asis'}
@@ -169,90 +136,7 @@ if (nrow(facility_data) > 0) {
 ```{r context-subsection, child = 'context.Rmd'}
 ```
 
-\newpage
-
-```{r, results = "asis"}
-n_total <- 0
-
-# Screening data
-n_screened <- nrow(facility_data)
-screening_data <- timci::extract_screening_data(facility_data)
-visit_names <- c(screening_str)
-submissions <- c(n_screened)
-n_total <- n_total + n_screened
-
-study_data <- timci::extract_all_visits(facility_data)
-res <- timci::extract_enrolled_participants(facility_data)
-noneligible <- timci::extract_noneligible(facility_data)
-
-# Baseline data
-baseline_data <- timci::extract_baseline_visits(study_data)
-baseline_data <- timci::allocate_screening_facility(baseline_data,
-                                                    params$research_facilities)
-
-demog_data <- res[[1]]
-n_enrolled <- nrow(demog_data)
-n_enrolled7 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 6)))
-n_enrolled28 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 27)))
-visit_names <- c(visit_names, paste0(baseline_str, kableExtra::footnote_marker_number(1)))
-submissions <- c(submissions, n_enrolled)
-
-# Count facility submissions corresponding to repeat visits
-repeat_data <- timci::extract_repeat_visits(study_data)
-n_repeat <- nrow(repeat_data)
-visit_names <- c(visit_names, paste0(repeat_str, kableExtra::footnote_marker_number(2)))
-submissions <- c(submissions, n_repeat)
-
-# Count Day 7 phone call submissions
-if (!is.null(raw_day7fu_data)) {
-  n_day7fu <- nrow(raw_day7fu_data)
-  visit_names <- c(visit_names, day7_phone_call_str)
-  submissions <- c(submissions, n_day7fu)
-  n_total <- n_total + n_day7fu
-}
-
-if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  if (!is.null(raw_day28fu_data)) {
-    n_day28fu <- nrow(raw_day28fu_data)
-    visit_names <- c(visit_names, "Day 28 phone call")
-    submissions <- c(submissions, n_day28fu)
-    n_total <- n_total + n_day28fu
-  }
-}
-
-# Count hospital visit submissions
-if (!is.null(raw_hospit_data)) {
-  n_hospit <- nrow(raw_hospit_data)
-  visit_names <- c(visit_names, hospital_submission_str)
-  submissions <- c(submissions, n_hospit)
-  n_total <- n_total + n_hospit
-}
-
-# Count withdrawal submissions
-if (!is.null(raw_withdrawal_data)) {
-  n_withdrawal <- nrow(raw_withdrawal_data)
-  visit_names <- c(visit_names, withdrawal_str)
-  submissions <- c(submissions, n_withdrawal)
-  n_total <- n_total + n_withdrawal
-}
-```
-
-`r title_str`
-
-```{r, eval = FALSE, results='asis'}
-#timci::text_2_plot(paste0(days_nb))
-```
-
-```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
-  wdays_str <- " jours travaillés depuis le début de la collecte de données."
-} else{
-  wdays_str <- " working days since the start of the data collection."
-}
-cat(paste0(days_nb, wdays_str))
-```
-
-```{r, results='asis'}
+```{r}
 if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
   hc_enrolment_target <- 14
   dispensary_enrolment_target <- 6
@@ -275,21 +159,31 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
 }
 ```
 
-```{r, results='asis'}
-cat(paste0(sample_size_str, sample_target))
+```{r maps-subsection, child = 'maps.Rmd'}
 ```
+
+\newpage
+
+`r title_str`
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania" || Sys.getenv('TIMCI_COUNTRY') != "Kenya") {
   day_target <- enrolment_target * facility_nb
-  if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
-    cat(paste0("Cible de recrutement quotidienne : ", enrolment_target))
-  } else{
-    cat(paste0("Daily enrolment target: ", enrolment_target))
-  }
 } else{
   cat(paste0("Daily enrolment target: ", dispensary_enrolment_target, " (dispensaries) and ", hc_enrolment_target, " (health centres), with ", enrolment_target, " as an average target if the facility type is not taken into account"))
 }
+```
+
+```{r, fig.height = 1}
+ind1 <- timci::plot_numeric_indicator(val = days_nb,
+                                      lbl = wdays_str)
+ind2 <- timci::plot_numeric_indicator(val = sample_target,
+                                      lbl = sample_size_str)
+ind3 <- timci::plot_numeric_indicator(val = enrolment_target,
+                                      lbl = enrolment_target_str)
+gridExtra::grid.arrange(ind1, ind2, ind3,
+                        ncol = 3, nrow = 1,
+                        widths = grid::unit(c(5,5,5), c("cm", "cm", "cm")))
 ```
 
 ```{r, results='asis'}
@@ -302,38 +196,6 @@ if (nrow(facility_data) > 0) {
 ```
 
 ```{r, results='asis'}
-day7_wmin <- 7
-day7_wmax <- 10
-
-day7fu_data <- NULL
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    
-    # Extract and clean all Day 7 follow-up data
-    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
-    day7fu_data <- day7fu_data[day7fu_data$child_id %in% baseline_data$child_id, ]
-    
-    # Extract and clean successful Day 7 follow-up data
-    succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
-    succ_day7fu_data <- clean_followup_for_rate_estimation(baseline_data, succ_day7fu_data)
-    
-    n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date(), na.rm = TRUE) 
-    n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax), na.rm = TRUE) 
-  } else {
-    n_completed_day7fu <- 0
-    n_valid_day7fu <- 0
-  }
-} else {
-  n_completed_day7fu <- 0
-  n_valid_day7fu <- 0
-}
-```
-
-```{r}
-n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date())
-```
-
-```{r, results='asis'}
 if (n_due_day7fu > 0) {
   n_day7fu_rate <- n_completed_day7fu/n_due_day7fu
   n_day7fu_rate100 <- round(100 * n_day7fu_rate, prec)
@@ -343,9 +205,6 @@ if (n_due_day7fu > 0) {
 ```
 
 ```{r, results='asis'}
-day28_wmin <- 28
-day28_wmax <- 32
-
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   day28fu_data <- NULL
   if (!is.null(raw_day28fu_data)) {
@@ -389,25 +248,25 @@ if (n_due_day7fu > 0) {
     if (n_due_day28fu > 0){
       gridExtra::grid.arrange(plot0, plot1, plot2, plot3, plot4, plot5, plot7, plot8,
                               ncol = 3, nrow = 3,
-                              widths = unit(c(6,6,6), c("cm", "cm", "cm")),
-                              heights = unit(c(4,4,4), c("cm", "cm", "cm")))
+                              widths = grid::unit(c(6,6,6), c("cm", "cm", "cm")),
+                              heights = grid::unit(c(4,4,4), c("cm", "cm", "cm")))
     } else{
       gridExtra::grid.arrange(plot0, plot1, plot2, plot3, plot4, plot5,
-                            ncol = 3, nrow = 3,
-                            widths = unit(c(6,6,6), c("cm", "cm", "cm")),
-                            heights = unit(c(4,4,4), c("cm", "cm", "cm")))
+                              ncol = 3, nrow = 3,
+                              widths = grid::unit(c(6,6,6), c("cm", "cm", "cm")),
+                              heights = grid::unit(c(4,4,4), c("cm", "cm", "cm")))
     }
   } else{
     gridExtra::grid.arrange(plot0, plot1, plot2, plot3, plot4, plot5,
                             ncol = 3, nrow = 3,
-                            widths = unit(c(6,6,6), c("cm", "cm", "cm")),
-                            heights = unit(c(4,4,4), c("cm", "cm", "cm")))
+                            widths = grid::unit(c(6,6,6), c("cm", "cm", "cm")),
+                            heights = grid::unit(c(4,4,4), c("cm", "cm", "cm")))
   }
 } else{
   gridExtra::grid.arrange(plot0, plot1, plot2, plot3,
                           ncol = 3, nrow = 3,
-                          widths = unit(c(6,6,6), c("cm", "cm", "cm")),
-                          heights = unit(c(4,4,4), c("cm", "cm", "cm")))
+                          widths = grid::unit(c(6,6,6), c("cm", "cm", "cm")),
+                          heights = grid::unit(c(4,4,4), c("cm", "cm", "cm")))
 }
 ```
 
@@ -452,7 +311,9 @@ all["status_day7"[!("status_day7" %in% colnames(all))]] <- 0
 all$due_day7 <- (as.Date(all$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date()
 all$proceed_day7[is.na(all$proceed_day7)] <- 0
 all$lost_day7 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day7_wmax) <= Sys.Date()) & (all$proceed_day7 == 0)
+```
 
+```{r}
 if (!is.null(raw_hospit_data)) {
   if (nrow(raw_hospit_data) > 0) {
     hospit_data <- format_hospital_data(raw_hospit_data) %>%
@@ -466,13 +327,13 @@ if (!is.null(raw_hospit_data)) {
 }
 
 # Create an empty column if hospital follow-up has not started yet
-all["found"[!("found" %in% colnames(all))]] <- 0
-all$found[is.na(all$found)] <- 0
+all["found"[!("found" %in% colnames(all))]] <- 96
+all$found[is.na(all$found)] <- 96
 all$hospitalised <- (all$status_day7 == 2) | (all$hf_visit_type == hospit_value)
 all$hospitalised[is.na(all$hospitalised)] <- 0
 ```
 
-```{r rct-full-participant-journey, eval = rct_cond}
+```{r rct-full-participant-journey, eval = is_rct}
 if (!is.null(day28fu_data)) {
   if (nrow(day28fu_data) > 0) {
     all <- all %>%
@@ -490,7 +351,7 @@ all$proceed_day28[is.na(all$proceed_day28)] <- 0
 all$lost_day28 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day28_wmax) <= Sys.Date()) & (all$proceed_day28 == 0)
 ```
 
-```{r all-completion, eval = rct_cond}
+```{r all-completion, eval = is_rct}
 completion_summary <- list(
   "Summary" = list(
     "Day 7 and Day 28" = ~qwraps2::n_perc(proceed_day7 == 1 & proceed_day28 == 1, prec),
@@ -540,9 +401,10 @@ out %>%
 completion_summary <- list(
   "Summary" = list(
     "Due" = ~qwraps2::n_perc(hospitalised == 1, prec),
+    "Attempted" = ~qwraps2::n_perc((found == 0 | found == 1) & hospitalised == 1, prec),
     "Completed" = ~qwraps2::n_perc(found == 1 & hospitalised == 1, prec),
-    "Completed (not due)" = ~qwraps2::n_perc(found == 1 & hospitalised == 0, prec),
-    "Lost" = ~qwraps2::n_perc(found == 0 & hospitalised == 1, prec)
+    "Lost" = ~qwraps2::n_perc(found == 96 & hospitalised == 1, prec),
+    "Completed (not due)" = ~qwraps2::n_perc(found == 1 & hospitalised == 0, prec)
     )
 )
 out <- format_summary_table(all,
@@ -560,7 +422,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r day28fu-completion, eval = rct_cond}
+```{r day28fu-completion, eval = is_rct}
 completion_summary <- list(
   "Summary" = list(
     "Due" = ~qwraps2::n_perc(due_day28 == 1, prec),
