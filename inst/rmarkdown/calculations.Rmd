@@ -1,0 +1,153 @@
+```{r}
+# Add facility generic information to the RCT/LS facility data
+facility_data <- timci::allocate_screening_facility(facility_data,
+                                                    params$research_facilities)
+
+# Extract personally identifiable information from RCT/LS facility data
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+# Add facility generic information to personally identifiable information
+pii <- timci::allocate_screening_facility(pii,
+                                          params$research_facilities)
+
+uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
+  distinct()
+
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    raw_day7fu_data <- merge(x = raw_day7fu_data,
+                             y = uq_facilities,
+                             by.x = 'a1-fid',
+                             by.y = 'facility_id',
+                             all = FALSE)
+  }
+}
+
+# if (!is.null(raw_hospit_data)) {
+#   if (nrow(raw_hospit_data) > 0) {
+#     raw_hospit_data <- merge(x = raw_hospit_data,
+#                              y = params$research_facilities[, c("facility_id", "facility_name")],
+#                              by.x = 'a1-fid',
+#                              by.y = 'facility_id',
+#                              all = FALSE)
+#   }
+#}
+```
+
+```{r}
+if (is_rct) {
+  if (!is.null(raw_day28fu_data)) {
+    if (nrow(raw_day28fu_data) > 0) {
+      raw_day28fu_data <- merge(x = raw_day28fu_data,
+                               y = uq_facilities,
+                               by.x = 'a1-fid',
+                               by.y = 'facility_id',
+                               all = FALSE)
+    }
+  }
+}
+```
+
+```{r, eval = !is.null(facility_data)}
+gps_coordinates <- NULL
+gps_vec <- c("latitude", "longitude", "gps_accuracy")
+dfcols <- colnames(facility_data)
+if (("latitude" %in% dfcols) & ("longitude" %in% dfcols)) {
+  gps_coordinates <- facility_data[, gps_vec]
+  gps_coordinates <- na.omit(gps_coordinates) %>% filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
+}
+```
+
+```{r}
+n_total <- 0
+
+# Screening data
+n_screened <- nrow(facility_data)
+screening_data <- timci::extract_screening_data(facility_data)
+visit_names <- c(screening_str)
+submissions <- c(n_screened)
+n_total <- n_total + n_screened
+
+study_data <- timci::extract_all_visits(facility_data)
+res <- timci::extract_enrolled_participants(facility_data)
+noneligible <- timci::extract_noneligible(facility_data)
+
+# Baseline data
+baseline_data <- timci::extract_baseline_visits(study_data)
+baseline_data <- timci::allocate_screening_facility(baseline_data,
+                                                    params$research_facilities)
+
+demog_data <- res[[1]]
+n_enrolled <- nrow(demog_data)
+n_enrolled7 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 6)))
+n_enrolled28 <- nrow(dplyr::filter(demog_data, date_visit >= as.Date(end_date - 27)))
+visit_names <- c(visit_names, paste0(baseline_str, kableExtra::footnote_marker_number(1)))
+submissions <- c(submissions, n_enrolled)
+
+# Count facility submissions corresponding to repeat visits
+repeat_data <- timci::extract_repeat_visits(study_data)
+n_repeat <- nrow(repeat_data)
+visit_names <- c(visit_names, paste0(repeat_str, kableExtra::footnote_marker_number(2)))
+submissions <- c(submissions, n_repeat)
+
+# Count Day 7 phone call submissions
+if (!is.null(raw_day7fu_data)) {
+  n_day7fu <- nrow(raw_day7fu_data)
+  visit_names <- c(visit_names, day7_phone_call_str)
+  submissions <- c(submissions, n_day7fu)
+  n_total <- n_total + n_day7fu
+}
+
+if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (!is.null(raw_day28fu_data)) {
+    n_day28fu <- nrow(raw_day28fu_data)
+    visit_names <- c(visit_names, "Day 28 phone call")
+    submissions <- c(submissions, n_day28fu)
+    n_total <- n_total + n_day28fu
+  }
+}
+
+# Count hospital visit submissions
+if (!is.null(raw_hospit_data)) {
+  n_hospit <- nrow(raw_hospit_data)
+  visit_names <- c(visit_names, hospital_submission_str)
+  submissions <- c(submissions, n_hospit)
+  n_total <- n_total + n_hospit
+}
+
+# Count withdrawal submissions
+if (!is.null(raw_withdrawal_data)) {
+  n_withdrawal <- nrow(raw_withdrawal_data)
+  visit_names <- c(visit_names, withdrawal_str)
+  submissions <- c(submissions, n_withdrawal)
+  n_total <- n_total + n_withdrawal
+}
+```
+
+```{r, results='asis'}
+day7fu_data <- NULL
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    
+    # Extract and clean all Day 7 follow-up data
+    day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[3]]
+    day7fu_data <- day7fu_data[day7fu_data$child_id %in% baseline_data$child_id, ]
+    
+    # Extract and clean successful Day 7 follow-up data
+    succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
+    succ_day7fu_data <- clean_followup_for_rate_estimation(baseline_data, succ_day7fu_data)
+    
+    n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date(), na.rm = TRUE) 
+    n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax), na.rm = TRUE) 
+  } else {
+    n_completed_day7fu <- 0
+    n_valid_day7fu <- 0
+  }
+} else {
+  n_completed_day7fu <- 0
+  n_valid_day7fu <- 0
+}
+```
+
+```{r}
+n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date())
+```
