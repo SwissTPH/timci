@@ -68,7 +68,7 @@ plot_gauge <- function(val, lbl, m, lthres, uthres, scale = 1){
                              label = paste0(format(round(percentage * 100, 1), nsmall = 1), "%"),
                              title = lbl)
 
-  ggplot(df, aes(fill = group, ymax = percentage, ymin = 0, xmax = 2, xmin = 1)) +
+  ggplot(df, aes(fill = group, ymax = min(percentage, m), ymin = 0, xmax = 2, xmin = 1)) +
     geom_rect(aes(ymax = 1, ymin = 0, xmax = 2, xmin = 1), fill = "#dcdcdc") +
     geom_rect() +
     coord_polar(theta = "y", start = -pi/2) + xlim(c(0, 2)) + ylim(c(0,2)) +
@@ -522,8 +522,8 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
                       colour = "#7dbbd6") +
     ggplot2::annotate("text",
                       x = 0.5,
-                      y = 0.4,
-                      size = 2 * scale,
+                      y = 0.3,
+                      size = 2.7 * scale,
                       label = lbl) +
     ggplot2::theme_void()
 
