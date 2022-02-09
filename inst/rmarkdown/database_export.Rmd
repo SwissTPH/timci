@@ -1,7 +1,7 @@
 ---
 title: "TIMCI Data Quality Report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
-date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 output:
   pdf_document:
     number_sections: true
@@ -234,7 +234,7 @@ facility_device %>%
 
 \newpage
 
-# `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster RCT'} else{'Longitudinal Observational Study'}`
+# `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster Randomised Controlled Trial (RCT)'} else{'Longitudinal Observational Study (LS)'}`
 
 ```{r}
 write(formats2h2("Review, process and export facility data"), stderr())
@@ -1762,7 +1762,27 @@ fn <- timci::export_df2csvxlsx(online_survey_data,
                                "01_timci_online_survey_data")
 ```
 
-```{r}
+```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania" | Sys.getenv('TIMCI_COUNTRY') == "India")}
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
-save(locked_day0_data, locked_spa_sco_data, file = "timci_locked_data.rda")
+save(locked_day0_data,
+     locked_allday7fu_data,
+     locked_allday28fu_data,
+     locked_hospit_data,
+     locked_spa_sco_data,
+     locked_spa_hcpi_data,
+     spa_cgei_data,
+     spa_fa_data,
+     file = "timci_locked_data.rda")
+```
+
+```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == "Senegal" | Sys.getenv('TIMCI_COUNTRY') == "Kenya")}
+# Save locked data to *.rda file to be reused in other rmarkdown documents if needed
+save(locked_day0_data,
+     locked_allday7fu_data,
+     locked_hospit_data,
+     locked_spa_sco_data,
+     locked_spa_hcpi_data,
+     spa_cgei_data,
+     spa_fa_data,
+     file = "timci_locked_data.rda")
 ```

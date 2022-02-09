@@ -2,6 +2,8 @@
 
 `r h1_tech_info`
 
+The template of this report (v1.0) was designed by Hélène LANGET (Swiss TPH)
+
 ```{r, results='asis', echo=FALSE}
 df_session <- devtools::session_info(include_base = TRUE)
 ```

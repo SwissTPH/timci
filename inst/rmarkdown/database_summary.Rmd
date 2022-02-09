@@ -1,7 +1,7 @@
 ---
 title: "TIMCI Data Quality Report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
-date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 output:
   pdf_document:
     number_sections: true
@@ -13,13 +13,21 @@ output:
     fig_width: 7.5
 params:
   locked_day0_data: NULL
+  locked_allday7fu_data: NULL
+  locked_allday28fu_data: NULL
+  locked_hospit_data: NULL
   locked_spa_sco_data: NULL
+  locked_spa_hcpi_data: NULL
+  spa_cgei_data: NULL
+  spa_fa_data: NULL
 ---
 
 ```{r setup-rmd, include=FALSE}
+library(dplyr)
 library(magrittr)
 library(skimr)
 library(DataExplorer)
+library(dataMaid)
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
@@ -28,7 +36,13 @@ options(knitr.table.format = "pipe")
 
 ```{r}
 locked_day0_data <- params$locked_day0_data
+locked_allday7fu_data <- params$locked_allday7fu_data
+locked_allday28fu_data <- params$locked_allday28fu_data
+locked_hospit_data <- params$locked_hospit_data
 locked_spa_sco_data <- params$locked_spa_sco_data
+spa_cgei_data <- params$spa_cgei_data
+locked_spa_hcpi_data <- params$locked_spa_hcpi_data
+spa_fa_data <- params$spa_fa_data
 ```
 
 ```{r translations-subsection, child = 'translations.Rmd'}
@@ -41,26 +55,99 @@ locked_spa_sco_data <- params$locked_spa_sco_data
 ```{r data-explore-verbose}
 write(formats2h2("Explore Day 0 data"), stderr())
 ```
-# Randomised Controlled Trial (RCT) / Longitudinal Observational Sztudy (LS)
+
+# `r if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India"){'Pragmatic cluster Randomised Controlled Trial (RCT)'} else{'Longitudinal Observational Study (LS)'}`
 
 ## Day 0 data
 
-```{r, results = 'asis'}
+### Global summary
+
+```{r, results='asis'}
 skimr::skim(locked_day0_data)
 ```
 
-```{r, results = 'asis'}
-DataExplorer::plot_histogram(locked_day0_data)
+### Summary grouped by facility
+
+```{r, results='asis'}
+locked_day0_data %>%
+  dplyr::group_by(facility) %>%
+  skim()
+```
+
+### Summary for young infants
+
+```{r, results='asis'}
+locked_day0_young_infant_data <- locked_day0_data %>%
+  dplyr::filter(yg_infant == 1)
+skimr::skim(locked_day0_young_infant_data)
+```
+
+## Day 7 follow-up data
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(locked_allday7fu_data)
+```
+
+## Day 28 follow-up data
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(locked_allday28fu_data)
+```
+
+## Hospital visit follow-up data
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(locked_hospit_data)
 ```
 
 # Service Provision Assessment (SPA)
 
 ## Sick child observation data
 
-```{r, results = 'asis'}
+### Global summary
+
+```{r, results='asis'}
 skimr::skim(locked_spa_sco_data)
 ```
 
-```{r, results = 'asis'}
-DataExplorer::plot_histogram(locked_spa_sco_data)
+### Summary for young infants
+
+```{r}
+names(locked_spa_sco_data) <- gsub("-", "_", names(locked_spa_sco_data), fixed = TRUE)
+locked_spa_sco_yg_infant_data <- locked_spa_sco_data %>%
+  dplyr::filter(child_identification_young_infant == 1)
+```
+
+```{r, results='asis'}
+skimr::skim(locked_spa_sco_yg_infant_data)
+```
+
+## Caregiver exit interview data
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(spa_cgei_data)
+```
+
+## Healthcare provider interview data
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(locked_spa_hcpi_data)
+```
+
+## Facility Assessment
+
+### Global summary
+
+```{r, results='asis'}
+skimr::skim(spa_fa_data)
 ```

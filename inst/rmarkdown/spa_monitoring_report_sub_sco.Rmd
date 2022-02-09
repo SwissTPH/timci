@@ -36,22 +36,15 @@ timci::generate_calendar_heatmap2(spa_sco_data,
 ```
 
 ```{r, eval = cond, results = "asis"}
+names(spa_sco_data) <- gsub("-", "_", names(spa_sco_data), fixed = TRUE)
 all <- spa_sco_data %>% 
-  rename(young_infant = "child_identification-young_infant",
-         facility_name = "facility_identification-fname",
-         unconscious = "symptoms-unconscious",
-         lethargic = "symptoms-lethargic",
-         convulsing = "symptoms-convulsing",
-         conv_hist_asked = "symptoms-conv_hist_asked",
-         conv_hist_present = "symptoms-conv_hist_present",
-         resp_asked = "symptoms-resp_asked",
-         resp_present = "symptoms-resp_present",
-         resp_onset_asked = "symptoms-resp_onset_asked")
+  rename(young_infant = "child_identification_young_infant",
+         facility_name = "facility_identification_fname")
 ```
 
 ```{r, eval=cond & (Sys.getenv('TIMCI_COUNTRY') != 'Senegal'), results='asis'}
 all <- all %>% 
-  rename(back_from_lab = "child_identification-back_from_lab")
+  rename(back_from_lab = "child_identification_back_from_lab")
 
 summary <- list(
   "Summary" = list(
@@ -105,14 +98,14 @@ out %>%
 ```
 
 ```{r, eval=cond, results="asis"}
-all$lethargic[is.na(all$lethargic)] <- 0
-all$convulsing[is.na(all$convulsing)] <- 0
+all$symptoms_lethargic[is.na(all$symptoms_lethargic)] <- 0
+all$symptoms_convulsing[is.na(all$symptoms_convulsing)] <- 0
 
 summary <- list(
   "Summary" = list(
-    "Unconscious" = ~qwraps2::n_perc("unconscious" == 1, prec),
-    "Lethargic" = ~qwraps2::n_perc("lethargic" == 1, prec),
-    "Convulsing" = ~qwraps2::n_perc("convulsing" == 1, prec)
+    "Unconscious" = ~qwraps2::n_perc(symptoms_unconscious == 1, prec),
+    "Lethargic" = ~qwraps2::n_perc(symptoms_lethargic == 1, prec),
+    "Convulsing" = ~qwraps2::n_perc(symptoms_convulsing == 1, prec)
     )
 )
 
@@ -131,13 +124,13 @@ out %>%
 ```
 
 ```{r, eval=cond, results="asis"}
-all$conv_hist_asked[is.na(all$conv_hist_asked)] <- 0
-all$conv_hist_present[is.na(all$conv_hist_present)] <- 0
+all$symptoms_conv_hist_asked[is.na(all$symptoms_conv_hist_asked)] <- 0
+all$symptoms_conv_hist_present[is.na(all$symptoms_conv_hist_present)] <- 0
 
 summary <- list(
   "Summary" = list(
-    "Asked" = ~qwraps2::n_perc("conv_hist_asked" == 1, prec),
-    "Present" = ~qwraps2::n_perc("conv_hist_present" == 1, prec)
+    "Asked" = ~qwraps2::n_perc(symptoms_conv_hist_asked == 1, prec),
+    "Present" = ~qwraps2::n_perc(symptoms_conv_hist_present == 1, prec)
     )
 )
 
@@ -156,15 +149,15 @@ out %>%
 ```
 
 ```{r, eval=cond, results="asis"}
-all$resp_asked[is.na(all$resp_asked)] <- 0
-all$resp_present[is.na(all$resp_present)] <- 0
-all$resp_onset_asked[is.na(all$resp_onset_asked)] <- 0
+all$symptoms_resp_asked[is.na(all$symptoms_resp_asked)] <- 0
+all$symptoms_resp_present[is.na(all$symptoms_resp_present)] <- 0
+all$symptoms_resp_onset_asked[is.na(all$symptoms_resp_onset_asked)] <- 0
 
 summary <- list(
   "Summary" = list(
-    "Asked" = ~qwraps2::n_perc("resp_asked" == 1, prec),
-    "Present" = ~qwraps2::n_perc("resp_present" == 1, prec),
-    "Onset asked" = ~qwraps2::n_perc("resp_onset_asked" == 1, prec)
+    "Asked" = ~qwraps2::n_perc(symptoms_resp_asked == 1, prec),
+    "Present" = ~qwraps2::n_perc(symptoms_resp_present == 1, prec),
+    "Onset asked" = ~qwraps2::n_perc(symptoms_resp_onset_asked == 1, prec)
     )
 )
 

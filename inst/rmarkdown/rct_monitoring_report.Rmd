@@ -1,7 +1,7 @@
 ---
 title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study (LS) - Monitoring Report'}`"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
-date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 params:
   research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   start_date: NULL
@@ -84,7 +84,7 @@ day28_wmax <- 32
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[C]{\includegraphics[width=10cm]{banner.png}}
 \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
-\fancyfoot[L]{TIMCI Data Monitoring Report v1.0 - Template: H. LANGET (Swiss TPH)}
+\fancyfoot[L]{TIMCI Data Monitoring Report v1.0}
 
 ```{r translations-subsection, child = 'translations.Rmd'}
 ```
@@ -159,7 +159,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
 }
 ```
 
-```{r maps-subsection, eval = is_india, child = 'maps.Rmd'}
+```{r maps-subsection, eval = is_india | is_kenya | is_senegal, child = 'maps.Rmd'}
 ```
 
 \clearpage

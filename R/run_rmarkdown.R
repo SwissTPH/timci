@@ -873,9 +873,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   }
 
-  ###########################
-  # RCT data quality report #
-  ###########################
+  ########################
+  # RCT data lock report #
+  ########################
 
   write(formats2h1("Export data and generate data quality report"), stderr())
 
@@ -910,21 +910,66 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  kii_interview_data = kii_interview_data,
                  online_survey_data = online_survey_data,
                  lock_date = lock_date)
-  generate_word_report(report_dir, "database_export.Rmd", "timci_data_export_report", params)
+  generate_word_report(report_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
-  #############################
-  # RCT data quality report 2 #
-  #############################
+  ###########################
+  # RCT data quality report #
+  ###########################
 
-  write(formats2h1("Explore Day 0 data"), stderr())
+  full_export <- 1
+  if(full_export == 1){
 
-  wdir <- getwd()
-  setwd(system.file(file.path('rmarkdown'), package = 'timci'))
-  load(file = "timci_locked_data.rda")
-  setwd(wdir)
-  params <- list(locked_day0_data = locked_day0_data,
-                 locked_spa_sco_data = locked_spa_sco_data)
-  generate_word_report(report_dir, "database_summary.Rmd", "timci_data_summary_report", params)
+    write(formats2h1("Explore Day 0 data"), stderr())
+
+    # Load locked data from *.Rda
+    wdir <- getwd()
+    setwd(system.file(file.path('rmarkdown'), package = 'timci'))
+    load(file = "timci_locked_data.rda")
+    setwd(wdir)
+
+    # Global data report
+    params <- list(locked_day0_data = locked_day0_data,
+                   locked_allday7fu_data = locked_allday7fu_data,
+                   locked_hospit_data = locked_hospit_data,
+                   locked_spa_sco_data = locked_spa_sco_data,
+                   locked_spa_hcpi_data = locked_spa_hcpi_data,
+                   spa_cgei_data = spa_cgei_data,
+                   spa_fa_data = spa_fa_data)
+    if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+      params <- append(params,
+                       list(locked_allday28fu_data = locked_allday28fu_data))
+    }
+    generate_word_report(report_dir, "database_summary.Rmd", "timci_data_summary_report", params)
+
+    # Detailed data reports
+    library(dataMaid)
+    if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+      dataMaid::makeDataReport(locked_day0_data,
+                               file = file.path(report_dir, paste0("timci_rctls_day0_data_summary_report",'_',Sys.Date(),".Rmd")),
+                               reportTitle = "TIMCI RCT/LS - Locked Day 0 dataset",
+                               openResult = FALSE,
+                               replace = TRUE)
+      dataMaid::makeDataReport(locked_spa_sco_data,
+                               file = file.path(report_dir, paste0("timci_spa_sco_data_summary_report", '_',Sys.Date(),".Rmd")),
+                               reportTitle = "TIMCI SPA - Locked sick child observation dataset",
+                               openResult = FALSE,
+                               replace = TRUE)
+      dataMaid::makeDataReport(spa_cgei_data,
+                               file = file.path(report_dir, paste0("timci_spa_cgei_data_summary_report", '_',Sys.Date(),".Rmd")),
+                               reportTitle = "TIMCI SPA - Caregiver exit interview dataset",
+                               openResult = FALSE,
+                               replace = TRUE)
+      dataMaid::makeDataReport(locked_spa_hcpi_data,
+                               file = file.path(report_dir, paste0("timci_spa_hcpi_data_summary_report", '_',Sys.Date(),".Rmd")),
+                               reportTitle = "TIMCI SPA - Healthcare provider interview dataset",
+                               openResult = FALSE,
+                               replace = TRUE)
+    }
+
+    rm(locked_day0_data)
+    gc() # Garbage collection
+
+  }
 
   #########################
   # RCT monitoring report #
@@ -1099,7 +1144,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (length(hcpidi_interview_data) > 0) {
       params <- list(research_facilities = research_facilities,
                      facility_data = facility_data,
+                     cgidi_interview_data = cgidi_interview_data,
                      hcpidi_interview_data = hcpidi_interview_data,
+                     kii_interview_data = kii_interview_data,
+                     online_survey_data = online_survey_data,
                      raw_withdrawal_data = raw_withdrawal_data)
       generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
     }
