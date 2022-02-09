@@ -1,11 +1,14 @@
 ---
 title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') != 'Senegal') {'Qualitative studies - Monitoring Report'} else {'Etude qualitatives - Rapport de suivi'}`"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King George s Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
-date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 params:
   research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
   facility_data: NULL
+  cgidi_interview_data: NULL
   hcpidi_interview_data: NULL
+  kii_interview_data: NULL
+  online_survey_data: NULL
   raw_withdrawal_data: NULL
 output:
   pdf_document:
@@ -54,7 +57,7 @@ total_row_bg2 <- "gray"
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[C]{\includegraphics[width=10cm]{banner.png}}
 \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
-\fancyfoot[L]{TIMCI Qualitative Operational Report v1.0 - Template: H. LANGET (Swiss TPH)}
+\fancyfoot[L]{TIMCI Qualitative Operational Report v1.0}
 
 ```{r translations-subsection, child = 'translations.Rmd'}
 ```
@@ -72,7 +75,10 @@ total_row_bg2 <- "gray"
 if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
+  cgidi_interview_data <- params$cgidi_interview_data
   hcpidi_interview_data <- params$hcpidi_interview_data
+  kii_interview_data <- params$kii_interview_data
+  online_survey_data <- params$online_survey_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   
 }
@@ -103,7 +109,16 @@ if (nrow(hcpidi_interview_data) > 0) {
 ```{r context-subsection, child = 'context.Rmd'}
 ```
 
+```{r cgidi-subsection, child = if (!is.null(cgidi_interview_data)) 'qual_monitoring_report_sub_cgidi.Rmd'}
+```
+
 ```{r hcpidi-subsection, child = if (!is.null(hcpidi_interview_data)) 'qual_monitoring_report_sub_hcpidi.Rmd'}
+```
+
+```{r kii-subsection, child = if (!is.null(kii_interview_data)) 'qual_monitoring_report_sub_kii.Rmd'}
+```
+
+```{r online-survey-subsection, child = if (!is.null(online_survey_data)) 'qual_monitoring_report_sub_survey.Rmd'}
 ```
 
 \newpage
