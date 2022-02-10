@@ -68,7 +68,7 @@ plot_gauge <- function(val, lbl, m, lthres, uthres, scale = 1){
                              label = paste0(format(round(percentage * 100, 1), nsmall = 1), "%"),
                              title = lbl)
 
-  ggplot(df, aes(fill = group, ymax = min(percentage, m), ymin = 0, xmax = 2, xmin = 1)) +
+  ggplot(df, aes(fill = group, ymax = min(percentage, 1), ymin = 0, xmax = 2, xmin = 1)) +
     geom_rect(aes(ymax = 1, ymin = 0, xmax = 2, xmin = 1), fill = "#dcdcdc") +
     geom_rect() +
     coord_polar(theta = "y", start = -pi/2) + xlim(c(0, 2)) + ylim(c(0,2)) +
