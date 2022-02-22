@@ -291,6 +291,11 @@ locked_pii <- timci::allocate_screening_facility(pii,
 cat(paste0("**", n_screening - n_locked_screening, "** record(s) with non-valid device IDs were detected and removed in the locked facility database, including **", n_day0 - n_locked_day0, "** Day 0 records."))
 ```
 
+```{r}
+# Replace Day 0 data by locked Day 0 data so that non-valid device IDs/facilities do not appear in the export
+day0_data <- locked_day0_data
+```
+
 ### Lock date [context check]
 
 **Rule:** records entered after the lock date on `r lock_date` are removed in the locked database.
@@ -328,7 +333,6 @@ if (nrow(invalid_facilities) > 0) {
     knitr::kable(row.names = FALSE)
 }
 ```
-
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
@@ -896,6 +900,11 @@ if (!is.null(day7fu_data)) {
     format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
   }
 }
+```
+
+```{r}
+# Replace Day 7 data by locked Day 7 data so that non-valid device IDs/facilities do not appear in the export
+day7fu_data <- locked_day7fu_data
 ```
 
 ### Duplicate management

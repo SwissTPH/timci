@@ -53,7 +53,8 @@ gps_vec <- c("latitude", "longitude", "gps_accuracy")
 dfcols <- colnames(facility_data)
 if (("latitude" %in% dfcols) & ("longitude" %in% dfcols)) {
   gps_coordinates <- facility_data[, gps_vec]
-  gps_coordinates <- na.omit(gps_coordinates) %>% filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
+  gps_coordinates <- na.omit(gps_coordinates) %>%
+    filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
 }
 ```
 
@@ -136,6 +137,12 @@ if (!is.null(raw_day7fu_data)) {
     succ_day7fu_data <- timci::format_day7_data(raw_day7fu_data)[[1]]
     succ_day7fu_data <- clean_followup_for_rate_estimation(baseline_data, succ_day7fu_data)
     
+    # Extract and clean all Day 7 follow-up attempts
+    attempts_day7fu_data <- day7fu_data[day7fu_data$child_id %in% baseline_data$child_id, ] %>%
+      dplyr::mutate(attempted_day7 = 1)  %>%
+      dplyr::distinct_at(dplyr::vars(child_id),
+                         .keep_all = TRUE)
+    
     n_completed_day7fu <- sum((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date(), na.rm = TRUE) 
     n_valid_day7fu <- sum(((as.Date(succ_day7fu_data$date_day0, "%Y-%m-%d") + day7_wmin) <= Sys.Date()) & (succ_day7fu_data$days >= day7_wmin) & (succ_day7fu_data$days <= day7_wmax), na.rm = TRUE) 
   } else {
@@ -153,5 +160,5 @@ n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= 
 ```
 
 ```{r}
-n_due_hospitfu <- sum(succ_day7fu_data$hospitalised == 1)
+n_due_hospitfu <- sum((succ_day7fu_data$status_day7 == 2) | (succ_day7fu_data$hf_visit_type == hospit_value))
 ```

@@ -194,7 +194,7 @@ if (!is.null(day7fu_data)) {
         "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec),
         "Day 11-12" = ~qwraps2::n_perc(days >= 11 & days <= 12, prec),
         "Above day 12" = ~qwraps2::n_perc(days > 12, prec),
-        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren")
+        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren", na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, day7_outcome_ss, facility_name) 

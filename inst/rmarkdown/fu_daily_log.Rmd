@@ -74,22 +74,20 @@ physicalday7fu <- timci::generate_physical_fu_log_csv(pii,
                                                       fu_vend)
 ```
 
-```{r}
-if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
-  if (!is.null(raw_oth_fu_data)) {
-    if (nrow(raw_oth_fu_data) > 0) {
-      # Remove duplicate child ID entries in raw_oth_fu_data based while keeping the most recent date
-      raw_oth_fu_data <- raw_oth_fu_data %>% rename(child_id = 'a1-pid')
-      raw_oth_fu_data <- aggregate(date ~ child_id, raw_oth_fu_data, max)
-      raw_oth_fu_data <- raw_oth_fu_data %>% rename('a1-pid' = 'child_id')
-      # Add date of the day 7 follow-up in the day 28 log, if available
-      fu <- merge(fu,
-                  raw_oth_fu_data[, c('a1-pid', 'date')],
-                  by.x = 'name',
-                  by.y = 'a1-pid',
-                  all.x = TRUE) %>%
-            dplyr::rename(day7fu = date)
-    }
+```{r, eval=(fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID'))}
+if (!is.null(raw_oth_fu_data)) {
+  if (nrow(raw_oth_fu_data) > 0) {
+    # Remove duplicate child ID entries in raw_oth_fu_data based while keeping the most recent date
+    raw_oth_fu_data <- raw_oth_fu_data %>% rename(child_id = 'a1-pid')
+    raw_oth_fu_data <- aggregate(date ~ child_id, raw_oth_fu_data, max)
+    raw_oth_fu_data <- raw_oth_fu_data %>% rename('a1-pid' = 'child_id')
+    # Add date of the day 7 follow-up in the day 28 log, if available
+    fu <- merge(fu,
+                raw_oth_fu_data[, c('a1-pid', 'date')],
+                by.x = 'name',
+                by.y = 'a1-pid',
+                all.x = TRUE) %>%
+          dplyr::rename(day7fu = date)
   }
 }
 ```
