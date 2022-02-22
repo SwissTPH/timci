@@ -1203,17 +1203,17 @@ load_qual_data_and_generate_report <- function(qpid,
 
   write(formats2h1("Generate qualitative report"), stderr())
 
-  # if (!is.null(hcpidi_interview_data)) {
-  #   if (length(hcpidi_interview_data) > 0) {
-  #     params <- list(research_facilities = research_facilities,
-  #                    facility_data = facility_data,
-  #                    cgidi_interview_data = cgidi_interview_data,
-  #                    hcpidi_interview_data = hcpidi_interview_data,
-  #                    kii_interview_data = kii_interview_data,
-  #                    online_survey_data = online_survey_data,
-  #                    raw_withdrawal_data = raw_withdrawal_data)
-  #     generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
-  #   }
-  # }
+  if (!is.null(hcpidi_interview_data)) {
+    if (length(hcpidi_interview_data) > 0) {
+      params <- list(research_facilities = research_facilities,
+                     facility_data = NULL,
+                     cgidi_interview_data = cgidi_interview_data,
+                     hcpidi_interview_data = hcpidi_interview_data,
+                     kii_interview_data = kii_interview_data,
+                     online_survey_data = online_survey_data,
+                     raw_withdrawal_data = NULL)
+      generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
+    }
+  }
 
 }
