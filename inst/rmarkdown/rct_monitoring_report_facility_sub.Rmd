@@ -242,4 +242,5 @@ rm(facility_data_tmp)
 rm(baseline_data_tmp)
 rm(repeat_data_tmp)
 rm(raw_day7fu_data_tmp)
+tmp <- gc() # garbage collection
 ```
