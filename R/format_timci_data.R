@@ -178,6 +178,14 @@ process_facility_data <- function(df) {
                                     df$'crfs-t02b-a4_c_4c')
   }
 
+  # Extract the way the child ID has been recorded (manual entry or scan)
+  if ('consent-a1_a_4' %in% cols) {
+    df$'consent-a1_a_4' <- ifelse(!is.na(df$'consent-a1_a_4'), 1, 0)
+  }
+  if ('consent-a1_a_4a' %in% cols) {
+    df$'consent-a1_a_4a' <- ifelse(!is.na(df$'consent-a1_a_4a'), 1, 0)
+  }
+
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols <- c("visit_reason-a3_c_1",
