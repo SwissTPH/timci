@@ -16,6 +16,7 @@ params:
   wfa_data: NULL
 output:
   pdf_document:
+    keep_tex: true
     number_sections: true
     extra_dependencies:
       float: null

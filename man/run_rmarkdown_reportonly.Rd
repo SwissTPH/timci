@@ -35,13 +35,13 @@ run_rmarkdown_reportonly(
 \arguments{
 \item{rctls_pid}{Numeric value that refers ID of the RCT/LS ODK Central project}
 
-\item{rctls_pp}{Passphrase}
+\item{rctls_pp}{Encryption passphrase associated with the RCT/LS ODK ODK Central project}
 
 \item{spa_pid}{Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server}
 
 \item{qpid}{Numeric ID of the qualitative ODK Central project}
 
-\item{qual_pp}{Passphrase}
+\item{qual_pp}{Encryption passphrase associated with the qualitative ODK Central project}
 
 \item{research_facilities}{Dataframe that contains the research facilities}
 

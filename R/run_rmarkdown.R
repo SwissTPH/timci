@@ -1,397 +1,14 @@
-#' Set language settings
-#'
-#' This function sets country-specific language preferences to be used in the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
-#' The function more specifically sets the environment variable `LANG` and teh current locale `LC_TIME`
-#'
-#' @export
-
-set_language_settings <- function() {
-
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    Sys.setenv(LANG = "fr")
-    Sys.setlocale("LC_TIME", "French")
-  } else {
-    Sys.setenv(LANG = "en")
-    Sys.setlocale("LC_TIME", "English")
-  }
-
-}
-
-#' Set the connection to ODK Central through ruODK
-#'
-#' This function sets the connection to the country ODK Central server which stores data in the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
-#' To this aim, the function relies on the `ruODK` package which is an R client to access and parse data from ODK Central.
-#'
-#' @param verbose Boolean (optional) that enables (TRUE) or disables (FALSE) verbose output. Defaut is set to FALSE.
-#' @return list of ODK central project IDs
-#' @export
-
-set_odkc_connection <- function(verbose = FALSE) {
-
-  write(formats2h1("Connection to ODK Central through ruODK"), stderr())
-
-  ruODK::ru_setup(
-    svc = Sys.getenv("ODKC_SVC"),
-    un = Sys.getenv("ODKC_UN"),
-    pw = Sys.getenv("ODKC_PW"),
-    tz = Sys.getenv("TZ"),
-    verbose = verbose # Can be switched to TRUE for demo or debugging
-  )
-
-  # List of projects ---------------------------
-  # Only list projects visible with the credentials `ODKC_UN` and `ODKC_PW`
-  odkc_project_list <- ruODK::project_list()$id
-
-}
-
-#' Load RCT/LS data
-#'
-#' This function loads RCT/LS data for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
-#'
-#' @param odkc_project_list List of ODK project IDs on the ODK Central server
-#' @param rctls_pid Numeric value that refers to the ID of the RCT/LS project on the ODK Central server
-#' @param rctls_start_date RCT/LS data collection start date
-#' @param rctls_end_date RCT/LS data collection end date
-#'
-#' @return list of ODK central project IDs
-#' @export
-
-load_rctls_data <- function(odkc_project_list,
-                            rctls_pid,
-                            rctls_start_date,
-                            rctls_end_date) {
-
-  # RCT/LS environment variables ---------------------------
-  crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
-  crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
-  crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
-  }
-  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
-
-  # List RCT/LS forms ---------------------------
-  rct_ls_form_list <- NULL
-  if (rctls_pid %in% odkc_project_list) {
-    rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
-  }
-
-  # Initialise RCT/LS datasets to NULL ---------------------------
-  facility_data <- NULL
-  raw_day7fu_data <- NULL
-  raw_day28fu_data <- NULL
-  raw_withdrawal_data <- NULL
-  raw_wfa_data <- NULL
-
-  # Load the RCT/LS datasets ---------------------------
-  if (spa_pid %in% odkc_project_list) {
-    write(formats2h2("Load RCT/LS data"), stderr())
-
-    # Load RCT/LS Day 0 data
-    write(formats2h3("Load day 0 data"), stderr())
-
-    raw_facility_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                 pid = rctls_pid,
-                                                 fid = crf_facility_fid,
-                                                 pp = rctls_pp,
-                                                 media = FALSE)
-    # Dirty fix - To be moved when time allows
-    col_specs <- list(
-      'a4_c_10a' = col_integer(),
-      'crfs-t04a-b2_3' = col_integer(),
-      'crfs-t03-m3_1b' = col_integer(),
-      'crfs-t03-m3_3' = col_integer(),
-      'crfs-t03-m3_3o' = col_character(),
-      'crfs-t03-m3_4' = col_integer(),
-      'crfs-t03-m3_6' = col_integer(),
-      'crfs-t03-m3_7' = col_integer(),
-      'crfs-t03-m3_8a' = col_integer(),
-      'crfs-t03-m3_9a' = col_integer(),
-      'crfs-t09a1-medication_injection' = col_integer(),
-      'crfs-t09a1-injection_types' = col_integer(),
-      'crfs-t09a1-injection_typeso' = col_character(),
-      'crfs-t09a2-g3_1' = col_character(),
-      'crfs-t09a2-g3_1o' = col_character(),
-      'crfs-t09a2-i2_1' = col_integer(),
-      'crfs-t09a2-i2_1a' = col_integer(),
-      'crfs-t09a2-i2_1b' = col_integer(),
-      'crfs-t09a2-i2_1o' = col_character(),
-      'crfs-t09a2-j2_1' = col_integer(),
-      'crfs-t09a2-j2_1c' = col_integer(),
-      'crfs-t09a2-h2_2a' = col_character(),
-      'crfs-t09a2-h2_2ao' = col_character(),
-      'crfs-t07a-tt07a-e2_1' = col_integer(),
-      'crfs-t07a-tt07a-e2_1a' = col_integer(),
-      'crfs-t07a-tt07a-e2_2' = col_integer(),
-      'crfs-t07a-tt07a-e2_2a' = col_integer(),
-      'crfs-t07a-tt07a-e2_3' = col_integer(),
-      'crfs-t07a-tt07a-e2_3a' = col_integer(),
-      'crfs-t07a-tt07a-e2_4' = col_integer(),
-      'crfs-t07a-tt07a-e2_4a' = col_integer(),
-      'crfs-t06a-tt06a-d2_6' = col_integer(),
-      'crfs-t06a-d2_6b' = col_integer(),
-      'crfs-t06a-tt06a-d2_1' = col_integer(),
-      'crfs-t06a-d2_1a' = col_integer(),
-      'crfs-t06a-tt06a-d2_4' = col_integer(),
-      'crfs-t06a-d2_4a' = col_integer(),
-      'crfs-t06a-tt06a-d2_5' = col_integer(),
-      'crfs-t06a-d2_5a' = col_integer(),
-      'crfs-t06a-tt06a-d2_2' = col_integer(),
-      'crfs-t06a-d2_2b' = col_integer(),
-      'crfs-t06a-tt06a-d2_3' = col_integer(),
-      'crfs-t06a-d2_3b' = col_integer(),
-      'crfs-t08a-f2_1' = col_character(),
-      'crfs-t08a-f2_1o' = col_character(),
-      'crfs-t08a-f2_2' = col_integer(),
-      'crfs-t08a-f2_3' = col_integer(),
-      'crfs-t08a-f2_4' = col_integer(),
-      'crfs-t08a-f2_5' = col_double(),
-      'crfs-t08a-f2_6' = col_integer(),
-      'crfs-t08a-f2_7' = col_integer(),
-      'crfs-t08a-f2_8' = col_integer(),
-      'crfs-t08a-f2_9' = col_integer(),
-      'crfs-t08a-f2_10a' = col_integer(),
-      'crfs-t05b-c3_1' = col_integer(),
-      'crfs-t05b-c3_2' = col_integer(),
-      'crfs-t05b-c3_3' = col_integer(),
-      'crfs-t05b-c3_3a' = col_integer(),
-      'crfs-t05b-c3_4' = col_integer(),
-      'crfs-t05b-c3_6a' = col_integer(),
-      'crfs-t05b-c3_6' = col_integer(),
-      'crfs-t05b-c3_6o' = col_character()
-    )
-
-    # SANITY CHECK: export raw LS/RCT data from ODK
-    t <- tempdir()
-    utils::unzip(raw_facility_zip, exdir = t)
-    fs::dir_ls(t)
-    if (!is.null(col_specs)) {
-      raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")), col_types = col_specs))
-    } else{
-      raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv"))))
-    }
-    fn <- timci::export_df2xlsx(raw_odk_data,
-                                mdb_dir,
-                                "01a_screening_raw")
-
-    raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
-                                                          csv_name = paste0(crf_facility_fid,".csv"),
-                                                          start_date = start_date,
-                                                          end_date = end_date,
-                                                          local_dir = t,
-                                                          col_specs = col_specs)
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-      facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
-    } else{
-      facility_data <- timci::process_facility_data(raw_facility_data)
-    }
-
-    # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
-    facility_data_audit <- timci::extract_additional_data_from_odk_zip(odk_zip = raw_facility_zip,
-                                                                       csv_name = paste0(crf_facility_fid, " - audit.csv"),
-                                                                       local_dir = t)
-
-    # Load day 7 follow-up data
-    write(formats2h3("Load day 7 follow-up data"), stderr())
-    raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
-                                                    cpid_forms = rct_ls_form_list,
-                                                    cpp = rctls_pp,
-                                                    cfid = crf_day7_fid,
-                                                    start_date = start_date,
-                                                    end_date = day7fu_end_date,
-                                                    verbose = TRUE)
-
-    # Load hospital visit follow-up data
-    write(formats2h3("Load hospital visit data"), stderr())
-    raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
-                                                    cpid_forms = rct_ls_form_list,
-                                                    cpp = rctls_pp,
-                                                    cfid = crf_hospit_fid,
-                                                    start_date = start_date,
-                                                    end_date = hospitfu_end_date,
-                                                    verbose = TRUE)
-
-    # [Tanzania and India only] Load day 28 follow-up data
-    raw_day28fu_data <- NULL
-    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-      write(formats2h3("Load day 28 follow-up data"), stderr())
-      if (crf_day28_fid %in% rct_ls_form_list) {
-        raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                    pid = rctls_pid,
-                                                    fid = crf_day28_fid,
-                                                    pp = rctls_pp,
-                                                    media = FALSE)
-        raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
-                                                             csv_name = paste0(crf_day28_fid,".csv"),
-                                                             start_date = start_date,
-                                                             end_date = day28fu_end_date)
-      }
-    }
-  }
-
-  # Load widthdrawal data
-  write(formats2h3("Load withdrawal data"), stderr())
-  raw_withdrawal_data <- extract_data_from_odk_server(cpid = rctls_pid,
-                                                      cpid_forms = rct_ls_form_list,
-                                                      cpp = rctls_pp,
-                                                      cfid = wd_fid,
-                                                      start_date = start_date,
-                                                      end_date = withdrawal_end_date,
-                                                      verbose = TRUE)
-
-  # Load weekly facility assessment data
-  write(formats2h3("Load weekly facility assessment data"), stderr())
-  raw_wfa_data <- extract_data_from_odk_server(cpid = rctls_pid,
-                                               cpid_forms = rct_ls_form_list,
-                                               cpp = rctls_pp,
-                                               cfid = crf_wfa_fid,
-                                               start_date = start_date,
-                                               end_date = wfa_end_date,
-                                               verbose = TRUE)
-  wfa_data <- NULL
-  if (!is.null(raw_wfa_data)) {
-    wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
-  }
-
-  # Load problem report data
-  write(formats2h3("Load problem report data"), stderr())
-  raw_problem_data <- extract_data_from_odk_server(cpid = rctls_pid,
-                                                   cpid_forms = rct_ls_form_list,
-                                                   cpp = rctls_pp,
-                                                   cfid = problem_fid,
-                                                   start_date = start_date,
-                                                   end_date = end_date,
-                                                   verbose = TRUE)
-
-  # Return RCT/LS datasets ---------------------------
-  list(facility_data,
-       spa_fa_data,
-       spa_hcpi_data,
-       spa_sco_data,
-       wfa_data,
-       raw_problem_data)
-
-}
-
-#' Load Service Provision Assessment (SPA), process mapping & time-flow (PM&TF) data
-#'
-#' This function loads SPA data for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
-#'
-#' @param odkc_project_list List of ODK project IDs on the ODK Central server
-#' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
-#' @param spa_start_date SPA data collection start date
-#' @param spa_end_date SPA data collection end date
-#'
-#' @return list of ODK central project IDs
-#' @export
-
-load_spapmtf_data <- function(odkc_project_list,
-                              spa_pid,
-                              spa_start_date,
-                              spa_end_date) {
-
-  # SPA and PM&TF environment variables ---------------------------
-  cgei_fid <- Sys.getenv("TIMCI_SPA_CGEI_FID")
-  fa_fid <- Sys.getenv("TIMCI_SPA_FA_FID")
-  sco_fid <- Sys.getenv("TIMCI_SPA_SCO_FID")
-  hcpi_fid <- Sys.getenv("TIMCI_SPA_HCPI_FID")
-  tf_fid <- Sys.getenv("TIMCI_TF_FID")
-  pm_fid <- Sys.getenv("TIMCI_PM_FID")
-
-  # List SPA and PM&TF forms ---------------------------
-  spa_form_list <- NULL
-  if (spa_pid %in% odkc_project_list) {
-    spa_form_list <- ruODK::form_list(pid = spa_pid)$fid
-  }
-
-  # Initialise SPA and PM&TF datasets to NULL ---------------------------
-  spa_cgei_data <- NULL
-  spa_fa_data <- NULL
-  spa_hcpi_data <- NULL
-  spa_sco_data <- NULL
-  tf_data <- NULL
-  pm_data <- NULL
-
-  # Load SPA and PM&TF datasets ---------------------------
-  if (spa_pid %in% odkc_project_list) {
-
-    # Load SPA caregiver exit interview data
-    write(formats2h3("Load SPA caregiver exit interview data"), stderr())
-    spa_cgei_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                  cpid_forms = spa_form_list,
-                                                  cfid = cgei_fid,
-                                                  start_date = spa_start_date,
-                                                  end_date = spa_end_date,
-                                                  verbose = TRUE)
-
-    # Load SPA facility assessment data
-    write(formats2h3("Load SPA facility assessment data"), stderr())
-    spa_fa_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                cpid_forms = spa_form_list,
-                                                cfid = fa_fid,
-                                                start_date = spa_start_date,
-                                                end_date = spa_end_date,
-                                                verbose = TRUE)
-
-    # Load SPA healthcare provider interview data
-    write(formats2h3("Load SPA healthcare provider interview data"), stderr())
-    spa_hcpi_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                  cpid_forms = spa_form_list,
-                                                  cfid = hcpi_fid,
-                                                  start_date = spa_start_date,
-                                                  end_date = spa_end_date,
-                                                  verbose = TRUE)
-
-    # Load SPA sick child observation protocol data
-    write(formats2h3("Load SPA sick child observation protocol data"), stderr())
-    spa_sco_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                 cpid_forms = spa_form_list,
-                                                 cfid = sco_fid,
-                                                 start_date = spa_start_date,
-                                                 end_date = spa_end_date,
-                                                 verbose = TRUE)
-
-    # Load time-flow data
-    write(formats2h3("Load time-flow data"), stderr())
-    tf_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
-                                                    cpid_forms = spa_form_list,
-                                                    cfid = tf_fid,
-                                                    start_date = spa_start_date,
-                                                    end_date = spa_end_date,
-                                                    verbose = TRUE)
-
-    # Load process-mapping data
-    write(formats2h3("Load process mapping data"), stderr())
-    pm_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
-                                                    cpid_forms = spa_form_list,
-                                                    cfid = pm_fid,
-                                                    start_date = spa_start_date,
-                                                    end_date = spa_end_date,
-                                                    verbose = TRUE)
-
-  }
-
-  # Return SPA and PM&TF datasets ---------------------------
-  list(spa_cgei_data,
-       spa_fa_data,
-       spa_hcpi_data,
-       spa_sco_data,
-       tf_data,
-       pm_data)
-
-}
-
 #' Run Rmarkdown files
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
 #' @param rctls_pid Numeric value that refers ID of the RCT/LS ODK Central project
-#' @param rctls_pp Passphrase
+#' @param rctls_pp Encryption passphrase associated with the RCT/LS ODK ODK Central project
 #' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
 #' @param spa_pid2 Numeric value (optional) that refers to another ID of the SPA / time-flow / process mapping project on the ODK Central server if data have been split between 2 projects
 #' @param cost_pid Numeric value (optional) that refers to the ID of the cost and cost-effectiveness project on the ODK Central server
 #' @param qpid Numeric ID of the qualitative ODK Central project
-#' @param qual_pp Passphrase
+#' @param qual_pp Encryption passphrase associated with the qualitative ODK Central project
 #' @param research_facilities Dataframe that contains the research facilities
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
@@ -470,7 +87,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   ################
 
   # Connection to ODK Central through ruODK
-  odkc_project_list <- set_odkc_connection()
+  odkc_project_list <- timci::set_odkc_connection()
 
   # Environment variables which may be shared between different projects ---------------------------
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
@@ -802,76 +419,18 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h2("Load TIMCI qualitative data"), stderr())
 
-  cgidi_invitation_data <- NULL
-  cgidi_encryption_data <- NULL
-  cgidi_interview_data <- NULL
-  hcpidi_interview_data <- NULL
-  kii_interview_data <- NULL
-  online_survey_data <- NULL
+  qual_dfs <- timci::load_qual_data(odkc_project_list = odkc_project_list,
+                                    qpid = qpid,
+                                    qual_pp = qual_pp,
+                                    qual_start_date = start_date,
+                                    qual_end_date = end_date)
 
-  if (qpid %in% odkc_project_list) {
-
-    # Load caregiver IDI invitation data
-    write(formats2h3("Load caregiver in-depth interview (IDI) invitation data"), stderr())
-    cgidi_invitation_data <- timci::extract_data_from_odk_server(cpid = qpid,
-                                                                 cpid_forms = qual_form_list,
-                                                                 cfid = cgidi1_fid,
-                                                                 cpp = qual_pp,
-                                                                 start_date = start_date,
-                                                                 end_date = end_date,
-                                                                 verbose = TRUE)
-
-    # Load caregiver IDI encryption list
-    write(formats2h3("Load caregiver in-depth interview (IDI) encryption list"), stderr())
-    cgidi_encryption_data <- timci::extract_data_from_odk_server(cpid = qpid,
-                                                                 cpid_forms = qual_form_list,
-                                                                 cfid = cgidi2_fid,
-                                                                 cpp = qual_pp,
-                                                                 start_date = start_date,
-                                                                 end_date = end_date,
-                                                                 verbose = TRUE)
-
-    # Load caregiver in-depth interview (IDI) data
-    write(formats2h3("Load caregiver in-depth interview (IDI) data"), stderr())
-    cgidi_interview_data <- extract_data_from_odk_server(cpid = qpid,
-                                                         cpid_forms = qual_form_list,
-                                                         cfid = cgidi3_fid,
-                                                         cpp = qual_pp,
-                                                         start_date = start_date,
-                                                         end_date = end_date,
-                                                         verbose = TRUE)
-
-    # Load healthcare provider in-depth interview (IDI) data
-    write(formats2h3("Load healthcare provider in-depth interview (IDI) data"), stderr())
-    hcpidi_interview_data <- extract_data_from_odk_server(cpid = qpid,
-                                                          cpid_forms = qual_form_list,
-                                                          cfid = hcpidi_fid,
-                                                          cpp = qual_pp,
-                                                          start_date = start_date,
-                                                          end_date = end_date,
-                                                          verbose = TRUE)
-
-    # Load key informant interview (KII) data
-    write(formats2h3("Load key informant interview (KII) data"), stderr())
-    kii_interview_data <- extract_data_from_odk_server(cpid = qpid,
-                                                       cpid_forms = qual_form_list,
-                                                       cfid = kii_fid,
-                                                       cpp = qual_pp,
-                                                       start_date = start_date,
-                                                       end_date = end_date,
-                                                       verbose = TRUE)
-
-    # Load online survey data
-    write(formats2h3("Load online survey data"), stderr())
-    online_survey_data <- extract_data_from_odk_server(cpid = qpid,
-                                                       cpid_forms = qual_form_list,
-                                                       cfid = os_fid,
-                                                       cpp = qual_pp,
-                                                       start_date = start_date,
-                                                       end_date = end_date,
-                                                       verbose = TRUE)
-
-  }
+  cgidi_interview_data <- qual_dfs[[1]]
+  hcpidi_interview_data <- qual_dfs[[2]]
+  kii_interview_data <- qual_dfs[[3]]
+  online_survey_data <- qual_dfs[[4]]
+  cgidi_invitation_data <- qual_dfs[[5]]
+  cgidi_encryption_data <- qual_dfs[[6]]
 
   ########################
   # RCT data lock report #
@@ -916,7 +475,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # RCT data quality report #
   ###########################
 
-  full_export <- 1
+  full_export <- 0
   if(full_export == 1){
 
     write(formats2h1("Explore Day 0 data"), stderr())
@@ -1214,7 +773,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
   ################
 
   # Connection to ODK Central through ruODK
-  odkc_project_list <- set_odkc_connection()
+  odkc_project_list <- timci::set_odkc_connection()
 
   # Environment variables which may be shared between different projects ---------------------------
   wd_fid <- Sys.getenv("TIMCI_WD_FID")
@@ -1475,7 +1034,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
-#' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project (optional)
+#' @param cost_pid Numeric ID of the cost and cost-effectiveness ODK Central project
 #' @param research_facilities Dataframe that contains the research facilities
 #' @param report_dir Path to the output folder for the generated Rmarkdown reports
 #' @param cost_dir Path to the output folder for the cost and cost effectiveness database exports (optional)
@@ -1520,7 +1079,7 @@ export_cost_studies <- function(cost_pid,
   ################
 
   # Connection to ODK Central through ruODK
-  odkc_project_list <- set_odkc_connection()
+  odkc_project_list <- timci::set_odkc_connection()
 
   #######################
   # Load TIMCI ODK data #
@@ -1574,5 +1133,87 @@ export_cost_studies <- function(cost_pid,
 
   write(formats2h1("Export data and generate data quality report"), stderr())
   write("No data exported for the moment - To be updated", stderr())
+
+}
+
+#' Load qualitative data and generate corresponding report
+#'
+#' This function loads qualitative data and run the qualitative Rmarkdown files to generate standardised automated reports for the qualitative studies in the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
+#'
+#' @param qpid Numeric ID of the qualitative ODK Central project
+#' @param qual_pp Encryption passphrase associated with the qualitative ODK Central project
+#' @param research_facilities Dataframe that contains the research facilities
+#' @param report_dir Path to the output folder for the generated Rmarkdown reports
+#' @param qual_start_date Qualitative data collection start date (optional)
+#' @param qual_end_date Qualitative data collection end date (optional)
+#' @export
+
+load_qual_data_and_generate_report <- function(qpid,
+                                               qual_pp,
+                                               research_facilities,
+                                               report_dir,
+                                               qual_start_date = NULL,
+                                               qual_end_date = NULL) {
+
+  ###########################
+  # Set up current language #
+  ###########################
+
+  timci::set_language_settings()
+
+  ######################
+  # Set up study dates #
+  ######################
+
+  if (is.null(qual_end_date)) {
+    qual_end_date <- Sys.Date()
+  } else{
+    qual_end_date <- as.Date(qual_end_date, "%Y-%m-%d")
+  }
+
+  ################
+  # Set up ruODK #
+  ################
+
+  # Connection to ODK Central through ruODK
+  odkc_project_list <- timci::set_odkc_connection()
+
+  #######################
+  # Load TIMCI ODK data #
+  #######################
+
+  write(formats2h1("Load TIMCI qualitative data"), stderr())
+
+  qual_dfs <- timci::load_qual_data(odkc_project_list = odkc_project_list,
+                                    qpid = qpid,
+                                    qual_pp = qual_pp,
+                                    qual_start_date = qual_start_date,
+                                    qual_end_date = qual_end_date)
+
+  cgidi_interview_data <- qual_dfs[[1]]
+  hcpidi_interview_data <- qual_dfs[[2]]
+  kii_interview_data <- qual_dfs[[3]]
+  online_survey_data <- qual_dfs[[4]]
+  cgidi_invitation_data <- qual_dfs[[5]]
+  cgidi_encryption_data <- qual_dfs[[6]]
+
+  #################################
+  # Qualitative monitoring report #
+  #################################
+
+  write(formats2h1("Generate qualitative report"), stderr())
+
+  # if (!is.null(hcpidi_interview_data)) {
+  #   if (length(hcpidi_interview_data) > 0) {
+  #     params <- list(research_facilities = research_facilities,
+  #                    facility_data = facility_data,
+  #                    cgidi_interview_data = cgidi_interview_data,
+  #                    hcpidi_interview_data = hcpidi_interview_data,
+  #                    kii_interview_data = kii_interview_data,
+  #                    online_survey_data = online_survey_data,
+  #                    raw_withdrawal_data = raw_withdrawal_data)
+  #     generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
+  #   }
+  # }
 
 }

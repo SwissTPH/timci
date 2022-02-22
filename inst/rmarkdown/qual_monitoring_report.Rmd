@@ -71,23 +71,17 @@ total_row_bg2 <- "gray"
 
 `r intro_str`
 
-```{r setup-variables}
-if (!is.null(params$facility_data)) {
-  
-  facility_data <- params$facility_data
-  cgidi_interview_data <- params$cgidi_interview_data
-  hcpidi_interview_data <- params$hcpidi_interview_data
-  kii_interview_data <- params$kii_interview_data
-  online_survey_data <- params$online_survey_data
-  raw_withdrawal_data <- params$raw_withdrawal_data
-  
-}
 
-# Extract personally identifiable data
-pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+```{r}
+cond <- !is.null(params$cgidi_interview_data) | !is.null(params$hcpidi_interview_data) | !is.null(params$kii_interview_data) | !is.null(params$online_survey_data)
+```
 
-# Merge facility generic info with facility data
-facility_data <- merge(facility_data, params$research_facilities[, c("deviceid", "facility_name")], by.x = 'device_id', by.y = 'deviceid', all.x = TRUE)
+```{r setup-variables, eval=cond}
+cgidi_interview_data <- params$cgidi_interview_data
+hcpidi_interview_data <- params$hcpidi_interview_data
+kii_interview_data <- params$kii_interview_data
+online_survey_data <- params$online_survey_data
+raw_withdrawal_data <- params$raw_withdrawal_data
 ```
 
 ```{r process-facility-data, results='asis'}

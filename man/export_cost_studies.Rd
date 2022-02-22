@@ -16,7 +16,7 @@ export_cost_studies(
 )
 }
 \arguments{
-\item{cost_pid}{Numeric ID of the cost and cost-effectiveness ODK Central project (optional)}
+\item{cost_pid}{Numeric ID of the cost and cost-effectiveness ODK Central project}
 
 \item{cost_dir}{Path to the output folder for the cost and cost effectiveness database exports (optional)}
 
