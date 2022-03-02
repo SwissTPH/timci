@@ -925,8 +925,6 @@ out %>%
 `r h2_research_operations`
 
 ```{r, eval = nrow(baseline_data) > 0, results = "asis"}
-all <- data.frame(baseline_data)
-
 descriptive_statistics <- list(
   "Summary" = list(
     "Scanned entries" = ~qwraps2::n_perc(child_id_scan == 1, prec),
@@ -934,7 +932,8 @@ descriptive_statistics <- list(
     )
 )
 out <- format_summary_table(all, descriptive_statistics, facility_name)
-out %>% 
+
+out %>%
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
                   align = c("c", "c"),
@@ -942,6 +941,22 @@ out %>%
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+out <- data.frame(baseline_data) %>%
+  mutate(scanned_child_id = ifelse(child_id_scan == 1, child_id, NA)) %>%
+  group_by(facility_name) %>%
+  summarise("Max ID scanned" = max(scanned_child_id, na.rm=TRUE))
+
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Max ID that has been scanned for each facility") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
@@ -1367,7 +1382,7 @@ if (nrow(baseline_data) > 0) {
 
 `r appendix_title`
 
-```{r, results="asis"}
+```{r, results="asis", eval=!is_india}
 out <- lapply(1:nrow(facilities),
               function(i) {
                 knitr::knit_child('rct_monitoring_report_facility_sub.Rmd',

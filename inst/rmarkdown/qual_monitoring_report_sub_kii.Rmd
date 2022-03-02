@@ -6,8 +6,6 @@ write(formats2h2("Generate the KII subsection"), stderr())
 
 # Key Informant Interviews (KIIs)
 
-`r h2_calendar_heatmap`
-
 ```{r, results='asis', eval=(nrow(kii_interview_data)>0)}
 timci::generate_calendar_heatmap2(kii_interview_data,
                                   date,

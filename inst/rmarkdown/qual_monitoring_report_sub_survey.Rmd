@@ -6,8 +6,6 @@ write(formats2h2("Generate the online survey subsection"), stderr())
 
 # Online Survey
 
-`r h2_calendar_heatmap`
-
 ```{r, results='asis', eval=(nrow(online_survey_data)>0)}
 timci::generate_calendar_heatmap2(online_survey_data,
                                   date,

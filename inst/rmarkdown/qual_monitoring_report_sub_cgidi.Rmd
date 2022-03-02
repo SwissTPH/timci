@@ -4,17 +4,38 @@
 write(formats2h2("Generate the caregiver IDI subsection"), stderr())
 ```
 
+```{r}
+cgidi_cond <- nrow(cgidi_interview_data)>0
+```
+
 # Caregiver in-depth interviews (IDIs)
 
-`r h2_calendar_heatmap`
-
-```{r, results='asis', eval=(nrow(cgidi_interview_data)>0)}
+```{r, results='asis', eval=cgidi_cond}
 timci::generate_calendar_heatmap2(cgidi_interview_data,
                                   date,
                                   legendtitle = "Number of submissions")
 ```
 
-```{r, results='asis', fig.height = figsize, eval=(nrow(cgidi_interview_data)>0)}
+```{r, results='asis', fig.height = figsize, eval=cgidi_cond}
 timci::heatmap_wday_hourofday(cgidi_interview_data,
                               'start')
+```
+
+```{r, eval=cgidi_cond, results='asis'}
+all <- cgidi_interview_data %>% 
+  rename(child_age = "encryption-child_age",
+         child_id = "encryption-pid",
+         facility = "encryption-facility")
+
+out <- all[c("child_id", "date", "child_age", "facility")] %>%
+    dplyr::arrange(child_age)
+
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c", "c"),
+                  caption = "Participant characteristics") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```

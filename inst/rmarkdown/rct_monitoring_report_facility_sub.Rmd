@@ -38,6 +38,10 @@ raw_day7fu_data_tmp <- raw_day7fu_data %>%
   dplyr::filter(raw_day7fu_data$'a1-fid' == cfid)
 ```
 
+```{r}
+ write(paste0("Appendix: ", fname), stderr())
+```
+
 ## `r fname`
 
 ```{r, results = "asis"}
@@ -242,5 +246,8 @@ rm(facility_data_tmp)
 rm(baseline_data_tmp)
 rm(repeat_data_tmp)
 rm(raw_day7fu_data_tmp)
+```
+
+```{r}
 tmp <- gc() # garbage collection
 ```
