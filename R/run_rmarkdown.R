@@ -475,7 +475,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # RCT data quality report #
   ###########################
 
-  full_export <- 0
+  full_export <- 1
   if(full_export == 1){
 
     write(formats2h1("Explore Day 0 data"), stderr())
