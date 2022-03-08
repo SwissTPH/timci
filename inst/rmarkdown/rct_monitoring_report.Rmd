@@ -1382,7 +1382,7 @@ if (nrow(baseline_data) > 0) {
 
 `r appendix_title`
 
-```{r, results="asis", eval=!is_india}
+```{r, results="asis"}
 out <- lapply(1:nrow(facilities),
               function(i) {
                 knitr::knit_child('rct_monitoring_report_facility_sub.Rmd',
