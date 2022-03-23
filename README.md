@@ -89,7 +89,7 @@ remotes::install_github("datawookie/emayili")
 ```
 #### Other R dependencies
 
-You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`.
+You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`.
 
 All these packages can be installed using the function `install.packages`:
 ```r
