@@ -41,14 +41,28 @@ generate_hospital_log <- function(pii,
   hospit_log <- NULL
   hospit_log2 <- NULL
 
-  col_order <- c('child_id',
-                 'sex',
-                 'date_visit',
-                 'dob',
-                 'age_mo',
-                 'fs_name',
-                 'ls_name',
-                 'facility')
+  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+    col_order <- c('child_id',
+                   'sex',
+                   'date_visit',
+                   'dob',
+                   'age_mo',
+                   'fs_name',
+                   'ls_name',
+                   'facility')
+  } else{
+    col_order <- c('child_id',
+                   'sex',
+                   'date_visit',
+                   'dob',
+                   'age_mo',
+                   'fs_name',
+                   'ls_name',
+                   'ms_name',
+                   'facility',
+                   'child_hf_id')
+  }
+
   rpii <- pii[, col_order]
 
   if (!is.null(fu7df)) {
@@ -71,8 +85,12 @@ generate_hospital_log <- function(pii,
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
       if (!is.null(hospit_log)) {
         if (nrow(hospit_log) > 0) {
-          hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
-          hospit_log$label <- paste0(hospit_log$child_name, " (", hospit_log$rhf_id, " ", hospit_log$rhf_name, " - ", hospit_log$rhf_loc_name, ")")
+          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania')
+            hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
+          else{
+            hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ms_name, hospit_log$ls_name)
+          }
+          hospit_log$label <- paste0(hospit_log$child_name, " - ", hospit_log$rhf_id, " ", hospit_log$rhf_name, " (", hospit_log$rhf_loc_name, ") - enrolled at ", hospit_log$fid, " ", hospit_log$facility)
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
           hospit_log$date_day0 <- as.Date(hospit_log$date_day0, format = "%Y-%m-%d")
           hospit_log$rhf_id <- as.character(hospit_log$rhf_id)
@@ -144,18 +162,31 @@ generate_hospital_log <- function(pii,
                                           raw = FALSE)
 
       hospit_log2 <- ltfu_df %>% dplyr::filter( referral_cg == 1 | referral_hf == 1 )
-      col_order <- c('child_id',
-                     'fs_name',
-                     'ls_name',
-                     'dob',
-                     'sex')
+      if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+        col_order <- c('child_id',
+                       'fs_name',
+                       'ls_name',
+                       'dob',
+                       'sex')
+      } else{
+        col_order <- c('child_id',
+                       'fs_name',
+                       'ms_name',
+                       'ls_name',
+                       'dob',
+                       'sex')
+      }
       rpii2 <- rpii[, col_order]
 
       hospit_log2 <- merge(hospit_log2, rpii2, by = "child_id")
 
       if (!is.null(hospit_log2)) {
         if (nrow(hospit_log2) > 0) {
-          hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ls_name)
+          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+            hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ls_name)
+          } else{
+            hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ms_name, hospit_log2$ls_name)
+          }
           hospit_log2$label <- paste0(hospit_log2$child_name)
           hospit_log2$sex <- ifelse(hospit_log2$sex == 1, "male", ifelse(hospit_log2$sex == 2, "female", "other"))
           hospit_log2$date_visit <- as.Date(hospit_log2$date_visit, format = "%Y-%m-%d")

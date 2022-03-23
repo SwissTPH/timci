@@ -6,7 +6,7 @@
 #' @param rmd_fn Filename of the Rmarkdown file
 #' @param report_fn Filename of the Rmarkdown rendered report
 #' @param rmd_params List of parameters
-#' @import rmarkdown knit
+#' @import rmarkdown knitr
 #' @export
 
 generate_pdf_report <- function(report_dir, rmd_fn, report_fn, rmd_params=list()) {

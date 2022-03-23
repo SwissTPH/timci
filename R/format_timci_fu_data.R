@@ -25,7 +25,11 @@ generate_fu_log <- function(pii,
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
-  fu_log$label <- paste(fu_log$fs_name, fu_log$ls_name)
+  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania')
+    fu_log$label <- paste(fu_log$fs_name, fu_log$ls_name)
+  else{
+    fu_log$label <- paste(fu_log$fs_name, fu_log$ms_name, fu_log$ls_name)
+  }
   fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
   fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
@@ -73,7 +77,7 @@ generate_fu_log <- function(pii,
 
   # Order entries by date
   fu_log <- fu_log %>%
-    dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+    dplyr::arrange(fid, date_visit = as.Date(date_visit, "%Y-%m-%d"))
 
   # Add valid window in export
   fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on ", fu_log$date_visit, "]")
@@ -134,17 +138,28 @@ generate_fu_log_csv <- function(pii,
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
-  fu_log$child_name <- paste(fu_log$fs_name, fu_log$ls_name)
+  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+    fu_log$child_name <- paste(fu_log$fs_name, fu_log$ls_name)
+    fu_log$label <- paste0(fu_log$child_name,
+                           " (",
+                           as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmin,
+                           " to ",
+                           as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmax,
+                           " )")
+  }
+  else{
+    fu_log$child_name <- paste(fu_log$fs_name, fu_log$ms_name, fu_log$ls_name)
+    fu_log$label <- paste0(fu_log$child_name,
+                           " (",
+                           as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmin,
+                           " to ",
+                           as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmax,
+                           " ) - ",
+                           fu_log$ra_name)
+  }
   fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
   fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
-  fu_log$label <- paste0(fu_log$child_name,
-                         " (",
-                         as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmin,
-                         " to ",
-                         as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmax,
-                         " )")
-
 
   # Exclude children who already underwent successful follow-up
   if (!is.null(fudf)) {
@@ -171,12 +186,13 @@ generate_fu_log_csv <- function(pii,
                  'phone_nb2',
                  'location',
                  'cmty_contact',
-                 'label')
+                 'label',
+                 'sys_submit_id')
   fu_log <- fu_log[, col_order]
 
   # Order entries by date
   fu_log <- fu_log %>%
-    dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d"))
+    dplyr::arrange(fid, sys_submit_id, date_visit = as.Date(date_visit, "%Y-%m-%d"))
 
   # Add a first generic row
   fu_log <- rbind(data.frame('fid' = 'F0000',
@@ -192,7 +208,8 @@ generate_fu_log_csv <- function(pii,
                              'phone_nb2' = 'PHONE NB 2',
                              'location' = 'LOCATION',
                              'cmty_contact' = 'CONTACT',
-                             'label' = 'CHILD NAME (VALID WINDOW)'),
+                             'label' = 'CHILD NAME (VALID WINDOW)',
+                             'sys_submit_id' = 'SUBMITTER'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',
@@ -200,7 +217,8 @@ generate_fu_log_csv <- function(pii,
                            'relationship' = 'main_cg_lbl',
                            'phonenb1' = 'phone_nb',
                            'phonenb2' = 'phone_nb2',
-                           'contact' = 'cmty_contact')
+                           'contact' = 'cmty_contact',
+                           'submitter' = 'sys_submit_id')
 
 }
 
@@ -227,7 +245,7 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
-  fu_log$child_name <- paste(fu_log$fs_name, fu_log$ls_name)
+  fu_log$child_name <- paste(fu_log$fs_name, fu_log$ms_name, fu_log$ls_name)
   fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
   fu_log$mother <- paste(fu_log$mother_fs_name, fu_log$mother_ls_name)
   fu_log$sex <- ifelse(fu_log$sex == 1, "male", ifelse(fu_log$sex == 2, "female", "other"))
@@ -247,7 +265,10 @@ generate_physical_fu_log_csv <- function(pii,
     }
   }
 
-  # Exclude children who are outside of the follow-up window period
+  # Include only children for whom the caregiver agreed with physical follow-up
+  fu_log <- fu_log %>% dplyr::filter(physical_fu == 1)
+
+  # Exclude children who are outside of the physical follow-up window period
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
 
   # Order columns
@@ -264,6 +285,7 @@ generate_physical_fu_log_csv <- function(pii,
                  'phone_nb2',
                  'location',
                  'cmty_contact',
+                 'physical_fu_instructions',
                  'label')
   fu_log <- fu_log[, col_order]
 
@@ -285,6 +307,7 @@ generate_physical_fu_log_csv <- function(pii,
                              'phone_nb2' = 'PHONE NB 2',
                              'location' = 'LOCATION',
                              'cmty_contact' = 'CONTACT',
+                             'physical_fu_instructions' = 'INSTRUCTIONS',
                              'label' = 'CHILD NAME (VALID WINDOW)'),
                   fu_log)
 
@@ -293,7 +316,8 @@ generate_physical_fu_log_csv <- function(pii,
                            'relationship' = 'main_cg_lbl',
                            'phonenb1' = 'phone_nb',
                            'phonenb2' = 'phone_nb2',
-                           'contact' = 'cmty_contact')
+                           'contact' = 'cmty_contact',
+                           'instructions' = 'physical_fu_instructions')
 
 }
 

@@ -83,33 +83,46 @@ spa_sco_is_not_null <- !is.null(spa_sco_data)
 spa_cgei_is_not_null <- !is.null(spa_cgei_data)
 spa_fa_is_not_null <- !is.null(spa_fa_data)
 spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+spa_is_not_null <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
 ```
 
-```{r dates, results='asis'}
+```{r dates, results='asis', eval=spa_is_not_null}
+sco_start_date <- NULL
+sco_end_date <- NULL
 if (spa_sco_is_not_null) {
   if (nrow(spa_sco_data) > 0) {
     sco_start_date <- min(spa_sco_data$date)
     sco_end_date <- max(spa_sco_data$date)
   }
 }
+
+cgei_start_date <- NULL
+cgei_end_date <- NULL
 if (spa_cgei_is_not_null) {
   if (nrow(spa_cgei_data) > 0) {
     cgei_start_date <- min(spa_cgei_data$date)
     cgei_end_date <- max(spa_cgei_data$date)
   }
 }
+
+fa_start_date <- NULL
+fa_end_date <- NULL
 if (spa_fa_is_not_null) {
   if (nrow(spa_fa_data) > 0) {
     fa_start_date <- min(spa_fa_data$date)
     fa_end_date <- max(spa_fa_data$date)
   }
 }
+
+hcpi_start_date <- NULL
+hcpi_end_date <- NULL
 if (spa_hcpi_is_not_null) {
   if (nrow(spa_hcpi_data) > 0) {
     hcpi_start_date <- min(spa_hcpi_data$date)
     hcpi_end_date <- max(spa_hcpi_data$date)
   }
 }
+
 start_date <- min(sco_start_date, cgei_start_date, fa_start_date, hcpi_start_date)
 end_date <- max(sco_end_date, cgei_end_date, fa_end_date, hcpi_end_date)
 ```

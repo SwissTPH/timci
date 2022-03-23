@@ -67,6 +67,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 
 ```{r context-diplay-facility-table, results = "asis"}
 facility_disp  %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE, 
                   linesep = "",
                   caption = facility_cap,
                   align = c("c", "c", "c")) %>% 

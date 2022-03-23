@@ -749,7 +749,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", eval=!is_tanzania}
 all <- nonsick
 all$inpatient[is.na(all$inpatient)] <- 0
 all$consult_reason[is.na(all$consult_reason)] <- 0
@@ -1037,7 +1037,7 @@ all["dx_severe"[!("dx_severe" %in% colnames(all))]] <- NA
 
 all <- all %>%
   dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1, 1, 0)) %>%
-  dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & sx_vomit == 0 & sx_less_feed == 0 & sx_cough == 0 & sx_difficulty_breath == 0 & sx_diarrhoea == 0 & sx_fever == 0 & sx_var == 96, 1, 0)) %>%
+  dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96, 1, 0)) %>%
   dplyr::mutate(missing_referral_cg = ifelse(referral_cg == 98 | referral_cg == 97 | referral_cg == 100, 1, 0)) %>%
   dplyr::mutate(missing_diagnosis = ifelse((dx == 999 & is.na(dx_oth)), 1, 0))
 all <- all %>%
@@ -1382,7 +1382,11 @@ if (nrow(baseline_data) > 0) {
 
 `r appendix_title`
 
-```{r, results="asis"}
+```{r}
+facility_details <- TRUE
+```
+
+```{r, results="asis", eval=facility_details}
 out <- lapply(1:nrow(facilities),
               function(i) {
                 knitr::knit_child('rct_monitoring_report_facility_sub.Rmd',

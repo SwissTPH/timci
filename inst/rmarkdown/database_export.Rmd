@@ -1230,10 +1230,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 ```
 
 ```{r}
+locked_day28fu_data <- NULL
+locked_allday28fu_data <- NULL
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   allday28fu_data_uids <- NULL
   day28fu_data_uids <- NULL
-  locked_day28fu_data <- NULL
   if (!is.null(day28fu_data)) {
     # All follow-ups
     locked_allday28fu_data <- allday28fu_data[allday28fu_data$child_id %in% locked_day0_data$child_id, ]
