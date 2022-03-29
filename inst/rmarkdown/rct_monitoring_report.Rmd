@@ -1369,7 +1369,12 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
-```{r day7fu-subsection, child = if (!is.null(raw_day7fu_data)) 'rct_monitoring_report_sub_day7.Rmd'}
+```{r}
+write(nrow(raw_day7fu_data), stderr())
+write(length(raw_day7fu_data), stderr())
+```
+
+```{r day7fu-subsection, child = if (!is.null(raw_day7fu_data) & nrow(raw_day7fu_data) > 0) 'rct_monitoring_report_sub_day7.Rmd'}
 ```
 
 ```{r hospit-subsection, child = if (!is.null(raw_hospit_data)) 'rct_monitoring_report_sub_hospit.Rmd'}

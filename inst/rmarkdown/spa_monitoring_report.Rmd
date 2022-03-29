@@ -80,20 +80,35 @@ spa_hcpi_data <- params$spa_hcpi_data
 
 ```{r conditions}
 spa_sco_is_not_null <- !is.null(spa_sco_data)
+if(spa_sco_is_not_null) {
+  spa_sco_is_not_null <- (nrow(spa_sco_data) > 0) & (length(spa_sco_data) > 0)
+}
 spa_cgei_is_not_null <- !is.null(spa_cgei_data)
+if(spa_cgei_is_not_null) {
+  spa_cgei_is_not_null <- (nrow(spa_cgei_data) > 0) & (length(spa_cgei_data) > 0)
+}
 spa_fa_is_not_null <- !is.null(spa_fa_data)
+if(spa_fa_is_not_null) {
+  spa_fa_is_not_null <- (nrow(spa_fa_data) > 0) & (length(spa_fa_data) > 0)
+}
 spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+if(spa_hcpi_is_not_null) {
+  spa_hcpi_is_not_null <- (nrow(spa_hcpi_data) > 0) & (length(spa_hcpi_data) > 0)
+}
 spa_is_not_null <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
+```
+
+```{r}
+start_date <- NULL
+end_date <- NULL
 ```
 
 ```{r dates, results='asis', eval=spa_is_not_null}
 sco_start_date <- NULL
 sco_end_date <- NULL
 if (spa_sco_is_not_null) {
-  if (nrow(spa_sco_data) > 0) {
-    sco_start_date <- min(spa_sco_data$date)
-    sco_end_date <- max(spa_sco_data$date)
-  }
+  sco_start_date <- min(spa_sco_data$date)
+  sco_end_date <- max(spa_sco_data$date)
 }
 
 cgei_start_date <- NULL
@@ -128,8 +143,6 @@ end_date <- max(sco_end_date, cgei_end_date, fa_end_date, hcpi_end_date)
 ```
 
 ```{r start-end-dates, results='asis'}
-week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
-days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** pour le **Sénégal**."))
 } else {

@@ -126,6 +126,7 @@ if (!is.null(raw_withdrawal_data)) {
 
 ```{r, results='asis'}
 day7fu_data <- NULL
+succ_day7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     
@@ -160,5 +161,9 @@ n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= 
 ```
 
 ```{r}
-n_due_hospitfu <- sum((succ_day7fu_data$status_day7 == 2) | (succ_day7fu_data$hf_visit_type == hospit_value))
+if (!is.null(succ_day7fu_data)) {
+  n_due_hospitfu <- sum((succ_day7fu_data$status_day7 == 2) | (succ_day7fu_data$hf_visit_type == hospit_value))
+} else{
+  n_due_hospitfu <- 0
+}
 ```

@@ -119,12 +119,16 @@ skimr::skim(locked_spa_sco_data)
 ### Summary for young infants
 
 ```{r}
+locked_spa_sco_yg_infant_data <- NULL
+```
+
+```{r, eval=(!is.null(locked_spa_sco_data))}
 names(locked_spa_sco_data) <- gsub("-", "_", names(locked_spa_sco_data), fixed = TRUE)
 locked_spa_sco_yg_infant_data <- locked_spa_sco_data %>%
   dplyr::filter(child_identification_young_infant == 1)
 ```
 
-```{r, results='asis'}
+```{r, results='asis', eval=(!is.null(locked_spa_sco_yg_infant_data))}
 skimr::skim(locked_spa_sco_yg_infant_data)
 ```
 
@@ -132,7 +136,7 @@ skimr::skim(locked_spa_sco_yg_infant_data)
 
 ### Global summary
 
-```{r, results='asis'}
+```{r, results='asis', eval=(!is.null(spa_cgei_data))}
 skimr::skim(spa_cgei_data)
 ```
 
@@ -140,7 +144,7 @@ skimr::skim(spa_cgei_data)
 
 ### Global summary
 
-```{r, results='asis'}
+```{r, results='asis', eval=(!is.null(locked_spa_hcpi_data))}
 skimr::skim(locked_spa_hcpi_data)
 ```
 
@@ -148,6 +152,6 @@ skimr::skim(locked_spa_hcpi_data)
 
 ### Global summary
 
-```{r, results='asis'}
+```{r, results='asis', eval=(!is.null(spa_fa_data))}
 skimr::skim(spa_fa_data)
 ```

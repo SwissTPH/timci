@@ -870,6 +870,7 @@ Rule: keep only IDs of children who are enrolled in the locked Day 0 database (n
 
 ```{r}
 locked_day7fu_data <- NULL
+locked_allday7fu_data <- NULL
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     # All follow-ups
