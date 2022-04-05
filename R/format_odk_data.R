@@ -240,7 +240,8 @@ format_text_fields <- function(df, cols) {
   # Replace the space between different answers by `sep` in multiple select questions
   for (c in cols) {
     if (c %in% dfcols) {
-      df[[c]] <- stringr::str_replace_all(df[[c]], ",", ";")
+      df[[c]] <- stringr::str_replace_all(df[[c]], ",", "-")
+      df[[c]] <- stringr::str_replace_all(df[[c]], ";", "-")
       df[[c]] <- stringr::str_replace_all(df[[c]], "\n", " ")
     }
   }

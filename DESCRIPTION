@@ -21,6 +21,7 @@ Imports:
     grDevices,
     hash,
     httr,
+    knitr,
     lubridate,
     magrittr,
     openxlsx,

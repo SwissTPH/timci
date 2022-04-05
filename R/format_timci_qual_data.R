@@ -24,14 +24,14 @@ generate_cg_log <- function(main_data, day7fu) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_kenya.xlsx"), package = 'timci'))
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_india.xlsx"), package = 'timci'))
-  } else{
-    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict.xlsx"), package = 'timci'))
+  } else {
+    dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_tanzania.xlsx"), package = 'timci'))
   }
 
 
   # Extract data for caregiver IDIs
   sub <- subset(dictionary, qual == 1)
-  cg_subselection <- cg_selection[sub$new]
-  cg_subselection
+  cg_subselection <- cg_selection[sub$new] %>%
+    dplyr::mutate(referral_comb = ifelse(referral_cg == 1 | referral_hf == 1, 1, 0))
 
 }

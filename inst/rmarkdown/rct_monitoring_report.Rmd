@@ -116,6 +116,10 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
+```{r, eval=is_tanzania}
+facility_data <- timci::correct_duplicates(facility_data)[[1]]
+```
+
 ```{r calculation-subsection, child = 'calculations.Rmd'}
 ```
 
@@ -534,6 +538,68 @@ if (!is.null(baseline_data)){
         kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
         kableExtra::row_spec(0, bold = TRUE) %>%
         kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+  }
+}
+```
+
+```{r, eval=!is_rct}
+if (!is.null(baseline_data)){
+    if (length(baseline_data) > 0 & nrow(baseline_data) > 0) {
+      baseline_data <- baseline_data %>%
+         merge(y = facilities[,c("facility_id", "training_date", "rollout_date")],
+               by.x = 'fid',
+               by.y = 'facility_id',
+               all.x = TRUE)
+      pre_intervention_data <- baseline_data %>%
+        dplyr::filter(is.na(training_date) | as.Date(date_visit) < as.Date(training_date))
+      post_intervention_data <- baseline_data %>%
+        dplyr::filter(!is.na(rollout_date) & as.Date(date_visit) >= as.Date(rollout_date))
+  }
+}
+```
+
+```{r, results='asis', eval=!is_rct}
+if (!is.null(pre_intervention_data)){
+    if (length(pre_intervention_data) > 0 & nrow(pre_intervention_data) > 0) {
+      
+       pre_intervention_data %>%
+        dplyr::mutate(Week = lubridate::floor_date(as.Date(date_visit),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 1))) %>%
+        dplyr::count(Week) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Weekly recruitment' = 'n') %>%
+        dplyr::rename('Cumulative recruitment' = 'csum') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        linesep = "",
+                        align = c("l", "c", "c"),
+                        caption = tcap_weekly_enrolment_pre) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(pre_intervention_data)/2) * 2, background = striped_row_bg)
+  }
+}
+```
+
+```{r, results='asis', eval=!is_rct}
+if (!is.null(post_intervention_data)){
+    if (length(post_intervention_data) > 0 & nrow(post_intervention_data) > 0) {
+      
+       post_intervention_data %>%
+        dplyr::mutate(Week = lubridate::floor_date(as.Date(date_visit),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 1))) %>%
+        dplyr::count(Week) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Weekly recruitment' = 'n') %>%
+        dplyr::rename('Cumulative recruitment' = 'csum') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        linesep = "",
+                        align = c("l", "c", "c"),
+                        caption = tcap_weekly_enrolment_post) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(post_intervention_data)/2) * 2, background = striped_row_bg)
   }
 }
 ```

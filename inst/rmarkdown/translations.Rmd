@@ -77,6 +77,8 @@ tcap_phone_numbers <- "Number of participants with a phone number."
 tcap_pneumonia <- "Pneumonia"
 tcap_scanned_manual <- "Types of entry for participant QR codes."
 tcap_weekly_enrolment <- "Weekly recruitment since start."
+tcap_weekly_enrolment_post <- "Weekly recruitment since roll-out."
+tcap_weekly_enrolment_pre <- "Weekly recruitment before roll-out."
 
 fcap_up_maps <- "TIMCI districts in Uttar Pradesh"
 ```
@@ -160,4 +162,6 @@ tcap_phone_numbers <- "Nombre de participants ayant un numéro de téléphone."
 tcap_pneumonia <- "Pneumonie"
 tcap_scanned_manual <- "Types d'entrée pour les codes QR des participants."
 tcap_weekly_enrolment <- "Recrutement hebdomadaire depuis le début de l'étude."
+tcap_weekly_enrolment_post <- "Recrutement hebdomadaire depuis le déploiement de l'intervention."
+tcap_weekly_enrolment_pre <- "Recrutement hebdomadaire avant le déploiement de l'intervention."
 ```

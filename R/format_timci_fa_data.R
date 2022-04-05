@@ -9,7 +9,17 @@ process_weekly_fa_data <- function(df) {
   df$"page1-pox_use" <- as.integer(df$"page1-pox_use")
   df$"page1-new_hcp" <- as.integer(df$"page1-new_hcp")
   df$"page1-hcp_leave" <- as.integer(df$"page1-hcp_leave")
-  df$"page1-drug_stock_out" <- as.integer(df$"page1-drug_stock_out")
+  if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania") {
+    df$"page1-drug_stock_out" <- as.integer(df$"page1-drug_stock_out")
+  } else{
+    df$"page1-AmoxicillinDT" <- as.integer(df$"page1-AmoxicillinDT")
+    df$"page1-ORS_zinc" <- as.integer(df$"page1-ORS_zinc")
+    df$"page1-ALU_Artesunate" <- as.integer(df$"page1-ALU_Artesunate")
+    df$"page1-listofantibiotics" <- as.integer(df$"page1-listofantibiotics")
+    df$"page1-Phenobarbitone." <- as.integer(df$"page1-Phenobarbitone.")
+    df$"page1-fever_antpain" <- as.integer(df$"page1-fever_antpain")
+    df$"page1-drug_stock_out" <- ifelse(df$"page1-AmoxicillinDT"==1 | df$"page1-ORS_zinc"==1 | df$"page1-ALU_Artesunate"==1 | df$"page1-listofantibiotics"==1 | df$"page1-Phenobarbitone."==1 | df$"page1-fever_antpain"==1, 1, 0)
+  }
 
   if (Sys.getenv('TIMCI_COUNTRY') != "India") {
     df$"page1-children_seen" <- as.integer(df$"page1-children_seen")

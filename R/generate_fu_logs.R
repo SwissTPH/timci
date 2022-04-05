@@ -72,6 +72,7 @@ generate_fu_logs <- function(rctls_pid,
                                                         end_date)
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+    facility_data <- timci::correct_duplicates(facility_data)[[1]]
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
   }
