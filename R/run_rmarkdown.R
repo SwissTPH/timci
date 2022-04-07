@@ -471,6 +471,29 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  lock_date = lock_date)
   generate_word_report(report_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
+  #########################
+  # RCT monitoring report #
+  #########################
+
+  write(formats2h1("Generate monitoring report"), stderr())
+
+  params <- list(research_facilities = research_facilities,
+                 start_date = start_date,
+                 end_date = end_date,
+                 sample_target = sample_size,
+                 facility_data = facility_data,
+                 raw_day7fu_data = raw_day7fu_data,
+                 raw_hospit_data = raw_hospit_data,
+                 raw_day28fu_data = raw_day28fu_data,
+                 raw_withdrawal_data = raw_withdrawal_data,
+                 wfa_data = wfa_data)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    rname <- "timci_rct_monitoring_report"
+  } else{
+    rname <- "timci_ls_monitoring_report"
+  }
+  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
+
   ###########################
   # RCT data quality report #
   ###########################
@@ -529,29 +552,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     gc() # Garbage collection
 
   }
-
-  #########################
-  # RCT monitoring report #
-  #########################
-
-  write(formats2h1("Generate monitoring report"), stderr())
-
-  params <- list(research_facilities = research_facilities,
-                 start_date = start_date,
-                 end_date = end_date,
-                 sample_target = sample_size,
-                 facility_data = facility_data,
-                 raw_day7fu_data = raw_day7fu_data,
-                 raw_hospit_data = raw_hospit_data,
-                 raw_day28fu_data = raw_day28fu_data,
-                 raw_withdrawal_data = raw_withdrawal_data,
-                 wfa_data = wfa_data)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    rname <- "timci_rct_monitoring_report"
-  } else{
-    rname <- "timci_ls_monitoring_report"
-  }
-  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
 
   ###################
   # PATH M&E report #
