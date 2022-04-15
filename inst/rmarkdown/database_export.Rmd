@@ -173,36 +173,57 @@ if (!is.null(facility_data)) {
 
 ## Study facilities
 
-```{r, results='asis'}
+```{r context-load-facilities, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name")]
+  research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name", "training_date", "rollout_date")]
   research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
-  # Sort by district and rename columns
-  facilities <- research_facilities %>%
-    dplyr::arrange(lvl2) %>%
-    dplyr::rename('District sanitaire' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Poste de santé' = 'facility_name')
+} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name", "type", "training_date", "rollout_date")]
+  research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
 } else{
   research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name", "type")]
   research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
+}
+```
+
+```{r context-format-facility-info, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  # Sort by district and rename columns
+  facility_disp <- research_facilities %>%
+    dplyr::arrange(lvl2) %>%
+    dplyr::rename('District sanitaire' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Poste de santé' = 'facility_name',
+                  "Fin pré-intervention" = 'training_date',
+                  "Début post-intervention" = 'rollout_date')
+} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+  # Sort by County then type of facility
+  facility_disp <- research_facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('County' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type',
+                  "Baseline end" = 'training_date',
+                  "Roll-out date" = 'rollout_date')
+  
+} else {
   # Sort by district then type of facility
-  facilities <- research_facilities %>%
+  facility_disp <- research_facilities %>%
     dplyr::arrange(lvl2, type) %>%
     dplyr::rename('District' = 'lvl2',
                   'ID' = 'facility_id',
                   'Facility' = 'facility_name',
                   'Type' = 'type')
-  
 }
 ```
 
 ```{r, results='asis'}
-cat(paste0("Data collection was planned in **", nrow(facilities), "** facilities."))
+cat(paste0("Data collection was planned in **", nrow(research_facilities), "** facilities."))
 ```
 
 ```{r, results='asis'}
-facilities %>%
+facility_disp %>%
   knitr::kable()
 ```
 
@@ -265,22 +286,12 @@ cat(paste0("Initially, there are **", n_screening, "** record(s) in the raw faci
 **Rule:** records from devices different from the ones listed in the first section of this report are removed in the locked database. These *non-valid* devices were either used to collect training data or to collect data for another study than the one considered for this report.
 
 ```{r}
-# Added for India - check
 locked_screening_data <- timci::allocate_screening_facility(screening_data,
                                                             research_facilities)
 n_locked_screening <- nrow(locked_screening_data)
-# if (Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') {
-#   screening_data <- screening_data %>%
-#     merge(facility_device,
-#           by = 'device_id',
-#           all.x = TRUE) %>%
-#     dplyr::rename('facility.x' = 'facility',
-#                   'facility.y' = 'facility_name')
-# }
 ```
 
 ```{r}
-# Added for India - check
 locked_day0_data <- timci::allocate_screening_facility(day0_data,
                                                        research_facilities)
 n_locked_day0 <- nrow(locked_day0_data)
@@ -508,9 +519,15 @@ if (!is.null(qc_transfer_ab12days)) {
 
 #### Child ID duplicates [compliance check] 
 
-Rule: [Tanzania only] child ID duplicates are detected and corrected.
+```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+cat("Rule: child ID duplicates are detected and corrected proactively were possible.")
+```
 
-```{r check-RCT-LS-ODK-facility-data-001a, results='asis',eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+cat("##### Initial check")
+```
+
+```{r check-RCT-LS-ODK-facility-data-001a, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
 day0_qc <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
@@ -523,7 +540,7 @@ if (!is.null(facility_data)) {
 }
 ```
 
-```{r, results='asis',eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
 day0_data_id_duplicates <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
@@ -541,11 +558,19 @@ if (!is.null(facility_data)) {
 }
 ```
 
+```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+cat("##### Child ID duplicate edits")
+```
+
 ```{r, results='asis',eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
 out <- timci::correct_duplicates(locked_day0_data)
 locked_day0_data <- out[[1]]
 duplicate_edits <- out[[2]]
 duplicate_edits %>% knitr::kable()
+```
+
+```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+cat("##### Check after edits")
 ```
 
 Rule: child ID duplicates are removed in the locked database.
@@ -1800,7 +1825,7 @@ cat(out, sep = '\n')
 
 ## Key informant interview
 
-```{r kii-export, eval = !is.null(kii_interview_data)}
+```{r kii-export, eval=!is.null(kii_interview_data)}
 fn <- timci::export_df2csvxlsx(kii_interview_data,
                                qualkii_dir,
                                "01_timci_kii_interview_data")
@@ -1808,7 +1833,7 @@ fn <- timci::export_df2csvxlsx(kii_interview_data,
 
 ## Online survey
 
-```{r online-survey-export, eval = !is.null(online_survey_data)}
+```{r online-survey-export, eval=!is.null(online_survey_data)}
 fn <- timci::export_df2csvxlsx(online_survey_data,
                                qualos_dir,
                                "01_timci_online_survey_data")

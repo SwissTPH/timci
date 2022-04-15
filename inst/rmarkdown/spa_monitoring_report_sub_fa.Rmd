@@ -21,7 +21,7 @@ timci::generate_calendar_heatmap2(spa_fa_data,
 
 ## Basic services
 
-```{r, results = "asis"}
+```{r, results="asis", eval=!is_tanzania}
 all <- spa_fa_data %>% 
   rename(facility_name = "facility_identification-fname",
          upgraded_from_designation = "facility_identification-b2_2",

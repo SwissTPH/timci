@@ -28,10 +28,10 @@ generate_cg_log <- function(main_data, day7fu) {
     dictionary <- readxl::read_excel(system.file(file.path('extdata', "main_dict_tanzania.xlsx"), package = 'timci'))
   }
 
-
   # Extract data for caregiver IDIs
   sub <- subset(dictionary, qual == 1)
   cg_subselection <- cg_selection[sub$new] %>%
-    dplyr::mutate(referral_comb = ifelse(referral_cg == 1 | referral_hf == 1, 1, 0))
+    dplyr::mutate(referral_comb = ifelse(referral_cg == 1 | referral_hf == 1, 1, 0)) %>%
+    dplyr::mutate(month_category = ifelse(age_mo < 2, "0-1m", ifelse(age_mo < 12, "2-11m", ifelse(age_mo < 24, "12-23m", "24-59m"))))
 
 }

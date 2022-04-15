@@ -116,10 +116,6 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
-```{r, eval=is_tanzania}
-facility_data <- timci::correct_duplicates(facility_data)[[1]]
-```
-
 ```{r calculation-subsection, child = 'calculations.Rmd'}
 ```
 
@@ -163,12 +159,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
 }
 ```
 
-```{r maps-subsection, eval = is_india | is_kenya | is_senegal, child = 'maps.Rmd'}
-```
-
 \clearpage
 
-`r title_str`
+`r h1_general`
+
+`r h2_global_indicators`
 
 ```{r, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania" || Sys.getenv('TIMCI_COUNTRY') != "Kenya") {
@@ -191,18 +186,18 @@ gridExtra::grid.arrange(ind1, ind2, ind3,
 ```
 
 ```{r, eval=nrow(facility_data) > 0, results='asis'}
-plot0 <- timci::plot_gauge(n_enrolled/sample_target, plot0_str, 100, 75, 90, scale = 0.4)
-plot1 <- timci::plot_gauge(n_enrolled28/(min(20, days_nb) * day_target), plot1_str, 100, 62.5, 90, scale = 0.4)
-plot2 <- timci::plot_gauge(n_enrolled7/(min(5, days_nb) * day_target), plot2_str, 100, 62.5, 90, scale = 0.4)
-plot3 <- timci::plot_gauge(n_enrolled/(n_screened - n_repeat), plot3_str, 100, 70, 80, scale = 0.4)
+plot0 <- timci::plot_gauge(n_enrolled/sample_target, plot0_str, 100, 50, 80, scale = 0.4)
+plot1 <- timci::plot_gauge(n_enrolled28/(min(20, days_nb) * day_target), plot1_str, 100, 50, 80, scale = 0.4)
+plot2 <- timci::plot_gauge(n_enrolled7/(min(5, days_nb) * day_target), plot2_str, 100, 50, 80, scale = 0.4)
+plot3 <- timci::plot_gauge(n_enrolled/(n_screened - n_repeat), plot3_str, 100, 50, 80, scale = 0.4)
 ```
 
 ```{r, results='asis'}
 if (n_due_day7fu > 0) {
   n_day7fu_rate <- n_completed_day7fu/n_due_day7fu
   n_day7fu_rate100 <- round(100 * n_day7fu_rate, prec)
-  plot4 <- timci::plot_gauge(n_day7fu_rate, plot4_str, 100, 85, 95, scale = 0.4)
-  plot5 <- timci::plot_gauge(n_valid_day7fu/n_due_day7fu, plot5_str, 100, 85, 95, scale = 0.4)
+  plot4 <- timci::plot_gauge(n_day7fu_rate, plot4_str, 100, 50, 80, scale = 0.4)
+  plot5 <- timci::plot_gauge(n_valid_day7fu/n_due_day7fu, plot5_str, 100, 50, 80, scale = 0.4)
 }
 ```
 
@@ -210,14 +205,18 @@ if (n_due_day7fu > 0) {
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
   day28fu_data <- NULL
   if (!is.null(raw_day28fu_data)) {
-    if (nrow(raw_day28fu_data) > 0) {
+    if (nrow(raw_day28fu_data) > 1) {
+      
+      write(nrow(raw_day28fu_data), stderr())
+      write(length(raw_day28fu_data), stderr())
+      day28fu_data_list <- timci::format_day28_data(raw_day28fu_data)
       
       # Extract and clean all Day 28 follow-up data
-      day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[3]]
+      day28fu_data <- day28fu_data_list[[3]]
       day28fu_data <- day28fu_data[day28fu_data$child_id %in% baseline_data$child_id, ]
       
       # Extract and clean successful Day 28 follow-up data
-      succ_day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
+      succ_day28fu_data <- day28fu_data_list[[1]]
       succ_day28fu_data <- clean_followup_for_rate_estimation(baseline_data, succ_day28fu_data)
       
       n_completed_day28fu <- sum((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_wmin) <= Sys.Date(), na.rm = TRUE) 
@@ -237,8 +236,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, eval=is_rct}
 if (n_due_day28fu > 0) {
-  plot7 <- timci::plot_gauge(n_completed_day28fu/n_due_day28fu, "Day 28 follow-up rate", 100, 85, 95, scale = 0.4)
-  plot8 <- timci::plot_gauge(n_valid_day28fu/n_due_day28fu, "Day 28 follow-up rate\nwithin the time window", 100, 85, 95, scale = 0.4)
+  plot7 <- timci::plot_gauge(n_completed_day28fu/n_due_day28fu, "Day 28 follow-up rate", 100, 50, 80, scale = 0.4)
+  plot8 <- timci::plot_gauge(n_valid_day28fu/n_due_day28fu, "Day 28 follow-up rate\nwithin the time window", 100, 50, 80, scale = 0.4)
 }
 ```
 
@@ -254,7 +253,7 @@ if (!is.null(raw_hospit_data)) {
   }
 }
 
-plot9 <- timci::plot_gauge(n_completed_hospitfu/n_due_hospitfu, "Hospital follow-up rate", 100, 85, 95, scale = 0.4)
+plot9 <- timci::plot_gauge(n_completed_hospitfu/n_due_hospitfu, "Hospital follow-up rate", 100, 50, 80, scale = 0.4)
 ```
 
 ```{r, results='asis'}
@@ -307,12 +306,26 @@ out %>%
                        escape = FALSE)
 ```
 
+`r h2_completion_status`
+
+`r h3_completion_status_overall`
+
+For the purposes of this report, full completion is defined as
+* [India, Tanzania] "the participant has completed the Day 7 and the Day 28 follow-ups visit"
+* [Kenya, Senegal] "the participant has completed the Day 7 follow-ups visit"
+
+In India and Tanzania, partial completion is defined as "the participant has completed either the Day 7 or the Day 28 follow-ups visit".
+
 ```{r ls-full-participant-journey}
-all <- baseline_data[, c("child_id", "facility_name", "date_visit")]
+selected_variables <- c("child_id", "facility_name", "date_visit", "district")
+if (is_tanzania) {
+  selected_variables <- c(selected_variables)#, "location_lvl1", "location_lvl2")
+}
+all <- baseline_data[, selected_variables]
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     all <- all %>%
-      merge(y = succ_day7fu_data[, c("child_id", "proceed_day7", "hf_visit_type", "status_day7", "admission")],
+      merge(y = succ_day7fu_data[, c("child_id", "proceed_day7", "hf_visit_type", "status_day7", "admission", "date_call")],
             by = 'child_id',
             all.x = TRUE) %>%
       merge(y = attempts_day7fu_data[, c("child_id", "attempted_day7")],
@@ -371,6 +384,10 @@ all$proceed_day28[is.na(all$proceed_day28)] <- 0
 all$lost_day28 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day28_wmax) <= Sys.Date()) & (all$proceed_day28 == 0)
 ```
 
+```{r}
+fu_var_cpy <- all
+```
+
 ```{r all-completion, eval = is_rct}
 completion_summary <- list(
   "Summary" = list(
@@ -384,6 +401,7 @@ out <- format_summary_table(all,
                             facility_name)
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_all_completion) %>%
@@ -393,6 +411,8 @@ out %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
+
+`r h3_completion_status_day7`
 
 ```{r day7fu-completion}
 completion_summary <- list(
@@ -408,6 +428,7 @@ out <- format_summary_table(all,
                             facility_name)
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c"),
                   caption = tcap_day7fu_completion) %>%
@@ -416,6 +437,93 @@ out %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, results='asis', eval=is_tanzania}
+all <- fu_var_cpy %>%
+  dplyr::filter(due_day7 == 1)
+
+completion_summary <- list(
+  "Summary" = list(
+    "Attempted" = ~qwraps2::n_perc(attempted_day7 == 1, prec),
+    "Completed" = ~qwraps2::n_perc(proceed_day7 == 1, prec),
+    "Lost" = ~qwraps2::n_perc(lost_day7 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            district)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = tcap_due_day7fu_completion_by_district) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, results='asis'}
+all <- fu_var_cpy %>%
+  dplyr::filter(due_day7 == 1)
+
+completion_summary <- list(
+  "Summary" = list(
+    "Attempted" = ~qwraps2::n_perc(attempted_day7 == 1, prec),
+    "Completed" = ~qwraps2::n_perc(proceed_day7 == 1, prec),
+    "Lost" = ~qwraps2::n_perc(lost_day7 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = tcap_due_day7fu_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, results='asis', eval=is_tanzania}
+all <- fu_var_cpy %>%
+  dplyr::filter(due_day7 == 1)# %>%
+#dplyr::mutate(location_levels = ifelse(!is.na(location_lvl1), location_lvl1, location_lvl2)) %>%
+#dplyr::filter(!is.na(location_lvl1))
+
+completion_summary <- list(
+  "Summary" = list(
+    "Attempted" = ~qwraps2::n_perc(attempted_day7 == 1, prec),
+    "Completed" = ~qwraps2::n_perc(proceed_day7 == 1, prec),
+    "Lost" = ~qwraps2::n_perc(lost_day7 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            location_lvl1)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = tcap_due_day7fu_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval = is_rct, results='asis'}
+cat(h3_completion_status_day28)
 ```
 
 ```{r day28fu-completion, eval = is_rct}
@@ -431,6 +539,7 @@ out <- format_summary_table(all,
                             facility_name)
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_day28fu_completion) %>%
@@ -440,6 +549,8 @@ out %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
+
+`r h3_completion_status_hospital`
 
 ```{r hospit-visit-completion}
 visit_all <- all %>%
@@ -459,6 +570,7 @@ if (nrow(visit_all) > 0) {
                               facility_name)
   out %>%
     kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
                     linesep = "",
                     align = c("c", "c", "c", "c"),
                     caption = tcap_hospit_visit_completion) %>%
@@ -488,6 +600,7 @@ if (nrow(hospitalisation_all) > 0) {
                             facility_name)
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c", "c"),
                   caption = tcap_hospitalisation_completion) %>%
@@ -532,6 +645,7 @@ if (!is.null(baseline_data)){
         dplyr::rename('Weekly recruitment' = 'n') %>%
         dplyr::rename('Cumulative recruitment' = 'csum') %>%
         kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
                         linesep = "",
                         align = c("l", "c", "c"),
                         caption = tcap_weekly_enrolment) %>% 
@@ -571,6 +685,7 @@ if (!is.null(pre_intervention_data)){
         dplyr::rename('Weekly recruitment' = 'n') %>%
         dplyr::rename('Cumulative recruitment' = 'csum') %>%
         kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
                         linesep = "",
                         align = c("l", "c", "c"),
                         caption = tcap_weekly_enrolment_pre) %>% 
@@ -594,6 +709,7 @@ if (!is.null(post_intervention_data)){
         dplyr::rename('Weekly recruitment' = 'n') %>%
         dplyr::rename('Cumulative recruitment' = 'csum') %>%
         kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
                         linesep = "",
                         align = c("l", "c", "c"),
                         caption = tcap_weekly_enrolment_post) %>% 
@@ -614,6 +730,7 @@ if (!is.null(baseline_data)){
         dplyr::rename('Monthly recruitment' = 'n') %>%
         dplyr::rename('Cumulative recruitment' = 'csum') %>%
         kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
                         linesep = "",
                         align = c("l", "c", "c"),
                         caption = tcap_monthly_enrolment) %>% 
@@ -735,10 +852,12 @@ timci::heatmap_wday_hourofday(facility_data,
 
 `r eligibility_str`
 
-```{r, results = "asis"}
+```{r}
 all <- data.frame(facility_data)
 all$yg_infant <- ifelse(all$yg_infant == 0, "2-59m", "0-2m")
+```
 
+```{r, results = "asis"}
 age_statistics <- list(
   "Facility" = list(
     "First day of life" = ~qwraps2::n_perc(age_excl == 1, prec),
@@ -750,6 +869,7 @@ age_statistics <- list(
 out <- format_summary_table(all, age_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c", "c"),
                   caption = age_eligibility_table_cap) %>% 
@@ -777,6 +897,7 @@ sickness_statistics <- list(
 out <- format_summary_table(all, sickness_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c"),
                   caption = sick_cap) %>% 
@@ -806,6 +927,7 @@ sick_reason_statistics <- list(
 out <- format_summary_table(all, sick_reason_statistics, facility_name) 
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c", "c"),
                   caption = consultion_sick_cap) %>% 
@@ -832,6 +954,7 @@ if (!is.null(all) & length(all) > 0 & nrow(all) > 0) {
   out <- format_summary_table(all, reason_statistics, facility_name)
   out %>% 
     kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
                     linesep = "",
                     align = c("c", "c", "c", "c"),
                     caption = consultation_nonsick_cap) %>% 
@@ -863,6 +986,7 @@ out <- format_summary_table(all, caregiver_statistics, facility_name)
 out <- gsub("%", "\\\\%", out)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   align = c("c", "c", "c"),
                   linesep = "",
                   caption = cg_age_eligibility_table_cap,
@@ -889,6 +1013,7 @@ if (nrow(all) > 0) {
   out <- gsub("%", "\\\\%", out)
   out %>% 
     kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
                     align = c("c", "c"),
                     linesep = "",
                     caption = u18_mother_cap,
@@ -918,6 +1043,7 @@ out <- format_summary_table(all, summary_statistics, facility_name)
 out <- gsub("%", "\\\\%", out)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   align = c("c", "c", "c", "c"),
                   linesep = "",
                   caption = multi_rec_cap,
@@ -941,6 +1067,7 @@ consent_statistics <- list(
 out <- format_summary_table(all, consent_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c"),
                   caption = consent_cap) %>% 
@@ -962,16 +1089,44 @@ nec_pie_chart <- timci::generate_pie_chart(non_enrolment_causes)
 plot(nec_pie_chart)
 ```
 
+```{r, results='asis', fig.height = figsize, fig.cap = noneligibility_cap}
+non_eligibility_causes <- timci::count_noneligibility(facility_data)
+plot(timci::generate_pie_chart(non_eligibility_causes))
+```
+
 \clearpage
 
 `r h1_day0_visit`
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval = nrow(baseline_data) > 0}
 all <- data.frame(baseline_data)
+```
 
+```{r, eval = nrow(baseline_data) > 0, results = "asis"}
 descriptive_statistics <- list(
   "Summary" = list(
-    "Date of birth known" = ~qwraps2::n_perc(dob_knwn == 1, prec),
+    "Exact DoB known" = ~qwraps2::n_perc(dob_knwn == 1, prec),
+    "Only MoB known" = ~qwraps2::n_perc(dob_knwn == 2, prec),
+    "Only YoB known" = ~qwraps2::n_perc(dob_knwn == 3, prec),
+    "DoB not known" = ~qwraps2::n_perc(dob_knwn == 98, prec)
+    )
+)
+out <- format_summary_table(all, descriptive_statistics, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_age_category) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+descriptive_statistics <- list(
+  "Summary" = list(
     "0-59 days" = ~qwraps2::n_perc(yg_infant == 1, prec),
     "2-59 months" = ~qwraps2::n_perc(yg_infant == 0, prec)
     )
@@ -979,6 +1134,7 @@ descriptive_statistics <- list(
 out <- format_summary_table(all, descriptive_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_age_category) %>% 
@@ -1001,6 +1157,7 @@ out <- format_summary_table(all, descriptive_statistics, facility_name)
 
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c"),
                   caption = tcap_scanned_manual) %>% 
@@ -1018,6 +1175,7 @@ out <- data.frame(baseline_data) %>%
 
 out %>%
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c"),
                   caption = "Max ID that has been scanned for each facility") %>% 
@@ -1026,7 +1184,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, results = "asis"}
+```{r, results="asis"}
 if (!is.null(pii)) {
   if (nrow(pii) > 0) {
     
@@ -1047,6 +1205,7 @@ if (!is.null(pii)) {
     out <- format_summary_table(all, phone_stats, facility_name)
     out %>% 
       kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
                       align = c("c", "c", "c"),
                       linesep = "",
                       caption = tcap_phone_numbers) %>% 
@@ -1059,31 +1218,30 @@ if (!is.null(pii)) {
 }
 ```
 
-```{r, eval = !is_india, results = "asis"}
+```{r, eval=is_tanzania, results="asis"}
 if (!is.null(pii)) {
   if (nrow(pii) > 0) {
     
     all <- all %>%
       dplyr::filter(all$phone_nb == 0)
     
-    all$cmty[is.na(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & "hapana" %in% tolower(all$cmty)] <- 0
-    all$cmty[!is.na(all$cmty) & !("hapana" %in% tolower(all$cmty))] <- 1
     all$location[all$location != '' & all$location != ' ' & all$location != 'Outside the region'] <- 1
     all$location[all$location == '' | all$location == ' ' | all$location == 'Outside the region'] <- 0
     
     contact_details_stats <- list(
       "Summary" = list(
-        "No community contact" = ~qwraps2::n_perc((cmty == 0) & (phone_nb == 0), prec),
-        "Unknown residence" = ~qwraps2::n_perc((location == 0) & (phone_nb == 0), prec)
+        "No community contact" = ~qwraps2::n_perc(cmty_contact_avail == 0, prec),
+        "No residence info" = ~qwraps2::n_perc(location == 0, prec)
         )
     )
 
     out <- format_summary_table(all, contact_details_stats, facility_name)
     out %>%
       kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
                       linesep = "",
-                      align = c("c", "c")) %>%
+                      align = c("c", "c"),
+                      caption = "Number of participants without a community contact or residence information among those participants who do not have a phone number .") %>%
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1093,7 +1251,7 @@ if (!is.null(pii)) {
 }
 ```
 
-```{r, eval = nrow(baseline_data) > 0}
+```{r, eval=(nrow(baseline_data)>0)}
 all <- data.frame(baseline_data)
 all$sx_vomit_evthing[is.na(all$sx_vomit_evthing)] <- 0
 all$sx_unable_feed[is.na(all$sx_unable_feed)] <- 0
@@ -1108,19 +1266,19 @@ all <- all %>%
   dplyr::mutate(missing_diagnosis = ifelse((dx == 999 & is.na(dx_oth)), 1, 0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(cold = ifelse(2 %in% as.integer(unlist(strsplit(all$sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(cold = ifelse(2 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(ear = ifelse(3 %in% as.integer(unlist(strsplit(all$sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(ear = ifelse(3 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(eye = ifelse(4 %in% as.integer(unlist(strsplit(all$sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(eye = ifelse(4 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(other_symptoms = ifelse(99 %in% as.integer(unlist(strsplit(all$sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(other_symptoms = ifelse(99 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
 ```
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval=(nrow(baseline_data)>0), results="asis"}
 clinical_presentation_statistics <- list(
   "Summary" = list(
     "Missing clinical presentation" = ~qwraps2::n_perc(missing_clinical_presentation == 1, prec),
@@ -1131,6 +1289,7 @@ clinical_presentation_statistics <- list(
 out <- format_summary_table(all, clinical_presentation_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_missing_symptoms) %>% 
@@ -1144,7 +1303,7 @@ out %>%
 
 `r h2_clinical_presentation`
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval=(nrow(baseline_data)>0), results = "asis"}
 summary_statistics <- list(
   "Summary" = list(
     "Convulsions" = ~qwraps2::n_perc(sx_convulsions == 1, prec),
@@ -1156,6 +1315,7 @@ summary_statistics <- list(
 out <- format_summary_table(all, summary_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c", "c"),
                   caption = tcap_danger_signs) %>% 
@@ -1165,7 +1325,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval = (nrow(baseline_data)>0), results = "asis"}
 summary_statistics <- list(
   "Summary" = list(
     "From caregiver" = ~qwraps2::n_perc(danger_signs == 1, prec),
@@ -1177,6 +1337,7 @@ summary_statistics <- list(
 out <- format_summary_table(all, summary_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_danger_signs) %>% 
@@ -1198,6 +1359,7 @@ summary_statistics <- list(
 out <- format_summary_table(all, summary_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
@@ -1205,7 +1367,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval = (nrow(baseline_data)>0), results = "asis"}
 summary_statistics <- list(
   "Summary" = list(
     "Vomit" = ~qwraps2::n_perc(sx_vomit == 1, prec),
@@ -1218,6 +1380,7 @@ summary_statistics <- list(
 out <- format_summary_table(all, summary_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   caption = "Other symptoms") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
@@ -1226,7 +1389,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+```{r, eval = (nrow(baseline_data)>0), results = "asis"}
 summary_statistics <- list(
   "Summary" = list(
     "Runny nose/cold" = ~qwraps2::n_perc(cold == 1, prec),
@@ -1238,6 +1401,7 @@ summary_statistics <- list(
 out <- format_summary_table(all, summary_statistics, facility_name)
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   caption = "Other symptoms") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
@@ -1250,7 +1414,7 @@ out %>%
 
 `r pox_title_str`
 
-```{r, results = "asis"}
+```{r, results="asis"}
 if (nrow(baseline_data) > 0) {
   
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -1268,7 +1432,9 @@ if (nrow(baseline_data) > 0) {
   )
   out <- format_summary_table(all, pox_statistics, facility_name)
   out %>% 
-    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
+                    linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1276,7 +1442,7 @@ if (nrow(baseline_data) > 0) {
 }
 ```
 
-```{r, results = "asis"}
+```{r, results="asis"}
 if (nrow(baseline_data) > 0) {
   
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
@@ -1296,6 +1462,7 @@ if (nrow(baseline_data) > 0) {
   out <- format_summary_table(all, pox_statistics, facility_name) 
   out %>% 
     kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
                     linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
@@ -1308,13 +1475,11 @@ if (nrow(baseline_data) > 0) {
 
 `r referral_title_str`
 
-```{r}
-if (nrow(baseline_data) > 0) {
-  all <- data.frame(baseline_data)
-  #all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
-  all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
-  all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
-}
+```{r, eval=(nrow(baseline_data)>0)}
+all <- data.frame(baseline_data)
+#all$yg_infant <- ifelse(all$yg_infant == 0, "2-59 months", "2-59 days")
+all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
+all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
 ```
 
 ```{r header-referrals-cg, results = "asis"}
@@ -1338,7 +1503,9 @@ if (nrow(baseline_data) > 0) {
   )
   out <- format_summary_table(all, summary_statistics, facility_name) 
   out %>% 
-    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
+                    linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
     kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
@@ -1368,7 +1535,9 @@ if (nrow(baseline_data) > 0) {
   )
   out <- format_summary_table(all, summary_statistics, facility_name) 
   out %>% 
-    kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
+                    linesep = "") %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1426,6 +1595,7 @@ if (nrow(baseline_data) > 0) {
   out <- format_summary_table(all, summary_statistics, facility_name)
   out %>% 
     kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
                     linesep = "",
                     caption = tcap_pneumonia) %>% 
     kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
@@ -1452,6 +1622,58 @@ write(length(raw_day7fu_data), stderr())
 \clearpage
 
 `r appendix_title`
+
+## Indicators for Thursday's research country check-in
+
+Weekly data from Thursday to Wednesday
+
+```{r, results='asis'}
+if (!is.null(baseline_data)){
+    if (length(baseline_data) > 0 & nrow(baseline_data) > 0) {
+       baseline_data %>%
+        dplyr::mutate(Week = lubridate::floor_date(as.Date(date_visit),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 4))) %>%
+        dplyr::count(Week) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Weekly recruitment' = 'n') %>%
+        dplyr::rename('Cumulative recruitment' = 'csum') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
+                        linesep = "",
+                        align = c("l", "c", "c"),
+                        caption = tcap_weekly_enrolment) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(fu_var_cpy)){
+    if (length(fu_var_cpy) > 0 & nrow(fu_var_cpy) > 0) {
+       fu_var_cpy %>%
+        dplyr::filter(proceed_day7 == 1) %>%
+        dplyr::mutate(Week = lubridate::floor_date(as.Date(date_call),
+                                                   "week",
+                                                   week_start = getOption("lubridate.week.start", 4))) %>%
+        dplyr::count(Week) %>%
+        dplyr::mutate(csum = cumsum(n)) %>%
+        dplyr::rename('Weekly follow-up' = 'n') %>%
+        dplyr::rename('Cumulative follow-up' = 'csum') %>%
+        kableExtra::kbl(booktabs = TRUE,
+                        longtable = TRUE,
+                        linesep = "",
+                        align = c("l", "c", "c"),
+                        caption = tcap_weekly_day7fu) %>% 
+        kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+        kableExtra::row_spec(0, bold = TRUE) %>%
+        kableExtra::row_spec(1:(nrow(baseline_data)/2) * 2, background = striped_row_bg)
+  }
+}
+
+```
 
 ```{r}
 facility_details <- TRUE

@@ -15,8 +15,8 @@ params:
   fu_end: 12
   fu_vstart: 7
   fu_vend: 10
-  physicalday7fu_start: 9
-  physicalday7fu_end: 35
+  physicalday7fu_start: 8
+  physicalday7fu_end: 14
 output:
   html_document: default
   word_document:
@@ -66,12 +66,13 @@ fu <- timci::generate_fu_log_csv(pii,
 ```
 
 ```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
-physicalday7fu <- timci::generate_physical_fu_log_csv(pii,
-                                                      raw_fu_data,
-                                                      physicalday7fu_start,
-                                                      physicalday7fu_end,
-                                                      fu_vstart,
-                                                      fu_vend)
+physicalday7fu <- timci::generate_physical_fu_log_csv(pii = pii,
+                                                      fudf = raw_fu_data,
+                                                      wmin_nophone = physicalday7fu_start,
+                                                      wmin_phone = physicalday7fu_start,
+                                                      wmax = physicalday7fu_end,
+                                                      vwmin = fu_vstart,
+                                                      vwmax = fu_vend)
 ```
 
 ```{r, eval=(fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID'))}

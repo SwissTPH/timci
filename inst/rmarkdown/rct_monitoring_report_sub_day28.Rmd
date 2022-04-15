@@ -13,7 +13,7 @@ if (n_due_day28fu > 0) {
 
 ```{r, results = "asis"}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
     day28fu_data <- day28fu_data %>%
       dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
@@ -45,7 +45,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results='asis', fig.height = figsize}
 if (!is.null(raw_day28fu_data)) {
-  if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 0){
+  if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 1){
     p <- timci::generate_week_bar_plot(date_vec = raw_day28fu_data$date,
                                        date_min = as.Date(start_date),
                                        date_max = as.Date(Sys.Date() + 7),
@@ -59,7 +59,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results='asis', fig.height = figsize}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     plot(timci::generate_day_bar_plot(raw_day28fu_data$date,
                                       as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
@@ -77,7 +77,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results='asis'}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     timci::generate_calendar_heatmap2(raw_day28fu_data,
                                       date,
                                       legendtitle = "Number of day 28 follow-up phone calls")

@@ -122,25 +122,48 @@ generate_hospital_log <- function(pii,
                            'date_day0',
                            'date_call')
           } else{
-            col_order <- c('device_id',
-                           'district',
-                           'rhf_loc_id',
-                           'rhf_loc_oth',
-                           'rhf_loc_name',
-                           'rhf_id',
-                           'rhf_oth',
-                           'rhf_name',
-                           'date_hosp_day7',
-                           'child_id',
-                           'label',
-                           'child_name',
-                           'sex',
-                           'dob',
-                           'age_mo',
-                           'fid',
-                           'facility',
-                           'date_day0',
-                           'date_call')
+            if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+              col_order <- c('device_id',
+                             'district',
+                             'rhf_loc_id',
+                             'rhf_loc_oth',
+                             'rhf_loc_name',
+                             'rhf_id',
+                             'rhf_oth',
+                             'rhf_name',
+                             'date_hosp_day7',
+                             'child_id',
+                             'label',
+                             'child_name',
+                             'sex',
+                             'dob',
+                             'age_mo',
+                             'fid',
+                             'facility',
+                             'date_day0',
+                             'date_call')
+            } else {
+              col_order <- c('device_id',
+                             'district',
+                             'rhf_loc_id',
+                             'rhf_loc_oth',
+                             'rhf_loc_name',
+                             'rhf_id',
+                             'rhf_oth',
+                             'rhf_name',
+                             'date_hosp_day7',
+                             'child_id',
+                             'label',
+                             'child_name',
+                             'sex',
+                             'dob',
+                             'age_mo',
+                             'fid',
+                             'facility',
+                             'date_day0',
+                             'date_call',
+                             'child_hf_id')
+            }
           }
           hospit_log <- hospit_log[, col_order]
 
@@ -151,9 +174,9 @@ generate_hospital_log <- function(pii,
         }
       }
 
-      #############################################################################
-      # Select children who were referred at Day 0 and lost to follow-up at Day 7 #
-      #############################################################################
+      ###############################################################################################################################
+      # Select children who were admitted in the facility of enrolment at Day 0 or referred at Day 0 and lost to follow-up at Day 7 #
+      ###############################################################################################################################
 
       # Lost to follow-up at Day 7
       ltfu_df <- timci::generate_ltfu_log(df = day0df,

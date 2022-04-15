@@ -136,6 +136,7 @@ process_facility_data <- function(df) {
     } else{
       df$'crfs-t02b-a4_c_4' <- ''
     }
+    df$'crfs-t02b-a4_c_4_cpy' <- df$'crfs-t02b-a4_c_4'
     if ('crfs-t02b-a4_c_4a' %in% cols) {
       df$'crfs-t02b-a4_c_4a' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4a'),
                                        ifelse(df$'crfs-t02b-a4_c_4a' != 99,
@@ -524,7 +525,7 @@ get_summary_by_deviceid <- function(df) {
 
 }
 
-#' Count the occurrence of a specific value in a column (TIMCI-specific function)
+#' Count the occurrence of non-enrolment causes during screening (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
 #' @return This function returns de-identified data.
@@ -532,6 +533,122 @@ get_summary_by_deviceid <- function(df) {
 #' @import magrittr dplyr
 
 count_screening <- function(df) {
+
+  cp <- df %>% dplyr::select('age_incl',
+                             'age_excl',
+                             'sickness',
+                             'inpatient',
+                             'repeat_consult',
+                             'consent')
+
+  # Above 5 years
+  n_incl1 <- sum(cp$'age_incl' == 0, na.rm = TRUE)
+
+  # First day of life
+  cp <- cp %>%
+    dplyr::filter(cp$'age_incl' == 1)
+  n_excl1 <- sum(cp$'age_excl'  == 1, na.rm = TRUE)
+
+  # Inpatient admission
+  cp <- cp %>%
+    dplyr::filter(cp$'age_excl' == 0)
+  n_excl3 <- sum(cp$'inpatient' == 1, na.rm = TRUE)
+
+  # No illness
+  cp <- cp %>%
+    dplyr::filter(cp$'inpatient' == 0)
+  n_incl2 <- sum(cp$'sickness' == 0, na.rm = TRUE)
+
+  # Repeat visit
+  cp <- cp %>%
+    dplyr::filter(cp$'sickness' == 1)
+  n_rep <- sum(cp$'repeat_consult' == 1, na.rm = TRUE)
+
+  # Consent withdrawal
+  cp <- cp %>%
+    dplyr::filter(cp$'repeat_consult' == 0)
+  n_con <- sum(cp$'consent' == 0, na.rm = TRUE)
+
+  data.frame(group = c("Above 5 years",
+                       "First day of life",
+                       "Inpatient admission",
+                       "No illness",
+                       "Repeat visit",
+                       "Not willing to give consent"),
+             value = c(n_incl1,
+                       n_excl1,
+                       n_excl3,
+                       n_incl2,
+                       n_rep,
+                       n_con))
+
+}
+
+#' Count the occurrence of non-eligibility reasons (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns de-identified data.
+#' @export
+#' @import magrittr dplyr
+
+count_noneligibility <- function(df) {
+
+  cp <- df %>% dplyr::select('age_incl',
+                             'age_excl',
+                             'sickness',
+                             'inpatient',
+                             'repeat_consult',
+                             'consent')
+
+  # Above 5 years
+  n_incl1 <- sum(cp$'age_incl' == 0, na.rm = TRUE)
+
+  # First day of life
+  cp <- cp %>%
+    dplyr::filter(cp$'age_incl' == 1)
+  n_excl1 <- sum(cp$'age_excl'  == 1, na.rm = TRUE)
+
+  # Inpatient admission
+  cp <- cp %>%
+    dplyr::filter(cp$'age_excl' == 0)
+  n_excl3 <- sum(cp$'inpatient' == 1, na.rm = TRUE)
+
+  # No illness
+  cp <- cp %>%
+    dplyr::filter(cp$'inpatient' == 0)
+  n_incl2 <- sum(cp$'sickness' == 0, na.rm = TRUE)
+
+  # Repeat visit
+  cp <- cp %>%
+    dplyr::filter(cp$'sickness' == 1)
+  n_rep <- sum(cp$'repeat_consult' == 1, na.rm = TRUE)
+
+  # Consent withdrawal
+  cp <- cp %>%
+    dplyr::filter(cp$'repeat_consult' == 0)
+  n_con <- sum(cp$'consent' == 0, na.rm = TRUE)
+
+  data.frame(group = c("Above 5 years",
+                       "First day of life",
+                       "Inpatient admission",
+                       "No illness",
+                       "Not willing to give consent"),
+             value = c(n_incl1,
+                       n_excl1,
+                       n_excl3,
+                       n_incl2,
+                       n_con))
+
+}
+
+#' Count the occurrence of baseline versus repeat visits (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns de-identified data.
+#' @export
+#' @import magrittr dplyr
+
+count_baseline_vs_repeat <- function(df) {
 
   cp <- df %>% dplyr::select('age_incl',
                              'age_excl',

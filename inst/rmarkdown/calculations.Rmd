@@ -1,3 +1,7 @@
+```{r, eval=is_tanzania}
+facility_data <- timci::correct_duplicates(facility_data)[[1]]
+```
+
 ```{r}
 # Add facility generic information to the RCT/LS facility data
 facility_data <- timci::allocate_screening_facility(facility_data,
@@ -9,9 +13,16 @@ pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 pii <- timci::allocate_screening_facility(pii,
                                           params$research_facilities)
 
-uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
+if (is_tanzania) {
+  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name", "intervention")] %>%
   distinct()
+} else {
+  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
+  distinct()
+}
+```
 
+```{r}
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     raw_day7fu_data <- merge(x = raw_day7fu_data,

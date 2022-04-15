@@ -13,7 +13,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type", "training_date", "rollout_date")]
   facilities <- facilities[!duplicated(facilities$facility_id), ]
 } else{
-  facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type")]
+  facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type", "intervention")]
   facilities <- facilities[!duplicated(facilities$facility_id), ]
 }
 ```

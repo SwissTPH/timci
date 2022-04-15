@@ -4,14 +4,24 @@
 \alias{generate_physical_fu_log_csv}
 \title{Generate physical follow-up log CSV for upload on ODK Central (TIMCI-specific function, Tanzania only)}
 \usage{
-generate_physical_fu_log_csv(pii, fudf, wmin, wmax, vwmin, vwmax)
+generate_physical_fu_log_csv(
+  pii,
+  fudf,
+  wmin_nophone,
+  wmin_phone,
+  wmax,
+  vwmin,
+  vwmax
+)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
 
 \item{fudf}{dataframe containing the processed follow-up data}
 
-\item{wmin}{numerical, start of the follow-up period (in days)}
+\item{wmin_nophone}{numerical, start of the follow-up period if the caregiver has no phone number (in days)}
+
+\item{wmin_phone}{numerical, start of the follow-up period if the caregiver has a phone number (in days)}
 
 \item{wmax}{numerical, end of the follow-up period (in days)}
 

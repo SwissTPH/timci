@@ -25,9 +25,9 @@ generate_fu_log <- function(pii,
   fu_log <- pii
   fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
-  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania')
+  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
     fu_log$label <- paste(fu_log$fs_name, fu_log$ls_name)
-  else{
+  } else{
     fu_log$label <- paste(fu_log$fs_name, fu_log$ms_name, fu_log$ls_name)
   }
   fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
@@ -65,6 +65,9 @@ generate_fu_log <- function(pii,
                    'phone_nb2',
                    'location',
                    'cmty_contact')
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+      col_order <- c(col_order, 'physical_fu_instructions')
+    }
   }
   # If ext is set to TRUE, also add the district and facility name
   if (ext) {
@@ -98,6 +101,9 @@ generate_fu_log <- function(pii,
                             'phone_nb2' = 'PHONE NB 2',
                             'location' = 'LOCATION',
                             'cmty_contact' = 'CONTACT')
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+      first_row$physical_fu_instructions <- 'INSTRUCTIONS'
+    }
     fu_log <- rbind(first_row,
                     fu_log)
   }
@@ -171,6 +177,12 @@ generate_fu_log_csv <- function(pii,
 
   # Exclude children who are outside of the follow-up window period
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
+  fu_log$population <- "all"
+  fu_log$type <- "1"
+
+  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+    fu_log$physical_fu_instructions <- ""
+  }
 
   # Order columns
   col_order <- c('fid',
@@ -185,9 +197,12 @@ generate_fu_log_csv <- function(pii,
                  'phone_nb',
                  'phone_nb2',
                  'location',
+                 'physical_fu_instructions',
                  'cmty_contact',
                  'label',
-                 'sys_submit_id')
+                 'sys_submit_id',
+                 'population',
+                 'type')
   fu_log <- fu_log[, col_order]
 
   # Order entries by date
@@ -207,9 +222,12 @@ generate_fu_log_csv <- function(pii,
                              'phone_nb' = 'PHONE NB 1',
                              'phone_nb2' = 'PHONE NB 2',
                              'location' = 'LOCATION',
+                             'physical_fu_instructions' = 'INSTRUCTIONS',
                              'cmty_contact' = 'CONTACT',
                              'label' = 'CHILD NAME (VALID WINDOW)',
-                             'sys_submit_id' = 'SUBMITTER'),
+                             'sys_submit_id' = 'SUBMITTER',
+                             'population' = 'POPULATION',
+                             'type' = 'MANUAL'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',
@@ -227,7 +245,8 @@ generate_fu_log_csv <- function(pii,
 #' Generate a list of participants to be called in a time window after baseline between wmin and wmax
 #' @param pii dataframe containing personally identifiable data
 #' @param fudf dataframe containing the processed follow-up data
-#' @param wmin numerical, start of the follow-up period (in days)
+#' @param wmin_nophone numerical, start of the follow-up period if the caregiver has no phone number (in days)
+#' @param wmin_phone numerical, start of the follow-up period if the caregiver has a phone number (in days)
 #' @param wmax numerical, end of the follow-up period (in days)
 #' @param vwmin numerical, start of the follow-up period valid for the statistical analysis (in days)
 #' @param vwmax numerical, end of the follow-up period valid for the statistical analysis (in days)
@@ -237,13 +256,15 @@ generate_fu_log_csv <- function(pii,
 
 generate_physical_fu_log_csv <- function(pii,
                                          fudf,
-                                         wmin,
+                                         wmin_nophone,
+                                         wmin_phone,
                                          wmax,
                                          vwmin,
                                          vwmax) {
 
   fu_log <- pii
-  fu_log$min_date <- as.Date(fu_log$date_visit) + wmin
+  fu_log$min_nophone_date <- as.Date(fu_log$date_visit) + wmin_nophone
+  fu_log$min_phone_date <- as.Date(fu_log$date_visit) + wmin_phone
   fu_log$max_date <- as.Date(fu_log$date_visit) + wmax
   fu_log$child_name <- paste(fu_log$fs_name, fu_log$ms_name, fu_log$ls_name)
   fu_log$caregiver <- paste(fu_log$cg_fs_name, fu_log$cg_ls_name)
@@ -256,7 +277,6 @@ generate_physical_fu_log_csv <- function(pii,
                          as.Date(fu_log$date_visit, "%Y-%m-%d") + vwmax,
                          " )")
 
-
   # Exclude children who already underwent successful follow-up
   if (!is.null(fudf)) {
     if (nrow(fudf) > 0) {
@@ -265,11 +285,41 @@ generate_physical_fu_log_csv <- function(pii,
     }
   }
 
-  # Include only children for whom the caregiver agreed with physical follow-up
-  fu_log <- fu_log %>% dplyr::filter(physical_fu == 1)
+  #########################################################################
+  # Select children for whom the caregiver did not provide a phone number #
+  #########################################################################
 
-  # Exclude children who are outside of the physical follow-up window period
-  fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
+  fu_log_nophone <- fu_log %>%
+    dplyr::filter(phone_nb_avail == 0) %>% # Include only children for whom the caregiver did not provide a phone number
+    dplyr::filter(min_nophone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
+  fu_log_nophone$population <- "no phone number available"
+  fu_log_nophone$type <- "2"
+
+  #######################################################################################################
+  # Select children for whom the caregiver provided a phone number and agreed with a physical follow-up #
+  #######################################################################################################
+
+  # Add a constraints on having at least 1 recorded failed attempt
+
+  fu_log_phone <- fu_log %>%
+    dplyr::filter(phone_nb_avail == 1 & physical_fu == 1) %>% # Include only children for whom the caregiver provided a phone number and agreed with physical follow-up
+    dplyr::filter(min_phone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
+  fu_log_nophone$population <- "phone number available"
+  fu_log_nophone$type <- "2"
+
+  #########################################################
+  # Combine both selections of children in one single log #
+  #########################################################
+
+  if (!is.null(fu_log_nophone)) {
+    if (nrow(fu_log_nophone) > 0) {
+      if (!is.null(fu_log_phone)) {
+        fu_log <- dplyr::bind_rows(fu_log_nophone, fu_log_phone)
+      } else{
+        fu_log <- fu_log_nophone
+      }
+    }
+  }
 
   # Order columns
   col_order <- c('fid',
@@ -284,9 +334,12 @@ generate_physical_fu_log_csv <- function(pii,
                  'phone_nb',
                  'phone_nb2',
                  'location',
-                 'cmty_contact',
                  'physical_fu_instructions',
-                 'label')
+                 'cmty_contact',
+                 'label',
+                 'sys_submit_id',
+                 'population',
+                 'type')
   fu_log <- fu_log[, col_order]
 
   # Order entries by date
@@ -308,7 +361,10 @@ generate_physical_fu_log_csv <- function(pii,
                              'location' = 'LOCATION',
                              'cmty_contact' = 'CONTACT',
                              'physical_fu_instructions' = 'INSTRUCTIONS',
-                             'label' = 'CHILD NAME (VALID WINDOW)'),
+                             'label' = 'CHILD NAME (VALID WINDOW)',
+                             'sys_submit_id' = 'SUBMITTER',
+                             'population' = 'POPULATION',
+                             'type' = 'MANUAL'),
                   fu_log)
 
   fu_log %>% dplyr::rename('name' = 'child_id',
@@ -317,7 +373,8 @@ generate_physical_fu_log_csv <- function(pii,
                            'phonenb1' = 'phone_nb',
                            'phonenb2' = 'phone_nb2',
                            'contact' = 'cmty_contact',
-                           'instructions' = 'physical_fu_instructions')
+                           'instructions' = 'physical_fu_instructions',
+                           'submitter' = 'sys_submit_id')
 
 }
 
@@ -429,11 +486,18 @@ generate_ltfu_log <- function(df,
 
 format_day7_data <- function(df) {
 
+  # Set the dictionary to be used
+  day7_dict <- "day7_dict.xlsx"
+  if(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'){
+    day7_dict <- "day7_dict_tanzania.xlsx"
+  }
+
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols = c("n1_o3_1a",
                  "n1_o3_1b",
-                 "n1_o3_2b")
+                 "n1_o3_2b",
+                 "n1_o3_3")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
@@ -441,27 +505,31 @@ format_day7_data <- function(df) {
   fail_day7_df <- df[df$proceed == 0,]
 
   # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "day7_dict.xlsx"), package = 'timci'))
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', day7_dict), package = 'timci'))
   sub <- subset(dictionary, deidentified == 1)
 
-  day7_df <- match_from_xls_dict(df, "day7_dict.xlsx")
+  day7_df <- match_from_xls_dict(df, day7_dict)
   day7_df <- day7_df[sub$new]
 
   # Change multiple date formats
+  dates <- lubridate::date(day7_df$date_day0)
   mdyv <- lubridate::mdy(day7_df$date_day0)
   dmyv <- lubridate::dmy(day7_df$date_day0)
   mdyv[is.na(mdyv)] <- dmyv[is.na(mdyv)] # some dates are ambiguous, here we give mdy precedence over dmy
   day7_df$date_day0 <- mdyv
 
+  # Format dates
+  day7_df$date_death_day7 <- strftime(day7_df$date_death_day7,"%Y-%m-%d")
+
   day7_df <- day7_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 
-  successful_day7_df <- match_from_xls_dict(successful_day7_df, "day7_dict.xlsx")
+  successful_day7_df <- match_from_xls_dict(successful_day7_df, day7_dict)
   successful_day7_df <- successful_day7_df[sub$new]
   successful_day7_df <- successful_day7_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 
-  fail_day7_df <- match_from_xls_dict(fail_day7_df, "day7_dict.xlsx")
+  fail_day7_df <- match_from_xls_dict(fail_day7_df, day7_dict)
 
   list(successful_day7_df, fail_day7_df, day7_df)
 
