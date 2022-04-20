@@ -243,6 +243,7 @@ format_text_fields <- function(df, cols) {
       df[[c]] <- stringr::str_replace_all(df[[c]], ",", "-")
       df[[c]] <- stringr::str_replace_all(df[[c]], ";", "-")
       df[[c]] <- stringr::str_replace_all(df[[c]], "\n", " ")
+      df[[c]] <- stringr::str_replace_all(df[[c]], '"', "")
     }
   }
   df
