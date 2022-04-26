@@ -35,30 +35,31 @@ is_rct <- is_tanzania | is_india
 ```
 
 ```{r}
-
 path_dir <- params$path_dir
+facility_data <- NULL
+wfa_data <- NULL
+research_facilities <- NULL
+```
 
-if (!is.null(params$facility_data)) {
-  
-  facility_data <- params$facility_data
-  wfa_data <- params$wfa_data
-  
-}
+```{r, eval=!is.null(params$facility_data)}
+facility_data <- params$facility_data
+wfa_data <- params$wfa_data
+research_facilities <- params$research_facilities
+```
+
+```{r, eval=!is_rct}
+facility_data <- facility_data %>%
+  merge(y = research_facilities[,c("facility_id", "rollout_date")],
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE) %>%
+  dplyr::filter(!is.na(rollout_date) & as.Date(date_visit) >= as.Date(rollout_date))
 ```
 
 ```{r}
-if(!is_rct){
-  facility_data <- facility_data %>%
-         merge(y = params$research_facilities[,c("facility_id", "rollout_date")],
-               by.x = 'fid',
-               by.y = 'facility_id',
-               all.x = TRUE) %>%
-        dplyr::filter(!is.na(rollout_date) & as.Date(date_visit) >= as.Date(rollout_date))
-}
-
 stats <- timci::get_summary_by_deviceid(facility_data)
 stats <- merge(x = stats,
-               y = params$research_facilities,
+               y = research_facilities,
                by.x = 'device_id',
                by.y = 'deviceid',
                all.x = TRUE)
@@ -73,7 +74,7 @@ stats <- stats %>%
                    yg_infant = sum(yg_infant),
                    yg_female = sum(yg_female))
 stats <- merge(x = stats,
-               y = params$research_facilities %>% select(facility_id, facility_name, lvl2),
+               y = research_facilities %>% select(facility_id, facility_name, lvl2),
                by.x = 'facility_id',
                by.y = 'facility_id',
                all = FALSE)
@@ -113,7 +114,7 @@ if (!is.null(wfa_data)) {
     last_data2 <- timci::extract_last_fa_data(wfa_data,
                                               stats)
     out <- format_weekly_fa_data_for_export(last_data2)
-    out <- out[out$facility_id %in% params$research_facilities$facility_id, ]
+    out <- out[out$facility_id %in% research_facilities$facility_id, ]
     tmp <- timci::export_df2xlsx(out,
                                  path_dir,
                                  paste0("TIMCI_M&E_RA_data_for_PATH_", Sys.Date()))

@@ -563,10 +563,12 @@ cat("##### Child ID duplicate edits")
 ```
 
 ```{r, results='asis',eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
-out <- timci::correct_duplicates(locked_day0_data)
+out <- timci::correct_day0_duplicates(locked_day0_data)
 locked_day0_data <- out[[1]]
 duplicate_edits <- out[[2]]
-duplicate_edits %>% knitr::kable()
+duplicate_edits %>%
+  select(old_child_id, uuid, new_child_id) %>%
+  knitr::kable()
 ```
 
 ```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
@@ -911,7 +913,7 @@ if (!is.null(raw_withdrawal_data)) {
 ## Day 7 data quality checks
 
 ```{r}
-write("Export Day 7 data and run corresponding quality checks", stderr())
+write("Run Day 7 data quality checks", stderr())
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
@@ -931,6 +933,10 @@ cat(paste0("There are ", nrow(allday7fu_data), " records in the raw Day 7 follow
 ```
 
 ### Non-valid participant IDs [compliance check]
+
+```{r}
+write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
+```
 
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
 
@@ -976,7 +982,11 @@ day7fu_data <- locked_day7fu_data
 
 ### Duplicate management
 
-#### Successful follow-up duplicates  
+#### Successful follow-up duplicates
+
+```{r}
+write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr())
+```
 
 ```{r, results='asis'}
 cat("Rule: only one successful follow-up is kept with the following priority rule: day 7 > day 8 > day 9 > day 10 > day 6 > day 11 and above")
@@ -1029,6 +1039,10 @@ To be implemented
 
 ### Data cleaning summary
 
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
 ```{r, results = 'asis'}
 if (!is.null(allday7fu_data)) {
   if (nrow(allday7fu_data) > 0) {
@@ -1066,6 +1080,10 @@ if (!is.null(locked_day7fu_data)) {
 ```
 
 ### Data export
+
+```{r}
+write("Export Day 7 data", stderr())
+```
 
 ```{r export-RCT-LS-ODK-fu-day7-data, results = 'asis'}
 day7_export_name <- "04b_timci_followup_successful_day7_data"

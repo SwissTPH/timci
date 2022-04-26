@@ -49,7 +49,6 @@ generate_fu_logs <- function(rctls_pid,
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
-  crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
 
   #######################
   # Load TIMCI ODK data #
@@ -72,7 +71,7 @@ generate_fu_logs <- function(rctls_pid,
                                                         end_date)
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
-    facility_data <- timci::correct_duplicates(facility_data)[[1]]
+    facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
   }

@@ -1,5 +1,9 @@
+```{r}
+`%!in%` <- Negate(`%in%`)
+```
+
 ```{r, eval=is_tanzania}
-facility_data <- timci::correct_duplicates(facility_data)[[1]]
+facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
 ```
 
 ```{r}
@@ -32,16 +36,23 @@ if (!is.null(raw_day7fu_data)) {
                              all = FALSE)
   }
 }
+```
 
-# if (!is.null(raw_hospit_data)) {
-#   if (nrow(raw_hospit_data) > 0) {
-#     raw_hospit_data <- merge(x = raw_hospit_data,
-#                              y = params$research_facilities[, c("facility_id", "facility_name")],
-#                              by.x = 'a1-fid',
-#                              by.y = 'facility_id',
-#                              all = FALSE)
-#   }
-#}
+```{r}
+if (!is.null(raw_hospit_data)) {
+  if (nrow(raw_hospit_data) > 0) {
+    cols <- colnames(raw_hospit_data)
+    if ('a1-fid' %!in% cols) {
+      raw_hospit_data <- raw_hospit_data %>%
+        dplyr::mutate('a1-fid' = substr('a1-id', 3, 7))
+    }
+    raw_hospit_data <- merge(x = raw_hospit_data,
+                             y = uq_facilities,
+                             by.x = 'a1-fid',
+                             by.y = 'facility_id',
+                             all = FALSE)
+  }
+}
 ```
 
 ```{r}
@@ -168,13 +179,14 @@ if (!is.null(raw_day7fu_data)) {
 ```
 
 ```{r}
-n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date())
+n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= Sys.Date(),
+                    na.rm = TRUE)
 ```
 
 ```{r}
+n_due_hospitfu <- 0
 if (!is.null(succ_day7fu_data)) {
-  n_due_hospitfu <- sum((succ_day7fu_data$status_day7 == 2) | (succ_day7fu_data$hf_visit_type == hospit_value))
-} else{
-  n_due_hospitfu <- 0
+  n_due_hospitfu <- sum((succ_day7fu_data$status_day7 == 2) | (succ_day7fu_data$hf_visit_type == hospit_value),
+                        na.rm = TRUE)
 }
 ```

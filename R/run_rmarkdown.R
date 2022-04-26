@@ -572,8 +572,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   write(formats2h1("Generate SPA report"), stderr())
 
   # Filter research facilities to only keep those in which SPA activities are conducted
-  spa_research_facilities <- research_facilities %>%
-    filter(spa == 1)
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Main') {
+    spa_research_facilities <- research_facilities %>%
+      filter(spa == 1 & pilot == 0)
+  } else {
+    spa_research_facilities <- research_facilities %>%
+      filter(spa == 1)
+  }
   spa_facility_ids <- spa_research_facilities[, c("facility_id")] %>%
     distinct()
 

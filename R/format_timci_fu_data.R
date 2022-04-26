@@ -177,66 +177,72 @@ generate_fu_log_csv <- function(pii,
 
   # Exclude children who are outside of the follow-up window period
   fu_log <- fu_log[fu_log$min_date <= Sys.Date() & fu_log$max_date >= Sys.Date(),]
-  fu_log$population <- "all"
-  fu_log$type <- "1"
 
-  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
-    fu_log$physical_fu_instructions <- ""
+  if (nrow(fu_log) > 0) {
+    fu_log$population <- "all"
+    fu_log$type <- "1"
+
+    if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+      fu_log$physical_fu_instructions <- ""
+    }
+
+    # Order columns
+    col_order <- c('fid',
+                   'device_id',
+                   'child_id',
+                   'child_name',
+                   'sex',
+                   'date_visit',
+                   'caregiver',
+                   'main_cg_lbl',
+                   'mother',
+                   'phone_nb',
+                   'phone_nb2',
+                   'location',
+                   'physical_fu_instructions',
+                   'cmty_contact',
+                   'label',
+                   'sys_submit_id',
+                   'population',
+                   'type')
+    fu_log <- fu_log[, col_order]
+
+    # Order entries by date
+    fu_log <- fu_log %>%
+      dplyr::arrange(fid, sys_submit_id, date_visit = as.Date(date_visit, "%Y-%m-%d"))
+
+    # Add a first generic row
+    fu_log <- rbind(data.frame('fid' = 'F0000',
+                               'device_id' = 'none',
+                               'child_id' = 'X-F0000-P0000',
+                               'child_name' = 'CHILD NAME',
+                               'sex' = 'SEX',
+                               'date_visit' = 'ENROLMENT DATE',
+                               'caregiver' = 'CAREGIVER NAME',
+                               'main_cg_lbl' = 'RELATIONSHIP',
+                               'mother' = 'MOTHER NAME',
+                               'phone_nb' = 'PHONE NB 1',
+                               'phone_nb2' = 'PHONE NB 2',
+                               'location' = 'LOCATION',
+                               'physical_fu_instructions' = 'INSTRUCTIONS',
+                               'cmty_contact' = 'CONTACT',
+                               'label' = 'CHILD NAME (VALID WINDOW)',
+                               'sys_submit_id' = 'SUBMITTER',
+                               'population' = 'POPULATION',
+                               'type' = 'MANUAL'),
+                    fu_log)
+
+    fu_log <- fu_log %>% dplyr::rename('name' = 'child_id',
+                                       'enroldate' = 'date_visit',
+                                       'relationship' = 'main_cg_lbl',
+                                       'phonenb1' = 'phone_nb',
+                                       'phonenb2' = 'phone_nb2',
+                                       'contact' = 'cmty_contact',
+                                       'submitter' = 'sys_submit_id')
+
   }
 
-  # Order columns
-  col_order <- c('fid',
-                 'device_id',
-                 'child_id',
-                 'child_name',
-                 'sex',
-                 'date_visit',
-                 'caregiver',
-                 'main_cg_lbl',
-                 'mother',
-                 'phone_nb',
-                 'phone_nb2',
-                 'location',
-                 'physical_fu_instructions',
-                 'cmty_contact',
-                 'label',
-                 'sys_submit_id',
-                 'population',
-                 'type')
-  fu_log <- fu_log[, col_order]
-
-  # Order entries by date
-  fu_log <- fu_log %>%
-    dplyr::arrange(fid, sys_submit_id, date_visit = as.Date(date_visit, "%Y-%m-%d"))
-
-  # Add a first generic row
-  fu_log <- rbind(data.frame('fid' = 'F0000',
-                             'device_id' = 'none',
-                             'child_id' = 'X-F0000-P0000',
-                             'child_name' = 'CHILD NAME',
-                             'sex' = 'SEX',
-                             'date_visit' = 'ENROLMENT DATE',
-                             'caregiver' = 'CAREGIVER NAME',
-                             'main_cg_lbl' = 'RELATIONSHIP',
-                             'mother' = 'MOTHER NAME',
-                             'phone_nb' = 'PHONE NB 1',
-                             'phone_nb2' = 'PHONE NB 2',
-                             'location' = 'LOCATION',
-                             'physical_fu_instructions' = 'INSTRUCTIONS',
-                             'cmty_contact' = 'CONTACT',
-                             'label' = 'CHILD NAME (VALID WINDOW)',
-                             'sys_submit_id' = 'SUBMITTER',
-                             'population' = 'POPULATION',
-                             'type' = 'MANUAL'),
-                  fu_log)
-
-  fu_log %>% dplyr::rename('name' = 'child_id',
-                           'enroldate' = 'date_visit',
-                           'relationship' = 'main_cg_lbl',
-                           'phonenb1' = 'phone_nb',
-                           'phonenb2' = 'phone_nb2',
-                           'contact' = 'cmty_contact',
-                           'submitter' = 'sys_submit_id')
+  fu_log
 
 }
 

@@ -63,6 +63,9 @@ fu <- timci::generate_fu_log_csv(pii,
                                  fu_end,
                                  fu_vstart,
                                  fu_vend)
+fn <- timci::export_df2xlsx(fu,
+                            getwd(),
+                            "follow-up_test")
 ```
 
 ```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
@@ -83,12 +86,14 @@ if (!is.null(raw_oth_fu_data)) {
     raw_oth_fu_data <- aggregate(date ~ child_id, raw_oth_fu_data, max)
     raw_oth_fu_data <- raw_oth_fu_data %>% rename('a1-pid' = 'child_id')
     # Add date of the day 7 follow-up in the day 28 log, if available
-    fu <- merge(fu,
-                raw_oth_fu_data[, c('a1-pid', 'date')],
-                by.x = 'name',
-                by.y = 'a1-pid',
-                all.x = TRUE) %>%
+    if (nrow(fu) > 0){
+      fu <- merge(fu,
+                  raw_oth_fu_data[, c('a1-pid', 'date')],
+                  by.x = 'name',
+                  by.y = 'a1-pid',
+                  all.x = TRUE) %>%
           dplyr::rename(day7fu = date)
+    }
   }
 }
 ```
