@@ -1,6 +1,8 @@
 utils::globalVariables(c("age_mo",
+                         "baseline_data",
                          "child_id",
                          "child_name",
+                         "cgidi_interview_data",
                          "contact",
                          "Count",
                          "csum",
