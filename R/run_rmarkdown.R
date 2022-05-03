@@ -471,6 +471,18 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  lock_date = lock_date)
   generate_word_report(report_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
+  ###################
+  # PATH M&E report #
+  ###################
+
+  write(formats2h1("Generate PATH M&E report"), stderr())
+
+  params <- list(path_dir = path_dir,
+                 facility_data = facility_data,
+                 research_facilities = research_facilities,
+                 wfa_data = wfa_data)
+  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
+
   #########################
   # RCT monitoring report #
   #########################
@@ -552,18 +564,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     gc() # Garbage collection
 
   }
-
-  ###################
-  # PATH M&E report #
-  ###################
-
-  write(formats2h1("Generate PATH M&E report"), stderr())
-
-  params <- list(path_dir = path_dir,
-                 facility_data = facility_data,
-                 research_facilities = research_facilities,
-                 wfa_data = wfa_data)
-  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
 
   #########################
   # SPA monitoring report #
