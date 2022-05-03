@@ -199,6 +199,11 @@ if (Sys.getenv('TIMCI_COUNTRY') == "India") {
 plot3 <- timci::plot_gauge(n_enrolled/(n_screened - n_repeat), plot3_str, 100, 50, 80, scale = 0.4)
 ```
 
+```{r}
+write(n_completed_day7fu,stderr())
+write(n_due_day7fu, stderr())
+```
+
 ```{r, results='asis'}
 if (n_due_day7fu > 0) {
   n_day7fu_rate <- n_completed_day7fu/n_due_day7fu
@@ -222,7 +227,14 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
       
       # Extract and clean successful Day 28 follow-up data
       succ_day28fu_data <- day28fu_data_list[[1]]
-      succ_day28fu_data <- clean_followup_for_rate_estimation(baseline_data, succ_day28fu_data)
+      succ_day28fu_data <- clean_followup_for_rate_estimation(baseline_data,
+                                                              succ_day28fu_data)
+      
+      # Extract and clean all Day 28 follow-up attempts
+      attempts_day28fu_data <- day28fu_data[day28fu_data$child_id %in% baseline_data$child_id, ] %>%
+        dplyr::mutate(attempted_day28 = 1)  %>%
+        dplyr::distinct_at(dplyr::vars(child_id),
+                           .keep_all = TRUE)
       
       n_completed_day28fu <- sum((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_wmin) <= Sys.Date(), na.rm = TRUE) 
       n_valid_day28fu <- sum(((as.Date(succ_day28fu_data$date_day0, "%Y-%m-%d") + day28_wmin) <= Sys.Date()) & (succ_day28fu_data$days >= day28_wmin) & (succ_day28fu_data$days <= day28_wmax), na.rm = TRUE) 
@@ -246,6 +258,11 @@ if (n_due_day28fu > 0) {
 }
 ```
 
+```{r, eval=is_rct}
+write(n_completed_day28fu,stderr())
+write(n_due_day28fu, stderr())
+```
+
 ```{r, eval=!is.null(raw_hospit_data)}
 n_completed_hospitfu <- 0
 hospit_data <- NULL
@@ -253,10 +270,11 @@ if (nrow(raw_hospit_data) > 0) {
   hospit_data <- format_hospital_data(raw_hospit_data) %>%
     dplyr::distinct_at(dplyr::vars(child_id),
                        .keep_all = TRUE)
-  n_completed_hospitfu <- sum(hospit_data$found == 1, na.rm = TRUE)
+  hospit_data <-  hospit_data[hospit_data$child_id %in% baseline_data$child_id, ] 
+  n_completed_hospitfu <- sum(hospit_data$hospit == 1, na.rm = TRUE)
 }
 
-plot9 <- timci::plot_gauge(n_completed_hospitfu/n_due_hospitfu, "Hospital follow-up rate", 100, 50, 80, scale = 0.4)
+plot9 <- timci::plot_gauge(n_completed_hospitfu/n_due_hospitfu, "Documented hospitalisation rate", 100, 50, 80, scale = 0.4)
 ```
 
 ```{r}
@@ -325,7 +343,7 @@ For the purposes of this report, full completion is defined as
 In India and Tanzania, partial completion is defined as "the participant has completed either the Day 7 or the Day 28 follow-ups visit".
 
 ```{r ls-full-participant-journey}
-selected_variables <- c("child_id", "facility_name", "date_visit", "district")
+selected_variables <- c("child_id", "facility_name", "date_visit", "district", "referral_cg", "referral_hf")
 if (is_tanzania) {
   selected_variables <- c(selected_variables)#, "location")
 }
@@ -359,7 +377,7 @@ all$lost_day7 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day7_wmax) <= Sys.Date(
 if (!is.null(hospit_data)) {
   if (nrow(hospit_data) > 0) {
     all <- all %>%
-      merge(y = hospit_data[, c("child_id", "found")],
+      merge(y = hospit_data[, c("child_id", "found", "hospit")],
             by = 'child_id',
             all.x = TRUE)
   }
@@ -370,8 +388,9 @@ all["found"[!("found" %in% colnames(all))]] <- 96
 all$found[is.na(all$found)] <- 96
 all$hospit_visit <- (all$status_day7 == 2) | (all$hf_visit_type == hospit_value)
 all$hospit_visit[is.na(all$hospit_visit)] <- 0
-all$hospitalised <- (all$status_day7 == 2) | (all$admission == 1)
-all$hospitalised[is.na(all$hospitalised)] <- 0
+all$reported_hospit <- (all$status_day7 == 2) | (all$admission == 1)
+all$reported_hospit[is.na(all$all$reported_hospit)] <- 0
+all$hospit[is.na(all$hospit)] <- 96
 ```
 
 ```{r rct-full-participant-journey, eval = is_rct}
@@ -380,14 +399,19 @@ if (!is.null(day28fu_data)) {
     all <- all %>%
       merge(y = succ_day28fu_data[, c("child_id", "proceed_day28")],
             by = 'child_id',
+            all.x = TRUE) %>%
+      merge(y = attempts_day28fu_data[, c("child_id", "attempted_day28")],
+            by = 'child_id',
             all.x = TRUE)
   }
 }
 
 # Create an empty column if Day 28 follow-up has not started yet
 all["proceed_day28"[!("proceed_day28" %in% colnames(all))]] <- 0
+all["attempted_day28"[!("attempted_day28" %in% colnames(all))]] <- 0
 
 all$due_day28 <- (as.Date(all$date_visit, "%Y-%m-%d") + day28_wmin) <= Sys.Date()
+all$attempted_day28[is.na(all$attempted_day28)] <- 0
 all$proceed_day28[is.na(all$proceed_day28)] <- 0
 all$lost_day28 <- ((as.Date(all$date_visit, "%Y-%m-%d") + day28_wmax) <= Sys.Date()) & (all$proceed_day28 == 0)
 ```
@@ -531,10 +555,35 @@ out %>%
 cat(h3_completion_status_day28)
 ```
 
-```{r day28fu-completion, eval = is_rct}
+```{r day28fu-due, eval = is_rct}
+all <- fu_var_cpy
 completion_summary <- list(
   "Summary" = list(
-    "Due" = ~qwraps2::n_perc(due_day28 == 1, prec),
+    "Due" = ~qwraps2::n_perc(due_day28 == 1, prec)
+    )
+)
+out <- format_summary_table(all,
+                            completion_summary,
+                            facility_name)
+out %>%
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_day28fu_completion) %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r day28fu-completion, eval = is_rct}
+all <- fu_var_cpy %>%
+  dplyr::filter(due_day28 == 1)
+completion_summary <- list(
+  "Summary" = list(
+    "Attempted" = ~qwraps2::n_perc(attempted_day28 == 1, prec),
     "Completed" = ~qwraps2::n_perc(proceed_day28 == 1, prec),
     "Lost" = ~qwraps2::n_perc(lost_day28 == 1, prec)
     )
@@ -558,14 +607,15 @@ out %>%
 `r h3_completion_status_hospital`
 
 ```{r hospit-visit-completion}
-visit_all <- all %>%
+visit_all <- fu_var_cpy %>%
   dplyr::filter(hospit_visit == 1)
 
 completion_summary <- list(
   "Summary" = list(
-    "Sought" = ~qwraps2::n_perc(found == 0 | found == 1, prec),
+    "Attempted" = ~qwraps2::n_perc(found == 0 | found == 1, prec),
     "Completed" = ~qwraps2::n_perc(found == 1, prec),
-    "Lost" = ~qwraps2::n_perc(found == 96, prec)
+    "Admitted" = ~qwraps2::n_perc(hospit == 1, prec),
+    "Lost" = ~qwraps2::n_perc(found == 0, prec)
     )
 )
 
@@ -588,14 +638,16 @@ if (nrow(visit_all) > 0) {
 ```
 
 ```{r hospitalisation-completion}
-hospitalisation_all <- all %>%
-  dplyr::filter(hospitalised == 1)
+hospitalisation_all <- fu_var_cpy %>%
+  dplyr::filter(reported_hospit == 1)
 
 completion_summary <- list(
   "Summary" = list(
-    "Sought" = ~qwraps2::n_perc(found == 0 | found == 1, prec),
+    "Attempted" = ~qwraps2::n_perc(found == 0 | found == 1, prec),
     "Completed" = ~qwraps2::n_perc(found == 1, prec),
-    "Lost" = ~qwraps2::n_perc(found == 96, prec)
+    "Admitted" = ~qwraps2::n_perc(hospit == 1, prec),
+    "Non admitted" = ~qwraps2::n_perc(hospit == 0, prec),
+    "Lost" = ~qwraps2::n_perc(found == 0, prec)
     )
 )
 
@@ -607,7 +659,7 @@ out %>%
   kableExtra::kbl(booktabs = TRUE,
                   longtable = TRUE,
                   linesep = "",
-                  align = c("c", "c", "c"),
+                  align = c("c", "c", "c", "c", "c"),
                   caption = tcap_hospitalisation_completion) %>%
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
                             font_size = table_fs) %>%
@@ -761,14 +813,12 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r, results = "asis", fig.height = figsize}
 if (!is.null(wfa_data)) {
   if (length(wfa_data) > 0 & nrow(wfa_data) > 0) {
-    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-      p <- timci::generate_week_bar_plot2(date_vec = wfa_data$date,
-                                          values = wfa_data$u5_attendance_last_week,
-                                          date_min = as.Date(start_date),
-                                          date_max = as.Date(as.Date(end_date) + 7),
-                                          ylbl = "Under 5 attendance")
-      plot(p)
-    }
+    p <- timci::generate_week_bar_plot2(date_vec = wfa_data$date_week,
+                                        values = wfa_data$u5_attendance_last_week,
+                                        date_min = as.Date(start_date),
+                                        date_max = as.Date(as.Date(end_date) + 7),
+                                        ylbl = "Under 5 attendance")
+    plot(p)
   }
 }
 ```

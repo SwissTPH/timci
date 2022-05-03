@@ -332,11 +332,37 @@ cat(paste0("**", n_locked_screening - nrow(locked_screening_data), "** record(s)
 
 ```{r, results='asis'}
 invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
-locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_facilities$facility_id, ]
 ```
 
 ```{r, results='asis'}
 cat(paste0("**", nrow(invalid_facilities), "** record(s) with non-valid enrolling facility IDs were detected and removed in the locked Day 0 database."))
+```
+
+```{r, results='asis'}
+if (nrow(invalid_facilities) > 0) {
+  invalid_facilities[c("child_id", "uuid")] %>%
+    knitr::kable(row.names = FALSE)
+}
+```
+
+```{r, results='asis'}
+cat("##### Facility ID manual edits")
+```
+
+```{r, results='asis'}
+out <- timci::correct_day0_facilities(locked_day0_data)
+locked_day0_data <- out[[1]]
+facility_edits <- out[[2]]
+if (!is.null(facility_edits)) {
+  facility_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+```{r, results='asis'}
+invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
+locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_facilities$facility_id, ]
 ```
 
 ```{r, results='asis'}
@@ -527,7 +553,7 @@ cat("Rule: child ID duplicates are detected and corrected proactively were possi
 cat("##### Initial check")
 ```
 
-```{r check-RCT-LS-ODK-facility-data-001a, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+```{r check-RCT-LS-ODK-facility-data-001a, results='asis'}
 day0_qc <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
@@ -540,14 +566,13 @@ if (!is.null(facility_data)) {
 }
 ```
 
-```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+```{r, results='asis'}
 day0_data_id_duplicates <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     if (nrow(id_duplicates) > 0) { 
       # Remove duplicate child IDs from the clean database
       day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      locked_day0_data_tmp <- locked_day0_data[!locked_day0_data$child_id %in% id_duplicates$child_id, ]
       cat(paste0("", nrow(id_duplicates), " duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected in the locked Day 0 database."))
     } else {
       cat("No duplicated IDs were detected.")
@@ -558,24 +583,26 @@ if (!is.null(facility_data)) {
 }
 ```
 
-```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
-cat("##### Child ID duplicate edits")
+```{r, results='asis'}
+cat("##### Child ID duplicate manual edits")
 ```
 
-```{r, results='asis',eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
+```{r, results='asis'}
 out <- timci::correct_day0_duplicates(locked_day0_data)
 locked_day0_data <- out[[1]]
 duplicate_edits <- out[[2]]
-duplicate_edits %>%
-  select(old_child_id, uuid, new_child_id) %>%
-  knitr::kable()
+if (!is.null(duplicate_edits)) {
+  duplicate_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
 ```
 
-```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
-cat("##### Check after edits")
+```{r, results='asis'}
+cat("##### Second check after manual edits")
 ```
 
-Rule: child ID duplicates are removed in the locked database.
+Rule: remaining child ID duplicates are removed in the locked database.
 
 ```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
 day0_qc <- NULL

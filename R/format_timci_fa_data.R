@@ -3,6 +3,7 @@
 #' @param df dataframe containing the (raw) ODK data collected in the weekly facility assessment
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
+#' @import dplyr lubridate
 
 process_weekly_fa_data <- function(df) {
 
@@ -28,6 +29,16 @@ process_weekly_fa_data <- function(df) {
   # Match column names with names from dictionary
   df <- match_from_xls_dict(df, "wfa_dict.xlsx")
 
+  # Extract the week date
+  df <- df %>%
+    dplyr::mutate(date_week2 = ifelse(!is.na(date_week), as.Date(date_week, '%d.%m.%Y'), as.Date(date, '%Y-%m-%d'))) %>%
+    dplyr::mutate(date_week3 = lubridate::ymd(lubridate::floor_date(as.Date(date_week2, origin = lubridate::origin),
+                                                                    "week",
+                                                                    week_start = getOption("lubridate.week.start", 5))))
+  drop <- c("date_week", "date_week2")
+  df <- df[,!(names(df) %in% drop)]
+  df %>% rename(date_week = date_week3)
+
 }
 
 #' Extract last available facility assessment data (TIMCI-specific function)
@@ -36,7 +47,7 @@ process_weekly_fa_data <- function(df) {
 #' @param stats dataframe containing summary statistics for each facility
 #' @return This function returns a dataframe that only contains the last available assessment for each facility.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 extract_last_fa_data <- function(df, stats) {
 
@@ -54,12 +65,12 @@ extract_last_fa_data <- function(df, stats) {
 
   # Add the date of the last assessment
   res <- merge(x = res,
-               y = prev[,c('date','fcode')],
+               y = prev[,c('date_week','fcode')],
                by = 'fcode',
                all = TRUE)
   res %>%
-    dplyr::rename('date' = 'date.x',
-                  'prev' = 'date.y')
+    dplyr::rename('date_week' = 'date_week.x',
+                  'prev_week' = 'date_week.y')
 
 }
 
@@ -117,7 +128,7 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
       res <- all_df[all_df$fcode == fid,]
       if (nrow(res) > 0) {
         cat(paste0('**', nrow(res), '**'), ' weekly assessment(s) available for this facility\n\n')
-        cat('The latest assessment covers the period from ', paste0('**', as.character(row$prev), '**'), ' to ', paste0('**', as.character(row$date), '**'), '\n\n')
+        cat('The latest assessment covers the period from ', paste0('**', as.character(row$prev_week), '**'), ' to ', paste0('**', as.character(row$date_week), '**'), '\n\n')
         cat('* Pulse oximeter in use for the sick neonate / child consultations: ')
         if (row$pox_in_use == 1) {
           cat('**YES** \n\n')
@@ -147,7 +158,7 @@ display_weekly_fa_data_per_facility <- function(df, all_df) {
 #' @param df dataframe containing the processed facility assessment data
 #' @return This function returns a formatted dataframe for export.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 format_weekly_fa_data_for_export <- function(df) {
 
@@ -165,13 +176,13 @@ format_weekly_fa_data_for_export <- function(df) {
                  'female',
                  'yg_infant',
                  'yg_female',
-                 'date',
+                 'date_week',
                  'pox_in_use',
                  'hcp_arrival',
                  'hcp_departure',
                  'drug_stockout')
   df <- df[, col_order]
   df %>% dplyr::rename('facility_id' = 'fcode',
-                       'last_weekly_report' = 'date')
+                       'last_weekly_report' = 'date_week')
 
 }

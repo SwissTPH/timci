@@ -35,11 +35,32 @@ timci::generate_calendar_heatmap2(spa_sco_data,
                                   legendtitle = "Number of submissions")
 ```
 
-```{r, eval = cond, results = "asis"}
+```{r, eval = cond}
 names(spa_sco_data) <- gsub("-", "_", names(spa_sco_data), fixed = TRUE)
+```
+
+```{r, eval = cond, results = "asis"}
 all <- spa_sco_data %>% 
   rename(young_infant = "child_identification_young_infant",
-         facility_name = "facility_identification_fname")
+         facility_name = "facility_identification_fname",
+         child_id = "child_identification_pid",
+         hcp_id = "hcp_identification_hcpid")
+```
+
+```{r, eval = cond, results = "asis"}
+data_count <- all %>%                       
+  group_by(facility_name) %>%
+  summarise(children = n_distinct(child_id))
+
+data_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c"),
+                  caption = "Overview") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(data_count)/2) * 2, background = striped_row_bg)
 ```
 
 ```{r, eval=cond & (Sys.getenv('TIMCI_COUNTRY') != 'Senegal'), results='asis'}
