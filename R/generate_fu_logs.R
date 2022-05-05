@@ -143,74 +143,77 @@ generate_fu_logs <- function(rctls_pid,
   # Day 7 follow-up log #
   #######################
 
-  day7fu_dir <- file.path(fu_dir, "day7_log")
-  dir.create(day7fu_dir, showWarnings = FALSE)
-
-  fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = FALSE)
-  timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
-
-  # Daily log
-  fu_start <- 6
-  physicalfu_start <- 8
-
-  if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
-    fu_end <- 15
-  } else {
-    fu_end <- 12
-  }
-
-  params <- list(output_dir = fu_dir,
-                 rct_ls_form_list = rct_ls_form_list,
-                 facility_data = facility_data,
-                 rctls_pid = rctls_pid,
-                 fu_fid = crf_day7_fid,
-                 raw_fu_data = raw_day7fu_data,
-                 raw_withdrawal_data = raw_withdrawal_data,
-                 fu_start = fu_start,
-                 fu_end = fu_end,
-                 fu_vstart = 7,
-                 fu_vend = 10)
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
-    physical_params <- list(physicalday7fu_start = physicalfu_start,
-                            physicalday7fu_end = 14)
-    params <- append(params, physical_params)
-  }
-  generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
-
-  # Weekly log
-  for (i in 1:nrow(research_facilities)) {
-    fid <- research_facilities[[i, 'facility_id']]
-    fname <- research_facilities[[i, 'facility_label']]
-    params <- list(pii = pii,
-                   fu_fid = crf_day7_fid,
-                   raw_fu_data = raw_day7fu_data,
-                   raw_withdrawal_data = raw_withdrawal_data,
-                   facility_id = fid,
-                   facility_label = fname,
-                   fu_start = 0,
-                   fu_end = 12,
-                   fu_vstart = 7,
-                   fu_vend = 10)
-    generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
-  }
-
-  #################################
-  # Hospitalisation follow-up log #
-  #################################
-
-  hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
-  dir.create(hospitfu_dir, showWarnings = FALSE)
-
-  params <- list(output_dir = fu_dir,
-                 rct_ls_form_list = rct_ls_form_list,
-                 pii = pii,
-                 day0_data = facility_data,
-                 rctls_pid = rctls_pid,
-                 raw_day7fu_data = raw_day7fu_data,
-                 raw_hospit_data = raw_hospit_data,
-                 raw_withdrawal_data = raw_withdrawal_data,
-                 fu_end = 12)
-  generate_word_report(hospitfu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+  # day7fu_dir <- file.path(fu_dir, "day7_log")
+  # dir.create(day7fu_dir, showWarnings = FALSE)
+  #
+  # fu7all <- timci::generate_fu_log(pii, raw_day7fu_data, 0, 12, 7, 10, ext = TRUE, deidentify = FALSE)
+  # timci::export_df2xlsx(fu7all, day7fu_dir, "02_timci_day7_fu_weekly_log_all")
+  #
+  # # Daily log
+  # fu_start <- 6+1
+  # physicalfu_start <- 8+1
+  # physicalfu_end <- 14+1
+  #
+  # if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
+  #   fu_end <- 15+1
+  # } else {
+  #   fu_end <- 12+1
+  # }
+  #
+  # params <- list(output_dir = fu_dir,
+  #                rct_ls_form_list = rct_ls_form_list,
+  #                facility_data = facility_data,
+  #                rctls_pid = rctls_pid,
+  #                fu_fid = crf_day7_fid,
+  #                raw_fu_data = raw_day7fu_data,
+  #                raw_withdrawal_data = raw_withdrawal_data,
+  #                fu_start = fu_start,
+  #                fu_end = fu_end,
+  #                fu_vstart = 7,
+  #                fu_vend = 10)
+  #
+  # if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+  #   physical_params <- list(physicalfu_start = physicalfu_start,
+  #                           physicalfu_end = physicalfu_end)
+  #   params <- append(params, physical_params)
+  # }
+  #
+  # generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
+  #
+  # # Weekly log
+  # for (i in 1:nrow(research_facilities)) {
+  #   fid <- research_facilities[[i, 'facility_id']]
+  #   fname <- research_facilities[[i, 'facility_label']]
+  #   params <- list(pii = pii,
+  #                  fu_fid = crf_day7_fid,
+  #                  raw_fu_data = raw_day7fu_data,
+  #                  raw_withdrawal_data = raw_withdrawal_data,
+  #                  facility_id = fid,
+  #                  facility_label = fname,
+  #                  fu_start = 0,
+  #                  fu_end = 12,
+  #                  fu_vstart = 7,
+  #                  fu_vend = 10)
+  #   generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
+  # }
+  #
+  # #################################
+  # # Hospitalisation follow-up log #
+  # #################################
+  #
+  # hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
+  # dir.create(hospitfu_dir, showWarnings = FALSE)
+  #
+  # params <- list(output_dir = fu_dir,
+  #                rct_ls_form_list = rct_ls_form_list,
+  #                pii = pii,
+  #                day0_data = facility_data,
+  #                rctls_pid = rctls_pid,
+  #                raw_day7fu_data = raw_day7fu_data,
+  #                raw_hospit_data = raw_hospit_data,
+  #                raw_withdrawal_data = raw_withdrawal_data,
+  #                fu_end = 12)
+  # generate_word_report(hospitfu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
 
   #######################
   # Day 28 follow-up log #
@@ -226,6 +229,11 @@ generate_fu_logs <- function(rctls_pid,
     timci::export_df2xlsx(fu28all, day28fu_dir, "02_timci_day28_fu_weekly_log_all")
 
     # Daily log
+    fu_start <- 27+1
+    physicalfu_start <- 29+1
+    fu_end <- 35+1
+    physicalfu_end <- 40+1
+
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,
                    facility_data = facility_data,
@@ -234,10 +242,17 @@ generate_fu_logs <- function(rctls_pid,
                    raw_fu_data = raw_day28fu_data,
                    raw_oth_fu_data = raw_day7fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
-                   fu_start = 27,
-                   fu_end = 35,
+                   fu_start = fu_start,
+                   fu_end = fu_end,
                    fu_vstart = 28,
                    fu_vend = 32)
+
+    if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+      physical_params <- list(physicalfu_start = physicalfu_start,
+                              physicalfu_end = physicalfu_end)
+      params <- append(params, physical_params)
+    }
+
     generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
     # Weekly log
