@@ -75,19 +75,6 @@ fu <- timci::generate_fu_log_csv(pii,
                                  fu_end,
                                  fu_vstart,
                                  fu_vend)
-fn <- timci::export_df2xlsx(fu,
-                            getwd(),
-                            "follow-up_test")
-```
-
-```{r, eval=is_tanzania}
-physicalfu <- timci::generate_physical_fu_log_csv(pii = pii,
-                                                  fudf = raw_fu_data,
-                                                  wmin_nophone = physicalfu_start,
-                                                  wmin_phone = physicalfu_start,
-                                                  wmax = physicalfu_end,
-                                                  vwmin = fu_vstart,
-                                                  vwmax = fu_vend)
 ```
 
 ```{r, eval=is_day28fu_up}
@@ -110,9 +97,20 @@ if (!is.null(raw_oth_fu_data)) {
 }
 ```
 
+```{r, eval=is_tanzania}
+physicalfu <- timci::generate_physical_fu_log_csv(pii = pii,
+                                                  fudf = raw_fu_data,
+                                                  wmin_nophone = physicalfu_start,
+                                                  wmin_phone = physicalfu_start,
+                                                  wmax = physicalfu_end,
+                                                  vwmin = fu_vstart,
+                                                  vwmax = fu_vend)
+```
+
 ```{r, eval=is_day28fu_tz}
 if (!is.null(raw_oth_fu_data)) {
   if (nrow(raw_oth_fu_data) > 0) {
+    
     # Remove duplicate child ID entries in raw_oth_fu_data based while keeping the most recent date
     raw_oth_fu_data <- raw_oth_fu_data %>%
       dplyr::rename(child_id = 'a1-pid',
@@ -123,6 +121,7 @@ if (!is.null(raw_oth_fu_data)) {
       arrange(child_id, is.na(day7_phonenb)) %>% 
       distinct(child_id, .keep_all = TRUE)  %>% 
       dplyr::rename('a1-pid' = 'child_id')
+    
     # Add data from the day 7 follow-up (date, new phone number) in the day 28 log, if available
     selected_columns <- c('a1-pid', 'date', 'day7_phonenb')
     if (nrow(fu) > 0){
@@ -131,8 +130,21 @@ if (!is.null(raw_oth_fu_data)) {
                   by.x = 'name',
                   by.y = 'a1-pid',
                   all.x = TRUE) %>%
-          dplyr::rename(day7fu = date)
+        dplyr::rename(day7fu = date) %>%
+        dplyr::arrange(fid, submitter, enroldate = as.Date(enroldate, "%Y-%m-%d"))
     }
+    
+    # Add data from the day 7 follow-up (date, new phone number) in the day 28 log, if available
+    if (nrow(physicalfu) > 0){
+      physicalfu <- merge(physicalfu,
+                    raw_oth_fu_data[, selected_columns],
+                    by.x = 'name',
+                    by.y = 'a1-pid',
+                    all.x = TRUE) %>%
+        dplyr::rename(day7fu = date) %>%
+        dplyr::arrange(fid, !is.na(day7fu), enroldate = as.Date(enroldate, "%Y-%m-%d"))
+    }
+    
   }
 }
 ```
