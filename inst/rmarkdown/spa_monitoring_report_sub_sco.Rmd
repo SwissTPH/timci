@@ -48,19 +48,24 @@ all <- spa_sco_data %>%
 ```
 
 ```{r, eval = cond, results = "asis"}
-data_count <- all %>%                       
-  group_by(facility_name) %>%
-  summarise(children = n_distinct(child_id))
+obs_count <- all %>%                       
+  dplyr::group_by(facility_name) %>%
+  dplyr::summarise("Observed children" = n_distinct(child_id),
+                   "Observed providers" = n_distinct(hcp_id)) %>%
+  bind_rows(dplyr::summarise(.,
+                             across(where(is.numeric), sum),
+                             across(where(is.character), ~"Total"))) %>%
+  rowwise() %>% 
+  dplyr::mutate(Total = sum(c_across(where(is.numeric)), na.rm = TRUE))
 
-data_count %>% 
+obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
-                  align = c("c", "c"),
-                  caption = "Overview") %>% 
+                  align = c("c", "c", "c"),
+                  caption = "Number of consultation observations") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(data_count)/2) * 2, background = striped_row_bg)
+  kableExtra::row_spec(1:(nrow(obs_count)/2) * 2, background = striped_row_bg)
 ```
 
 ```{r, eval=cond & (Sys.getenv('TIMCI_COUNTRY') != 'Senegal'), results='asis'}

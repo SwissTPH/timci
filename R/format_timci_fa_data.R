@@ -32,10 +32,11 @@ process_weekly_fa_data <- function(df) {
   # Extract the week date
   df <- df %>%
     dplyr::mutate(date_week2 = ifelse(!is.na(date_week), as.Date(date_week, '%d.%m.%Y'), as.Date(date, '%Y-%m-%d'))) %>%
-    dplyr::mutate(date_week3 = lubridate::ymd(lubridate::floor_date(as.Date(date_week2, origin = lubridate::origin),
-                                                                    "week",
-                                                                    week_start = getOption("lubridate.week.start", 5))))
-  drop <- c("date_week", "date_week2")
+    dplyr::mutate(date_week3 = lubridate::floor_date(as.Date(date_week2, origin = lubridate::origin),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 5)))
+  drop <- c("date_week",
+            "date_week2")
   df <- df[,!(names(df) %in% drop)]
   df %>% rename(date_week = date_week3)
 
