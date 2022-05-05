@@ -310,8 +310,8 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log_phone <- fu_log %>%
     dplyr::filter(phone_nb_avail == 1 & physical_fu == 1) %>% # Include only children for whom the caregiver provided a phone number and agreed with physical follow-up
     dplyr::filter(min_phone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
-  fu_log_nophone$population <- "phone number available"
-  fu_log_nophone$type <- "2"
+  fu_log_phone$population <- "phone number available"
+  fu_log_phone$type <- "2"
 
   #########################################################
   # Combine both selections of children in one single log #

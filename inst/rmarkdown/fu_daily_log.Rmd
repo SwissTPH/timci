@@ -124,7 +124,6 @@ if (!is.null(raw_oth_fu_data)) {
       distinct(child_id, .keep_all = TRUE)  %>% 
       dplyr::rename('a1-pid' = 'child_id')
     # Add data from the day 7 follow-up (date, new phone number) in the day 28 log, if available
-    write(colnames(raw_oth_fu_data), stderr())
     selected_columns <- c('a1-pid', 'date', 'day7_phonenb')
     if (nrow(fu) > 0){
       fu <- merge(fu,
