@@ -125,7 +125,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = figsize}
+```{r, results = "asis", fig.height = figsize, eval=!is_india}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
     p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date_week,

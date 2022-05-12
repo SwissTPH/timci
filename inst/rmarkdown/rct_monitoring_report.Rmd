@@ -270,7 +270,7 @@ if (nrow(raw_hospit_data) > 0) {
   hospit_data <- format_hospital_data(raw_hospit_data) %>%
     dplyr::distinct_at(dplyr::vars(child_id),
                        .keep_all = TRUE)
-  hospit_data <-  hospit_data[hospit_data$child_id %in% baseline_data$child_id, ] 
+  hospit_data <- hospit_data[hospit_data$child_id %in% baseline_data$child_id, ] 
   n_completed_hospitfu <- sum(hospit_data$hospit == 1, na.rm = TRUE)
 }
 
@@ -343,9 +343,14 @@ For the purposes of this report, full completion is defined as
 In India and Tanzania, partial completion is defined as "the participant has completed either the Day 7 or the Day 28 follow-ups visit".
 
 ```{r ls-full-participant-journey}
-selected_variables <- c("child_id", "facility_name", "date_visit", "district", "referral_cg", "referral_hf")
+selected_variables <- c("child_id",
+                        "facility_name",
+                        "date_visit",
+                        "district",
+                        "referral_cg",
+                        "referral_hf")
 if (is_tanzania) {
-  selected_variables <- c(selected_variables)#, "location")
+  selected_variables <- c(selected_variables)#, "location_lvl1")
 }
 all <- baseline_data[, selected_variables]
 if (!is.null(day7fu_data)) {
@@ -810,7 +815,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = figsize}
+```{r, results = "asis", fig.height = figsize, eval=!is_india}
 if (!is.null(wfa_data)) {
   if (length(wfa_data) > 0 & nrow(wfa_data) > 0) {
     p <- timci::generate_week_bar_plot2(date_vec = wfa_data$date_week,
@@ -1480,15 +1485,30 @@ out %>%
 
 `r pox_title_str`
 
-```{r, results="asis", eval=(nrow(baseline_data) > 0)}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+```{r, results="asis"}
+if (is_senegal) {
+  cat(paste0("Les données affichées dans cette sous-section concernent uniquement la période d'intervention.\n\n"))
+} else if (is_kenya) {
+  cat(paste0("Data displayed in this subsection refer to the intervention period only.\n\n"))
+}
+```
+
+```{r, results="asis"}
+if (is_senegal) {
   cat(paste0("### 1 - 59 jours\n\n"))
 } else {
   cat(paste0("### 1 - 59 days\n\n"))
 }
+```
 
-all <- data.frame(baseline_data) %>%
-  filter(yg_infant == 1) 
+```{r, results="asis", eval=(nrow(baseline_data) > 0)}
+if (is_kenya | is_senegal) {
+  all <- data.frame(post_intervention_data) %>%
+    filter(yg_infant == 1)
+} else {
+  all <- data.frame(baseline_data) %>%
+    filter(yg_infant == 1)
+}
 if (is_tanzania) {
   all <- all %>%
     merge(y = facilities[,c("facility_id", "intervention")],
@@ -1514,14 +1534,24 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, results="asis", eval=(nrow(baseline_data) > 0)}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+```{r, results="asis"}
+if (is_senegal) {
   cat(paste0("### 2-59 months\n\n"))
 } else {
   cat(paste0("### 2-59 months\n\n"))
 }
+```
 
-all <- data.frame(baseline_data) %>% filter(yg_infant == 0)
+Kenya and Senegal: intervention phase only
+
+```{r, results="asis", eval=(nrow(baseline_data) > 0)}
+if (is_kenya | is_senegal) {
+  all <- data.frame(post_intervention_data) %>%
+    filter(yg_infant == 0)
+} else {
+  all <- data.frame(baseline_data) %>%
+    filter(yg_infant == 0)
+}
 if (is_tanzania) {
   all <- all %>%
     merge(y = facilities[,c("facility_id", "intervention")],

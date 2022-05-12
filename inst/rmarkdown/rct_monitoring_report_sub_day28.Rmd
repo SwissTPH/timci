@@ -88,3 +88,47 @@ if (!is.null(raw_day28fu_data)) {
   cat('N/A\n\n')
 }
 ```
+
+## Completed follow-ups
+
+```{r}
+if (!is.null(day28fu_data)) {
+  if (nrow(day28fu_data) > 0) {
+    succ_day28fu_data <- merge(x = succ_day28fu_data,
+                              y = params$research_facilities[, c("facility_id", "facility_name")],
+                              by.x = 'hf_id',
+                              by.y = 'facility_id',
+                              all = FALSE)
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day28fu_data)) {
+  if (nrow(day28fu_data) > 0) {
+    
+    all <- data.frame(succ_day28fu_data)
+    
+    day28_outcome_ss <- list(
+      "summary" = list(
+        "Before day 28" = ~qwraps2::n_perc(days <= 27, prec, na_rm = TRUE),
+        "Day 28-32" = ~qwraps2::n_perc(days >= 28 & days <= 32, prec, na_rm = TRUE),
+        "Above day 32" = ~qwraps2::n_perc(days > 32, prec, na_rm = TRUE),
+        "Median" = ~qwraps2::median_iqr(days, na_rm = TRUE)
+        )
+      )
+    out <- format_summary_table(all, day28_outcome_ss, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "Mean and inner quartile range (IQR) are represented by the format \\\\textit{median (Q1, Q3)}.",
+                           escape = FALSE)
+  }
+}
+```

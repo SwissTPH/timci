@@ -56,16 +56,14 @@ if (!is.null(raw_hospit_data)) {
 }
 ```
 
-```{r}
-if (is_rct) {
-  if (!is.null(raw_day28fu_data)) {
-    if (nrow(raw_day28fu_data) > 0) {
-      raw_day28fu_data <- merge(x = raw_day28fu_data,
-                               y = uq_facilities,
-                               by.x = 'a1-fid',
-                               by.y = 'facility_id',
-                               all = FALSE)
-    }
+```{r, eval = is_rct}
+if (!is.null(raw_day28fu_data)) {
+  if (nrow(raw_day28fu_data) > 0) {
+    raw_day28fu_data <- merge(x = raw_day28fu_data,
+                              y = uq_facilities,
+                              by.x = 'a1-fid',
+                              by.y = 'facility_id',
+                              all = FALSE)
   }
 }
 ```
@@ -185,7 +183,12 @@ n_due_day7fu <- sum((as.Date(demog_data$date_visit, "%Y-%m-%d") + day7_wmin) <= 
 ```
 
 ```{r}
-selected_variables <- c("child_id", "facility_name", "date_visit", "district", "referral_cg", "referral_hf")
+selected_variables <- c("child_id",
+                        "facility_name",
+                        "date_visit",
+                        "district",
+                        "referral_cg",
+                        "referral_hf")
 if (is_tanzania) {
   selected_variables <- c(selected_variables)#, "location")
 }

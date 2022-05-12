@@ -190,19 +190,21 @@ process_facility_data <- function(df) {
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols <- c("visit_reason-a3_c_1",
-                 "crfs-t05a-c1_a_11",
-                 "crfs-t04a-b1_2",
-                 "crfs-t04a-b1_2a",
-                 "crfs-t04a-b1_2b",
-                 "crfs-t04a-b1_4",
-                 "crfs-t03-m1_3",
-                 "crfs-t09a1-injection_types",
-                 "crfs-t09a1-h2_2",
-                 "crfs-t09a2-g3_1",
-                 "crfs-t09a2-h2_2a",
-                 "crfs-t08a-f2_1",
-                 "crfs-t05b-c3_6",
-                 "crfs-t09a2-rxothermain")
+                  "crfs-t05a-c1_a_11",
+                  "crfs-t04a-b1_2",
+                  "crfs-t04a-b1_2a",
+                  "crfs-t04a-b1_2b",
+                  "crfs-t04a-b1_4",
+                  "crfs-t03-m1_3",
+                  "crfs-t09a1-injection_types",
+                  "crfs-t09a1-h2_2",
+                  "crfs-t09a2-g3_1",
+                  "crfs-t09a2-h2_2a",
+                  "crfs-t08a-f2_1",
+                  "crfs-t05b-c3_6",
+                  "crfs-t09a2-rxothermain",
+                  "crfs-t09a1-t09a2-rxothermain")
+
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   text_field_cols <- c('visit_reason-a3_c_1o',
