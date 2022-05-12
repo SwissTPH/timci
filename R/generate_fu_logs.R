@@ -72,6 +72,13 @@ generate_fu_logs <- function(rctls_pid,
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
     facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+    facility_data <- timci::process_facility_data(raw_facility_data)
+    write(nrow(facility_data), stderr())
+    #facility_data <- timci::correct_day0_facilities(facility_data)[[1]]
+    write(nrow(facility_data), stderr())
+    facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
+    write(nrow(facility_data), stderr())
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
   }

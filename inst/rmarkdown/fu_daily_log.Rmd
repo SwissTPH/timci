@@ -193,6 +193,9 @@ pii_cols <- c("child_id",
 ext_ltfu <- merge(ltfu, pii[, pii_cols], by = c("child_id"))
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   tmp <- timci::export_df2xlsx(ext_ltfu, output_dir, "day7_lost_to_followup_incl_pii")
+  tmp <- timci::export_df2xlsx(ext_ltfu %>% filter(is.na(fu_attempts)),
+                               output_dir,
+                               "day7_lost_to_followup_no_attempt_incl_pii")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
   tmp <- timci::export_df2xlsx(ext_ltfu, output_dir, "day28_lost_to_followup_incl_pii")
 }
