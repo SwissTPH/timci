@@ -43,6 +43,7 @@ names(spa_sco_data) <- gsub("-", "_", names(spa_sco_data), fixed = TRUE)
 all <- spa_sco_data %>% 
   rename(young_infant = "child_identification_young_infant",
          facility_name = "facility_identification_fname",
+         district = "facility_identification_district",
          child_id = "child_identification_pid",
          hcp_id = "hcp_identification_hcpid")
 ```
@@ -62,10 +63,77 @@ obs_count %>%
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
-                  caption = "Number of consultation observations") %>% 
+                  caption = "Number of observed participants (children and providers)") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(obs_count)/2) * 2, background = striped_row_bg)
+```
+
+The number of consultation observations to be done depends on the numbers of providers seeing children under 5 at the facility:
+\begin{itemize}
+  \item 1 provider: 14-18 observations
+  \item 2 providers: 10-12 observations per provider
+  \item 3 providers: 8-10 observations per provider
+  \item 4 providers: 6-8 observations per provider
+  \item 5 providers: 5-7 observations per provider
+  \item 6 providers: 5-6 observations per provider
+\end{itemize}
+
+```{r, eval = cond, results = "asis"}
+if (is_tanzania) {
+  d1 <- "Kaliua"
+}
+obs_count <- all %>%
+  dplyr::filter(district == d1) %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("Observed children" = n_distinct(child_id))
+
+obs_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = paste0("Number of consultation observations by providers in ", d1)) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
+```
+
+```{r, eval = cond, results = "asis"}
+if (is_tanzania) {
+  d2 <- "Sengerema"
+}
+obs_count <- all %>%
+  dplyr::filter(district == d2) %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("Observed children" = n_distinct(child_id))
+
+obs_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = paste0("Number of consultation observations by providers in ", d2)) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top")
+```
+
+```{r, eval = cond, results = "asis"}
+if (is_tanzania) {
+  d3 <- "Tanga"
+}
+obs_count <- all %>%
+  dplyr::filter(district == d3) %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("Observed children" = n_distinct(child_id))
+
+obs_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = paste0("Number of consultation observations by providers in ", d3)) %>%  
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top")
 ```
 
 ```{r, eval=cond & (Sys.getenv('TIMCI_COUNTRY') != 'Senegal'), results='asis'}
