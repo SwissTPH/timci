@@ -337,8 +337,10 @@ out %>%
 `r h3_completion_status_overall`
 
 For the purposes of this report, full completion is defined as
-* [India, Tanzania] "the participant has completed the Day 7 and the Day 28 follow-ups visit"
-* [Kenya, Senegal] "the participant has completed the Day 7 follow-ups visit"
+\begin{itemize}
+  \item [India, Tanzania] "the participant has completed the Day 7 and the Day 28 follow-ups visit"
+  \item [Kenya, Senegal] "the participant has completed the Day 7 follow-ups visit"
+\end{itemize}
 
 In India and Tanzania, partial completion is defined as "the participant has completed either the Day 7 or the Day 28 follow-ups visit".
 

@@ -68,15 +68,8 @@ if (!is.null(raw_day28fu_data)) {
 }
 ```
 
-```{r, eval = !is.null(facility_data)}
-gps_coordinates <- NULL
-gps_vec <- c("latitude", "longitude", "gps_accuracy")
-dfcols <- colnames(facility_data)
-if (("latitude" %in% dfcols) & ("longitude" %in% dfcols)) {
-  gps_coordinates <- facility_data[, gps_vec]
-  gps_coordinates <- na.omit(gps_coordinates) %>%
-    filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
-}
+```{r}
+gps_coordinates <- timci::process_gps_coordinates(facility_data)
 ```
 
 ```{r}

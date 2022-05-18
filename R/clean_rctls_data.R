@@ -41,9 +41,10 @@ correct_day0_duplicates <- function(df) {
   csv_filename <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     csv_filename <- "day0_duplicate_correction_tanzania.csv"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "day0_duplicate_correction_kenya.csv"
   }
+  # else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  #   csv_filename <- "day0_duplicate_correction_kenya.csv"
+  # }
 
   out <- list(df,NULL)
   if (!is.null(csv_filename)) {
