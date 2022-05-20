@@ -47,9 +47,12 @@ wfa_data <- params$wfa_data
 research_facilities <- params$research_facilities
 ```
 
+```{r data-cleaning-subsection, child = 'data_cleaning.Rmd'}
+```
+
 ```{r, eval=!is_rct}
 facility_data <- facility_data %>%
-  merge(y = research_facilities[,c("facility_id", "rollout_date")],
+  merge(y = research_facilities[,c("facility_id", "rollout_date")] %>% distinct(),
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE) %>%
@@ -57,28 +60,15 @@ facility_data <- facility_data %>%
 ```
 
 ```{r}
-stats <- timci::get_summary_by_deviceid(facility_data)
-stats <- merge(x = stats,
-               y = research_facilities,
-               by.x = 'device_id',
-               by.y = 'deviceid',
-               all.x = TRUE)
+stats <- timci::get_summary_by_fid(facility_data)
+```
 
-stats <- stats %>%
-  dplyr::group_by(facility_id) %>%
-  dplyr::summarise(recruitment_start = min(recruitment_start),
-                   recruitment_last = max(recruitment_last),
-                   screened = sum(screened),
-                   children = sum(children),
-                   female = sum(female),
-                   yg_infant = sum(yg_infant),
-                   yg_female = sum(yg_female))
+```{r}
 stats <- merge(x = stats,
-               y = research_facilities %>% select(facility_id, facility_name, lvl2),
-               by.x = 'facility_id',
+               y = research_facilities[, c("facility_id", "facility_name", "lvl2")] %>% distinct(),
+               by.x = 'fid_from_device',
                by.y = 'facility_id',
                all = FALSE)
-stats <- stats[!duplicated(stats$facility_id), ]
 tmp <- timci::export_df2xlsx(stats,
                              path_dir,
                              paste0("facility_stats_", Sys.Date()))
@@ -93,7 +83,8 @@ if (!is.null(wfa_data)) {
                                  path_dir,
                                  paste0("weekly_facility_assessment_", Sys.Date()))
     
-    last_data <- timci::extract_last_fa_data(wfa_data, stats)
+    last_data <- timci::extract_last_fa_data(wfa_data,
+                                             stats)
     soc_data <- last_data[last_data$arm == 0,]
     pox_data <- last_data[last_data$arm == 1,]
     cdsa_data <- last_data[last_data$arm == 2,]

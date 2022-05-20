@@ -1,0 +1,29 @@
+```{r cleaning-message}
+write(formats2h2("Clean the data"), stderr())
+```
+
+```{r}
+facility_data <- timci::correct_day0_all(facility_data)
+```
+
+```{r}
+# Add facility generic information to the RCT/LS facility data
+facility_data <- timci::allocate_screening_facility(facility_data,
+                                                    params$research_facilities)
+
+# Extract personally identifiable information from RCT/LS facility data
+pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+# Add facility generic information to personally identifiable information
+pii <- timci::allocate_screening_facility(pii,
+                                          params$research_facilities)
+```
+
+```{r}
+if (is_tanzania) {
+  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name", "intervention")] %>%
+  distinct()
+} else {
+  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
+  distinct()
+}
+```

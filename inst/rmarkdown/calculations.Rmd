@@ -3,31 +3,6 @@
 ```
 
 ```{r}
-facility_data <- timci::correct_day0_facilities(facility_data)[[1]]
-facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
-```
-
-```{r}
-# Add facility generic information to the RCT/LS facility data
-facility_data <- timci::allocate_screening_facility(facility_data,
-                                                    params$research_facilities)
-
-# Extract personally identifiable information from RCT/LS facility data
-pii <- timci::extract_enrolled_participants(facility_data)[[2]]
-# Add facility generic information to personally identifiable information
-pii <- timci::allocate_screening_facility(pii,
-                                          params$research_facilities)
-
-if (is_tanzania) {
-  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name", "intervention")] %>%
-  distinct()
-} else {
-  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
-  distinct()
-}
-```
-
-```{r}
 if (!is.null(raw_day7fu_data)) {
   if (nrow(raw_day7fu_data) > 0) {
     raw_day7fu_data <- merge(x = raw_day7fu_data,

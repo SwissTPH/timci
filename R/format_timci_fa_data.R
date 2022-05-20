@@ -57,7 +57,7 @@ extract_last_fa_data <- function(df, stats) {
   res <- merge(x = res,
                y = stats,
                by.x = 'fcode',
-               by.y = 'facility_id',
+               by.y = 'fid_from_device',
                all.y = TRUE)
 
   # Retrieve previous assessment

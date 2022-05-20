@@ -527,6 +527,52 @@ get_summary_by_deviceid <- function(df) {
 
 }
 
+#' Get summary statistics grouped by facility ID (TIMCI-specific function)
+#'
+#' @param df Dataframe containing the processed facility data
+#' @return This function returns a dataframe containing summary statistics grouped by facility IDs
+#' @export
+#' @import dplyr magrittr
+
+get_summary_by_fid <- function(df) {
+
+  df1 <- df %>%
+    dplyr::group_by(fid_from_device) %>%
+    dplyr::summarise(recruitment_start = min(date_visit),
+                     recruitment_last = max(date_visit),
+                     n = dplyr::n())
+
+  enrolled <- df %>%
+    dplyr::filter(enrolled == 1)
+
+  df2 <- enrolled %>%
+    dplyr::count(fid_from_device)
+
+  df3 <- enrolled %>%
+    dplyr::filter(sex == 2) %>%
+    dplyr::count(fid_from_device)
+
+  df4 <- enrolled %>%
+    dplyr::filter(yg_infant == 1) %>%
+    dplyr::count(fid_from_device)
+
+  df5 <- enrolled %>%
+    dplyr::filter((yg_infant == 1) & (sex == 2)) %>%
+    dplyr::count(fid_from_device)
+
+  # Merge and rename
+  res <- merge(x = df1, y = df2, by = 'fid_from_device', all.x = TRUE)
+  res <- res %>% dplyr::rename('screened' = 'n.x',
+                               'children' = 'n.y')
+  res <- merge(x = res, y = df3, by = 'fid_from_device', all.x = TRUE)
+  res <- res %>% dplyr::rename('female' = 'n')
+  res <- merge(x = res, y = df4, by = 'fid_from_device', all.x = TRUE)
+  res <- res %>% dplyr::rename('yg_infant' = 'n')
+  res <- merge(x = res, y = df5, by = 'fid_from_device', all.x = TRUE)
+  res %>% dplyr::rename('yg_female' = 'n')
+
+}
+
 #' Count the occurrence of non-enrolment causes during screening (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data

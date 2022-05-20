@@ -79,10 +79,24 @@ The number of consultation observations to be done depends on the numbers of pro
   \item 6 providers: 5-6 observations per provider
 \end{itemize}
 
-```{r, eval = cond, results = "asis"}
-if (is_tanzania) {
-  d1 <- "Kaliua"
-}
+```{r, eval = cond, results = "asis", eval=!is_tanzania}
+obs_count <- all %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("Observed children" = n_distinct(child_id))
+
+obs_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = "Number of consultation observations by providers") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
+```
+
+```{r, eval = cond, results = "asis", eval=is_tanzania}
+d1 <- "Kaliua"
 obs_count <- all %>%
   dplyr::filter(district == d1) %>%
   dplyr::group_by(facility_name, hcp_id) %>%
@@ -90,6 +104,7 @@ obs_count <- all %>%
 
 obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = paste0("Number of consultation observations by providers in ", d1)) %>% 
@@ -98,10 +113,8 @@ obs_count %>%
   kableExtra::collapse_rows(columns = 1, valign = "top") 
 ```
 
-```{r, eval = cond, results = "asis"}
-if (is_tanzania) {
-  d2 <- "Sengerema"
-}
+```{r, eval = cond, results = "asis", eval=is_tanzania}
+d2 <- "Sengerema"
 obs_count <- all %>%
   dplyr::filter(district == d2) %>%
   dplyr::group_by(facility_name, hcp_id) %>%
@@ -117,10 +130,8 @@ obs_count %>%
   kableExtra::collapse_rows(columns = 1, valign = "top")
 ```
 
-```{r, eval = cond, results = "asis"}
-if (is_tanzania) {
-  d3 <- "Tanga"
-}
+```{r, eval = cond, results = "asis", eval=is_tanzania}
+d3 <- "Tanga"
 obs_count <- all %>%
   dplyr::filter(district == d3) %>%
   dplyr::group_by(facility_name, hcp_id) %>%
@@ -209,6 +220,7 @@ out <- format_summary_table(all,
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
+                  longtable = TRUE,
                   align = c("c", "c", "c"),
                   caption = tcap_observed_danger_signs) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
@@ -234,6 +246,7 @@ out <- format_summary_table(all,
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
+                  longtable = TRUE,
                   align = c("c", "c"),
                   caption = "History of convulsions") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
@@ -261,6 +274,7 @@ out <- format_summary_table(all,
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
                   linesep = "",
+                  longtable = TRUE,
                   align = c("c", "c", "c"),
                   caption = "Cough/Difficulty breathing") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%

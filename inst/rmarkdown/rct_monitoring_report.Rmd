@@ -116,6 +116,9 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
+```{r data-cleaning-subsection, child = 'data_cleaning.Rmd'}
+```
+
 ```{r calculation-subsection, child = 'calculations.Rmd'}
 ```
 
@@ -134,29 +137,6 @@ if (nrow(facility_data) > 0) {
 ```
 
 ```{r context-subsection, child = 'context.Rmd'}
-```
-
-```{r}
-if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
-  hc_enrolment_target <- 14
-  dispensary_enrolment_target <- 6
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- round(day_target / facility_nb, 0)
-} else if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
-  enrolment_target <- 4
-} else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
-  hc_enrolment_target <- 16
-  dispensary_enrolment_target <- 4
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- round(day_target / facility_nb, 0)
-} else if (Sys.getenv('TIMCI_COUNTRY') == "India") {
-  hc_enrolment_target <- 22/6
-  dispensary_enrolment_target <- 4/6
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- ceiling(day_target / facility_nb)
-} else{
-  enrolment_target <- 8
-}
 ```
 
 \clearpage
