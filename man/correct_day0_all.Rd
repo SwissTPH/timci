@@ -2,7 +2,7 @@
 % Please edit documentation in R/clean_rctls_data.R
 \name{correct_day0_all}
 \alias{correct_day0_all}
-\title{Correct Day 0 data for all errors (TIMCI-specific function)}
+\title{Edit Day 0 data for all errors that were detected by quality checks (TIMCI-specific function)}
 \usage{
 correct_day0_all(df)
 }
@@ -13,5 +13,5 @@ correct_day0_all(df)
 This function returns an edited dataframe with corrections
 }
 \description{
-Correct Day 0 data for all errors (TIMCI-specific function)
+Edit Day 0 data for all errors that were detected by quality checks (TIMCI-specific function)
 }

@@ -56,8 +56,16 @@ library(skimr)
 library(DataExplorer)
 ```
 
+```{r}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
+```
+
 ```{r translations}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+if (is_senegal) {
   notice_str <- ""
   screening_times_str <- "Heures de screening"
 } else {
@@ -67,7 +75,6 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r setup-variables, echo = FALSE}
-
 deidentification_on <- 0
 
 spa_pid <- Sys.getenv("TIMCI_SPA_PID")
@@ -278,7 +285,7 @@ pii <- res[[2]]
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("Initially, there are **", n_screening, "** record(s) in the raw facility database from the start of the study on ", start_date, ", including **", n_day0, "** Day 0 record(s)."))
+cat(paste0("Initially, there are **", n_screening, "** screening record(s) in the raw facility database from the start of the study on ", start_date, ", including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
 ```
 
 ### Non-valid device IDs [context check]
@@ -327,6 +334,14 @@ cat(paste0("**", n_locked_screening - nrow(locked_screening_data), "** record(s)
 ```
 
 ### Non-valid enrolling facility IDs [compliance check]
+
+```{r, results='asis', eval=(is_tanzania | is_kenya)}
+cat("Rule: records from facility IDs not listed in the first section of this report are detected and corrected proactively were possible.")
+```
+
+```{r, results='asis', eval=(is_tanzania | is_kenya)}
+cat("##### Initial check")
+```
 
 **Rule:** records from facility IDs not listed in the first section of this report are removed in the locked database.
 
@@ -441,42 +456,45 @@ locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
 
 #### Non-timely completion [compliance check]
 
-**Definition:** delayed completion of a submission, either finalisation not done on the same day the submission was started (i.e., duration from start to end superior to 0 day) or finalisation 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
-
 ```{r}
 qc_completion_ab1day <- NULL
 qc_completion_ab2days <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    qc <- detect_non_timely_completion(locked_day0_data)
-    qc_completion_ab1day <- qc[qc$diff > 0,]
-    qc_completion_ab2days <- qc[qc$diff > 1,]
-  }
+```
+
+```{r, eval=!is.null(facility_data)}
+if (nrow(locked_day0_data) > 0) {
+  qc <- detect_non_timely_completion(locked_day0_data)
+  qc_completion_ab1day <- qc[qc$diff > 0,]
+  qc_completion_ab2days <- qc[qc$diff > 1,]
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(qc_completion_ab1day)) {
-  if (nrow(qc_completion_ab1day) > 0) {
-    cat(nrow(qc_completion_ab1day), "participants for which the submission was not finalised on the same day it was started.")
-  }
-}
+**Definition:** Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end superior to 0 day)
+
+```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
+cat(nrow(qc_completion_ab1day), "participant(s) for which the submission was not finalised on the same day it was started.")
 ```
 
-```{r, results='asis'}
-if (!is.null(qc_completion_ab2days)) {
-  if (nrow(qc_completion_ab2days) > 0) {
-    cat(nrow(qc_completion_ab2days), "participants for which the submission was finalised after 2 days and more.")
-  }
-}
+**Definition:** Finalisation of the submission 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
+
+```{r, results='asis', eval=!is.null(qc_completion_ab2days)}
+cat(nrow(qc_completion_ab2days), "participant(s) for which the submission was finalised after 2 days and more.")
 ```
 
-```{r, results='asis'}
-if (!is.null(qc_completion_ab2days)) {
-  if (nrow(qc_completion_ab2days) > 0) {
-    qc_completion_ab2days %>%
-      knitr::kable(row.names = FALSE)
-  }
+```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
+qc_completion_fn <- "07_DQC1_nontimely_day0_completion"
+fn <- timci::export_df2xlsx(qc_completion_ab1day,
+                            params$rctls_dir,
+                            qc_completion_fn)
+cat(paste0("The table of participants for which the submission was not finalised on the same day it was started is exported to ", qc_completion_fn))
+```
+
+```{r, results='asis', eval=!is.null(qc_completion_ab2days)}
+if (nrow(qc_completion_ab2days) > 0) {
+  hist(as.numeric(qc_completion_ab2days$diff),
+       xlab="Days between submission start and finalisation" ,
+       ylab="Occurences",
+       main="")
 }
 ```
 
@@ -541,98 +559,26 @@ if (!is.null(qc_transfer_ab12days)) {
 }
 ```
 
+```{r, results='asis', eval=!is.null(qc_transfer_ab12days)}
+qc_transfer_fn <- "07_DQC2_nontimely_day0_transfer"
+fn <- timci::export_df2xlsx(qc_transfer_ab12days,
+                            params$rctls_dir,
+                            qc_transfer_fn)
+cat(paste0("The table of participants for which the submission was transferred after 12 days and more (participant never displayed in the Day 7 follow-up log on the tablet) is exported to ", qc_transfer_fn))
+```
+
+```{r, results='asis', eval=!is.null(qc_transfer_ab12days)}
+if (nrow(qc_transfer_ab12days) > 0) {
+  hist(as.numeric(qc_transfer_ab12days$diff),
+       xlab="Days between submission start and finalisation" ,
+       ylab="Occurences",
+       main="")
+}
+```
+
 ### Duplicate management
 
-#### Child ID duplicates [compliance check] 
-
-```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
-cat("Rule: child ID duplicates are detected and corrected proactively were possible.")
-```
-
-```{r, results='asis', eval=(Sys.getenv('TIMCI_COUNTRY') == "Tanzania")}
-cat("##### Initial check")
-```
-
-```{r check-RCT-LS-ODK-facility-data-001a, results='asis'}
-day0_qc <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    day0_qc <- timci::detect_id_duplicates(locked_day0_data)
-    id_duplicates <- day0_qc[day0_qc$id_fq > 1,]
-    if (nrow(id_duplicates) > 0) { 
-      id_duplicates %>% knitr::kable(row.names = FALSE)
-    }
-  }
-}
-```
-
-```{r, results='asis'}
-day0_data_id_duplicates <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (nrow(id_duplicates) > 0) { 
-      # Remove duplicate child IDs from the clean database
-      day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      cat(paste0("", nrow(id_duplicates), " duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected in the locked Day 0 database."))
-    } else {
-      cat("No duplicated IDs were detected.")
-    }
-  } else {
-    cat("N/A")
-  }
-}
-```
-
-```{r, results='asis'}
-cat("##### Child ID duplicate manual edits")
-```
-
-```{r, results='asis'}
-out <- timci::correct_day0_duplicates(locked_day0_data)
-locked_day0_data <- out[[1]]
-duplicate_edits <- out[[2]]
-if (!is.null(duplicate_edits)) {
-  duplicate_edits %>%
-    select(old_child_id, uuid, new_child_id) %>%
-    knitr::kable()
-}
-```
-
-```{r, results='asis'}
-cat("##### Second check after manual edits")
-```
-
-Rule: remaining child ID duplicates are removed in the locked database.
-
-```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
-day0_qc <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    day0_qc <- timci::detect_id_duplicates(locked_day0_data)
-    id_duplicates <- day0_qc[day0_qc$id_fq > 1,]
-    if (nrow(id_duplicates) > 0) { 
-      id_duplicates %>% knitr::kable(row.names = FALSE)
-    }
-  }
-}
-```
-
-```{r, results='asis'}
-day0_data_id_duplicates <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (nrow(id_duplicates) > 0) { 
-      # Remove duplicate child IDs from the clean database
-      day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      cat(paste0("", nrow(id_duplicates), " duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected and removed in the locked Day 0 database."))
-    } else {
-      cat("No duplicated IDs were detected.")
-    }
-  } else {
-    cat("N/A")
-  }
-}
+```{r child_duplicate-subsection, child = 'database_export_QC_child_duplicates.Rmd'}
 ```
 
 #### Possible participant duplicates
@@ -1015,8 +961,8 @@ day7fu_data <- locked_day7fu_data
 write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr())
 ```
 
-```{r, results='asis'}
-cat("Rule: only one successful follow-up is kept with the following priority rule: day 7 > day 8 > day 9 > day 10 > day 6 > day 11 and above")
+```{r, results='asis', eval=is_kenya}
+cat("##### Initial check")
 ```
 
 ```{r check-RCT-LS-ODK-fu-day7-data, results='asis'}
@@ -1036,6 +982,29 @@ if (!is.null(day7fu_data)) {
   }
 }
 
+```
+
+```{r, results='asis', eval=is_kenya}
+cat("##### Child ID duplicate manual edits")
+```
+
+```{r, results='asis'}
+out <- timci::correct_day7_duplicates(locked_day7fu_data)
+locked_day7fu_data <- out[[1]]
+duplicate_edits <- out[[2]]
+if (!is.null(duplicate_edits)) {
+  duplicate_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+```{r, results='asis', eval=is_kenya}
+cat("##### Second check after manual edits")
+```
+
+```{r, results='asis'}
+cat("Rule: only one successful follow-up is kept with the following priority rule: day 7 > day 8 > day 9 > day 10 > day 6 > day 11 and above")
 ```
 
 ```{r}

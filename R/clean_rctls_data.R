@@ -23,7 +23,12 @@ correct_day0_facilities <- function(df) {
             all.x = TRUE)
     df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
     df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+    if("fid_from_device" %in% colnames(df))
+    {
+      df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
+    }
 
+    # Remove the column new_child_id from the dataframe
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
@@ -55,7 +60,7 @@ correct_day0_duplicates <- function(df) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
     df <- df %>%
-      merge(edits,
+      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
             by.x=c("child_id", "uuid"),
             by.y=c("old_child_id", "uuid"),
             all.x=TRUE)
@@ -65,13 +70,18 @@ correct_day0_duplicates <- function(df) {
     {
       df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
     }
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_child_id")
+    df <- df[,!(names(df) %in% drop)]
+
     out <- list(df, edits)
   }
   out
 
 }
 
-#' Correct Day 0 data for all errors (TIMCI-specific function)
+#' Edit Day 0 data for all errors that were detected by quality checks (TIMCI-specific function)
 #'
 #' @param df dataframe
 #' @return This function returns an edited dataframe with corrections
@@ -105,17 +115,46 @@ correct_day7_duplicates <- function(df) {
   if (!is.null(csv_filename)) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
-    df <- df %>%
-      merge(edits,
-            by.x=c("child_id", "uuid"),
-            by.y=c("old_child_id", "uuid"),
-            all.x=TRUE)
-    df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-    df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+    if ("a1-pid" %in% colnames(df))
+    {
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("a1-pid", "meta-instanceID"),
+              by.y = c("old_child_id", "uuid"),
+              all.x=TRUE)
+      df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
+      df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
+    } else if ("child_id" %in% colnames(df))
+    {
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("old_child_id", "uuid"),
+              all.x=TRUE)
+      df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+    }
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_child_id")
+    df <- df[,!(names(df) %in% drop)]
+
     out <- list(df, edits)
   }
   out
 
 }
 
+#' Edit Day 7 follow-up data for all errors that were detected by quality checks (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns an edited dataframe with corrections
+#' @import dplyr
+#' @export
 
+correct_day7_all <- function(df) {
+
+  # Correct duplicated child IDs
+  df <- timci::correct_day7_duplicates(df)[[1]]
+
+}

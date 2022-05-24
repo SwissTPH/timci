@@ -47,7 +47,7 @@ wfa_data <- params$wfa_data
 research_facilities <- params$research_facilities
 ```
 
-```{r data-cleaning-subsection, child = 'data_cleaning.Rmd'}
+```{r data-cleaning-subsection, child = 'data_cleaning_day0.Rmd'}
 ```
 
 ```{r, eval=!is_rct}

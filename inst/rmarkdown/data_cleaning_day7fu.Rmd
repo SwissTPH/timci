@@ -1,0 +1,7 @@
+```{r day7fu-cleaning-message}
+write(formats2h2("Clean Day 7 follow-up data"), stderr())
+```
+
+```{r}
+raw_day7fu_data <- timci::correct_day7_all(raw_day7fu_data)
+```

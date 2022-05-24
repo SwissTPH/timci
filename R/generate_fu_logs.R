@@ -71,13 +71,13 @@ generate_fu_logs <- function(rctls_pid,
                                                         end_date)
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
-    facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
+    write(nrow(facility_data), stderr())
+    facility_data <- timci::correct_day0_all(facility_data)
+    write(nrow(facility_data), stderr())
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
     facility_data <- timci::process_facility_data(raw_facility_data)
     write(nrow(facility_data), stderr())
-    #facility_data <- timci::correct_day0_facilities(facility_data)[[1]]
-    write(nrow(facility_data), stderr())
-    facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
+    facility_data <- timci::correct_day0_all(facility_data)
     write(nrow(facility_data), stderr())
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
@@ -187,22 +187,22 @@ generate_fu_logs <- function(rctls_pid,
 
   generate_pdf_report(day7fu_dir, "fu_daily_log.Rmd", "01_timci_day7_fu_daily_log", params)
 
-  # Weekly log
-  for (i in 1:nrow(research_facilities)) {
-    fid <- research_facilities[[i, 'facility_id']]
-    fname <- research_facilities[[i, 'facility_label']]
-    params <- list(pii = pii,
-                   fu_fid = crf_day7_fid,
-                   raw_fu_data = raw_day7fu_data,
-                   raw_withdrawal_data = raw_withdrawal_data,
-                   facility_id = fid,
-                   facility_label = fname,
-                   fu_start = 0,
-                   fu_end = 12,
-                   fu_vstart = 7,
-                   fu_vend = 10)
-    generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
-  }
+  # # Weekly log
+  # for (i in 1:nrow(research_facilities)) {
+  #   fid <- research_facilities[[i, 'facility_id']]
+  #   fname <- research_facilities[[i, 'facility_label']]
+  #   params <- list(pii = pii,
+  #                  fu_fid = crf_day7_fid,
+  #                  raw_fu_data = raw_day7fu_data,
+  #                  raw_withdrawal_data = raw_withdrawal_data,
+  #                  facility_id = fid,
+  #                  facility_label = fname,
+  #                  fu_start = 0,
+  #                  fu_end = 12,
+  #                  fu_vstart = 7,
+  #                  fu_vend = 10)
+  #   generate_word_report(day7fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day7_fu_weekly_log"), params)
+  # }
 
   #################################
   # Hospitalisation follow-up log #
@@ -262,22 +262,22 @@ generate_fu_logs <- function(rctls_pid,
 
     generate_pdf_report(day28fu_dir, "fu_daily_log.Rmd", "01_timci_day28_fu_daily_log", params)
 
-    # Weekly log
-    for (i in 1:nrow(research_facilities)) {
-      fid <- research_facilities[[i, 'facility_id']]
-      fname <- research_facilities[[i, 'facility_label']]
-      params <- list(pii = pii,
-                     fu_fid = crf_day28_fid,
-                     raw_fu_data = raw_day28fu_data,
-                     raw_withdrawal_data = raw_withdrawal_data,
-                     facility_id = fid,
-                     facility_label = fname,
-                     fu_start = 21,
-                     fu_end = 35,
-                     fu_vstart = 28,
-                     fu_vend = 32)
-      generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day28_fu_weekly_log"), params)
-    }
+    # # Weekly log
+    # for (i in 1:nrow(research_facilities)) {
+    #   fid <- research_facilities[[i, 'facility_id']]
+    #   fname <- research_facilities[[i, 'facility_label']]
+    #   params <- list(pii = pii,
+    #                  fu_fid = crf_day28_fid,
+    #                  raw_fu_data = raw_day28fu_data,
+    #                  raw_withdrawal_data = raw_withdrawal_data,
+    #                  facility_id = fid,
+    #                  facility_label = fname,
+    #                  fu_start = 21,
+    #                  fu_end = 35,
+    #                  fu_vstart = 28,
+    #                  fu_vend = 32)
+    #   generate_word_report(day28fu_dir, "fu_weekly_log.Rmd", paste0(fid, "_", fname, "_timci_day28_fu_weekly_log"), params)
+    # }
 
   }
 

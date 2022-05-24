@@ -1,5 +1,5 @@
 ```{r cleaning-message}
-write(formats2h2("Clean the data"), stderr())
+write(formats2h2("Clean Day 0 data"), stderr())
 ```
 
 ```{r}
@@ -19,11 +19,5 @@ pii <- timci::allocate_screening_facility(pii,
 ```
 
 ```{r}
-if (is_tanzania) {
-  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name", "intervention")] %>%
-  distinct()
-} else {
-  uq_facilities <- params$research_facilities[, c("facility_id", "facility_name")] %>%
-  distinct()
-}
+facility_data <- timci::correct_day0_all(facility_data)
 ```
