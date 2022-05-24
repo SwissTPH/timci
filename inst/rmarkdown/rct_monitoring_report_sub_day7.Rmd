@@ -217,14 +217,14 @@ if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all <- data.frame(succ_day7fu_data)
-    
     all$cure_day7[is.na(all$cure_day7)] <- 0
+    all$all_hf_visit_day7 <- ifelse(all$status_day7 == 2 | (all$status_day7 != 2 & all$hf_visit_day7 == 1 & all$hf_visit_type == hospit_value), 1, 0)
     
     day7_outcome_ss <- list(
       "summary" = list(
         "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec, na_rm = TRUE),
         "Death" = ~qwraps2::n_perc(status_day7 == 3, prec, na_rm = TRUE),
-        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value), prec, na_rm = TRUE)
+        "Higher level visit" = ~qwraps2::n_perc(all_hf_visit_day7 == 1, prec, na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, day7_outcome_ss, facility_name) 
