@@ -81,6 +81,9 @@ generate_fu_logs <- function(rctls_pid,
     write(nrow(facility_data), stderr())
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
+    write(nrow(facility_data), stderr())
+    facility_data <- timci::correct_day0_all(facility_data)
+    write(nrow(facility_data), stderr())
   }
   pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 

@@ -1,0 +1,7 @@
+```{r spa-cleaning-message}
+write(formats2h2("Clean SPA data"), stderr())
+```
+
+```{r, eval=spa_sco_is_not_null}
+spa_sco_data <- timci::correct_spa_sco_hcp_ids(spa_sco_data)[[1]]
+```

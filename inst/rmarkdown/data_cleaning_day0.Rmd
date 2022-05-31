@@ -17,7 +17,3 @@ pii <- timci::extract_enrolled_participants(facility_data)[[2]]
 pii <- timci::allocate_screening_facility(pii,
                                           params$research_facilities)
 ```
-
-```{r}
-facility_data <- timci::correct_day0_all(facility_data)
-```

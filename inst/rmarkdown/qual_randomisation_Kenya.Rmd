@@ -13,6 +13,7 @@ library(dplyr)
 library(readxl)
 cdate <- "2022-04-07"
 cdate <- "2022-04-21"#Sys.Date()
+cdate <- "2022-05-05"#Uasin Gishu only
 myxlsx <- paste0("C:/Users/langhe/Documents/Kenya/timci_exports/export_", cdate, "/02_Kenya_main_study/03_Kenya_qualitative/01_Kenya_caregiver_idis/01_cg_idi_participants.xlsx")
 set.seed(2021)
 ```
@@ -28,7 +29,7 @@ print(nrow(df))
 ## Filter data
 
 ```{r, echo=TRUE, message=FALSE}
-facilities <- read_excel("C:/Users/langhe/Documents/Kenya/timci_research_facilities.xlsx")
+facilities <- read_excel("C:/Users/langhe/Documents/Kenya/timci_research_facilities.xlsx") %>% dplyr::distinct(facility_id, .keep_all = TRUE)
 df <- df %>%
   merge(y = facilities[,c("facility_id", "training_date", "rollout_date")],
         by.x = 'fid',
@@ -86,7 +87,9 @@ nonreferred_kitui_df
 ```
 
 ```{r, echo=TRUE, message=FALSE}
-nonreferred_ug_df <- nonreferred_df %>% dplyr::filter(district == "Uasin Gishu")
+nonreferred_ug_df <- nonreferred_df %>%
+  dplyr::filter(district == "Uasin Gishu") %>%
+  dplyr::filter(days_since_intervention >= 10)
 nonreferred_ug_df
 ```
 
@@ -116,6 +119,15 @@ print(random_selection_kakamega)
 ```{r, echo=TRUE, message=FALSE}
 openxlsx::write.xlsx(random_selection_kakamega, "kenya_qual_selection_nonreferred_kakamega_21.xlsx", row.names = FALSE, overwrite = TRUE)
 ```
+```{r, echo=TRUE, message=FALSE}
+random_selection_ug <- nonreferred_ug_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+print(random_selection_ug)
+```
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_ug, "kenya_qual_selection_nonreferred_ug_21.xlsx", row.names = FALSE, overwrite = TRUE)
+```
 
 ## Random selection for non-referred children (backup)
 ```{r, echo=TRUE, message=FALSE}
@@ -143,6 +155,19 @@ print(random_selection_kakamega_bkp)
 
 ```{r, echo=TRUE, message=FALSE}
 openxlsx::write.xlsx(random_selection_kakamega_bkp, "kenya_qual_selection_nonreferred_kakamega_21_bkp.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+nonreferred_ug_df <- nonreferred_ug_df[!nonreferred_ug_df$child_id %in% random_selection_ug$child_id, ]
+
+random_selection_ug_bkp <- nonreferred_ug_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_ug_bkp)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_ug_bkp, "kenya_qual_selection_nonreferred_ug_21_bkp.xlsx", row.names = FALSE, overwrite = TRUE)
 ```
 
 ## Random selection for non-referred children (backup)

@@ -1,15 +1,15 @@
-#' Correct Day 0 facilities (TIMCI-specific function)
+#' Edit non-valid facilities in Day 0 data entries (TIMCI-specific function)
 #'
 #' @param df dataframe
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
 #' @import dplyr
 #' @export
 
-correct_day0_facilities <- function(df) {
+correct_day0_non_valid_facilities <- function(df) {
 
   csv_filename <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "day0_facility_correction_kenya.csv"
+    csv_filename <- "day0_non_valid_facility_correction_kenya.csv"
   }
 
   out <- list(df,NULL)
@@ -38,14 +38,15 @@ correct_day0_facilities <- function(df) {
 
 }
 
-#' Correct Day 0 duplicates (TIMCI-specific function)
+#' Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
+#' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
 #'
 #' @param df dataframe
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
 #' @import dplyr
 #' @export
 
-correct_day0_duplicates <- function(df) {
+correct_day0_child_ids <- function(df) {
 
   csv_filename <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
@@ -54,8 +55,11 @@ correct_day0_duplicates <- function(df) {
   else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     csv_filename <- "day0_duplicate_correction_kenya.csv"
   }
+  else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    csv_filename <- "day0_duplicate_correction_senegal.csv"
+  }
 
-  out <- list(df,NULL)
+  out <- list(df, NULL)
   if (!is.null(csv_filename)) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
@@ -91,9 +95,9 @@ correct_day0_duplicates <- function(df) {
 correct_day0_all <- function(df) {
 
   # Correct incorrect facility of enrolment
-  df <- timci::correct_day0_facilities(df)[[1]]
+  df <- timci::correct_day0_non_valid_facilities(df)[[1]]
   # Correct duplicated child IDs
-  df <- timci::correct_day0_duplicates(df)[[1]]
+  df <- timci::correct_day0_child_ids(df)[[1]]
 
 }
 
@@ -156,5 +160,41 @@ correct_day7_all <- function(df) {
 
   # Correct duplicated child IDs
   df <- timci::correct_day7_duplicates(df)[[1]]
+
+}
+
+#' Edit incorrect healthcare provider (HCP) IDs in SPA sick child observation entries (TIMCI-specific function)
+#' This function can be used to correct documented HCP ID duplicates, incorrect facility codes or typos
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_spa_sco_hcp_ids <- function(df) {
+
+  csv_filename <- NULL
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    csv_filename <- "spa_sco_hcp_correction_kenya.csv"
+  }
+
+  out <- list(df, NULL)
+  if (!is.null(csv_filename)) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    df <- df %>%
+      merge(edits[, c("old_hcp_id", "uuid", "new_hcp_id")],
+            by.x = c("hcp_identification-hcpid", "meta-instanceID"),
+            by.y = c("old_hcp_id", "uuid"),
+            all.x = TRUE)
+    df$"hcp_identification-hcpid" <- ifelse(is.na(df$new_hcp_id), df$"hcp_identification-hcpid", df$new_hcp_id)
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_hcp_id")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, edits)
+  }
+  out
 
 }

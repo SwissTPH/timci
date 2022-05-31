@@ -43,7 +43,7 @@ cat("##### Child ID duplicate manual edits")
 ```
 
 ```{r, results='asis'}
-out <- timci::correct_day0_duplicates(locked_day0_data)
+out <- timci::correct_day0_child_ids(locked_day0_data)
 locked_day0_data <- out[[1]]
 duplicate_edits <- out[[2]]
 if (!is.null(duplicate_edits)) {

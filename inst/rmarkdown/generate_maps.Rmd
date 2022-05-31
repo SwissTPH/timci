@@ -116,8 +116,8 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
-```{r, eval=is_tanzania}
-facility_data <- timci::correct_day0_duplicates(facility_data)[[1]]
+```{r}
+facility_data <- timci::correct_day0_all(facility_data)
 ```
 
 ```{r calculation-subsection, child = 'calculations.Rmd'}

@@ -22,6 +22,7 @@ params:
   qualkii_dir: !r tempdir()
   qualos_dir: !r tempdir()
   cost_dir: !r tempdir()
+  locked_db_dir: !r tempdir()
   facility_data: NULL
   lock_date: NULL
   facility_data_audit: NULL
@@ -82,14 +83,14 @@ qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
 lock_date <- params$lock_date
-lock_rctls_dir <- file.path(params$rctls_dir, "locked")
-dir.create(lock_rctls_dir, showWarnings = FALSE)
 
 qualcg_dir <- params$qualcg_dir
 qualhcp_dir <- params$qualhcp_dir
 qualkii_dir <- params$qualkii_dir
 qualos_dir <- params$qualos_dir
 cost_dir <- params$cost_dir
+locked_db_dir <- params$locked_db_dir
+qc_check_dir <- NULL
 
 research_facilities <- params$research_facilities
 
@@ -365,7 +366,7 @@ cat("##### Facility ID manual edits")
 ```
 
 ```{r, results='asis'}
-out <- timci::correct_day0_facilities(locked_day0_data)
+out <- timci::correct_day0_non_valid_facilities(locked_day0_data)
 locked_day0_data <- out[[1]]
 facility_edits <- out[[2]]
 if (!is.null(facility_edits)) {
@@ -774,10 +775,10 @@ cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xsl
 ```{r export-locked-screening-data, results = 'asis'}
 if (!is.null(facility_data)) {
   fn <- timci::export_df2csvxlsx(locked_screening_data,
-                                 lock_rctls_dir,
+                                 locked_db_dir,
                                  screening_export_name)
 }
-cat(paste0("* Locked screening data are exported in ", screening_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+cat(paste0("* Locked screening data are exported in ", screening_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 ```
 
 ```{r export-facility-audit}
@@ -799,13 +800,13 @@ if (!is.null(facility_data)) {
     
     locked_day0_data <- timci::deidentify_data(locked_day0_data)
     fn <- timci::export_df2csvxlsx(locked_day0_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "02_timci_day0_data")
     
     if (!is.null(day0_data_id_duplicates)) {
       deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
       fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
-                                     lock_rctls_dir,
+                                     locked_db_dir,
                                      "02a_timci_day0_data_id_duplicates")
     }
   } else {
@@ -814,12 +815,12 @@ if (!is.null(facility_data)) {
                                    "02_timci_day0_data")
     
     fn <- timci::export_df2csvxlsx(locked_day0_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "02_timci_day0_data")
     
     if (!is.null(day0_data_id_duplicates)) {
       fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
-                                     lock_rctls_dir,
+                                     locked_db_dir,
                                      "02a_timci_day0_data_id_duplicates")
     }
   }
@@ -838,7 +839,7 @@ cat(paste0("* Raw Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", lock_rctls_dir, " folder"))
+cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", locked_db_dir, " folder"))
 ```
 
 ```{r export-visit-data, results = 'asis'}
@@ -874,9 +875,9 @@ if (!is.null(raw_withdrawal_data)) {
 if (!is.null(raw_withdrawal_data)) {
   if (!is.null(day0_data_id_withdrawal)) {
     fn <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    withdrawal_export_name)
-    cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+    cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
   }
 }
 ```
@@ -1089,7 +1090,7 @@ if (!is.null(day7fu_data)) {
                                  params$rctls_dir,
                                  day7_export_name)
   fn <- timci::export_df2csvxlsx(locked_day7fu_data,
-                                lock_rctls_dir,
+                                locked_db_dir,
                                 day7_export_name)
 }
 if (!is.null(allday7fu_data)) {
@@ -1098,10 +1099,10 @@ if (!is.null(allday7fu_data)) {
                                  params$rctls_dir,
                                  "04a_timci_followup_day7_data")
   fn <- timci::export_df2csvxlsx(locked_allday7fu_data,
-                                lock_rctls_dir,
+                                locked_db_dir,
                                 "04a_timci_followup_day7_data")
   fn <- timci::export_df2csvxlsx(allday7fu_data_uids,
-                                lock_rctls_dir,
+                                locked_db_dir,
                                 "04c_timci_followup_day7_data_unknown_ids")
 }
 ```
@@ -1114,7 +1115,7 @@ if (!is.null(day7fu_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
-  cat(paste0("* Locked Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  cat(paste0("* Locked Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", locked_db_dir, " folder"))
 }
 ```
 
@@ -1126,7 +1127,7 @@ if (!is.null(day7fu_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
-  cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 }
 ```
 
@@ -1141,7 +1142,7 @@ if (!is.null(ltfu)) {
 ```{r}
 if (!is.null(locked_ltfu)) {
   fn <- timci::export_df2xlsx(locked_ltfu,
-                              lock_rctls_dir,
+                              locked_db_dir,
                               "04c_day7_lost_to_followup")
 }
 ```
@@ -1249,7 +1250,7 @@ if (!is.null(hospit_data)) {
 }
 if (!is.null(locked_hospit_data)) {
   fn <- timci::export_df2csvxlsx(locked_hospit_data,
-                                 lock_rctls_dir,
+                                 locked_db_dir,
                                  hospit_export_name)
 }
 ```
@@ -1259,7 +1260,7 @@ cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 ```
 
 ```{r, results = 'asis'}
@@ -1424,7 +1425,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
                                    params$rctls_dir,
                                    "06_timci_followup_successful_day28_data")
     fn <- timci::export_df2csvxlsx(locked_day28fu_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "06_timci_followup_successful_day28_data")
   }
   if (!is.null(allday28fu_data)) {
@@ -1433,10 +1434,10 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
                                    params$rctls_dir,
                                    day28_export_name)
     fn <- timci::export_df2csvxlsx(locked_allday28fu_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    day28_export_name)
     fn <- timci::export_df2csvxlsx(allday28fu_data_uids,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "06c_timci_followup_day28_data_unknown_ids")
   }
 }
@@ -1450,7 +1451,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
 
 ```{r, results = 'asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-  cat(paste0("* Locked Day 28 data are exported in ", day28_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  cat(paste0("* Locked Day 28 data are exported in ", day28_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 }
 ```
 
@@ -1617,21 +1618,21 @@ if (!is.null(spa_sco_data)) {
                                    params$spa_dir,
                                    spa_sco_export_name)
     fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    spa_sco_export_name)
     
     fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "04_timci_spa_consultation_obs_data_unknown_ids")
   } else {
     fn <- timci::export_df2csvxlsx(spa_sco_data,
                                    params$spa_dir,
                                    spa_sco_export_name)
     fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    spa_sco_export_name)
     fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   lock_rctls_dir,
+                                   locked_db_dir,
                                    "04_timci_spa_consultation_obs_data_unknown_ids")
   }
   
@@ -1643,7 +1644,7 @@ cat(paste0("* Raw SPA sick child observation data are exported in ", spa_sco_exp
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked SPA sick child observation data are exported in ", spa_sco_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+cat(paste0("* Locked SPA sick child observation data are exported in ", spa_sco_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 ```
 
 ## Healthcare provider interview data quality checks
@@ -1732,7 +1733,7 @@ if (!is.null(spa_hcpi_data)) {
                                  spa_hcpi_export_name)
   
   fn <- timci::export_df2csvxlsx(locked_spa_hcpi_data,
-                                 lock_rctls_dir,
+                                 locked_db_dir,
                                  spa_hcpi_export_name)
 }
 ```
@@ -1745,7 +1746,7 @@ if (!is.null(spa_hcpi_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(spa_hcpi_data)) {
-  cat(paste0("* Locked SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", lock_rctls_dir, " folder"))
+  cat(paste0("* Locked SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
 }
 ```
 

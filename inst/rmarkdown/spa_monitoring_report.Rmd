@@ -77,6 +77,7 @@ is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
 is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
 is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
 is_rct <- is_tanzania | is_india
+is_ls <- is_kenya | is_senegal
 ```
 
 ```{r setup-variables}
@@ -180,6 +181,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r context-subsection, child = 'context.Rmd'}
+```
+
+```{r spa-cleaning, child = if (spa_is_not_null) 'data_cleaning_spa.Rmd'}
 ```
 
 ```{r sco-subsection, child = if (spa_sco_is_not_null) 'spa_monitoring_report_sub_sco.Rmd'}
