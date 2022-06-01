@@ -14,6 +14,8 @@
 #' @param participant_zip Path to the encrypted zip archive that stores participant data
 #' @param mdb_dir Path to the output folder for the RCT / LS database exports
 #' @param fu_dir Path to the output folder for the follow-up exports
+#' @param qc_dir Path to the output folder that contains the quality check findings
+#' @param lock_dir Path to the output folder that contains the cleaned datasets
 #' @param qualcg_dir Path to the output folder for the caregiver in-depth interview exports
 #' @param qualhcp_dir Path to the output folder for the healthcare provider in-depth interview exports
 #' @param qualkii_dir Path to the output folder for the key informant interview exports (optional)
@@ -40,6 +42,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      participant_zip,
                                      mdb_dir,
                                      fu_dir,
+                                     qc_dir,
+                                     lock_dir,
                                      qualcg_dir,
                                      qualhcp_dir,
                                      spa_db_dir,
@@ -438,9 +442,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   write(formats2h1("Export data and generate data quality report"), stderr())
 
-  locked_db_dir <- file.path(dirname(mdb_dir), "08b_cleaned_datasets")
-  dir.create(locked_db_dir, showWarnings = FALSE)
-
   params <- list(rctls_dir = mdb_dir,
                  research_facilities = research_facilities,
                  participant_zip = participant_zip,
@@ -450,7 +451,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  qualhcp_dir = qualhcp_dir,
                  qualkii_dir = qualkii_dir,
                  qualos_dir = qualos_dir,
-                 locked_db_dir = locked_db_dir,
+                 qc_dir = qc_dir,
+                 locked_db_dir = lock_dir,
                  facility_data = facility_data,
                  facility_data_audit = facility_data_audit,
                  raw_day7fu_data = raw_day7fu_data,
@@ -473,7 +475,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  kii_interview_data = kii_interview_data,
                  online_survey_data = online_survey_data,
                  lock_date = lock_date)
-  generate_word_report(locked_db_dir, "database_export.Rmd", "timci_data_lock_report", params)
+  generate_word_report(lock_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
   ###################
   # PATH M&E report #

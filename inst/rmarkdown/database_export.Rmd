@@ -22,6 +22,7 @@ params:
   qualkii_dir: !r tempdir()
   qualos_dir: !r tempdir()
   cost_dir: !r tempdir()
+  qc_dir: !r tempdir()
   locked_db_dir: !r tempdir()
   facility_data: NULL
   lock_date: NULL
@@ -84,13 +85,14 @@ cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
 lock_date <- params$lock_date
 
+rctls_dir <- params$rctls_dir
 qualcg_dir <- params$qualcg_dir
 qualhcp_dir <- params$qualhcp_dir
 qualkii_dir <- params$qualkii_dir
 qualos_dir <- params$qualos_dir
 cost_dir <- params$cost_dir
 locked_db_dir <- params$locked_db_dir
-qc_check_dir <- NULL
+qc_dir <- params$qc_dir
 
 research_facilities <- params$research_facilities
 
@@ -485,7 +487,7 @@ cat(nrow(qc_completion_ab2days), "participant(s) for which the submission was fi
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
 qc_completion_fn <- "07_DQC1_nontimely_day0_completion"
 fn <- timci::export_df2xlsx(qc_completion_ab1day,
-                            params$rctls_dir,
+                            qc_dir,
                             qc_completion_fn)
 cat(paste0("The table of participants for which the submission was not finalised on the same day it was started is exported to ", qc_completion_fn))
 ```
@@ -563,7 +565,7 @@ if (!is.null(qc_transfer_ab12days)) {
 ```{r, results='asis', eval=!is.null(qc_transfer_ab12days)}
 qc_transfer_fn <- "07_DQC2_nontimely_day0_transfer"
 fn <- timci::export_df2xlsx(qc_transfer_ab12days,
-                            params$rctls_dir,
+                            qc_dir,
                             qc_transfer_fn)
 cat(paste0("The table of participants for which the submission was transferred after 12 days and more (participant never displayed in the Day 7 follow-up log on the tablet) is exported to ", qc_transfer_fn))
 ```
@@ -663,7 +665,7 @@ if (!is.null(facility_data)) {
 ```{r export-duplicates}
 if (!is.null(day0_qc)) {
   fn <- timci::export_df2xlsx(day0_qc,
-                              params$rctls_dir,
+                              qc_dir,
                               "07_data_quality_checks")
 }
 ```
@@ -766,10 +768,10 @@ format_nrow("There are", locked_day0_data, "records in the locked Day 0 database
 screening_export_name <- "01_timci_screening_data"
 if (!is.null(facility_data)) { 
   fn <- timci::export_df2csvxlsx(screening_data,
-                                 params$rctls_dir,
+                                 rctls_dir,
                                  screening_export_name)
 }
-cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xslx in the ", rctls_dir, " folder"))
 ```
 
 ```{r export-locked-screening-data, results = 'asis'}
@@ -784,7 +786,7 @@ cat(paste0("* Locked screening data are exported in ", screening_export_name, ".
 ```{r export-facility-audit}
 if (!is.null(facility_data_audit)) { 
   fn <- timci::export_df2csvxlsx(facility_data_audit,
-                                 params$rctls_dir,
+                                 rctls_dir,
                                  "00_facility_audit_data")
 }
 ```
@@ -795,7 +797,7 @@ if (!is.null(facility_data)) {
   if (deidentification_on == 1) {
     deidentified_day0_data <- timci::deidentify_data(day0_data)
     fn <- timci::export_df2csvxlsx(deidentified_day0_data,
-                                   params$rctls_dir,
+                                   rctls_dir,
                                    "02_timci_day0_data")
     
     locked_day0_data <- timci::deidentify_data(locked_day0_data)
@@ -806,12 +808,12 @@ if (!is.null(facility_data)) {
     if (!is.null(day0_data_id_duplicates)) {
       deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
       fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
-                                     locked_db_dir,
+                                     qc_dir,
                                      "02a_timci_day0_data_id_duplicates")
     }
   } else {
     fn <- timci::export_df2csvxlsx(day0_data,
-                                   params$rctls_dir,
+                                   rctls_dir,
                                    "02_timci_day0_data")
     
     fn <- timci::export_df2csvxlsx(locked_day0_data,
@@ -820,7 +822,7 @@ if (!is.null(facility_data)) {
     
     if (!is.null(day0_data_id_duplicates)) {
       fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
-                                     locked_db_dir,
+                                     qc_dir,
                                      "02a_timci_day0_data_id_duplicates")
     }
   }
@@ -1090,8 +1092,8 @@ if (!is.null(day7fu_data)) {
                                  params$rctls_dir,
                                  day7_export_name)
   fn <- timci::export_df2csvxlsx(locked_day7fu_data,
-                                locked_db_dir,
-                                day7_export_name)
+                                 locked_db_dir,
+                                 day7_export_name)
 }
 if (!is.null(allday7fu_data)) {
   
@@ -1099,11 +1101,11 @@ if (!is.null(allday7fu_data)) {
                                  params$rctls_dir,
                                  "04a_timci_followup_day7_data")
   fn <- timci::export_df2csvxlsx(locked_allday7fu_data,
-                                locked_db_dir,
-                                "04a_timci_followup_day7_data")
+                                 locked_db_dir,
+                                 "04a_timci_followup_day7_data")
   fn <- timci::export_df2csvxlsx(allday7fu_data_uids,
-                                locked_db_dir,
-                                "04c_timci_followup_day7_data_unknown_ids")
+                                 qc_dir,
+                                 "04c_timci_followup_day7_data_unknown_ids")
 }
 ```
 
@@ -1538,6 +1540,15 @@ if (!is.null(spa_sco_data)) {
 }
 ```
 
+### Non-valid provider IDs
+
+```{r, results='asis', eval=!is.null(spa_sco_data)}
+out <- timci::correct_spa_sco_hcp_ids(locked_spa_sco_data)
+locked_spa_sco_data <- out[[1]]
+spa_sco_data_hcp_edits <- out[[2]]
+knitr::kable(spa_sco_data_hcp_edits, caption = "Healthcare provider ID to be corrected")
+```
+
 ### Non-valid participant IDs
 
 Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
@@ -1622,7 +1633,7 @@ if (!is.null(spa_sco_data)) {
                                    spa_sco_export_name)
     
     fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   locked_db_dir,
+                                   qc_dir,
                                    "04_timci_spa_consultation_obs_data_unknown_ids")
   } else {
     fn <- timci::export_df2csvxlsx(spa_sco_data,
@@ -1632,7 +1643,7 @@ if (!is.null(spa_sco_data)) {
                                    locked_db_dir,
                                    spa_sco_export_name)
     fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   locked_db_dir,
+                                   qc_dir,
                                    "04_timci_spa_consultation_obs_data_unknown_ids")
   }
   

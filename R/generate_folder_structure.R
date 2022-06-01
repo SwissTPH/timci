@@ -42,14 +42,21 @@ generate_folder_structure <- function(output_dir, study_dirname) {
   # PATH folders
   path_dir <- file.path(subdir, study_dirname, paste0("06_", Sys.getenv('TIMCI_COUNTRY'), "_path"))
   dir.create(path_dir, showWarnings = FALSE)
+  # Quality checks and cleaned folders
+  qc_dir <- file.path(subdir, study_dirname, paste0("08a_", Sys.getenv('TIMCI_COUNTRY'), "_quality_checks"))
+  dir.create(qc_dir, showWarnings = FALSE)
+  lock_dir <- file.path(subdir, study_dirname, paste0("08b_", Sys.getenv('TIMCI_COUNTRY'), "_cleaned_datasets"))
+  dir.create(lock_dir, showWarnings = FALSE)
 
   out <- list(subdir,
               raw_rctls_db_dir,
               fu_dir,
               raw_spa_db_dir,
-              cost_dir,
               report_dir,
+              qc_dir,
+              lock_dir,
               path_dir,
+              cost_dir,
               cg_idi_dir,
               hcp_idi_dir,
               kii_dir,
