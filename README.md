@@ -265,6 +265,72 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
 
+```R
+gc() # Garbage collection
+
+library(timci)
+library(readxl)
+
+stack_size <- getOption("pandoc.stack.size", default = "2048m")
+email <- 0
+
+# Set key dates
+start_date <- as.Date(Sys.getenv("TIMCI_START_DATE"))
+write(start_date, stderr())
+spa_start_date <- as.Date(Sys.getenv('TIMCI_SPA_START_DATE'))
+lock_date <- as.Date(Sys.getenv('TIMCI_CLEANING_END_DATE'))
+
+# Set the root directory for storing results
+output_dir <- file.path(getwd(),"timci_exports")
+# Import the mapping between the ODK Collect device identifiers and the health facilities where the research assistants are posted
+research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
+
+###############################
+# RANDOMISED CONTROLLED TRIAL #
+###############################
+
+write(timci::formats2h1("RANDOMISED CONTROLLED TRIAL"), stderr())
+
+# Create the structure of the folder and subfolders that are created everyday to store the reports and exports
+study_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_main_study")
+dirs <- timci::generate_folder_structure(output_dir, study_dirname)
+
+rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+qual_pid <- Sys.getenv("TIMCI_QUAL_PID")
+qual_pp <- Sys.getenv("TIMCI_QUAL_PP")
+cost_pid <- Sys.getenv("TIMCI_COST_PID")
+
+# Run several Rmarkdown files to generate standardised automated reports for the main study
+timci::run_rmarkdown_reportonly(rctls_pid = rctls_pid,
+                                rctls_pp = rctls_pp,
+                                spa_pid = spa_pid,
+                                cost_pid = cost_pid,
+                                qpid = qual_pid,
+                                qual_pp = qual_pp,
+                                report_dir = dirs[[5]],
+                                participant_zip = file.path(dirs[[2]], "participants.zip"),
+                                mdb_dir = dirs[[2]],
+                                fu_dir = dirs[[3]],
+                                spa_db_dir = dirs[[4]],
+                                qc_dir = dirs[[6]],
+                                lock_dir = dirs[[7]],
+                                cost_dir = dirs[[9]],
+                                qualcg_dir = dirs[[10]],
+                                qualhcp_dir = dirs[[11]],
+                                qualkii_dir = dirs[[12]],
+                                qualos_dir = dirs[[13]],
+                                path_dir = dirs[[8]],
+                                start_date = start_date,
+                                end_date = NULL,
+                                spa_start_date = spa_start_date,
+                                lock_date = Sys.Date(),
+                                sample_size = 110880)
+
+gc(verbose = TRUE) # Garbage collection and prints memory usage statistics
+```
+
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
 
