@@ -472,13 +472,13 @@ if (nrow(locked_day0_data) > 0) {
 }
 ```
 
-**Definition:** Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end superior to 0 day)
+**Definition 1:** Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end superior to 0 day)
 
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
 cat(nrow(qc_completion_ab1day), "participant(s) for which the submission was not finalised on the same day it was started.")
 ```
 
-**Definition:** Finalisation of the submission 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
+**Definition 2:** Finalisation of the submission 2 days or later after the submission was started (i.e., duration from start to end superior to 1 day)
 
 ```{r, results='asis', eval=!is.null(qc_completion_ab2days)}
 cat(nrow(qc_completion_ab2days), "participant(s) for which the submission was finalised after 2 days and more.")
@@ -1471,6 +1471,9 @@ if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == 
     fn <- timci::export_df2xlsx(fu28all, params$rctls_dir, "06d_timci_day28_fu_weekly_log_all")
   }
 }
+```
+
+```{r, child = 'database_export_deaths_sub.Rmd'}
 ```
 
 ## Problem report data

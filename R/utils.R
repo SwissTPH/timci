@@ -168,3 +168,24 @@ combine_dataframes <- function(df1,
   out
 
 }
+
+#' Pivot values of duplicated rows into new columns
+#'
+#' @param df Input dataframe
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr tidyr
+
+pivot_duplicates_to_columns <- function(df) {
+
+  cols <- colnames(df)
+  cols <- cols[!(cols %in% c("child_id"))]
+
+  df %>%
+    dplyr::group_by(child_id) %>%
+    dplyr::mutate(row_n = row_number()) %>%
+    tidyr::pivot_wider(child_id,
+                       names_from = row_n,
+                       values_from = cols)
+
+}

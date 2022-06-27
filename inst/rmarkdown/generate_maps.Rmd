@@ -1,5 +1,5 @@
 ---
-title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study (LS) - Monitoring Report'}`"
+title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study (LS) - Maps'}`"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 params:
@@ -7,7 +7,6 @@ params:
   start_date: NULL
   end_date: NULL
   day7fu_end_date: NULL
-  sample_target: NULL
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
@@ -140,28 +139,32 @@ if (nrow(facility_data) > 0) {
 ```{r context-subsection, child = 'context.Rmd'}
 ```
 
-```{r}
-if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
-  hc_enrolment_target <- 14
-  dispensary_enrolment_target <- 6
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- round(day_target / facility_nb, 0)
-} else if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
-  enrolment_target <- 4
-} else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
-  hc_enrolment_target <- 16
-  dispensary_enrolment_target <- 4
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- round(day_target / facility_nb, 0)
-} else if (Sys.getenv('TIMCI_COUNTRY') == "India") {
-  hc_enrolment_target <- 6
-  dispensary_enrolment_target <- 1
-  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
-  enrolment_target <- round(day_target / facility_nb, 0)
-} else{
-  enrolment_target <- 8
-}
+```{r maps-message}
+write(timci::formats2h2("Generate context maps"), stderr())
 ```
 
-```{r maps-subsection, eval = is_india | is_kenya | is_senegal, child = 'maps.Rmd'}
+```{r maps-load-libraries}
+library(sf)     # classes and functions for vector data
+library(raster) # classes and functions for raster data
+library(spData)        # load geographic data
+library(ggplot2)
+library(gridExtra)
+library(graphics)
+```
+
+```{r maps-subsection, results="asis", eval = is_india | is_kenya | is_senegal}
+out <- lapply(1:nrow(facilities),
+              function(i) {
+                knitr::knit_child('maps.Rmd',
+                    envir = environment(),
+                    quiet = TRUE)
+                })
+cat(unlist(out), sep = '\n')
+```
+
+```{r}
+detach("package:raster", unload=TRUE)
+detach("package:spData", unload=TRUE)
+detach("package:sf", unload=TRUE)
+tmp <- gc() # garbage collection
 ```

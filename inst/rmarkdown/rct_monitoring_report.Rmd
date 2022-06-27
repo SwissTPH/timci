@@ -11,7 +11,7 @@ params:
   facility_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
-  raw_day28fu_data: NULL<
+  raw_day28fu_data: NULL
   raw_withdrawal_data: NULL
   wfa_data: NULL
 output:
@@ -450,7 +450,7 @@ out %>%
                   longtable = TRUE,
                   linesep = "",
                   align = c("c"),
-                  caption = tcap_day7fu_completion) %>%
+                  caption = tcap_day7fu_due) %>%
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
                             font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%

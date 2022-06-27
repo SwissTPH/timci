@@ -54,10 +54,6 @@ if (!is.null(raw_day28fu_data)) {
 ```
 
 ```{r}
-gps_coordinates <- timci::process_gps_coordinates(facility_data)
-```
-
-```{r}
 n_total <- 0
 
 # Screening data

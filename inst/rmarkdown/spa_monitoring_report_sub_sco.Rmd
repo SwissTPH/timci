@@ -213,6 +213,7 @@ timci::heatmap_wday_hourofday(all, 'start')
 ```
 
 ```{r, results="asis", eval=cond & is_ls}
+write("Test 1", stderr())
 all_q1 <- all %>% dplyr::filter(Q1 == 1)
 if (!is.null(all_q1)) {
   timci::heatmap_wday_hourofday(all_q1, 'start')
@@ -220,9 +221,14 @@ if (!is.null(all_q1)) {
 ```
 
 ```{r, results="asis", eval=cond & is_ls}
+write("Test 2", stderr())
 all_q2 <- all %>% dplyr::filter(Q1 == 0)
 if (!is.null(all_q2)) {
-  timci::heatmap_wday_hourofday(all_q2, 'start')
+  write(length(all_q2), stderr())
+  write(nrow(all_q2), stderr())
+  if (nrow(all_q2)>0) {
+    timci::heatmap_wday_hourofday(all_q2, 'start')
+  }
 }
 ```
 

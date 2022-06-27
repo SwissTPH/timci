@@ -94,7 +94,7 @@ if (!is.null(raw_day7fu_data)) {
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Tentatives d'appel enregistrées")
 } else {
-  cat("## Recorded call attempts")
+  cat("## Recorded attempts")
 }
 ```
 
@@ -107,17 +107,74 @@ day7fu_data <- merge(x = day7fu_data,
                      all = FALSE)
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", eval=!is_tanzania}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all <- data.frame(day7fu_data)
+    all$cg_ok[is.na(all$cg_ok)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Successful phone attempt" = ~qwraps2::n_perc(call_ok == 1, prec, na_rm = TRUE),
+        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis", eval=is_tanzania}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all <- data.frame(day7fu_data)
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Call attempted" = ~qwraps2::n_perc(fu_type == 1, prec),
+        "Physical attempted" = ~qwraps2::n_perc(fu_type == 2, prec),
+        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis", eval=!is_tanzania}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all$respondent_ok[is.na(all$respondent_ok)] <- 0
     all$cg_reached[is.na(all$cg_reached)] <- 0
     
     day7_call_stats <- list(
       "District" = list(
-        "Successful call" = ~qwraps2::n_perc(call_ok == 1, prec, na_rm = TRUE),
-        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
+        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
         )
     )
     
@@ -134,17 +191,17 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", eval=is_tanzania}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all$respondent_ok[is.na(all$respondent_ok)] <- 0
-    all$cg_ok[is.na(all$cg_ok)] <- 0
+    all$cg_reached[is.na(all$cg_reached)] <- 0
     
     day7_call_stats <- list(
       "District" = list(
         "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
+        "Caregiver OK" = ~qwraps2::n_perc(successful_phone_fu == 1, prec),
         "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
         )
     )

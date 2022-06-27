@@ -86,6 +86,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     spa_start_date = start_date
   }
 
+  filter <- NULL
+  if (short){
+    thres_date <- Sys.Date() - 10
+    filter <- paste0("__system/submissionDate ge ", thres_date)
+  }
+
   ################
   # Set up ruODK #
   ################
@@ -150,7 +156,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
                                                pp = rctls_pp,
+                                               filter = filter,
+                                               delfields = FALSE,
+                                               group = TRUE,
+                                               split = FALSE,
                                                media = FALSE)
+
   # Dirty fix - To be moved when time allows
   col_specs <- list(
     'a4_c_10a' = col_integer(),
@@ -278,6 +289,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                   pid = rctls_pid,
                                                   fid = crf_day28_fid,
                                                   pp = rctls_pp,
+                                                  filter = filter,
+                                                  delfields = FALSE,
+                                                  group = TRUE,
+                                                  split = FALSE,
                                                   media = FALSE)
       raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
                                                            csv_name = paste0(crf_day28_fid,".csv"),
@@ -721,6 +736,30 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     rm(locked_day0_data)
     gc() # Garbage collection
 
+    ########
+    # Maps #
+    ########
+
+    write(formats2h1("Generate map report"), stderr())
+
+    params <- list(research_facilities = research_facilities,
+                   start_date = start_date,
+                   end_date = end_date,
+                   facility_data = facility_data,
+                   raw_day7fu_data = raw_day7fu_data,
+                   raw_hospit_data = raw_hospit_data,
+                   raw_day28fu_data = raw_day28fu_data,
+                   raw_withdrawal_data = raw_withdrawal_data,
+                   wfa_data = wfa_data)
+    if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
+      rname <- "timci_rct_map_report"
+    } else{
+      rname <- "timci_ls_map_report"
+    }
+    generate_pdf_report(report_dir, "generate_maps.Rmd", rname, params)
+
+    gc() # Garbage collection
+
   }
 
 }
@@ -817,6 +856,9 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                                pid = rctls_pid,
                                                fid = crf_facility_fid,
                                                pp = rctls_pp,
+                                               delfields = FALSE,
+                                               group = TRUE,
+                                               split = FALSE,
                                                media = FALSE)
   # Dirty fix - To be moved when time allows
   col_specs <- list(
@@ -943,6 +985,9 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                                   pid = rctls_pid,
                                                   fid = crf_day28_fid,
                                                   pp = rctls_pp,
+                                                  delfields = FALSE,
+                                                  group = TRUE,
+                                                  split = FALSE,
                                                   media = FALSE)
       raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
                                                            csv_name = paste0(crf_day28_fid,".csv"),

@@ -1,0 +1,103 @@
+```{r death-export-subsection-verbose}
+write("Export death data for monitoring", stderr())
+```
+
+\newpage
+
+## Export death data
+
+## Export death data reported at Day 7
+
+```{r, eval=is_tanzania}
+day7_deaths <- allday7fu_data %>% filter(status_day7 == 3 | fu_type == 3)
+day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
+locked_day7fu_deaths <- locked_allday7fu_data %>% filter(status_day7 == 3 | fu_type == 3)
+locked_day7fu_deaths <- pivot_duplicates_to_columns(locked_day7fu_deaths)
+```
+
+```{r, eval=!is_tanzania}
+day7_deaths <- allday7fu_data %>% filter(status_day7 == 3)
+day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
+locked_day7fu_deaths <- locked_allday7fu_data %>% filter(status_day7 == 3)
+locked_day7fu_deaths <- pivot_duplicates_to_columns(locked_day7fu_deaths)
+```
+
+```{r, eval=!is.null(day7_deaths)}
+day7_death_export_name <- "14_timci_day7_death_data"
+fn <- timci::export_df2csvxlsx(day7_deaths,
+                               params$rctls_dir,
+                               day7_death_export_name)
+```
+
+```{r, eval=!is.null(locked_day7fu_deaths)}
+fn <- timci::export_df2csvxlsx(locked_day7fu_deaths,
+                               locked_db_dir,
+                               day7_death_export_name)
+```
+
+## Export death data reported at Day 28
+
+```{r, eval=is_rct}
+day28_deaths <- allday28fu_data %>% filter(status_day28 == 3)
+day28_deaths <- pivot_duplicates_to_columns(day28_deaths)
+locked_day28fu_deaths <- locked_allday28fu_data %>% filter(status_day28 == 3)
+locked_day28fu_deaths <- pivot_duplicates_to_columns(locked_day28fu_deaths)
+```
+
+```{r, eval=is_rct}
+if(!is.null(day28_deaths)){
+  day28_death_export_name <- "15_timci_day28_death_data"
+  fn <- timci::export_df2csvxlsx(day28_deaths,
+                                 params$rctls_dir,
+                                 day28_death_export_name)
+}
+
+```
+
+```{r, eval=is_rct}
+if(!is.null(locked_day28fu_deaths)){
+  fn <- timci::export_df2csvxlsx(locked_day28fu_deaths,
+                                 locked_db_dir,
+                                 day28_death_export_name)
+}
+```
+
+## Combined death data
+
+```{r, eval=is_rct}
+all_deaths <- day7_deaths %>%
+  merge(day28_deaths,
+        by = 'child_id',
+        all = TRUE) %>%
+  merge(day0_data,
+        by = 'child_id',
+        all.x = TRUE)
+```
+
+```{r, eval=is_rct}
+locked_all_deaths <- locked_day7fu_deaths %>%
+  merge(locked_day28fu_deaths,
+        by = 'child_id',
+        all = TRUE) %>%
+  merge(locked_day0_data,
+        by = 'child_id',
+        all.x = TRUE)
+```
+
+```{r, eval=is_rct}
+if(!is.null(all_deaths)){
+  all_death_export_name <- "16_timci_all_death_data"
+  fn <- timci::export_df2csvxlsx(all_deaths,
+                                 params$rctls_dir,
+                                 all_death_export_name)
+}
+
+```
+
+```{r, eval=is_rct}
+if(!is.null(locked_all_deaths)){
+  fn <- timci::export_df2csvxlsx(locked_all_deaths,
+                                 locked_db_dir,
+                                 all_death_export_name)
+}
+```

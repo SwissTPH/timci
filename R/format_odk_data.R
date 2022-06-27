@@ -75,15 +75,23 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
 #' @param cpid_forms list of form IDs in `cpid`
 #' @param cfid string, ODK form ID
 #' @param cpp string, ODK project passphrase (optional, only required if the ODK project is encrypted)
-#' @param start_date date, data collection start date (optional)
-#' @param end_date date, data collection end date (optional)
-#' @param col_specs column specifications (optional)
+#' @param start_date date, data collection start date (optional, by default set to `NULL`)
+#' @param end_date date, data collection end date (optional, by default set to `NULL`)
+#' @param filter OData filter (optional, by default set to `NULL`)
+#' @param col_specs column specifications (optional, by default set to `NULL`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import ruODK
 #' @export
 
-extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
+extract_data_from_odk_server <- function(cpid,
+                                         cpid_forms,
+                                         cfid, cpp="",
+                                         start_date = NULL,
+                                         end_date = NULL,
+                                         filter = NULL,
+                                         col_specs = NULL,
+                                         verbose = FALSE) {
 
   df <- NULL
   cdir <- tempdir()
@@ -93,7 +101,16 @@ extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_d
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
+                                        filter = filter,
+                                        delfields = FALSE,
+                                        group = TRUE,
+                                        split = FALSE,
                                         media = FALSE)
+
+    # Extract the XML representation of the form
+    fq_form_xml <- ruODK::form_xml(parse=FALSE,
+                                   pid = cpid,
+                                   fid = cfid)
 
     df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
                                            csv_name = paste0(cfid,".csv"),
@@ -144,15 +161,23 @@ extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, local_dir = 
 #' @param cpid_forms list of form IDs in `cpid`
 #' @param cfid string, ODK form ID
 #' @param cpp string, ODK project passphrase (optional, only required if the ODK project is encrypted)
-#' @param start_date date, data collection start date (optional)
-#' @param end_date date, data collection end date (optional)
-#' @param col_specs column specifications (optional)
+#' @param start_date date, data collection start date (optional, by default set to `NULL`)
+#' @param end_date date, data collection end date (optional, by default set to `NULL`)
+#' @param filter OData filter (optional, by default set to `NULL`)
+#' @param col_specs column specifications (optional, by default set to `NULL`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a list of dataframes.
 #' @import ruODK
 #' @export
 
-extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
+extract_complex_data_from_odk_server <- function(cpid,
+                                                 cpid_forms,
+                                                 cfid, cpp="",
+                                                 start_date = NULL,
+                                                 end_date = NULL,
+                                                 filter = NULL,
+                                                 col_specs = NULL,
+                                                 verbose = FALSE) {
 
   out <- NULL
   cdir <- tempdir()
@@ -162,6 +187,10 @@ extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="",
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
+                                        filter = filter,
+                                        delfields = FALSE,
+                                        group = TRUE,
+                                        split = FALSE,
                                         media = TRUE)
     # Extract ODK submissions
     df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
