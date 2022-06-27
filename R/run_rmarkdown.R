@@ -262,12 +262,20 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   # Load day 7 follow-up data
   write(formats2h3("Load day 7 follow-up data"), stderr())
+
+  day7_col_specs <- list(
+    'a1-enroldate' = col_date(),
+    'o1-o1_2' = col_date(),
+    'o1-o1_2a' = col_character()
+  )
+
   raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                   cpid_forms = rct_ls_form_list,
                                                   cpp = rctls_pp,
                                                   cfid = crf_day7_fid,
                                                   start_date = start_date,
                                                   end_date = day7fu_end_date,
+                                                  col_specs = day7_col_specs,
                                                   verbose = TRUE)
 
   # Load hospital visit follow-up data

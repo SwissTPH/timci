@@ -9,17 +9,30 @@ write("Export death data for monitoring", stderr())
 ## Export death data reported at Day 7
 
 ```{r, eval=is_tanzania}
-day7_deaths <- allday7fu_data %>% filter(status_day7 == 3 | fu_type == 3)
-day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
-locked_day7fu_deaths <- locked_allday7fu_data %>% filter(status_day7 == 3 | fu_type == 3)
-locked_day7fu_deaths <- pivot_duplicates_to_columns(locked_day7fu_deaths)
+day7_deaths <- allday7fu_data %>%
+  filter(status_day7 == 3 | fu_type == 3)
+if (nrow(day7_deaths) > 0) {
+  day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
+}
+
+locked_day7fu_deaths <- locked_allday7fu_data %>%
+  filter(status_day7 == 3 | fu_type == 3)
+if (nrow(locked_day7fu_deaths) > 0) {
+  locked_day7fu_deaths <- timci::pivot_duplicates_to_columns(locked_day7fu_deaths)
+}
 ```
 
 ```{r, eval=!is_tanzania}
-day7_deaths <- allday7fu_data %>% filter(status_day7 == 3)
-day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
-locked_day7fu_deaths <- locked_allday7fu_data %>% filter(status_day7 == 3)
-locked_day7fu_deaths <- pivot_duplicates_to_columns(locked_day7fu_deaths)
+day7_deaths <- allday7fu_data %>%
+  filter(status_day7 == 3)
+if (nrow(day7_deaths) > 0) {
+  day7_deaths <- pivot_duplicates_to_columns(day7_deaths)
+}
+locked_day7fu_deaths <- locked_allday7fu_data %>%
+  filter(status_day7 == 3)
+if (nrow(locked_day7fu_deaths) > 0) {
+  locked_day7fu_deaths <- timci::pivot_duplicates_to_columns(locked_day7fu_deaths)
+}
 ```
 
 ```{r, eval=!is.null(day7_deaths)}
@@ -70,6 +83,9 @@ all_deaths <- day7_deaths %>%
         by = 'child_id',
         all = TRUE) %>%
   merge(day0_data,
+        by = 'child_id',
+        all.x = TRUE) %>%
+  merge(hospit_data,
         by = 'child_id',
         all.x = TRUE)
 ```

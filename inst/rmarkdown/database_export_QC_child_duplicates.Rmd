@@ -13,7 +13,21 @@ day0_qc <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     day0_qc <- timci::detect_id_duplicates(locked_day0_data)
-    id_duplicates <- day0_qc[day0_qc$id_fq > 1,]
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    id_duplicates <- locked_day0_data %>%
+      dplyr::group_by(child_id) %>%
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(child_id,
+                         names_from = row_n,
+                         values_from = c("date_visit"),
+                         names_prefix = "date_") %>%
+      filter(!is.na(date_2))
     if (nrow(id_duplicates) > 0) { 
       id_duplicates %>% knitr::kable(row.names = FALSE)
     }
@@ -59,12 +73,26 @@ cat("##### Second check after manual edits")
 
 Rule: remaining child ID duplicates are removed in the locked database.
 
-```{r check-RCT-LS-ODK-facility-data-001, results='asis'}
+```{r check-RCT-LS-ODK-facility-data-001b, results='asis'}
 day0_qc <- NULL
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
     day0_qc <- timci::detect_id_duplicates(locked_day0_data)
-    id_duplicates <- day0_qc[day0_qc$id_fq > 1,]
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    id_duplicates <- locked_day0_data %>%
+      dplyr::group_by(child_id) %>%
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(child_id,
+                         names_from = row_n,
+                         values_from = c("date_visit"),
+                         names_prefix = "date_") %>%
+      filter(!is.na(date_2))
     if (nrow(id_duplicates) > 0) { 
       id_duplicates %>% knitr::kable(row.names = FALSE)
     }
