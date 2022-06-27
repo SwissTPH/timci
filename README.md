@@ -87,6 +87,10 @@ If the version number is below `0.6.5`, please install the package from the mast
 ```r
 remotes::install_github("datawookie/emayili")
 ```
+
+From 30 May 2022 Google no longer supports signing in to Google Accounts using only usernames and passwords. Guidance on how to create and use an application password that can be used in `emayili` is available in the following post:
+[{emayili} Updated Gmail Authentication](https://datawookie.dev/blog/2022/03/updated-gmail-authentication/).
+
 #### Other R dependencies
 
 You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`.
