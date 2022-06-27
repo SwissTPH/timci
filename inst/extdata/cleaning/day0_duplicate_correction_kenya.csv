@@ -1,4 +1,4 @@
-old_child_id,uuid,new_child_id,reason,action
+old_child_id,uuid,new_child_id,reason,action,date
 K-F0192-P0643,uuid:6bc5bfcd-c888-4be8-8cc2-574346981329,K-F0190-P0643,typo
 K-F0214-P0641,uuid:8404b390-5e11-4c08-9669-00b453ae7f56,K-F0214-C0641
 K-F0186-P0661,uuid:3f6b6e49-8634-4c1b-8963-80a86d6fe450,K-F0186-C0661,duplicate
@@ -22,3 +22,11 @@ K-F0223-P0606,uuid:6e733078-9311-478b-93a0-662e5ebc87ba,K-F0223-P0406
 K-F0186-P0610,uuid:23068207-f8f1-4f6d-ba18-69106e507a2e,K-F0186-C0610
 K-F0185-P0568,uuid:c4cf6f5f-e208-4487-8884-54c6da773492,K-F0185-C0568
 K-F0186-P0569,uuid:ad7e13bd-7487-433a-bb4e-70e1bcb9570b,K-F0185-P0569
+K-F0230-P2021,uuid:2dde7c71-dd58-4950-80ac-da468e3c9af8,K-F0230-C2021,duplicate,correct,2022-06-27
+K-F0230-P2002,uuid:bf4807cf-7469-4bd3-9e46-9386f6b7ca7a,K-F0230-C2002,duplicate,correct,2022-06-27
+K-F0227-P0454,uuid:c8aef8e5-eedf-448c-bd2d-8c0407e16acf,K-F0227-C0454,duplicate,correct,2022-06-27
+K-F0223-P0736,uuid:e01cf874-cc48-4775-be22-873d13688c8e,K-F0223-C0736,duplicate,correct,2022-06-27
+K-F0223-P0690,uuid:e701929f-0b52-459c-8734-fe51e11a373c,K-F0223-C0690,duplicate,correct,2022-06-27
+K-F0214-P0809,uuid:ed23048b-19ed-4cdc-99e8-854c5c46c3e0,K-F0214-C0809,duplicate,correct,2022-06-27
+K-F0186-P0771,uuid:e5108ef0-1d27-4777-8d78-996c9f8335ce,K-F0186-C0771,duplicate,correct,2022-06-27
+K-F0186-P0815,uuid:b05c14d4-d0ce-4821-97c5-8b3a0c84206f,K-F0186-C0815,duplicate,correct,2022-06-27
