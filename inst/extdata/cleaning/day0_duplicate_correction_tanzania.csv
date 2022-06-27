@@ -1,4 +1,4 @@
-old_child_id,uuid,new_child_id,reason,action
+old_child_id,uuid,new_child_id,reason,action,date
 T-F0005-P0001,uuid:c09cb75f-d3ad-4093-806f-5e571947494a,T-F0006-P0001
 T-F0005-P0002,uuid:922f97a0-5a91-45f7-999b-95e128847ce2,T-F0006-P0002
 T-F0005-P0003,uuid:b3bdc54e-cdb5-4718-a99a-05cec3805e3d,T-F0006-P0003
@@ -100,3 +100,8 @@ T-F0013-P0880,uuid:e81b6129-7f91-45a1-9210-e7225669922b,T-F0013-P0887
 T-F0080-P0413,uuid:8e068d4d-e54c-41cd-9456-f5270196b8d1,T-F0080-P0414
 T-F0082-P0858,uuid:e1c015b8-6e68-4834-b8e7-a4350b8450b6,T-F0082-C0858
 T-F0101-P1186,uuid:5ed7abef-6f9e-472f-83ef-c00bab11275d,T-F0101-C1186
+T-F0033-P0300,uuid:242095bf-0737-49e4-a38f-76bfbcc8a815,T-F0033-C0300,manual entry,correct,2022-06-26
+T-F0043-P1047,uuid:eabd2653-8467-4db4-a3c9-b08fc5a0f825,T-F0043-C1047,manual entry,correct,2022-06-26
+T-F0043-P1263,uuid:ea7538f7-197d-442a-91f2-69f317a88e0b,T-F0043-C1263,manual entry,correct,2022-06-26
+T-F0092-P0788,uuid:0ae30e94-ca2b-476f-98f9-0ffcfeeee5cf,T-F0092-P0789,manual entry,correct,2022-06-26
+T-F0100-P0464,uuid:3628410a-2283-40ca-9d31-fa7998e9b5f2,T-F0100-P0664,manual entry,correct,2022-06-26
