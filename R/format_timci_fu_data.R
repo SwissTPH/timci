@@ -73,7 +73,7 @@ format_day28_data <- function(df) {
   # Set the dictionary to be used
   day28_dict <- "day28_dict.xlsx"
   if(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'){
-    day7_dict <- "day28_dict_tanzania.xlsx"
+    day28_dict <- "day28_dict_tanzania.xlsx"
   }
 
   # Replace the space between different answers by a semicolon in multiple select questions
