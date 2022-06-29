@@ -8,9 +8,13 @@
 #' @import magrittr dplyr
 #' @export
 
-format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
+format_odk_metadata <- function(df,
+                                start_date = NULL,
+                                end_date = NULL) {
 
   if (dim(df)[1] > 0) {
+    df$SubmissionDate <- strftime(x = df$SubmissionDate,
+                                  format = "%Y-%m-%d %T")
     df$today <- strftime(df$start,"%Y-%m-%d")
     df$duration <- as.integer(round(df$end - df$start, digits = 0))
     df$start_time <- strftime(df$start,"%T")

@@ -20,7 +20,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(allday28fu_data)) {
-  cat(paste0("There are ", nrow(allday28fu_data), " records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
+  cat(paste0("There are **", nrow(allday28fu_data), "** records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
 }
 ```
 
@@ -46,11 +46,11 @@ if (!is.null(day28fu_data)) {
 ```
 
 ```{r, results='asis'}
-timci::format_nrow("**", allday28fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked Day 28 follow-up database.")
+timci::format_nrow("", allday28fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked Day 28 follow-up database.")
 ```
 
 ```{r, results='asis'}
-timci::format_nrow("**", day28fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked successful Day 28 follow-up database.")
+timci::format_nrow("", day28fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 28 follow-up database.")
 ```
 
 ```{r, results='asis', eval=!is.null(allday28fu_data_uids)}

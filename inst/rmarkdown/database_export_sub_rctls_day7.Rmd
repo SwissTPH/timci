@@ -18,7 +18,7 @@ allday7fu_data <- res[[3]]
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which ", nrow(day7fu_data), " records documenting successful follow-ups."))
+cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which **", nrow(day7fu_data), "** records documenting successful follow-ups."))
 ```
 
 ### Non-valid participant IDs [compliance check]
@@ -49,7 +49,7 @@ if (!is.null(raw_day7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(allday7fu_data)) {
   if (nrow(allday7fu_data) > 0) {
-    format_nrow("**", allday7fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked Day 7 follow-up database.")
+    timci::format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked Day 7 follow-up database.")
   }
 }
 ```
@@ -57,7 +57,7 @@ if (!is.null(allday7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
-    format_nrow("**", day7fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
+    timci::format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
   }
 }
 ```
@@ -91,11 +91,6 @@ cat("##### Initial check")
 if (!is.null(day7fu_data)) {
   day7fu_qc <- timci::detect_id_duplicates(locked_day7fu_data)
   day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
-  if (length(day7fu_duplicates) > 0) { 
-    knitr::kable(day7fu_duplicates,
-                 caption = "ID duplicates",
-                 row.names = FALSE)
-  }
 }
 
 if (!is.null(day7fu_data)) {
@@ -104,6 +99,25 @@ if (!is.null(day7fu_data)) {
   }
 }
 
+```
+
+```{r}
+if (!is.null(locked_day7fu_data)) {
+  if (nrow(locked_day7fu_data) > 0) {
+    id_duplicates <- timci::identify_dayfu_id_duplicates_with_dates(locked_day7fu_data)
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(locked_day7fu_data)) {
+  if (nrow(locked_day7fu_data) > 0) {
+    if (nrow(id_duplicates) > 0) { 
+      id_duplicates %>%
+        knitr::kable(row.names = FALSE)
+    }
+  }
+}
 ```
 
 ```{r, results='asis', eval=is_kenya}
@@ -164,7 +178,7 @@ write(" o Data cleaning summary", stderr())
 ```{r, results = 'asis'}
 if (!is.null(allday7fu_data)) {
   if (nrow(allday7fu_data) > 0) {
-    format_nrow("There are **", locked_allday7fu_data, "** record(s) in the locked Day 7 follow-up database.")
+    timci::format_nrow("There are", locked_allday7fu_data, "record(s) in the locked Day 7 follow-up database.")
   }
 }
 ```
@@ -172,7 +186,7 @@ if (!is.null(allday7fu_data)) {
 ```{r, results = 'asis'}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
-    format_nrow("There are **", locked_day7fu_data, "** record(s) in the locked successful Day 7 follow-up database.")
+    timci::format_nrow("There are", locked_day7fu_data, "record(s) in the locked successful Day 7 follow-up database.")
   }
 }
 ```

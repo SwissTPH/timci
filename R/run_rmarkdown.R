@@ -103,7 +103,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   filter <- NULL
   if (is_test){
-    odata_start_date <- lock_date - 5
+    odata_start_date <- lock_date - 10
     odata_end_date <- lock_date + 1
     filter <- paste0("__system/submissionDate ge ",
                      odata_start_date,

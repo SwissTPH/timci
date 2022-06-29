@@ -304,6 +304,9 @@ if (day28fu_is_not_empty) {
 ```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
 ```
 
+```{r db-export-flowchart-subsection, child = 'database_export_sub_rctls_flowchart.Rmd'}
+```
+
 \newpage
 
 # Service Provision Assessment (SPA)

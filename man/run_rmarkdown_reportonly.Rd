@@ -31,8 +31,9 @@ run_rmarkdown_reportonly(
   qualkii_dir = NULL,
   qualos_dir = NULL,
   sample_size = 1e+05,
-  test = FALSE,
-  operational_reports = TRUE
+  is_test = FALSE,
+  operational_reports = TRUE,
+  is_pilot = FALSE
 )
 }
 \arguments{
@@ -88,9 +89,11 @@ run_rmarkdown_reportonly(
 
 \item{sample_size}{Numeric value, sample size for RCT/LS enrolment}
 
-\item{test}{Boolean that enables to export and process a subset of data only for running technical tests (optional, default set to FALSE)}
+\item{is_test}{Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)}
 
 \item{operational_reports}{Boolean that enables to generate operational reports (optional, default set to TRUE)}
+
+\item{is_pilot}{Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

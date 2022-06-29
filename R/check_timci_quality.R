@@ -85,6 +85,31 @@ identify_day0_id_duplicates_with_dates <- function(df) {
 
 }
 
+#' Identify follow-up ID duplicates with dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr magrittr
+
+identify_dayfu_id_duplicates_with_dates <- function(df) {
+
+  out <- df %>%
+    dplyr::arrange(date_call) %>% # order by ascending dates
+    dplyr::group_by(child_id) %>%
+    dplyr::mutate(row_n = row_number()) %>%
+    tidyr::pivot_wider(child_id,
+                       names_from = row_n,
+                       values_from = c("date_call"),
+                       names_prefix = "date_")
+  if ("date_2" %in% colnames(out)) {
+    out <- out %>% filter(!is.na(date_2))
+  }
+
+  out
+
+}
+
 #' Detect name duplicates (TIMCI-specific function)
 #' Search for exact matches and switches
 #'

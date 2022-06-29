@@ -1,12 +1,16 @@
+\newpage
+
+## Flowchart
+
 ```{r}
 DiagrammeR::grViz("digraph {
   graph [layout = dot, rankdir = TB]
   
   node [shape = rectangle]        
-  rec1 [label = 'Step 1. Wake up']
-  rec2 [label = 'Step 2. Write code']
-  rec3 [label =  'Step 3. ???']
-  rec4 [label = 'Step 4. PROFIT']
+  rec1 [label = 'Screening']
+  rec2 [label = 'Enrolment']
+  rec3 [label =  'Day 7 follow-up']
+  rec4 [label = 'Day 28 follow-up']
   
   # edge definitions with the node IDs
   rec1 -> rec2 -> rec3 -> rec4

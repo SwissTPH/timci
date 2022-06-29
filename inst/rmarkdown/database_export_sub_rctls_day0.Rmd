@@ -212,7 +212,7 @@ cat(paste0("The table of participants for whom the submission was not finalised 
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
 if (nrow(qc_completion_ab1day) > 0) {
   hist(as.numeric(qc_completion_ab1day$diff),
-       breaks = c(1:max(as.numeric(qc_completion_ab1day$diff))),
+       breaks = c(1:max(as.numeric(qc_completion_ab1day$diff), na.rm = TRUE)),
        xlab="Days between submission start and finalisation" ,
        ylab="Occurences",
        main="")
@@ -280,18 +280,18 @@ if (!is.null(qc_transfer_ab12days)) {
 }
 ```
 
-```{r, results='asis', eval=!is.null(qc_transfer_ab12days)}
+```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
 qc_transfer_fn <- "DQC_01_01_nontimely_day0_transfer"
-fn <- timci::export_df2xlsx(qc_transfer,
+fn <- timci::export_df2xlsx(qc_transfer_ab1day,
                             qc_dir,
                             qc_transfer_fn)
 cat(paste0("The table of participants for which the submission was transferred strictly after the day it was finalised is exported to **", qc_transfer_fn, "**."))
 ```
 
-```{r, results='asis', eval=!is.null(qc_transfer)}
-if (nrow(qc_transfer) > 0) {
-  hist(as.numeric(qc_transfer$diff),
-       breaks = c(1:max(as.numeric(qc_transfer$diff))),
+```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
+if (nrow(qc_transfer_ab1day) > 0) {
+  hist(as.numeric(qc_transfer_ab1day$diff),
+       breaks = c(1:max(as.numeric(qc_transfer_ab1day$diff), na.rm = TRUE)),
        xlab="Days between submission start and finalisation" ,
        ylab="Occurences",
        main="")
