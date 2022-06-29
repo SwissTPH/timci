@@ -1,0 +1,285 @@
+```{r}
+write("Export Day 7 data and run corresponding quality checks", stderr())
+```
+
+\newpage
+
+## Day 7 data quality checks
+
+```{r}
+day7fu_data <- NULL
+allday7fu_data <- NULL
+```
+
+```{r format-RCT-LS-ODK-fu-day7-data}
+res <- timci::format_day7_data(raw_day7fu_data)
+day7fu_data <- res[[1]]
+allday7fu_data <- res[[3]]
+```
+
+```{r, results = 'asis'}
+cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which ", nrow(day7fu_data), " records documenting successful follow-ups."))
+```
+
+### Non-valid participant IDs [compliance check]
+
+```{r}
+write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
+```
+
+**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
+
+```{r}
+locked_day7fu_data <- NULL
+locked_allday7fu_data <- NULL
+if (!is.null(raw_day7fu_data)) {
+  if (nrow(raw_day7fu_data) > 0) {
+    # All follow-ups
+    locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+    allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+    # Successful follow-ups
+    locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
+    day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
+    locked_day7fu_data <- locked_day7fu_data %>%
+      dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
+  }
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(allday7fu_data)) {
+  if (nrow(allday7fu_data) > 0) {
+    format_nrow("**", allday7fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked Day 7 follow-up database.")
+  }
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    format_nrow("**", day7fu_data_uids, "** records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
+  }
+}
+```
+
+```{r, results='asis', eval=!is.null(allday7fu_data_uids)}
+allday7fu_data_uids_fn <- "DQC_07_01_nonvalid_ids_day7fu"
+fn <- timci::export_df2xlsx(allday7fu_data_uids[c("child_id", "uuid")],
+                            qc_dir,
+                            allday7fu_data_uids_fn)
+cat(paste0("The table of Day 7 follow-ups for which the child ID does not correspond to any ID found the locked Day 0 database is exported to **", allday7fu_data_uids_fn, "**"))
+```
+
+```{r}
+# Replace Day 7 data by locked Day 7 data so that non-valid device IDs/facilities do not appear in the export
+day7fu_data <- locked_day7fu_data
+```
+
+### Duplicate management
+
+#### Successful follow-up duplicates
+
+```{r}
+write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr())
+```
+
+```{r, results='asis', eval=is_kenya}
+cat("##### Initial check")
+```
+
+```{r check-RCT-LS-ODK-fu-day7-data, results='asis'}
+if (!is.null(day7fu_data)) {
+  day7fu_qc <- timci::detect_id_duplicates(locked_day7fu_data)
+  day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
+  if (length(day7fu_duplicates) > 0) { 
+    knitr::kable(day7fu_duplicates,
+                 caption = "ID duplicates",
+                 row.names = FALSE)
+  }
+}
+
+if (!is.null(day7fu_data)) {
+  if (length(day7fu_duplicates) > 0) { 
+    cat(paste0("**", nrow(day7fu_duplicates), "** duplicated successful follow-ups detected."))
+  }
+}
+
+```
+
+```{r, results='asis', eval=is_kenya}
+cat("##### Child ID duplicate manual edits")
+```
+
+```{r, results='asis'}
+out <- timci::correct_day7_duplicates(locked_day7fu_data)
+locked_day7fu_data <- out[[1]]
+duplicate_edits <- out[[2]]
+if (!is.null(duplicate_edits)) {
+  duplicate_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+```{r, results='asis', eval=is_kenya}
+cat("##### Second check after manual edits")
+```
+
+```{r, results='asis'}
+cat("Rule: only one successful follow-up is kept with the following priority rule: day 7 > day 8 > day 9 > day 10 > day 6 > day 11 and above")
+```
+
+```{r}
+if (!is.null(day7fu_data)) {
+  # Process duplicates separately
+  day7fu_data_duplicates <- locked_day7fu_data[locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
+  # Remove all duplicates from the dataframe
+  locked_day7fu_data <- locked_day7fu_data[!locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
+  # Process duplicates
+  processed_day7fu_data_duplicates <- day7fu_data_duplicates %>%
+    dplyr::group_by(child_id) %>%
+    dplyr::slice_max(order_by = window) %>%
+    dplyr::slice_min(order_by = days)
+  # Concatenate with processed duplicates
+  locked_day7fu_data <- rbind(locked_day7fu_data, processed_day7fu_data_duplicates)
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  cat(paste0("**", nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), "** records were removed in the locked successful Day 7 follow-up database. Note that records duplicated on the same day are kept - we need to define a rule for this."))
+}
+```
+
+### Day 7 follow-up anterior to enrolment date [consistency check]
+
+To be implemented
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r, results = 'asis'}
+if (!is.null(allday7fu_data)) {
+  if (nrow(allday7fu_data) > 0) {
+    format_nrow("There are **", locked_allday7fu_data, "** record(s) in the locked Day 7 follow-up database.")
+  }
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    format_nrow("There are **", locked_day7fu_data, "** record(s) in the locked successful Day 7 follow-up database.")
+  }
+}
+```
+
+```{r day7-lost-to-followup}
+ltfu <- NULL
+if (!is.null(day7fu_data)) {
+  ltfu <- timci::generate_ltfu_log(df = day0_data,
+                                   fudf = allday7fu_data,
+                                   end_date = 12,
+                                   raw = FALSE)
+}
+```
+
+```{r locked-day7-lost-to-followup}
+locked_ltfu <- NULL
+if (!is.null(locked_day7fu_data)) {
+  locked_ltfu <- timci::generate_ltfu_log(df = locked_day0_data,
+                                          fudf = locked_allday7fu_data,
+                                          end_date = 12,
+                                          raw = FALSE)
+}
+```
+
+### Data export
+
+```{r}
+write("Export Day 7 data", stderr())
+```
+
+```{r export-RCT-LS-ODK-fu-day7-data, results = 'asis'}
+day7_export_name <- "04b_timci_followup_successful_day7_data"
+if (!is.null(day7fu_data)) {
+  
+  fn <- timci::export_df2csvxlsx(day7fu_data,
+                                 params$rctls_dir,
+                                 day7_export_name)
+  fn <- timci::export_df2csvxlsx(locked_day7fu_data,
+                                 locked_db_dir,
+                                 day7_export_name)
+}
+if (!is.null(allday7fu_data)) {
+  
+  fn <- timci::export_df2csvxlsx(allday7fu_data,
+                                 params$rctls_dir,
+                                 "04a_timci_followup_day7_data")
+  fn <- timci::export_df2csvxlsx(locked_allday7fu_data,
+                                 locked_db_dir,
+                                 "04a_timci_followup_day7_data")
+  fn <- timci::export_df2csvxlsx(allday7fu_data_uids,
+                                 qc_dir,
+                                 "04c_timci_followup_day7_data_unknown_ids")
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Raw Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Locked Day 7 follow-up data are exported in ", "04a_timci_followup_day7_data", ".csv/xslx in the ", locked_db_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Raw successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(day7fu_data)) {
+  cat(paste0("* Locked successful Day 7 follow-up data are exported in ", day7_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+}
+```
+
+```{r}
+if (!is.null(ltfu)) {
+  fn <- timci::export_df2xlsx(ltfu,
+                              params$rctls_dir,
+                              "04c_day7_lost_to_followup")
+}
+```
+
+```{r}
+if (!is.null(locked_ltfu)) {
+  fn <- timci::export_df2xlsx(locked_ltfu,
+                              locked_db_dir,
+                              "04c_day7_lost_to_followup")
+}
+```
+
+```{r}
+# if (!is.null(pii) & !is.null(raw_day7fu_data)) {
+#   fu7all <- timci::generate_fu_log(pii,
+#                                    raw_day7fu_data,
+#                                    0,
+#                                    12,
+#                                    7,
+#                                    10,
+#                                    ext = TRUE,
+#                                    deidentify = TRUE)
+#   fn <- timci::export_df2xlsx(fu7all,
+#                               params$rctls_dir,
+#                               "04d_timci_deidentified_day7_fu_weekly_log_all")
+# }
+```

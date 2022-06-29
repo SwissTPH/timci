@@ -1,0 +1,109 @@
+```{r}
+write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())
+```
+
+\newpage
+
+## Hospitalisation data quality checks
+
+```{r format-RCT-LS-ODK-fu-hospit-data}
+hospit_data <- NULL
+if (!is.null(raw_hospit_data)) {
+  hospit_data <- timci::format_hospital_data(raw_hospit_data)
+}
+```
+
+```{r, results = 'asis'}
+format_nrow("There are", hospit_data, "records in the raw hospitalisation follow-up database.")
+```
+
+```{r}
+hospit_fu <- NULL
+if (!is.null(pii)) {
+  hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                            fu7df = raw_day7fu_data,
+                                            day0df = day0_data,
+                                            hospitdf = raw_hospit_data,
+                                            deidentify = TRUE)
+}
+```
+
+### Non-valid participant IDs
+
+Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
+
+```{r}
+hospit_data_uids <- NULL
+locked_hospit_data <- NULL
+if (!is.null(hospit_data)) {
+  hospit_data_uids <- hospit_data[!hospit_data$child_id %in% locked_day0_data$child_id, ]
+  locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
+}
+```
+
+```{r, results = 'asis'}
+format_nrow("", hospit_data_uids, "records with non-valid participant IDs were detected and removed in the locked hospitalisation database.")
+```
+
+### Duplicate management
+
+```{r, results='asis'}
+if (!is.null(hospit_data)) {
+  cat("Rule: keep duplicated records if they correspond to different hospitalisations")
+}
+```
+
+```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
+hospit_data_duplicates <- NULL
+if (!is.null(hospit_data)) {
+  if (length(hospit_data) > 0) { 
+    hospit_data_qc <- timci::detect_id_duplicates(locked_hospit_data)
+    hospit_data_duplicates <- hospit_data_qc[hospit_data_qc$id_fq > 1,]
+    if (length(hospit_data_duplicates) > 0) {
+      if (nrow(hospit_data_duplicates) > 0) { 
+         knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
+      }
+    } else {
+      cat("No ID duplicates detected")
+    }
+  }
+}
+```
+
+```{r, results = 'asis'}
+format_nrow("", hospit_data_duplicates, "duplicated IDs were detected and removed in the locked hospitalisation database.")
+```
+
+### Data export
+
+```{r export-RCT-LS-ODK-fu-hospit-data}
+hospit_export_name <- "05a_timci_followup_hospit_data"
+if (!is.null(hospit_data)) {
+  fn <- timci::export_df2csvxlsx(hospit_data,
+                                 params$rctls_dir,
+                                 hospit_export_name)
+}
+if (!is.null(locked_hospit_data)) {
+  fn <- timci::export_df2csvxlsx(locked_hospit_data,
+                                 locked_db_dir,
+                                 hospit_export_name)
+}
+```
+
+```{r, results = 'asis'}
+cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+```
+
+```{r, results = 'asis'}
+cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+```
+
+```{r, results = 'asis'}
+hospit_fu_export_name <- "05b_timci_deidentified_hospit_fu_log_all"
+if (!is.null(hospit_fu)) {
+  fn <- timci::export_df2xlsx(hospit_fu,
+                              params$rctls_dir,
+                              hospit_fu_export_name)
+  cat(paste0("* Hospitalisation log is exported in ", hospit_fu_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```

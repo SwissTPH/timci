@@ -28,7 +28,9 @@
 #' @param spa_start_date SPA data collection start date (optional)
 #' @param lock_date RCT/LS data collection cleaning end date for database lock (optional)
 #' @param sample_size Numeric value, sample size for RCT/LS enrolment
-#' @param short Short version of the export
+#' @param is_test Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)
+#' @param operational_reports Boolean that enables to generate operational reports (optional, default set to TRUE)
+#' @param is_pilot Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)
 #' @import rmarkdown ruODK
 #' @export
 
@@ -58,7 +60,20 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      qualkii_dir = NULL,
                                      qualos_dir = NULL,
                                      sample_size = 100000,
-                                     short = FALSE) {
+                                     is_test = FALSE,
+                                     operational_reports = TRUE,
+                                     is_pilot = FALSE) {
+
+  #####################
+  # Set TIMCI country #
+  #####################
+
+  is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+  is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+  is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+  is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+  is_rct <- is_tanzania | is_india
+  is_ls <- is_kenya | is_senegal
 
   ###########################
   # Set up current language #
@@ -87,9 +102,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   }
 
   filter <- NULL
-  if (short){
-    thres_date <- Sys.Date() - 10
-    filter <- paste0("__system/submissionDate ge ", thres_date)
+  if (is_test){
+    odata_start_date <- lock_date - 5
+    odata_end_date <- lock_date + 1
+    filter <- paste0("__system/submissionDate ge ",
+                     odata_start_date,
+                     " and __system/submissionDate lt ",
+                     odata_end_date)
   }
 
   ################
@@ -107,7 +126,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (is_rct) {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
@@ -247,7 +266,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                         end_date = end_date,
                                                         local_dir = t,
                                                         col_specs = col_specs)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  if (is_tanzania) {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
@@ -290,22 +309,24 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   # [Tanzania and India only] Load day 28 follow-up data
   raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (is_rct) {
     write(formats2h3("Load day 28 follow-up data"), stderr())
+
+    day28_col_specs <- list(
+      'a1-enroldate' = col_date(),
+      'o1-o1_2' = col_date(),
+      'o1-o1_2a' = col_character()
+    )
+
     if (crf_day28_fid %in% rct_ls_form_list) {
-      raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
-                                                  pid = rctls_pid,
-                                                  fid = crf_day28_fid,
-                                                  pp = rctls_pp,
-                                                  filter = filter,
-                                                  delfields = FALSE,
-                                                  group = TRUE,
-                                                  split = FALSE,
-                                                  media = FALSE)
-      raw_day28fu_data <- timci::extract_data_from_odk_zip(odk_zip = raw_day28fu_zip,
-                                                           csv_name = paste0(crf_day28_fid,".csv"),
-                                                           start_date = start_date,
-                                                           end_date = day28fu_end_date)
+      raw_day28fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
+                                                       cpid_forms = rct_ls_form_list,
+                                                       cpp = rctls_pp,
+                                                       cfid = crf_day28_fid,
+                                                       start_date = start_date,
+                                                       end_date = day28fu_end_date,
+                                                       col_specs = day28_col_specs,
+                                                       verbose = TRUE)
     }
   }
 
@@ -500,191 +521,195 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  lock_date = lock_date)
   generate_word_report(lock_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
-  ###################
-  # PATH M&E report #
-  ###################
+  if (operational_reports) {
 
-  write(formats2h1("Generate PATH M&E report"), stderr())
+    ###################
+    # PATH M&E report #
+    ###################
 
-  params <- list(path_dir = path_dir,
-                 facility_data = facility_data,
-                 research_facilities = research_facilities,
-                 wfa_data = wfa_data)
-  generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
+    write(formats2h1("Generate PATH M&E report"), stderr())
 
-  #########################
-  # RCT monitoring report #
-  #########################
-
-  write(formats2h1("Generate monitoring report"), stderr())
-
-  params <- list(research_facilities = research_facilities,
-                 start_date = start_date,
-                 end_date = end_date,
-                 sample_target = sample_size,
-                 facility_data = facility_data,
-                 raw_day7fu_data = raw_day7fu_data,
-                 raw_hospit_data = raw_hospit_data,
-                 raw_day28fu_data = raw_day28fu_data,
-                 raw_withdrawal_data = raw_withdrawal_data,
-                 wfa_data = wfa_data)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    rname <- "timci_rct_monitoring_report"
-  } else{
-    rname <- "timci_ls_monitoring_report"
-  }
-  generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
-
-  #########################
-  # SPA monitoring report #
-  #########################
-
-  write(formats2h1("Generate SPA report"), stderr())
-
-  # Filter research facilities to only keep those in which SPA activities are conducted
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Main') {
-    spa_research_facilities <- research_facilities %>%
-      filter(spa == 1 & pilot == 0)
-  } else {
-    spa_research_facilities <- research_facilities %>%
-      filter(spa == 1)
-  }
-  spa_facility_ids <- spa_research_facilities[, c("facility_id")] %>%
-    distinct()
-
-  # Check that at least one SPA database is not empty
-  spa_sco_is_not_null <- !is.null(spa_sco_data)
-  spa_cgei_is_not_null <- !is.null(spa_cgei_data)
-  spa_fa_is_not_null <- !is.null(spa_fa_data)
-  spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
-  spa_report_condition <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
-
-  # Only keep data that corresponds to SPA facilities
-  if (spa_sco_is_not_null) {
-    spa_sco_data <- spa_sco_data %>%
-      merge(y = spa_facility_ids,
-            by.x = 'facility_identification-fcode',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  if (spa_cgei_is_not_null) {
-    spa_cgei_data <- spa_cgei_data %>%
-      merge(y = spa_facility_ids,
-            by.x = 'b1-fcode',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  if (spa_fa_is_not_null) {
-    spa_fa_data <- spa_fa_data %>%
-      merge(y = spa_facility_ids,
-            by.x = 'facility_identification-a1_2',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  if (spa_hcpi_is_not_null) {
-    spa_hcpi_data <- spa_hcpi_data %>%
-      merge(y = spa_facility_ids,
-            by.x = 'a1-fcode',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  # If at least one SPA database is not empty, generate the SPA report
-  if (spa_report_condition) {
-    params <- list(research_facilities = spa_research_facilities,
+    params <- list(path_dir = path_dir,
                    facility_data = facility_data,
-                   spa_sco_data = spa_sco_data,
-                   spa_cgei_data = spa_cgei_data,
-                   spa_fa_data = spa_fa_data,
-                   spa_hcpi_data = spa_hcpi_data,
-                   raw_withdrawal_data = raw_withdrawal_data)
-    generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
-  }
+                   research_facilities = research_facilities,
+                   wfa_data = wfa_data)
+    generate_pdf_report(path_dir, "path_report.Rmd", "TIMCI_M&E_RA_report_for_PATH", params)
 
-  #############################################
-  # Process map / time-flow monitoring report #
-  #############################################
+    #########################
+    # RCT monitoring report #
+    #########################
 
-  write(formats2h1("Generate process map & time-flow report"), stderr())
+    write(formats2h1("Generate monitoring report"), stderr())
 
-  # Select relevant research facilities to only keep those in which process mapping & time-flow activities are conducted
-  pmtf_research_facilities <- spa_research_facilities
-  pmtf_facility_ids <- pmtf_research_facilities[, c("facility_id")] %>%
-    distinct()
+    params <- list(research_facilities = research_facilities,
+                   start_date = start_date,
+                   end_date = end_date,
+                   sample_target = sample_size,
+                   facility_data = facility_data,
+                   raw_day7fu_data = raw_day7fu_data,
+                   raw_hospit_data = raw_hospit_data,
+                   raw_day28fu_data = raw_day28fu_data,
+                   raw_withdrawal_data = raw_withdrawal_data,
+                   wfa_data = wfa_data)
+    if (is_rct) {
+      rname <- "timci_rct_monitoring_report"
+    } else{
+      rname <- "timci_ls_monitoring_report"
+    }
+    generate_pdf_report(report_dir, "rct_monitoring_report.Rmd", rname, params)
 
-  # Check that at least one PMTF database is not empty
-  pm_is_not_null <- !is.null(pm_data)
-  if (pm_is_not_null) {
-    pm_is_not_null <- length(pm_data) > 0
+    #########################
+    # SPA monitoring report #
+    #########################
+
+    write(formats2h1("Generate SPA report"), stderr())
+
+    # Filter research facilities to only keep those in which SPA activities are conducted
+    if (is_tanzania & !is_pilot) {
+      spa_research_facilities <- research_facilities %>%
+        filter(spa == 1 & pilot == 0)
+    } else {
+      spa_research_facilities <- research_facilities %>%
+        filter(spa == 1)
+    }
+    spa_facility_ids <- spa_research_facilities[, c("facility_id")] %>%
+      distinct()
+
+    # Check that at least one SPA database is not empty
+    spa_sco_is_not_null <- !is.null(spa_sco_data)
+    spa_cgei_is_not_null <- !is.null(spa_cgei_data)
+    spa_fa_is_not_null <- !is.null(spa_fa_data)
+    spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+    spa_report_condition <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
+
+    # Only keep data that corresponds to SPA facilities
+    if (spa_sco_is_not_null) {
+      spa_sco_data <- spa_sco_data %>%
+        merge(y = spa_facility_ids,
+              by.x = 'facility_identification-fcode',
+              by.y = 'facility_id',
+              all = FALSE)
+    }
+
+    if (spa_cgei_is_not_null) {
+      spa_cgei_data <- spa_cgei_data %>%
+        merge(y = spa_facility_ids,
+              by.x = 'b1-fcode',
+              by.y = 'facility_id',
+              all = FALSE)
+    }
+
+    if (spa_fa_is_not_null) {
+      spa_fa_data <- spa_fa_data %>%
+        merge(y = spa_facility_ids,
+              by.x = 'facility_identification-a1_2',
+              by.y = 'facility_id',
+              all = FALSE)
+    }
+
+    if (spa_hcpi_is_not_null) {
+      spa_hcpi_data <- spa_hcpi_data %>%
+        merge(y = spa_facility_ids,
+              by.x = 'a1-fcode',
+              by.y = 'facility_id',
+              all = FALSE)
+    }
+
+    # If at least one SPA database is not empty, generate the SPA report
+    if (spa_report_condition) {
+      params <- list(research_facilities = spa_research_facilities,
+                     facility_data = facility_data,
+                     spa_sco_data = spa_sco_data,
+                     spa_cgei_data = spa_cgei_data,
+                     spa_fa_data = spa_fa_data,
+                     spa_hcpi_data = spa_hcpi_data,
+                     raw_withdrawal_data = raw_withdrawal_data)
+      generate_pdf_report(report_dir, "spa_monitoring_report.Rmd", "timci_spa_monitoring_report", params)
+    }
+
+    #############################################
+    # Process map / time-flow monitoring report #
+    #############################################
+
+    write(formats2h1("Generate process map & time-flow report"), stderr())
+
+    # Select relevant research facilities to only keep those in which process mapping & time-flow activities are conducted
+    pmtf_research_facilities <- spa_research_facilities
+    pmtf_facility_ids <- pmtf_research_facilities[, c("facility_id")] %>%
+      distinct()
+
+    # Check that at least one PMTF database is not empty
+    pm_is_not_null <- !is.null(pm_data)
     if (pm_is_not_null) {
-      pm_is_not_null <- !is.null(pm_data[[1]])
+      pm_is_not_null <- length(pm_data) > 0
       if (pm_is_not_null) {
-        pm_is_not_null <- length(pm_data[[1]]) > 0
+        pm_is_not_null <- !is.null(pm_data[[1]])
+        if (pm_is_not_null) {
+          pm_is_not_null <- length(pm_data[[1]]) > 0
+        }
       }
     }
-  }
-  tf_is_not_null <- !is.null(tf_data)
-  if (tf_is_not_null) {
-    tf_is_not_null <- length(tf_data) > 0
+    tf_is_not_null <- !is.null(tf_data)
     if (tf_is_not_null) {
-      tf_is_not_null <- !is.null(tf_data[[1]])
+      tf_is_not_null <- length(tf_data) > 0
       if (tf_is_not_null) {
-        tf_is_not_null <- length(tf_data[[1]]) > 0
+        tf_is_not_null <- !is.null(tf_data[[1]])
+        if (tf_is_not_null) {
+          tf_is_not_null <- length(tf_data[[1]]) > 0
+        }
       }
     }
-  }
-  pmtf_report_condition <- pm_is_not_null | tf_is_not_null
+    pmtf_report_condition <- pm_is_not_null | tf_is_not_null
 
-  # Only keep data that corresponds to relevant facilities
-  pm_df <- NULL
-  if (pm_is_not_null) {
-    pm_df <- pm_data[[1]] %>%
-      merge(y = pmtf_facility_ids,
-            by.x = 'visit_start-fcode',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  tf_df <- NULL
-  if (tf_is_not_null) {
-    tf_df <- tf_data[[1]] %>%
-      merge(y = pmtf_facility_ids,
-            by.x = 'visit_start-fcode',
-            by.y = 'facility_id',
-            all = FALSE)
-  }
-
-  if (pmtf_report_condition) {
-    if (length(tf_df) > 0 | length(pm_df) > 0) {
-      params <- list(research_facilities = pmtf_research_facilities,
-                     facility_data = facility_data,
-                     tf_data = tf_df,
-                     pm_data = pm_df,
-                     raw_withdrawal_data = raw_withdrawal_data)
-      generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
+    # Only keep data that corresponds to relevant facilities
+    pm_df <- NULL
+    if (pm_is_not_null) {
+      pm_df <- pm_data[[1]] %>%
+        merge(y = pmtf_facility_ids,
+              by.x = 'visit_start-fcode',
+              by.y = 'facility_id',
+              all = FALSE)
     }
-  }
 
-  #################################
-  # Qualitative monitoring report #
-  #################################
-
-  write(formats2h1("Generate qualitative report"), stderr())
-
-  if (!is.null(hcpidi_interview_data)) {
-    if (length(hcpidi_interview_data) > 0) {
-      params <- list(research_facilities = research_facilities,
-                     facility_data = facility_data,
-                     cgidi_interview_data = cgidi_interview_data,
-                     hcpidi_interview_data = hcpidi_interview_data,
-                     kii_interview_data = kii_interview_data,
-                     online_survey_data = online_survey_data,
-                     raw_withdrawal_data = raw_withdrawal_data)
-      generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
+    tf_df <- NULL
+    if (tf_is_not_null) {
+      tf_df <- tf_data[[1]] %>%
+        merge(y = pmtf_facility_ids,
+              by.x = 'visit_start-fcode',
+              by.y = 'facility_id',
+              all = FALSE)
     }
+
+    if (pmtf_report_condition) {
+      if (length(tf_df) > 0 | length(pm_df) > 0) {
+        params <- list(research_facilities = pmtf_research_facilities,
+                       facility_data = facility_data,
+                       tf_data = tf_df,
+                       pm_data = pm_df,
+                       raw_withdrawal_data = raw_withdrawal_data)
+        generate_pdf_report(report_dir, "pmtf_monitoring_report.Rmd", "timci_processmap_timeflow_monitoring_report", params)
+      }
+    }
+
+    #################################
+    # Qualitative monitoring report #
+    #################################
+
+    write(formats2h1("Generate qualitative report"), stderr())
+
+    if (!is.null(hcpidi_interview_data)) {
+      if (length(hcpidi_interview_data) > 0) {
+        params <- list(research_facilities = research_facilities,
+                       facility_data = facility_data,
+                       cgidi_interview_data = cgidi_interview_data,
+                       hcpidi_interview_data = hcpidi_interview_data,
+                       kii_interview_data = kii_interview_data,
+                       online_survey_data = online_survey_data,
+                       raw_withdrawal_data = raw_withdrawal_data)
+        generate_pdf_report(report_dir, "qual_monitoring_report.Rmd", "timci_qual_monitoring_report", params)
+      }
+    }
+
   }
 
   ###########################
@@ -710,7 +735,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                    locked_spa_hcpi_data = locked_spa_hcpi_data,
                    spa_cgei_data = spa_cgei_data,
                    spa_fa_data = spa_fa_data)
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    if (is_rct) {
       params <- append(params,
                        list(locked_allday28fu_data = locked_allday28fu_data))
     }
@@ -718,7 +743,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
     # Detailed data reports
     library(dataMaid)
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya' | Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    if (is_kenya | is_india) {
       dataMaid::makeDataReport(locked_day0_data,
                                file = file.path(report_dir, paste0("timci_rctls_day0_data_summary_report",'_',Sys.Date(),".Rmd")),
                                reportTitle = "TIMCI RCT/LS - Locked Day 0 dataset",
@@ -759,7 +784,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                    raw_day28fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
                    wfa_data = wfa_data)
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    if (is_rct) {
       rname <- "timci_rct_map_report"
     } else{
       rname <- "timci_ls_map_report"
@@ -804,6 +829,17 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                 sample_size = 100000,
                                 short = FALSE) {
 
+  #####################
+  # Set TIMCI country #
+  #####################
+
+  is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+  is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+  is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+  is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+  is_rct <- is_tanzania | is_india
+  is_ls <- is_kenya | is_senegal
+
   ###########################
   # Set up current language #
   ###########################
@@ -841,7 +877,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
   crf_day7_fid <- Sys.getenv("TIMCI_CRF_DAY7_FID")
   crf_hospit_fid <- Sys.getenv("TIMCI_CRF_HOSPIT_FID")
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (is_rct) {
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
   crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
@@ -953,7 +989,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                                         end_date = end_date,
                                                         local_dir = t,
                                                         col_specs = col_specs)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  if (is_tanzania) {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
   } else{
     facility_data <- timci::process_facility_data(raw_facility_data)
@@ -986,7 +1022,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
 
   # [Tanzania and India only] Load day 28 follow-up data
   raw_day28fu_data <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
+  if (is_rct) {
     write(formats2h3("Load day 28 follow-up data"), stderr())
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -1073,7 +1109,7 @@ run_rmarkdown_rctls <- function(rctls_pid,
                  raw_day28fu_data = raw_day28fu_data,
                  raw_withdrawal_data = raw_withdrawal_data,
                  wfa_data = wfa_data)
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  if (is_rct) {
     rname <- "timci_rct_monitoring_report"
   } else{
     rname <- "timci_ls_monitoring_report"

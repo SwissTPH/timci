@@ -4,9 +4,9 @@ write("Export death data for monitoring", stderr())
 
 \newpage
 
-## Export death data
+## Death data
 
-## Export death data reported at Day 7
+### Export death data reported at Day 7
 
 ```{r, eval=is_tanzania}
 day7_deaths <- allday7fu_data %>%
@@ -48,13 +48,17 @@ fn <- timci::export_df2csvxlsx(locked_day7fu_deaths,
                                day7_death_export_name)
 ```
 
-## Export death data reported at Day 28
+### Export death data reported at Day 28
 
 ```{r, eval=is_rct}
 day28_deaths <- allday28fu_data %>% filter(status_day28 == 3)
-day28_deaths <- pivot_duplicates_to_columns(day28_deaths)
+if (nrow(day28_deaths) > 0) {
+  day28_deaths <- pivot_duplicates_to_columns(day28_deaths)
+}
 locked_day28fu_deaths <- locked_allday28fu_data %>% filter(status_day28 == 3)
-locked_day28fu_deaths <- pivot_duplicates_to_columns(locked_day28fu_deaths)
+if (nrow(locked_day28fu_deaths) > 0) {
+  locked_day28fu_deaths <- pivot_duplicates_to_columns(locked_day28fu_deaths)
+}
 ```
 
 ```{r, eval=is_rct}
@@ -75,7 +79,7 @@ if(!is.null(locked_day28fu_deaths)){
 }
 ```
 
-## Combined death data
+### Combined death data
 
 ```{r, eval=is_rct}
 all_deaths <- day7_deaths %>%

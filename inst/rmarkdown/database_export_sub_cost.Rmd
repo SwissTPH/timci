@@ -1,0 +1,21 @@
+```{r}
+write(formats2h2("Export cost & cost-effectiveness data"), stderr())
+```
+
+```{r medical-cost-subsection, results="asis"}
+if (!is.null(medical_cost_data)){
+  out <- knitr::knit_child('database_export_medicalcost_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
+```
+
+```{r hospital-cost-subsection, results="asis"}
+if (!is.null(hospital_cost_data)){
+  out <- knitr::knit_child('database_export_hospitalcost_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
+```

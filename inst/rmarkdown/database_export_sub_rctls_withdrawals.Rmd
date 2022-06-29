@@ -1,0 +1,20 @@
+```{r export-RCT-LS-ODK-withdrawal, results = 'asis'}
+withdrawal_export_name <- "99_withdrawal_data"
+if (!is.null(raw_withdrawal_data)) {
+  fn <- timci::export_df2csvxlsx(raw_withdrawal_data,
+                                params$rctls_dir,
+                                withdrawal_export_name)
+  cat(paste0("* Raw withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```
+
+```{r, results = 'asis'}
+if (!is.null(raw_withdrawal_data)) {
+  if (!is.null(day0_data_id_withdrawal)) {
+    fn <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
+                                   locked_db_dir,
+                                   withdrawal_export_name)
+    cat(paste0("* Locked withdrawal data are exported in ", withdrawal_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+  }
+}
+```

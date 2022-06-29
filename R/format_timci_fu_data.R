@@ -93,6 +93,10 @@ format_day28_data <- function(df) {
 
   day28_df <- match_from_xls_dict(df, day28_dict)
   day28_df <- day28_df[sub$new]
+
+  # Format dates
+  day28_df$date_death_day28 <- strftime(day28_df$date_death_day28,"%Y-%m-%d")
+
   day28_df <- day28_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 

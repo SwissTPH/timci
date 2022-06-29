@@ -43,7 +43,7 @@ detect_non_timely_completion <- function(df) {
 #'
 #' @param df dataframe containing the processed facility data
 #' @param col vector containing a column of the processed facility data
-#' @return This function returns a dataframe containing unique IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
+#' @return This function returns a dataframe containing IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
 #' @export
 #' @import dplyr magrittr
 
@@ -57,6 +57,31 @@ detect_id_duplicates <- function(df, col = child_id) {
     count
   res <- res %>%
     dplyr::rename(id_fq = n)
+
+}
+
+#' Identify Day 0 ID duplicates with dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr magrittr
+
+identify_day0_id_duplicates_with_dates <- function(df) {
+
+  out <- df %>%
+    dplyr::arrange(date_visit) %>% # order by ascending dates
+    dplyr::group_by(child_id) %>%
+    dplyr::mutate(row_n = row_number()) %>%
+    tidyr::pivot_wider(child_id,
+                       names_from = row_n,
+                       values_from = c("date_visit"),
+                       names_prefix = "date_")
+  if ("date_2" %in% colnames(out)) {
+    out <- out %>% filter(!is.na(date_2))
+  }
+
+  out
 
 }
 
@@ -234,3 +259,33 @@ detect_inconsistent_dates <- function(df1, df2) {
 
 #Baseline visit identification
 #New visit anterior to last visit received
+
+#' Detect missing clinical presentation (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing only participants with no clinical presentation
+#' @export
+#' @import dplyr
+
+detect_missing_clinical_presentation <- function(facility_df) {
+
+  out <- NULL
+
+  if (!is.null(facility_df)) {
+    if (nrow(facility_df) > 0) {
+
+      out <- facility_df %>%
+        dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
+                                            1,
+                                            0)) %>%
+        dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
+                                                             1,
+                                                             0)) %>%
+        filter(missing_clinical_presentation == 1)
+
+    }
+  }
+
+  out
+
+}

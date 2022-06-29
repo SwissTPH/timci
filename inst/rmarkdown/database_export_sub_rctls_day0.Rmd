@@ -1,0 +1,613 @@
+```{r}
+write(timci::formats2h2("Review, process and export facility data"), stderr())
+```
+
+```{r}
+write("Export Day 0 data and run corresponding quality checks", stderr())
+```
+
+## Day 0 data quality checks
+
+```{r}
+screening_data <- timci::extract_screening_data(facility_data)
+n_screening <- nrow(facility_data)
+res <- timci::extract_enrolled_participants(facility_data)
+day0_data <- res[[1]]
+n_day0 <- nrow(day0_data)
+pii <- res[[2]]
+```
+
+```{r, results = 'asis'}
+cat(paste0("Initially, there are **", n_screening, "** screening record(s) in the raw facility database from the start of the study on ", start_date, ", including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
+```
+
+### Non-valid device IDs [context check]
+
+**Rule:** records from devices different from the ones listed in the first section of this report are removed in the locked database. These *non-valid* devices were either used to collect training data or to collect data for another study than the one considered for this report.
+
+```{r}
+locked_screening_data <- timci::allocate_screening_facility(screening_data,
+                                                            research_facilities)
+n_locked_screening <- nrow(locked_screening_data)
+```
+
+```{r}
+locked_day0_data <- timci::allocate_screening_facility(day0_data,
+                                                       research_facilities)
+n_locked_day0 <- nrow(locked_day0_data)
+locked_pii <- timci::allocate_screening_facility(pii,
+                                                 research_facilities)
+```
+
+```{r, results = 'asis'}
+cat(paste0("**", n_screening - n_locked_screening, "** record(s) with non-valid device IDs detected and removed in the locked facility database, including **", n_day0 - n_locked_day0, "** Day 0 records."))
+```
+
+```{r}
+# Replace Day 0 data by locked Day 0 data so that non-valid device IDs/facilities do not appear in the export
+day0_data <- locked_day0_data
+```
+
+### Lock date [context check]
+
+**Rule:** records entered after the lock date on `r lock_date` are removed in the locked database.
+
+```{r}
+locked_screening_data <- locked_screening_data %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+locked_day0_data <- locked_day0_data %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
+locked_pii <- locked_pii %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
+```
+
+```{r, results = 'asis'}
+cat(paste0("**", n_locked_screening - nrow(locked_screening_data), "** record(s) with an entry date posterior to the lock date on **", lock_date, "** detected and removed in the locked facility database, including **", n_locked_day0 - nrow(locked_day0_data), "** Day 0 record(s)."))
+```
+
+### Non-valid enrolling facility IDs [compliance check]
+
+```{r, results='asis', eval=(is_tanzania | is_kenya)}
+cat("#### Initial check")
+```
+
+```{r, results='asis', eval=(is_tanzania | is_kenya)}
+cat("**Rule:** records from facility IDs not listed in the first section of this report are detected and corrected proactively where possible.")
+```
+
+```{r, results='asis'}
+invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
+```
+
+```{r, results='asis'}
+cat(paste0("**", nrow(invalid_facilities), "** record(s) with non-valid enrolling facility IDs detected and removed in the locked Day 0 database."))
+```
+
+```{r, results='asis'}
+if (nrow(invalid_facilities) > 0) {
+  invalid_facilities[c("child_id", "uuid")] %>%
+    knitr::kable(row.names = FALSE)
+}
+```
+
+```{r, results='asis'}
+cat("#### Facility ID manual edits")
+```
+
+```{r, results='asis'}
+out <- timci::correct_day0_non_valid_facilities(locked_day0_data)
+locked_day0_data <- out[[1]]
+facility_edits <- out[[2]]
+if (!is.null(facility_edits)) {
+  facility_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+```{r, results='asis'}
+invalid_facilities <- locked_day0_data[!locked_day0_data$fid %in% research_facilities$facility_id, ]
+locked_day0_data <- locked_day0_data[locked_day0_data$fid %in% research_facilities$facility_id, ]
+```
+
+```{r, results='asis'}
+if (nrow(invalid_facilities) > 0) {
+  invalid_facilities[c("child_id", "uuid")] %>%
+    knitr::kable(row.names = FALSE)
+}
+```
+
+#### Second check after manual edits
+
+**Rule:** records from facility IDs not listed in the first section of this report are removed in the locked database.
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  cat("### Inconsistent facility information [Context check]\n\n")
+  cat("**Rule**: records with inconsistent facility information are kept in the locked database, but will need to be checked more carefully (e.g: GPS data).\n\n")
+}
+```
+
+```{r}
+qc_inconsistent_facility <- NULL
+if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  if (!is.null(locked_day0_data)) {
+    if (nrow(locked_day0_data) > 0) {
+      qc_inconsistent_facility <- locked_day0_data[locked_day0_data$fid != locked_day0_data$fid_ra, ]
+      qc_inconsistent_facility <- qc_inconsistent_facility[c("child_id", "fid", "fid_ra", "uuid")]
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    cat(paste0("**", nrow(qc_inconsistent_facility), "** record(s) with inconsistent facility information detected."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    qc_inconsistent_facility %>%
+      knitr::kable(row.names = FALSE)
+  }
+}
+```
+
+### Non-valid enrolment [compliance check]
+
+#### Caregiver eligibility
+
+**Rule:** Participants with a caregiver below 18 years old are removed in the locked database.
+
+```{r, results='asis'}
+underaged_cg <- locked_day0_data[locked_day0_data$cg_eligibility == 0, ]
+cat(paste0("**", nrow(underaged_cg), "** record(s) with a consenting caregiver below 18 years old detected and removed in the locked database."))
+```
+
+```{r, results='asis'}
+if (nrow(underaged_cg) > 0) {
+  underaged_cg[c('child_id', 'main_cg_lbl', 'cg_age_yr', 'cg_age_ctg')] %>%
+    knitr::kable(row.names = FALSE)
+}
+```
+
+```{r}
+locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
+```
+
+### Submission timeliness [compliance checks]
+
+#### Non-timely completion [compliance check]
+
+```{r}
+qc_completion_ab1day <- NULL
+```
+
+```{r, eval=!is.null(facility_data)}
+if (nrow(locked_day0_data) > 0) {
+  qc <- detect_non_timely_completion(locked_day0_data)
+  qc_completion_ab1day <- qc[qc$diff > 0,]
+}
+```
+
+**Definition:** Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)
+
+```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
+cat(paste0("**", nrow(qc_completion_ab1day), "** participant(s) for whom the submission was not finalised on the same day it was started."))
+```
+
+```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
+qc_completion_fn <- "DQC_01_01_nontimely_day0_completion"
+fn <- timci::export_df2xlsx(qc_completion_ab1day,
+                            qc_dir,
+                            qc_completion_fn)
+cat(paste0("The table of participants for whom the submission was not finalised on the same day it was started is exported to **", qc_completion_fn, "**."))
+```
+
+```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
+if (nrow(qc_completion_ab1day) > 0) {
+  hist(as.numeric(qc_completion_ab1day$diff),
+       breaks = c(1:max(as.numeric(qc_completion_ab1day$diff))),
+       xlab="Days between submission start and finalisation" ,
+       ylab="Occurences",
+       main="")
+}
+```
+
+#### Non-timely submission [compliance check]
+
+**Definition:** transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet.
+
+```{r}
+qc_transfer_ab1day <- NULL
+qc_transfer_ab7days <- NULL
+qc_transfer_ab12days <- NULL
+
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    qc_transfer <- detect_non_timely_submission(locked_day0_data)
+    qc_transfer_ab1day <- qc_transfer[qc_transfer$diff > 0,]
+    qc_transfer_ab7days <- qc_transfer[qc_transfer$diff > 6,]
+    qc_transfer_ab12days <- qc_transfer[qc_transfer$diff > 11,]
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab1day)) {
+  if (nrow(qc_transfer_ab1day) > 0) {
+    cat(paste0("**", nrow(qc_transfer_ab1day), "** participant(s) for whom the submission was not transferred on the same day it was finalised."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab7days)) {
+  if (nrow(qc_transfer_ab7days) > 0) {
+    cat(paste0("**", nrow(qc_transfer_ab7days), "** participant(s) for whom the submission was transferred after 7 days and more."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab7days)) {
+  if (nrow(qc_transfer_ab7days) > 0) {
+    qc_transfer_ab7days %>%
+      knitr::kable(row.names = FALSE)
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab12days)) {
+  if (nrow(qc_transfer_ab12days) > 0) {
+    cat(paste0("**", nrow(qc_transfer_ab12days), "** participants for which the submission was transferred after 12 days and more (participant never displayed in the Day 7 follow-up log on the tablet)."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_transfer_ab12days)) {
+  if (nrow(qc_transfer_ab12days) > 0) {
+    qc_transfer_ab12days %>%
+      knitr::kable(row.names = FALSE)
+  }
+}
+```
+
+```{r, results='asis', eval=!is.null(qc_transfer_ab12days)}
+qc_transfer_fn <- "DQC_01_01_nontimely_day0_transfer"
+fn <- timci::export_df2xlsx(qc_transfer,
+                            qc_dir,
+                            qc_transfer_fn)
+cat(paste0("The table of participants for which the submission was transferred strictly after the day it was finalised is exported to **", qc_transfer_fn, "**."))
+```
+
+```{r, results='asis', eval=!is.null(qc_transfer)}
+if (nrow(qc_transfer) > 0) {
+  hist(as.numeric(qc_transfer$diff),
+       breaks = c(1:max(as.numeric(qc_transfer$diff))),
+       xlab="Days between submission start and finalisation" ,
+       ylab="Occurences",
+       main="")
+}
+```
+
+### Duplicate management
+
+```{r child_duplicate-subsection, child = 'database_export_QC_child_duplicates.Rmd'}
+```
+
+#### Possible participant duplicates
+
+```{r, results='asis'}
+cat("**Rule:** possible participant duplicates are detected based on their name, sex and date of birth. No specific action at the moment.")
+```
+
+```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    day0_qc1 <- timci::detect_participant_duplicates(locked_pii)
+    day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
+    duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
+    if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
+      duplicates %>% knitr::kable(row.names = FALSE)
+    }
+  }
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-002-disp, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
+      cat(paste0("", nrow(duplicates), " possible participant duplicates detected based on their name, sex and date of birth. No specific action was taken."))
+    } else {
+      cat("No duplicated names detected")
+    }
+  } else {
+    cat("N/A")
+  }
+}
+  
+# Approximate String Matching (Fuzzy Matching)
+#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+#df3 <- df[c("child_id", "full_name")]
+#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+#print(qc3)
+```
+
+#### Possible participant duplicates with sex discrepancy
+
+```{r, results='asis'}
+cat("**Rule:** possible participant duplicates detected based on their name and date of birth, but with a sex discrepancy. No specific action at the moment.")
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    day0_qc2 <- timci::detect_namedob_duplicates(locked_pii)
+    day0_qc <- merge(day0_qc, day0_qc2, by = 'child_id')
+    duplicates2 <- day0_qc[(day0_qc$ex_name2_fq > 1 & day0_qc$ex_name2_fq > day0_qc$ex_name_fq) | (day0_qc$sw_name2_fq > 1 & day0_qc$sw_name2_fq > day0_qc$sw_name_fq),]
+    if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
+      duplicates2 %>% knitr::kable(row.names = FALSE)
+    }
+  }
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-003-disp, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
+      cat(paste0("", nrow(duplicates2), " possible participant duplicates detected based on their name and date of birth, but with sex discrepancy. No specific action was taken."))
+    } else {
+      cat("No possible participant duplicates detected based on their name and date of birth, but with sex discrepancy detected")
+    }
+  } else {
+    cat("N/A")
+  }
+}
+  
+# Approximate String Matching (Fuzzy Matching)
+#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+#df3 <- df[c("child_id", "full_name")]
+#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+#print(qc3)
+```
+
+```{r export-duplicates}
+if (!is.null(day0_qc)) {
+  fn <- timci::export_df2xlsx(day0_qc,
+                              qc_dir,
+                              "07_data_quality_checks")
+}
+```
+
+### Withdrawal management
+
+```{r, results='asis'}
+cat("Rule: withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.")
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
+        withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
+        withdrawal_data2$child_id <- gsub("O", "0", withdrawal_data2$child_id)
+        withdrawal_data2 %>%
+          
+          dplyr::select(c("child_id", "date")) %>%
+          knitr::kable(col.names = c("Child ID", "Withdrawal date"))
+      }
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        cat(paste0(nrow(raw_withdrawal_data), " withdrawal(s) reported (among which ", nrow(withdrawal_data2)," withdrawals with documented child IDs)."))
+      } else {
+        cat("No withdrawal reported.")
+      }
+    }
+  } else {
+    cat("N/A")
+  }
+}
+```
+
+```{r, results='asis'}
+day0_data_id_withdrawal <- NULL
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(raw_withdrawal_data)) {
+      if (nrow(raw_withdrawal_data) > 0) { 
+        day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+        day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+          merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
+        if (nrow(day0_data_id_withdrawal) > 0) { 
+          day0_data_id_withdrawal %>%
+            dplyr::select(c("child_id", "date_visit", "date", "uuid")) %>%
+            knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date", "uuid"))
+        }
+      }
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_day0_data) > 0) {
+    if (!is.null(day0_data_id_withdrawal)) {
+      cat(paste0("**", nrow(day0_data_id_withdrawal), "** participant(s) who withdrew found in the locked Day 0 database."))
+    }
+  }
+}
+```
+
+### Clinical presentation [Mandatory check]
+
+**Description:** all participants should have complete information about their clinical presentation.
+
+**Rule:** No action.
+
+```{r}
+qc_missing_cp <- timci::detect_missing_clinical_presentation(locked_day0_data)
+```
+
+```{r}
+qc_missing_cp_is_not_null <- !is.null(qc_missing_cp)
+qc_missing_cp_is_not_empty <- FALSE
+if (qc_missing_cp_is_not_null) {
+  qc_missing_cp_is_not_empty <- nrow(qc_missing_cp) > 0
+}
+```
+
+```{r, results = 'asis', eval=qc_missing_cp_is_not_null}
+timci::format_nrow("", qc_missing_cp, "record(s) with missing clinical presentation detected in the locked Day 0 database.")
+```
+
+```{r, results='asis', eval=qc_missing_cp_is_not_empty}
+cols1 <- c("child_id", "fid", "date_visit", "uuid")
+cols2 <- c("Child ID", "Enrolment date", "uuid")
+qc_missing_cp %>%
+  dplyr::select(cols1) %>%
+  dplyr::arrange(fid) %>%
+  knitr::kable(col.names = cols2,
+               row.names = FALSE)
+```
+
+```{r, results='asis', eval=qc_missing_cp_is_not_empty}
+qc_missing_cp_fn <- "DQC_01_03_missing_clinical_presentation"
+fn <- timci::export_df2xlsx(qc_missing_cp,
+                            qc_dir,
+                            qc_missing_cp_fn)
+cat(paste0("The table of participants for whom the clinical presentation is missing has been exported to **", qc_missing_cp_fn, "** (**", Sys.time(), "**)."))
+```
+
+### Diagnosis [Mandatory check]
+
+**Description:** all participants should have complete information about their diagnosis for their Day 0 visit.
+
+Check not implemented yet.
+
+### Data cleaning summary
+
+```{r, results = 'asis'}
+timci::format_nrow("There are", locked_day0_data, "records in the locked Day 0 database.")
+```
+
+### Data export
+
+```{r export-screening-data, results = 'asis'}
+screening_export_name <- "01_timci_screening_data"
+if (!is.null(facility_data)) { 
+  fn <- timci::export_df2csvxlsx(screening_data,
+                                 rctls_dir,
+                                 screening_export_name)
+}
+cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xslx in the ", rctls_dir, " folder"))
+```
+
+```{r export-locked-screening-data, results = 'asis'}
+if (!is.null(facility_data)) {
+  fn <- timci::export_df2csvxlsx(locked_screening_data,
+                                 locked_db_dir,
+                                 screening_export_name)
+}
+cat(paste0("* Locked screening data are exported in ", screening_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+```
+
+```{r export-facility-audit}
+if (!is.null(facility_data_audit)) { 
+  fn <- timci::export_df2csvxlsx(facility_data_audit,
+                                 rctls_dir,
+                                 "00_facility_audit_data")
+}
+```
+
+```{r split-pii-from-research-data}
+if (!is.null(facility_data)) {
+  
+  if (deidentification_on == 1) {
+    deidentified_day0_data <- timci::deidentify_data(day0_data)
+    fn <- timci::export_df2csvxlsx(deidentified_day0_data,
+                                   rctls_dir,
+                                   "02_timci_day0_data")
+    
+    locked_day0_data <- timci::deidentify_data(locked_day0_data)
+    fn <- timci::export_df2csvxlsx(locked_day0_data,
+                                   locked_db_dir,
+                                   "02_timci_day0_data")
+    
+    if (!is.null(day0_data_id_duplicates)) {
+      deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
+      fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
+                                     qc_dir,
+                                     "02a_timci_day0_data_id_duplicates")
+    }
+  } else {
+    fn <- timci::export_df2csvxlsx(day0_data,
+                                   rctls_dir,
+                                   "02_timci_day0_data")
+    
+    fn <- timci::export_df2csvxlsx(locked_day0_data,
+                                   locked_db_dir,
+                                   "02_timci_day0_data")
+    
+    if (!is.null(day0_data_id_duplicates)) {
+      fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
+                                     qc_dir,
+                                     "02a_timci_day0_data_id_duplicates")
+    }
+  }
+  
+  xlsx_fname <- timci::export_df2xlsx(pii, tempdir(),
+                                      "timci_contact_data")
+  pii_pwd <- Sys.getenv("TIMCI_PII_PW")
+  zip(params$participant_zip, 
+      files = xlsx_fname, 
+      flags = paste("-r9Xj --password", pii_pwd))
+}
+```
+
+```{r, results = 'asis'}
+cat(paste0("* Raw Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", params$rctls_dir, " folder"))
+```
+
+```{r, results = 'asis'}
+cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", locked_db_dir, " folder"))
+```
+
+```{r export-visit-data, results = 'asis'}
+facility_data_name <- "03_timci_facility_visits_data"
+if (!is.null(facility_data)) {
+  study_data <- timci::extract_all_visits(facility_data)
+  
+  if (deidentification_on == 1) {
+    deidentified_facility_data <- timci::deidentify_data(study_data)
+    fn <- timci::export_df2csvxlsx(deidentified_facility_data,
+                                  params$rctls_dir,
+                                  "03_timci_facility_visits_data")
+  } else {
+    fn <- timci::export_df2csvxlsx(study_data,
+                                  params$rctls_dir,
+                                  "03_timci_facility_visits_data")
+  }
+  #cat(paste0("* Raw facility visit data are exported in ", facility_data_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+}
+```

@@ -54,7 +54,7 @@ format_nrow <- function(s_before,
                         s_after) {
 
   if(!is.null(df)){
-    cat(paste0(s_before, " ", nrow(df), " ", s_after))
+    cat(paste0(s_before, " **", nrow(df), "** ", s_after))
   }
 
 }
