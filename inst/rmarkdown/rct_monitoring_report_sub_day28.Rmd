@@ -26,8 +26,8 @@ if (!is.null(raw_day28fu_data)) {
     
     day28_call_ss <- list(
       "District" = list(
-        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec)
+        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec, na_rm = TRUE)
         )
     )
     out <- format_summary_table(all, day28_call_ss, district)

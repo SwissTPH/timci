@@ -55,8 +55,8 @@ if (!is.null(raw_hospit_data)) {
     
     hospit_summary <- list(
       "summary" = list(
-        "Found" = ~qwraps2::n_perc(found == 1, prec),
-        "Hospitalisation" = ~qwraps2::n_perc(hospit == 1, prec)
+        "Found" = ~qwraps2::n_perc(found == 1, prec, na_rm = TRUE),
+        "Hospitalisation" = ~qwraps2::n_perc(hospit == 1, prec, na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, hospit_summary) 
