@@ -32,7 +32,7 @@ if (!is.null(facility_data)) {
     if (nrow(id_duplicates) > 0) { 
       # Remove duplicate child IDs from the clean database
       day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      cat(paste0("**", nrow(id_duplicates), "** duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected in the locked Day 0 database."))
+      cat(paste0("**", nrow(id_duplicates), "** duplicated IDs (corresponding to **", nrow(day0_data_id_duplicates), "** participants) were detected in the locked Day 0 database."))
     } else {
       cat("No duplicated IDs were detected.")
     }
@@ -98,7 +98,7 @@ if (!is.null(facility_data)) {
       # Remove duplicate child IDs from the clean database
       day0_data_id_duplicates <- locked_day0_data[locked_day0_data$child_id %in% id_duplicates$child_id, ]
       locked_day0_data <- locked_day0_data[!locked_day0_data$child_id %in% id_duplicates$child_id, ]
-      cat(paste0("**", nrow(id_duplicates), "** duplicated IDs (corresponding to ", nrow(day0_data_id_duplicates), " participants) were detected and removed in the locked Day 0 database."))
+      cat(paste0("**", nrow(id_duplicates), "** duplicated IDs (corresponding to **", nrow(day0_data_id_duplicates), "** participants) were detected and removed in the locked Day 0 database."))
     } else {
       cat("No duplicated IDs were detected.")
     }

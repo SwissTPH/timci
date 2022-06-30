@@ -18,7 +18,7 @@ allday7fu_data <- res[[3]]
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which **", nrow(day7fu_data), "** records documenting successful follow-ups."))
+cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which **", nrow(day7fu_data), "** records documenting successful Day 7 follow-ups."))
 ```
 
 ### Non-valid participant IDs [compliance check]
@@ -27,7 +27,7 @@ cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 fo
 write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
 ```
 
-**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still going-on, all participants enrolled after the lock will be considered as 'invalid' IDs).
+**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still active, all participants enrolled after the date set for the lock will be considered as 'invalid' IDs).
 
 ```{r}
 locked_day7fu_data <- NULL
@@ -64,10 +64,10 @@ if (!is.null(day7fu_data)) {
 
 ```{r, results='asis', eval=!is.null(allday7fu_data_uids)}
 allday7fu_data_uids_fn <- "DQC_07_01_nonvalid_ids_day7fu"
-fn <- timci::export_df2xlsx(allday7fu_data_uids[c("child_id", "uuid")],
+ts <- timci::export_df2xlsx(allday7fu_data_uids[c("child_id", "uuid")],
                             qc_dir,
                             allday7fu_data_uids_fn)
-cat(paste0("The table of Day 7 follow-ups for which the child ID does not correspond to any ID found the locked Day 0 database is exported to **", allday7fu_data_uids_fn, "**"))
+cat(paste0("The table of Day 7 follow-ups for which the child ID does not correspond to any ID found the locked Day 0 database has been exported (**", ts,"**) to **", allday7fu_data_uids_fn, ".xlsx**."))
 ```
 
 ```{r}
@@ -109,22 +109,19 @@ if (!is.null(locked_day7fu_data)) {
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(locked_day7fu_data)) {
-  if (nrow(locked_day7fu_data) > 0) {
-    if (nrow(id_duplicates) > 0) { 
-      id_duplicates %>%
-        knitr::kable(row.names = FALSE)
-    }
-  }
-}
+```{r, results='asis', eval=!is.null(id_duplicates)}
+duplicated_day7fu_ids_fn <- "DQC_07_01_duplicated_successful_day7fu"
+ts <- timci::export_df2xlsx(id_duplicates,
+                            qc_dir,
+                            duplicated_day7fu_ids_fn)
+cat(paste0("The table of Day 7 follow-ups that are duplicated has been exported (**", ts,"**) to **", duplicated_day7fu_ids_fn, ".xlsx**."))
 ```
 
 ```{r, results='asis', eval=is_kenya}
 cat("##### Child ID duplicate manual edits")
 ```
 
-```{r, results='asis'}
+```{r, results='asis', eval=is_kenya}
 out <- timci::correct_day7_duplicates(locked_day7fu_data)
 locked_day7fu_data <- out[[1]]
 duplicate_edits <- out[[2]]
