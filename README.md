@@ -93,7 +93,7 @@ From 30 May 2022 Google no longer supports signing in to Google Accounts using o
 
 #### Other R dependencies
 
-You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`, `finalfit`, `webshot`.
+You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`, `finalfit`, `webshot`, `DiagrammeR`.
 
 All these packages can be installed using the function `install.packages`:
 ```r
@@ -115,8 +115,10 @@ install.packages("openxslx")
 install.packages("rmarkdown")
 install.packages("kableExtra")
 install.packages("finalfit")
+install.packages("DiagrammeR")
 ```
 
+To be able to render HTML widgets (e.g., diagrams generated using the package DiagrammeR) as screenshots in a Word or a PDF documents generated using Rmarkdown, you need to install the webshot package and download and install PhantomJS. More explanation available [here](https://bookdown.org/yihui/bookdown/html-widgets.html).
 ```r
 install.packages("webshot")
 webshot::install_phantomjs()
