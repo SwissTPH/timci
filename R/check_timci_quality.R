@@ -299,11 +299,14 @@ detect_missing_clinical_presentation <- function(facility_df) {
   if (!is.null(facility_df)) {
     if (nrow(facility_df) > 0) {
 
+      facility_df$sx_vomit_evthing[is.na(facility_df$sx_vomit_evthing)] <- 0
+      facility_df$sx_unable_feed[is.na(facility_df$sx_unable_feed)] <- 0
+
       out <- facility_df %>%
         dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
                                             1,
                                             0)) %>%
-        dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
+        dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
                                                              1,
                                                              0)) %>%
         filter(missing_clinical_presentation == 1)
