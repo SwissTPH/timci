@@ -4,11 +4,12 @@
 #' @param dirname directory where the Excel file will be created.
 #' @param prefix filename prefix
 #' @param rnames Row names
+#' @return creation timestamp of the Excel file
 #' @export
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
-  out <- "Dataframe cannot be written to Excel."
+  t <- NULL
   if (!is.null(dirname)){
     fname <- file.path(dirname, paste0(prefix, ".xlsx"))
     openxlsx::write.xlsx(df,
@@ -16,9 +17,9 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
                          row.names = rnames,
                          overwrite = TRUE,
                          encoding = "UTF-8")
-    out <- fname
+    t <- format(file.info(fname)$ctime, usetz = TRUE)
   }
-  out
+  t
 
 }
 
@@ -27,11 +28,12 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 #' @param df dataframe.
 #' @param dirname directory where the RDS file will be created.
 #' @param prefix filename prefix
+#' @return creation timestamp of the CSV file
 #' @export
 
 export_df2csv <- function(df, dirname, prefix) {
 
-  out <- "Dataframe cannot be written to CSV."
+  t <- NULL
   if (!is.null(dirname)){
     fname <- file.path(dirname, paste0(prefix, ".csv"))
     write.csv(df,
@@ -39,9 +41,9 @@ export_df2csv <- function(df, dirname, prefix) {
               row.names = FALSE,
               quote = FALSE,
               fileEncoding = "UTF-8")
-    out <- fname
+    t <- format(file.info(fname)$ctime, usetz = TRUE)
   }
-  out
+  t
 
 }
 
@@ -54,13 +56,13 @@ export_df2csv <- function(df, dirname, prefix) {
 
 export_df2csvxlsx <- function(df, dirname, prefix) {
 
-  out1 <- timci::export_df2xlsx(df,
+  t1 <- timci::export_df2xlsx(df,
                                 dirname,
                                 prefix)
-  out2 <- timci::export_df2csv(df,
+  t2 <- timci::export_df2csv(df,
                                dirname,
                                prefix)
-  out <- paste0(out1,'\n',out2)
+  t <- paste0(t1,'\n',t2)
 
 }
 

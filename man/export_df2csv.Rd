@@ -13,6 +13,9 @@ export_df2csv(df, dirname, prefix)
 
 \item{prefix}{filename prefix}
 }
+\value{
+creation timestamp of the CSV file
+}
 \description{
 Write dataframe to a CSV file format, with a filename consisting of a prefix and a date stamp
 }

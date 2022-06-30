@@ -15,6 +15,9 @@ export_df2xlsx(df, dirname, prefix, rnames = FALSE)
 
 \item{rnames}{Row names}
 }
+\value{
+creation timestamp of the Excel file
+}
 \description{
 Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
 }
