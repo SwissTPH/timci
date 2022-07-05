@@ -3,86 +3,67 @@ cat("Rule: withdrawals with documented child IDs are kept in the locked Day 0 da
 ```
 
 ```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      if (nrow(raw_withdrawal_data) > 0) { 
-        raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
-        withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
-        withdrawal_data2$child_id <- gsub("O", "0", withdrawal_data2$child_id)
-      }
+if (nrow(locked_day0_data) > 0) {
+  if (!is.null(raw_withdrawal_data)) {
+    if (nrow(raw_withdrawal_data) > 0) { 
+      raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
+      withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
+      withdrawal_data2$child_id <- gsub("O", "0", withdrawal_data2$child_id)
     }
   }
 }
 ```
 
 ```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      if (nrow(raw_withdrawal_data) > 0) { 
-        cat(paste0("**", nrow(raw_withdrawal_data), "** withdrawal(s) reported (among which **", nrow(withdrawal_data2),"** withdrawals with documented child IDs)."))
-      } else {
-        cat("No withdrawal reported.")
-      }
+if (nrow(locked_day0_data) > 0) {
+  if (!is.null(raw_withdrawal_data)) {
+    if (nrow(raw_withdrawal_data) > 0) { 
+      cat(paste0("**", nrow(raw_withdrawal_data), "** withdrawal(s) reported (among which **", nrow(withdrawal_data2),"** withdrawals with documented child IDs)."))
+    } else {
+      cat("No withdrawal reported.")
     }
-  } else {
-    cat("N/A")
   }
+} else {
+  cat("N/A")
 }
 ```
 
 ```{r}
 day0_data_id_withdrawal <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      if (nrow(raw_withdrawal_data) > 0) { 
-        day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
-        day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
-          merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
-      }
+`%!in%` <- Negate(`%in%`)
+
+if (nrow(locked_day0_data) > 0) {
+  if (!is.null(raw_withdrawal_data)) {
+    if (nrow(raw_withdrawal_data) > 0) {
+      
+      # Non reconciled withdrawn IDs
+      non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% locked_day0_data$child_id, ]
+      
+      # Reconciled withdrawn IDs
+      day0_data_id_withdrawal <- locked_day0_data[locked_day0_data$child_id %in% withdrawal_data2$child_id, ]
+      day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+        merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
+      
     }
   }
 }
 ```
 
 ```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(day0_data_id_withdrawal)) {
-      cat(paste0("**", nrow(day0_data_id_withdrawal), "** participant(s) who withdrew found in the locked Day 0 database."))
-    }
+if (nrow(locked_day0_data) > 0) {
+  if (!is.null(day0_data_id_withdrawal)) {
+    cat(paste0("**", nrow(day0_data_id_withdrawal), "** participant(s) who withdrew found in the locked Day 0 database."))
   }
 }
 ```
 
 ```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      if (nrow(raw_withdrawal_data) > 0) { 
-        if (nrow(day0_data_id_withdrawal) > 0) { 
-          day0_data_id_withdrawal %>%
-            dplyr::select(c("child_id", "date_visit", "date", "uuid")) %>%
-            knitr::kable(col.names = c("Child ID", "Enrolment date", "Withdrawal date", "uuid"))
-        }
-      }
-    }
-  }
-}
-```
-
-Modify to display only the list of withdrawals not found on the Day 0 locked database
-
-```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_day0_data) > 0) {
-    if (!is.null(raw_withdrawal_data)) {
-      withdrawal_data2 %>%
-        dplyr::select(c("child_id", "date")) %>%
-        knitr::kable(col.names = c("Child ID", "Withdrawal date"))
-    }
+if (nrow(locked_day0_data) > 0) {
+  if (!is.null(non_reconciled_withdrawn_ids)) {
+    non_reconciled_withdrawn_ids %>%
+      dplyr::select(c("child_id", "date")) %>%
+      knitr::kable(col.names = c("Child ID", "Withdrawal date"),
+                   caption = "List of withdrawals which could not be reconciled with any child ID in the Day 0 locked database")
   }
 }
 ```
@@ -91,9 +72,9 @@ if (!is.null(facility_data)) {
 withdrawal_export_name <- "99_withdrawal_data"
 if (!is.null(raw_withdrawal_data)) {
   ts <- timci::export_df2csvxlsx(raw_withdrawal_data,
-                                params$rctls_dir,
-                                withdrawal_export_name)
-  cat(paste0("* Raw withdrawal data are exported (**", ts, "**) in ", withdrawal_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+                                 params$rctls_dir,
+                                 withdrawal_export_name)
+  cat(paste0("* Raw withdrawal data are exported (**", ts, "**) in **", withdrawal_export_name, ".csv/xslx** in the **", basename(params$rctls_dir), "** folder"))
 }
 ```
 
@@ -103,7 +84,7 @@ if (!is.null(raw_withdrawal_data)) {
     ts <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
                                    locked_db_dir,
                                    withdrawal_export_name)
-    cat(paste0("* Locked withdrawal data are exported (**", ts, "**) in ", withdrawal_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+    cat(paste0("* Locked withdrawal data are exported (**", ts, "**) in **", withdrawal_export_name, ".csv/xslx** in the **", basename(locked_db_dir), "** folder"))
   }
 }
 ```

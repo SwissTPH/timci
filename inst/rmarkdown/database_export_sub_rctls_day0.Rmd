@@ -17,8 +17,16 @@ n_day0 <- nrow(day0_data)
 pii <- res[[2]]
 ```
 
+```{r}
+day0_is_not_null <- !is.null(day0_data)
+day0_is_not_empty <- 0
+if (day0_is_not_null) {
+  day0_is_not_empty <- nrow(day0_data) > 0
+}
+```
+
 ```{r, results = 'asis'}
-cat(paste0("Initially, there are **", n_screening, "** screening record(s) in the raw facility database from the start of the study on ", start_date, ", including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
+cat(paste0("Initially, there are **", n_screening, "** screening record(s) in the raw facility database from the start of the study on **", start_date, "**, including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
 ```
 
 ### Non-valid device IDs [context check]
@@ -184,7 +192,12 @@ locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
 
 ### Submission timeliness [compliance checks]
 
-#### Non-timely completion [compliance check]
+```{r}
+qc_nontimelycompletion_id <- "DQC01_01"
+qc_nontimelysubmission_id <- "DQC01_02"
+```
+
+#### Non-timely completion [compliance check `r qc_nontimelycompletion_id`]
 
 ```{r}
 qc_completion_ab1day <- NULL
@@ -192,7 +205,7 @@ qc_completion_ab1day <- NULL
 
 ```{r, eval=!is.null(facility_data)}
 if (nrow(locked_day0_data) > 0) {
-  qc <- detect_non_timely_completion(locked_day0_data)
+  qc <- timci::detect_non_timely_completion(locked_day0_data)
   qc_completion_ab1day <- qc[qc$diff > 0,]
 }
 ```
@@ -204,11 +217,11 @@ cat(paste0("**", nrow(qc_completion_ab1day), "** participant(s) for whom the sub
 ```
 
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
-qc_completion_fn <- "DQC_01_01_nontimely_day0_completion"
-ts <- timci::export_df2xlsx(qc_completion_ab1day,
+timci::quality_check_export(qc_completion_ab1day,
+                            qc_nontimelycompletion_id,
+                            "nontimely_day0_completion",
                             qc_dir,
-                            qc_completion_fn)
-cat(paste0("The table of participants for whom the submission was not finalised on the same day it was started has been exported (**", ts, "**) to **", qc_completion_fn, ".xlsx**."))
+                            "the submission was not finalised on the same day it was started")
 ```
 
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
@@ -221,7 +234,7 @@ if (nrow(qc_completion_ab1day) > 0) {
 }
 ```
 
-#### Non-timely submission [compliance check]
+#### Non-timely submission [compliance check `r qc_nontimelysubmission_id`]
 
 **Definition:** transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet.
 
@@ -283,11 +296,11 @@ if (!is.null(qc_transfer_ab12days)) {
 ```
 
 ```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
-qc_transfer_fn <- "DQC_01_01_nontimely_day0_transfer"
-fn <- timci::export_df2xlsx(qc_transfer_ab1day,
+timci::quality_check_export(qc_transfer_ab1day,
+                            qc_nontimelysubmission_id,
+                            "nontimely_day0_submission",
                             qc_dir,
-                            qc_transfer_fn)
-cat(paste0("The table of participants for which the submission was transferred strictly after the day it was finalised is exported (**", ts, "**) to **", qc_transfer_fn, ".xlsx**."))
+                            "the submission was transferred strictly after the day it was finalised ")
 ```
 
 ```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
@@ -312,7 +325,7 @@ if (nrow(qc_transfer_ab1day) > 0) {
 
 ### Withdrawal management
 
-```{r, child = 'database_export_sub_rctls_withdrawals.Rmd'}
+```{r, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
 ### Clinical presentation [Mandatory check]
@@ -375,23 +388,20 @@ timci::format_nrow("There are", locked_day0_data, "records in the locked Day 0 d
 
 ### Data export
 
-```{r export-screening-data, results = 'asis'}
-screening_export_name <- "01_timci_screening_data"
-if (!is.null(facility_data)) { 
-  fn <- timci::export_df2csvxlsx(screening_data,
-                                 rctls_dir,
-                                 screening_export_name)
-}
-cat(paste0("* Screening data are exported in ", screening_export_name, ".csv/xslx in the ", rctls_dir, " folder"))
+```{r export-screening-data, results = 'asis', eval=!is.null(facility_data)}
+timci::database_export(screening_data,
+                       "01",
+                       "timci_screening_data",
+                       rctls_dir,
+                       "Screening data")
 ```
 
-```{r export-locked-screening-data, results = 'asis'}
-if (!is.null(facility_data)) {
-  fn <- timci::export_df2csvxlsx(locked_screening_data,
-                                 locked_db_dir,
-                                 screening_export_name)
-}
-cat(paste0("* Locked screening data are exported in ", screening_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+```{r export-locked-screening-data, results = 'asis', eval=!is.null(facility_data)}
+timci::database_export(locked_screening_data,
+                       "01",
+                       "timci_screening_data",
+                       locked_db_dir,
+                       "Screening data")
 ```
 
 ```{r export-facility-audit}
@@ -448,11 +458,11 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", params$rctls_dir, " folder"))
+cat(paste0("* Raw Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", basename(params$rctls_dir), " folder"))
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", locked_db_dir, " folder"))
+cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", basename(locked_db_dir), " folder"))
 ```
 
 ```{r export-visit-data, results = 'asis'}
@@ -462,11 +472,11 @@ if (!is.null(facility_data)) {
   
   if (deidentification_on == 1) {
     deidentified_facility_data <- timci::deidentify_data(study_data)
-    fn <- timci::export_df2csvxlsx(deidentified_facility_data,
-                                  params$rctls_dir,
+    ts <- timci::export_df2csvxlsx(deidentified_facility_data,
+                                   params$rctls_dir,
                                   "03_timci_facility_visits_data")
   } else {
-    fn <- timci::export_df2csvxlsx(study_data,
+    ts <- timci::export_df2csvxlsx(study_data,
                                   params$rctls_dir,
                                   "03_timci_facility_visits_data")
   }

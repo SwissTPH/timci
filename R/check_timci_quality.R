@@ -1,3 +1,65 @@
+#' Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
+#'
+#' @param df quality check dataframe.
+#' @param idx directory where the Excel file will be created.
+#' @param label filename prefix
+#' @param cdir Row names
+#' @param description Row names
+#' @return creation timestamp of the Excel file
+#' @export
+
+quality_check_export <- function(df,
+                                 idx,
+                                 label,
+                                 cdir,
+                                 description) {
+
+  filename <- paste(idx, label, separator = "_")
+  timestamp <- timci::export_df2xlsx(df, cdir, filename)
+  msg <- paste0("The table of participants for whom **",
+                description,
+                "** has been exported (**",
+                timestamp,
+                "**) to **",
+                filename,
+                ".xlsx** in the **",
+                basename(cdir),
+                "** folder.")
+  cat(msg)
+
+}
+
+#' Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
+#'
+#' @param df quality check dataframe.
+#' @param idx directory where the Excel file will be created.
+#' @param label filename prefix
+#' @param cdir Row names
+#' @param description Row names
+#' @return creation timestamp of the Excel file
+#' @export
+
+database_export <- function(df,
+                            idx,
+                            label,
+                            cdir,
+                            description) {
+
+  filename <- paste(idx, label, separator = "_")
+  timestamp <- timci::export_df2csvxlsx(df, cdir, filename)
+  msg <- paste0("**",
+                description,
+                "** have been exported (**",
+                timestamp,
+                "**) to **",
+                filename,
+                ".csv/xslx** in the **",
+                basename(cdir),
+                "** folder.")
+  cat(msg)
+
+}
+
 #' Detect non-timely submissions, i.e. submissions not sent to the server on the day they were finalised (ODK function)
 #'
 #' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
@@ -287,7 +349,7 @@ detect_inconsistent_dates <- function(df1, df2) {
 
 #' Detect missing clinical presentation (TIMCI-specific function)
 #'
-#' @param df dataframe containing the processed facility data
+#' @param facility_df dataframe containing the processed facility data
 #' @return This function returns a dataframe containing only participants with no clinical presentation
 #' @export
 #' @import dplyr

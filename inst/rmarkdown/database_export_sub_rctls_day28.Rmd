@@ -20,7 +20,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results = 'asis'}
 if (!is.null(allday28fu_data)) {
-  cat(paste0("There are **", nrow(allday28fu_data), "** records in the raw Day 28 follow-up database, among which ", nrow(day28fu_data), " records documenting successful follow-ups."))
+  cat(paste0("There are **", nrow(allday28fu_data), "** records in the raw Day 28 follow-up database, among which **", nrow(day28fu_data), "** records documenting successful follow-ups."))
 }
 ```
 
@@ -137,10 +137,10 @@ if (!is.null(allday28fu_data)) {
                                  params$rctls_dir,
                                  day28_export_name)
   fn <- timci::export_df2csvxlsx(locked_allday28fu_data,
-                                 locked_db_dir,
+                                 qc_dir,
                                  day28_export_name)
   fn <- timci::export_df2csvxlsx(allday28fu_data_uids,
-                                 locked_db_dir,
+                                 qc_dir,
                                  "06c_timci_followup_day28_data_unknown_ids")
 }
 ```

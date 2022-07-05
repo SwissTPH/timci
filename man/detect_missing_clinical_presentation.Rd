@@ -7,7 +7,7 @@
 detect_missing_clinical_presentation(facility_df)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{facility_df}{dataframe containing the processed facility data}
 }
 \value{
 This function returns a dataframe containing only participants with no clinical presentation

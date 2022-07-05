@@ -35,7 +35,7 @@ duplicate_export_name <- "DQC_01_03_possible_multiple_enrolments"
 ts <- timci::export_df2xlsx(duplicates,
                             qc_dir,
                             duplicate_export_name)
-cat(paste0("* Possible multiple enrolment of the same children are exported (**", ts, "**) in ", duplicate_export_name, ".xslx in the ", qc_dir, " folder"))
+cat(paste0("* Possible multiple enrolment of the same children are exported (**", ts, "**) in **", duplicate_export_name, ".xslx** in the **", basename(qc_dir), "** folder"))
 ```
 
 #### Possible participant duplicates with sex discrepancy
@@ -77,7 +77,7 @@ duplicate2_export_name <- "DQC_01_03_possible_multiple_enrolments_with_sex_discr
 ts <- timci::export_df2xlsx(duplicates2,
                             qc_dir,
                             duplicate2_export_name)
-cat(paste0("* Possible multiple enrolment of the same children with sex discrepancy are exported (**", ts, "**) in ", duplicate2_export_name, ".xslx in the ", qc_dir, " folder"))
+cat(paste0("* Possible multiple enrolment of the same children with sex discrepancy are exported (**", ts, "**) in **", duplicate2_export_name, ".xslx** in the **", basename(qc_dir), "** folder"))
 ```
 
 ```{r export-duplicates}
