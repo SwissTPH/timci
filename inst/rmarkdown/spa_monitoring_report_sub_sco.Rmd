@@ -24,7 +24,7 @@ The objective of the sick child observation protocol is:
 ```{r spa-sco-condition}
 n <- nrow(spa_sco_data)
 cond <- n > 0
-spa_sco_heatmap_cap <- paste("Sick child observation",heatmap_cap,sep='-')
+spa_sco_heatmap_cap <- paste("Sick child observation", heatmap_cap, sep=' - ')
 ```
 
 **`r n`** submissions
@@ -51,6 +51,13 @@ all <- spa_sco_data %>%
 ```{r, eval=is_ls}
 all <- all %>% 
   dplyr::mutate(Q1 = as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")))
+```
+
+```{r, eval=is_rct}
+all <- all %>% 
+  dplyr::mutate(quarter = ifelse(as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")),
+                                 "Q2",
+                                 "Q3"))
 ```
 
 ```{r, eval=cond, results="asis"}
@@ -129,10 +136,23 @@ obs_count %>%
 
 ```{r, results="asis", eval=cond & is_tanzania}
 d1 <- "Kaliua"
-obs_count <- all %>%
+
+q2_count <- all %>%
   dplyr::filter(district == d1) %>%
+  dplyr::filter(quarter == "Q2") %>%
   dplyr::group_by(facility_name, hcp_id) %>%
-  dplyr::summarise("Observed children" = n_distinct(child_id))
+  dplyr::summarise("N obs. children (Q2)" = n_distinct(child_id))
+
+q3_count <- all %>%
+  dplyr::filter(district == d1) %>%
+  dplyr::filter(quarter == "Q3") %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("N obs. children (Q3)" = n_distinct(child_id))
+
+obs_count <- merge(x = q2_count,
+                   y = q3_count,
+                   by = c("facility_name", "hcp_id"),
+                   all = TRUE)
 
 obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
@@ -147,10 +167,23 @@ obs_count %>%
 
 ```{r, results = "asis", eval=cond & is_tanzania}
 d2 <- "Sengerema"
-obs_count <- all %>%
+
+q2_count <- all %>%
   dplyr::filter(district == d2) %>%
+  dplyr::filter(quarter == "Q2") %>%
   dplyr::group_by(facility_name, hcp_id) %>%
-  dplyr::summarise("Observed children" = n_distinct(child_id))
+  dplyr::summarise("N obs. children (Q2)" = n_distinct(child_id))
+
+q3_count <- all %>%
+  dplyr::filter(district == d2) %>%
+  dplyr::filter(quarter == "Q3") %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("N obs. children (Q3)" = n_distinct(child_id))
+
+obs_count <- merge(x = q2_count,
+                   y = q3_count,
+                   by = c("facility_name", "hcp_id"),
+                   all = TRUE)
 
 obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
@@ -164,10 +197,23 @@ obs_count %>%
 
 ```{r, results="asis", eval=cond & is_tanzania}
 d3 <- "Tanga"
-obs_count <- all %>%
+
+q2_count <- all %>%
   dplyr::filter(district == d3) %>%
+  dplyr::filter(quarter == "Q2") %>%
   dplyr::group_by(facility_name, hcp_id) %>%
-  dplyr::summarise("Observed children" = n_distinct(child_id))
+  dplyr::summarise("N obs. children (Q2)" = n_distinct(child_id))
+
+q3_count <- all %>%
+  dplyr::filter(district == d3) %>%
+  dplyr::filter(quarter == "Q3") %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("N obs. children (Q3)" = n_distinct(child_id))
+
+obs_count <- merge(x = q2_count,
+                   y = q3_count,
+                   by = c("facility_name", "hcp_id"),
+                   all = TRUE)
 
 obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
@@ -208,24 +254,38 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval=cond & is_rct, results='asis', fig.cap=heatmap2_cap, fig.height=figsize}
+```{r, eval=cond & is_india, results='asis', fig.cap=heatmap2_cap, fig.height=figsize}
 timci::heatmap_wday_hourofday(all, 'start')
 ```
 
-```{r, results="asis", eval=cond & is_ls}
-write("Test 1", stderr())
+```{r, results="asis", eval=cond & is_tanzania, fig.cap=heatmap2_cap, fig.height=figsize}
+all_q2 <- all %>%
+  dplyr::filter(quarter == "Q2")
+if (!is.null(all_q2)) {
+  timci::heatmap_wday_hourofday(all_q2, 'start')
+}
+```
+
+```{r, results="asis", eval=cond & is_tanzania, fig.height=figsize}
+all_q3 <- all %>%
+  dplyr::filter(quarter == "Q3")
+if (!is.null(all_q3)) {
+  if (nrow(all_q3)>0) {
+    timci::heatmap_wday_hourofday(all_q3, 'start')
+  }
+}
+```
+
+```{r, results="asis", eval=cond & is_ls, fig.cap=heatmap2_cap, fig.height=figsize}
 all_q1 <- all %>% dplyr::filter(Q1 == 1)
 if (!is.null(all_q1)) {
   timci::heatmap_wday_hourofday(all_q1, 'start')
 }
 ```
 
-```{r, results="asis", eval=cond & is_ls}
-write("Test 2", stderr())
+```{r, results="asis", eval=cond & is_ls, fig.height=figsize}
 all_q2 <- all %>% dplyr::filter(Q1 == 0)
 if (!is.null(all_q2)) {
-  write(length(all_q2), stderr())
-  write(nrow(all_q2), stderr())
   if (nrow(all_q2)>0) {
     timci::heatmap_wday_hourofday(all_q2, 'start')
   }
