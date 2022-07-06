@@ -528,3 +528,46 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
     ggplot2::theme_void()
 
 }
+
+#' Create flowchart (TIMCI-specific)
+#'
+#' @param n_records Number of records
+#' @param n_screening Number of screenings
+#' @param c TBD
+#' @param d TBD
+#' @param e TBD
+#' @param f TBD
+#' @param g TBD
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_flowchart <- function(n_records,
+                             n_screening,
+                             c,
+                             d,
+                             e,
+                             f,
+                             g) {
+  gr <- sprintf("
+    digraph flowchart {
+      # node definitions with substituted label text
+      node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+      1 [label = 'Records\n(N = %s)']
+      2 [label = 'Screenings\n(N = %s)']
+      3 [label = 'Enrolment\n(N = %s)']
+      4 [label = 'Day 7 follow-up\n(N = %s)']
+      m1 [label = 'Excluded %s']
+      m2 [label = 'Excluded %s']
+
+      node [shape=none, width=0, height=0, label='']
+      p1 -> 2; p2 -> 3 -> 4;
+      {rank=same; p1 -> m1}
+      {rank=same; p2 -> m2}
+
+      edge [dir=none]
+      1 -> p1; 2 -> p2;
+    }", n_records, n_screening, c, d, e, f, g)
+  DiagrammeR::grViz(gr)
+}
