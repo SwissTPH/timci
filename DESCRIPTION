@@ -12,6 +12,7 @@ Description: The package provides all tools and functions necessary for
 License: GPL-3 + file LICENSE
 Imports: 
     data.table,
+    DiagrammeR,
     digest,
     dplyr,
     DT,
