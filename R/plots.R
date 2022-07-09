@@ -531,9 +531,10 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 
 #' Create flowchart (TIMCI-specific)
 #'
-#' @param n_records Number of records
-#' @param n_screening Number of screenings
-#' @param c TBD
+#' @param n_raw_records Number of records
+#' @param n_nonvalid_deviceid_records Number of records with a non-valid device ID
+#' @param n_after_lockdate_records Number of Day 0 records with an entry date posterior to the lock date
+#' @param n_screening TBD
 #' @param d TBD
 #' @param e TBD
 #' @param f TBD
@@ -542,24 +543,76 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 #' @export
 #' @import DiagrammeR
 
-create_flowchart <- function(n_records,
-                             n_screening,
-                             c,
-                             d,
-                             e,
-                             f,
-                             g) {
+create_day0_qc_flowchart <- function(n_raw_records,
+                                     n_nonvalid_deviceid_records,
+                                     n_after_lockdate_records,
+                                     n_screening,
+                                     d,
+                                     e,
+                                     f,
+                                     g) {
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+                  1 [label = 'Records\n(N = %s)']
+                  m1 [label = 'Excluded (N=...)\n%s non-valid device IDs\n%s posterior to the lock date']
+                  2 [label = 'Screenings\n(N = %s)']
+                  m2 [label = 'Excluded\nNon-eligible (N = %s)']
+                  3 [label = 'Enrolment\n(N = %s)']
+                  m3 [label = 'Excluded\nNon-valid enrolling facility IDs (N = %s)']
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> 2; p2 -> 3;
+                  {rank=same; p1 -> m1}
+                  {rank=same; p2 -> m2}
+                  {rank=same; p3 -> m3}
+
+                  edge [dir=none]
+                  1 -> p1; 2 -> p2; 3 -> p3
+                }",
+                n_raw_records,
+                n_nonvalid_deviceid_records,
+                n_after_lockdate_records,
+                n_screening,
+                d,
+                e,
+                f,
+                g)
+  DiagrammeR::grViz(gr)
+}
+
+#' Create flowchart (TIMCI-specific)
+#'
+#' @param n_raw_records Number of records
+#' @param n_nonvalid_deviceid_records Number of records with a non-valid device ID
+#' @param n_screening TBD
+#' @param d TBD
+#' @param e TBD
+#' @param f TBD
+#' @param g TBD
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_flowchart <- function(n_raw_records,
+                                     n_nonvalid_deviceid_records,
+                                     n_screening,
+                                     d,
+                                     e,
+                                     f,
+                                     g) {
   gr <- sprintf("
     digraph flowchart {
       # node definitions with substituted label text
       node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
       1 [label = 'Records\n(N = %s)']
+      m1 [label = 'Excluded\nNon-valid device IDs (N = %s)']
       2 [label = 'Screenings\n(N = %s)']
+      m2 [label = 'Excluded %s']
       3 [label = 'Enrolment\n(N = %s)']
       4 [label = 'Day 7 follow-up\n(N = %s)']
-      m1 [label = 'Excluded %s']
-      m2 [label = 'Excluded %s']
 
       node [shape=none, width=0, height=0, label='']
       p1 -> 2; p2 -> 3 -> 4;
@@ -568,6 +621,6 @@ create_flowchart <- function(n_records,
 
       edge [dir=none]
       1 -> p1; 2 -> p2;
-    }", n_records, n_screening, c, d, e, f, g)
+    }", n_raw_records, n_nonvalid_deviceid_records, n_screening, d, e, f, g)
   DiagrammeR::grViz(gr)
 }

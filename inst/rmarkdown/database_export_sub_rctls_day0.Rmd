@@ -10,7 +10,7 @@ write("Export Day 0 data and run corresponding quality checks", stderr())
 
 ```{r}
 screening_data <- timci::extract_screening_data(facility_data)
-n_screening <- nrow(facility_data)
+n_raw_records <- nrow(facility_data)
 res <- timci::extract_enrolled_participants(facility_data)
 day0_data <- res[[1]]
 n_day0 <- nrow(day0_data)
@@ -26,7 +26,7 @@ if (day0_is_not_null) {
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("Initially, there are **", n_screening, "** screening record(s) in the raw facility database from the start of the study on **", start_date, "**, including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
+cat(paste0("Initially, there are **", n_raw_records, "** screening record(s) in the raw facility database from the start of the study on **", start_date, "**, including **", n_day0, "** record(s) corresponding to new Day 0 enrolments."))
 ```
 
 ### Non-valid device IDs [context check]
@@ -36,19 +36,24 @@ cat(paste0("Initially, there are **", n_screening, "** screening record(s) in th
 ```{r}
 locked_screening_data <- timci::allocate_screening_facility(screening_data,
                                                             research_facilities)
-n_locked_screening <- nrow(locked_screening_data)
 ```
 
 ```{r}
 locked_day0_data <- timci::allocate_screening_facility(day0_data,
                                                        research_facilities)
-n_locked_day0 <- nrow(locked_day0_data)
 locked_pii <- timci::allocate_screening_facility(pii,
                                                  research_facilities)
 ```
 
+
+```{r}
+n_locked_screening <- nrow(locked_screening_data)
+n_nonvalid_deviceid_records <- n_raw_records - n_locked_screening
+n_locked_day0 <- nrow(locked_day0_data)
+```
+
 ```{r, results = 'asis'}
-cat(paste0("**", n_screening - n_locked_screening, "** record(s) with non-valid device IDs detected and removed in the locked facility database, including **", n_day0 - n_locked_day0, "** Day 0 records."))
+cat(paste0("**", n_nonvalid_deviceid_records, "** record(s) with non-valid device IDs detected and removed in the locked facility database, including **", n_day0 - n_locked_day0, "** Day 0 records."))
 ```
 
 ```{r}
@@ -58,7 +63,7 @@ day0_data <- locked_day0_data
 
 ### Lock date [context check]
 
-**Rule:** records entered after the lock date on `r lock_date` are removed in the locked database.
+**Rule:** records entered after the lock date on **`r lock_date`** are removed in the locked database.
 
 ```{r}
 locked_screening_data <- locked_screening_data %>%
@@ -70,8 +75,12 @@ locked_pii <- locked_pii %>%
   dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d"))
 ```
 
+```{r}
+n_after_lockdate_records <- n_locked_screening - nrow(locked_screening_data)
+```
+
 ```{r, results = 'asis'}
-cat(paste0("**", n_locked_screening - nrow(locked_screening_data), "** record(s) with an entry date posterior to the lock date on **", lock_date, "** detected and removed in the locked facility database, including **", n_locked_day0 - nrow(locked_day0_data), "** Day 0 record(s)."))
+cat(paste0("**", n_after_lockdate_records, "** record(s) with an entry date posterior to the lock date on **", lock_date, "** detected and removed in the locked facility database, including **", n_locked_day0 - nrow(locked_day0_data), "** Day 0 record(s)."))
 ```
 
 ### Non-valid enrolling facility IDs [compliance check]
@@ -192,12 +201,7 @@ locked_day0_data <- locked_day0_data[locked_day0_data$cg_eligibility == 1, ]
 
 ### Submission timeliness [compliance checks]
 
-```{r}
-qc_nontimelycompletion_id <- "DQC01_01"
-qc_nontimelysubmission_id <- "DQC01_02"
-```
-
-#### Non-timely completion [compliance check `r qc_nontimelycompletion_id`]
+#### Non-timely completion [compliance check `r qc_nontimely_completion_id`]
 
 ```{r}
 qc_completion_ab1day <- NULL
@@ -218,7 +222,7 @@ cat(paste0("**", nrow(qc_completion_ab1day), "** participant(s) for whom the sub
 
 ```{r, results='asis', eval=!is.null(qc_completion_ab1day)}
 timci::quality_check_export(qc_completion_ab1day,
-                            qc_nontimelycompletion_id,
+                            qc_nontimely_completion_id,
                             "nontimely_day0_completion",
                             qc_dir,
                             "the submission was not finalised on the same day it was started")
@@ -234,7 +238,7 @@ if (nrow(qc_completion_ab1day) > 0) {
 }
 ```
 
-#### Non-timely submission [compliance check `r qc_nontimelysubmission_id`]
+#### Non-timely submission [compliance check `r qc_nontimely_submission_id`]
 
 **Definition:** transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet.
 
@@ -297,10 +301,10 @@ if (!is.null(qc_transfer_ab12days)) {
 
 ```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
 timci::quality_check_export(qc_transfer_ab1day,
-                            qc_nontimelysubmission_id,
+                            qc_nontimely_submission_id,
                             "nontimely_day0_submission",
                             qc_dir,
-                            "the submission was transferred strictly after the day it was finalised ")
+                            "the submission was not transferred on the same day it was finalised")
 ```
 
 ```{r, results='asis', eval=!is.null(qc_transfer_ab1day)}
@@ -328,9 +332,19 @@ if (nrow(qc_transfer_ab1day) > 0) {
 ```{r, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-### Clinical presentation [Mandatory check]
+### Clinical presentation [Mandatory check `r qc_missing_cp_id`]
 
-**Description:** all participants should have complete information about their clinical presentation, i.e. we cannot have simultaneously: sx_convulsions = 0, sx_lethargy = 0, sx_vomit = 0, sx_less_feed = 0, sx_cough = 0, sx_difficulty_breath, sx_diarrhoea, sx_fever, sx_var = 96.
+**Description:** all participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
+
+* No convulsions (sx_convulsions = 0)
+* No lethargy (sx_lethargy = 0)
+* No vomiting (sx_vomit = 0 or sx_vomit = 98)
+* No feeding less than usual (sx_less_feed = 0)
+* No cough (sx_cough = 0)
+* No difficulty breathing (sx_difficulty_breath = 0)
+* No diarrhoea (sx_diarrhoea = 0)
+* No fever (sx_fever = 0)
+* No other complaint (sx_var = 96)
 
 **Rule:** No modification of the database, only reporting.
 
@@ -360,12 +374,12 @@ qc_missing_cp %>%
                row.names = FALSE)
 ```
 
-```{r, results='asis', eval=qc_missing_cp_is_not_empty}
-qc_missing_cp_fn <- "DQC_01_03_missing_clinical_presentation"
-ts <- timci::export_df2xlsx(qc_missing_cp,
-                            qc_dir,
-                            qc_missing_cp_fn)
-cat(paste0("The table of participants for whom the clinical presentation is missing has been exported (**", ts, "**) to **", qc_missing_cp_fn, ".xlsx**."))
+```{r, results='asis'}
+timci::quality_check_export(df = qc_missing_cp,
+                            idx = qc_missing_cp_id,
+                            label = "missing_clinical_presentation",
+                            cdir = qc_dir,
+                            description = "the clinical presentation is missing")
 ```
 
 ### Diagnosis [Mandatory check]
@@ -386,100 +400,99 @@ Check not implemented yet.
 timci::format_nrow("There are", locked_day0_data, "records in the locked Day 0 database.")
 ```
 
+```{r}
+timci::create_day0_qc_flowchart(n_raw_records,
+                                n_nonvalid_deviceid_records,
+                                n_after_lockdate_records,
+                                n_locked_screening,
+                                'NA',
+                                'NA',
+                                'NA',
+                                'NA')
+```
+
 ### Data export
 
-```{r export-screening-data, results = 'asis', eval=!is.null(facility_data)}
-timci::database_export(screening_data,
-                       "01",
-                       "timci_screening_data",
-                       rctls_dir,
-                       "Screening data")
+```{r export-facility-audit, results = 'asis'}
+timci::dataset_export(facility_data_audit,
+                      "00",
+                      "timci_facility_audit_data",
+                      rctls_dir,
+                      "Facility audit data")
 ```
 
-```{r export-locked-screening-data, results = 'asis', eval=!is.null(facility_data)}
-timci::database_export(locked_screening_data,
-                       "01",
-                       "timci_screening_data",
-                       locked_db_dir,
-                       "Screening data")
+```{r export-screening-data, results = 'asis'}
+timci::dataset_export(screening_data,
+                      "01",
+                      "timci_screening_data",
+                      rctls_dir,
+                      "Raw screening data")
 ```
 
-```{r export-facility-audit}
-if (!is.null(facility_data_audit)) { 
-  fn <- timci::export_df2csvxlsx(facility_data_audit,
-                                 rctls_dir,
-                                 "00_facility_audit_data")
-}
+```{r export-locked-screening-data, results = 'asis'}
+timci::dataset_export(locked_screening_data,
+                      "01",
+                      "timci_screening_data",
+                      locked_db_dir,
+                      "Cleaned screening data")
 ```
 
-```{r split-pii-from-research-data}
-if (!is.null(facility_data)) {
-  
-  if (deidentification_on == 1) {
-    deidentified_day0_data <- timci::deidentify_data(day0_data)
-    fn <- timci::export_df2csvxlsx(deidentified_day0_data,
-                                   rctls_dir,
-                                   "02_timci_day0_data")
-    
-    locked_day0_data <- timci::deidentify_data(locked_day0_data)
-    fn <- timci::export_df2csvxlsx(locked_day0_data,
-                                   locked_db_dir,
-                                   "02_timci_day0_data")
-    
-    if (!is.null(day0_data_id_duplicates)) {
-      deidentified_day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
-      fn <- timci::export_df2csvxlsx(deidentified_day0_data_id_duplicates,
-                                     qc_dir,
-                                     "02a_timci_day0_data_id_duplicates")
-    }
-  } else {
-    fn <- timci::export_df2csvxlsx(day0_data,
-                                   rctls_dir,
-                                   "02_timci_day0_data")
-    
-    fn <- timci::export_df2csvxlsx(locked_day0_data,
-                                   locked_db_dir,
-                                   "02_timci_day0_data")
-    
-    if (!is.null(day0_data_id_duplicates)) {
-      fn <- timci::export_df2csvxlsx(day0_data_id_duplicates,
-                                     qc_dir,
-                                     "02a_timci_day0_data_id_duplicates")
-    }
-  }
-  
-  xlsx_fname <- timci::export_df2xlsx(pii, tempdir(),
-                                      "timci_contact_data")
-  pii_pwd <- Sys.getenv("TIMCI_PII_PW")
-  zip(params$participant_zip, 
-      files = xlsx_fname, 
-      flags = paste("-r9Xj --password", pii_pwd))
-}
+```{r, eval=(!is.null(facility_data) & deidentification_on)}
+deidentified_day0_data <- timci::deidentify_data(day0_data)
+locked_day0_data <- timci::deidentify_data(locked_day0_data)
+```
+
+```{r, eval=!deidentification_on, results = 'asis'}
+timci::dataset_export(day0_data,
+                      "02",
+                      "timci_day0_data",
+                      rctls_dir,
+                      "Raw Day 0 data")
+```
+
+```{r, eval=deidentification_on, results = 'asis'}
+timci::dataset_export(deidentified_day0_data,
+                      "02",
+                      "timci_day0_data",
+                      rctls_dir,
+                      "Deidentified raw Day 0 data")
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", basename(params$rctls_dir), " folder"))
+timci::dataset_export(locked_day0_data,
+                      "02",
+                      "timci_day0_data",
+                      locked_db_dir,
+                      "Cleaned Day 0 data")
 ```
 
-```{r, results = 'asis'}
-cat(paste0("* Locked Day 0 data are exported in ", "02_timci_day0_data", ".csv/xslx in the ", basename(locked_db_dir), " folder"))
+```{r split-pii-from-research-data, eval=!is.null(facility_data)}
+ts <- timci::export_df2xlsx(pii,
+                            tempdir(),
+                            "timci_contact_data")
+pii_pwd <- Sys.getenv("TIMCI_PII_PW")
+zip(params$participant_zip, 
+    files = file.path(tempdir(), "timci_contact_data.xlsx"), 
+    flags = paste("-r9Xj --password", pii_pwd))
 ```
 
-```{r export-visit-data, results = 'asis'}
-facility_data_name <- "03_timci_facility_visits_data"
-if (!is.null(facility_data)) {
-  study_data <- timci::extract_all_visits(facility_data)
-  
-  if (deidentification_on == 1) {
-    deidentified_facility_data <- timci::deidentify_data(study_data)
-    ts <- timci::export_df2csvxlsx(deidentified_facility_data,
-                                   params$rctls_dir,
-                                  "03_timci_facility_visits_data")
-  } else {
-    ts <- timci::export_df2csvxlsx(study_data,
-                                  params$rctls_dir,
-                                  "03_timci_facility_visits_data")
-  }
-  #cat(paste0("* Raw facility visit data are exported in ", facility_data_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
-}
+```{r export-visit-data, results = 'asis', eval=!is.null(facility_data)}
+study_data <- timci::extract_all_visits(facility_data)
+```
+
+```{r, eval=!deidentification_on, results = 'asis'}
+timci::dataset_export(study_data,
+                      "03",
+                      "timci_facility_visits_data",
+                      rctls_dir,
+                      "Facility visit data")
+```
+
+```{r, eval=deidentification_on, results = 'asis'}
+deidentified_facility_data <- timci::deidentify_data(study_data)
+timci::dataset_export(deidentified_facility_data,
+                      "03",
+                      "timci_facility_visits_data",
+                      rctls_dir,
+                      "Facility visit data")
 ```

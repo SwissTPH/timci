@@ -31,11 +31,11 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results = 'asis', eval=(length(duplicates) > 0 & nrow(duplicates) > 0)}
-duplicate_export_name <- "DQC_01_03_possible_multiple_enrolments"
-ts <- timci::export_df2xlsx(duplicates,
+timci::quality_check_export(duplicates,
+                            qc_multiple_enrolment_id,
+                            "possible_multiple_enrolments",
                             qc_dir,
-                            duplicate_export_name)
-cat(paste0("* Possible multiple enrolment of the same children are exported (**", ts, "**) in **", duplicate_export_name, ".xslx** in the **", basename(qc_dir), "** folder"))
+                            "possible multiple enrolment of the same child")
 ```
 
 #### Possible participant duplicates with sex discrepancy
@@ -73,17 +73,17 @@ if (!is.null(facility_data)) {
 ```
 
 ```{r, results = 'asis', eval=(length(duplicates2) > 0 & nrow(duplicates2) > 0)}
-duplicate2_export_name <- "DQC_01_03_possible_multiple_enrolments_with_sex_discrepancy"
-ts <- timci::export_df2xlsx(duplicates2,
+timci::quality_check_export(duplicates2,
+                            qc_multiple_enrolment_sex_discrepancy_id,
+                            "possible_multiple_enrolments_with_sex_discrepancy",
                             qc_dir,
-                            duplicate2_export_name)
-cat(paste0("* Possible multiple enrolment of the same children with sex discrepancy are exported (**", ts, "**) in **", duplicate2_export_name, ".xslx** in the **", basename(qc_dir), "** folder"))
+                            "possible multiple enrolment of the same child with sex discrepancy")
 ```
 
 ```{r export-duplicates}
-if (!is.null(day0_qc)) {
-  fn <- timci::export_df2xlsx(day0_qc,
-                              qc_dir,
-                              "07_data_quality_checks")
-}
+timci::quality_check_export(day0_qc,
+                            qc_summary_id,
+                            "data_quality_check_summary",
+                            qc_dir,
+                            "quality checks were raised")
 ```

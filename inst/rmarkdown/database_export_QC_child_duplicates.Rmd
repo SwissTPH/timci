@@ -52,6 +52,18 @@ if (!is.null(facility_data)) {
 }
 ```
 
+```{r, eval=deidentification_on}
+day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(day0_data_id_duplicates,
+                            qc_duplicate_id1,
+                            "timci_day0_data_id_duplicates",
+                            qc_dir,
+                            "the submission was allocated the same ID that has been used for another participant in the databse")
+```
+
 ```{r, results='asis'}
 cat("##### Child ID duplicate manual edits")
 ```
@@ -116,4 +128,16 @@ if (!is.null(facility_data)) {
     }
   }
 }
+```
+
+```{r, eval=deidentification_on}
+day0_data_id_duplicates <- timci::deidentify_data(day0_data_id_duplicates)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(day0_data_id_duplicates,
+                            qc_duplicate_id2,
+                            "timci_day0_data_id_duplicates",
+                            qc_dir,
+                            "the submission was allocated the same ID that has been used for another participant in the databse")
 ```

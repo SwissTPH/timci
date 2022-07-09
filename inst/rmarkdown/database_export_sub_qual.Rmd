@@ -18,6 +18,8 @@ cat(out, sep = '\n')
 
 ## Key informant interview
 
+No data cleaning for the lock.
+
 ```{r kii-export, eval=!is.null(kii_interview_data)}
 fn <- timci::export_df2csvxlsx(kii_interview_data,
                                qualkii_dir,
@@ -25,6 +27,8 @@ fn <- timci::export_df2csvxlsx(kii_interview_data,
 ```
 
 ## Online survey
+
+No data cleaning for the lock.
 
 ```{r online-survey-export, eval=!is.null(online_survey_data)}
 fn <- timci::export_df2csvxlsx(online_survey_data,

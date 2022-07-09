@@ -6,9 +6,10 @@ output:
   pdf_document:
     number_sections: true
     toc: true
-    toc_depth: 3
+    toc_depth: 4
   word_document:
     toc: true
+    toc_depth: 4
     reference_docx: word_styles1.docx
     fig_width: 7.5
   html_document: default
@@ -50,7 +51,6 @@ params:
 
 ```{r setup-library, include=FALSE}
 library(dplyr)
-library(finalfit)
 library(knitr)
 ```
 
@@ -81,7 +81,7 @@ if (is_senegal) {
 ```
 
 ```{r setup-variables, echo = FALSE}
-deidentification_on <- 0
+deidentification_on <- FALSE
 
 spa_pid <- Sys.getenv("TIMCI_SPA_PID")
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
@@ -127,6 +127,21 @@ if (!is.null(params$facility_data)) {
 }
 ```
 
+```{r}
+qc_nontimely_completion_id <- "DQC_00_01"
+qc_nontimely_submission_id <- "DQC_00_02"
+qc_duplicate_id1 <- "DQC_00_03a"
+qc_duplicate_id2 <- "DQC_00_03b"
+qc_multiple_enrolment_id <- "DQC_00_04"
+qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_05"
+qc_missing_cp_id <- "DQC_00_06"
+qc_summary_id <- "DQC_00_07"
+qc_nonvalid_day7fu <- "DQC_07_01"
+qc_nonvalid_day28fu <- "DQC_28_01"
+qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
+qc_unknown_spa_sco_patient_id <- "DQC_SPA_01"
+```
+
 \newpage
 
 # Context
@@ -136,25 +151,29 @@ write(formats2h2("Context"),stderr())
 write("Write contextual information including dates, study facilities, facility and device correspondence", stderr())
 ```
 
-## Dates
-
-```{r load-RCT-LS-ODK-facility-data, results='asis'}
+```{r}
 start_date <- NULL
 end_date <- NULL
-if (!is.null(facility_data)) {
-  if (nrow(facility_data) > 0) {
-    start_date <- min(facility_data$date_visit)
-    end_date <- max(facility_data$date_visit)
-    if (is.null(lock_date)) {
-      lock_date <- end_date
-    }
-    week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-      cat(paste0("* Début de la collecte longitudinale au niveau des postes de santé : **", start_date, "**"))
-    } else {
-      cat(paste0("* Facility data collection start: **", start_date, "**"))
-    }
-  }
+facility_data_is_not_null <- !is.null(facility_data)
+facility_data_is_not_empty <- FALSE
+if (facility_data_is_not_null) {
+  facility_data_is_not_empty <- nrow(facility_data) > 0
+}
+```
+
+## Dates
+
+```{r load-RCT-LS-ODK-facility-data, results='asis', eval=facility_data_is_not_empty}
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+if (is.null(lock_date)) {
+  lock_date <- end_date
+}
+week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
+if (is_senegal) {
+  cat(paste0("* Début de la collecte longitudinale au niveau des postes de santé : **", start_date, "**"))
+} else {
+  cat(paste0("* Facility data collection start: **", start_date, "**"))
 }
 ```
 
@@ -164,7 +183,7 @@ if (!is.null(spa_sco_data)) {
   if (nrow(spa_sco_data) > 0) {
     spa_start_date <- min(spa_sco_data$date)
     spa_week_nb <- ceiling(difftime(as.Date(spa_start_date), as.Date(start_date) - 1,units = "weeks"))
-   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+   if (is_senegal) {
       cat(paste0("* Début de la collecte SPA : **", spa_start_date, "**"))
     } else {
       cat(paste0("* SPA data collection start: **", spa_start_date, "**"))
@@ -173,22 +192,18 @@ if (!is.null(spa_sco_data)) {
 }
 ```
 
-```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(facility_data) > 0) {
-    if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-      cat(paste0("* Clôture de la base de données : **", lock_date, "** (semaine **", week_nb,"** de la collecte)"))
-    } else {
-      cat(paste0("* Database lock: **", lock_date, "** (week **", week_nb,"** of the collect)"))
-    }
-  }
+```{r, results='asis', eval=facility_data_is_not_empty}
+if (is_senegal) {
+  cat(paste0("* Clôture de la base de données : **", lock_date, "** (semaine **", week_nb,"** de la collecte)"))
+} else {
+  cat(paste0("* Database lock: **", lock_date, "** (week **", week_nb,"** of the data collection)"))
 }
 ```
 
 ## Study facilities
 
 ```{r context-load-facilities, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+if (is_senegal) {
   research_facilities <- research_facilities[, c("lvl2", "facility_id", "facility_name", "training_date", "rollout_date")]
   research_facilities <- research_facilities[!duplicated(research_facilities$facility_id), ]
 } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
@@ -201,7 +216,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```
 
 ```{r context-format-facility-info, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+if (is_senegal) {
   # Sort by district and rename columns
   facility_disp <- research_facilities %>%
     dplyr::arrange(lvl2) %>%
@@ -210,7 +225,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
                   'Poste de santé' = 'facility_name',
                   "Fin pré-intervention" = 'training_date',
                   "Début post-intervention" = 'rollout_date')
-} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+} else if(is_kenya){
   # Sort by County then type of facility
   facility_disp <- research_facilities %>%
     dplyr::arrange(lvl2, type) %>%
@@ -253,7 +268,7 @@ facility_device <- facility_device %>%
 ```
 
 ```{r, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
+if (is_senegal){
   # Remove row for Senegal (RA used wrong QR codes)
   facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
 }
@@ -273,9 +288,6 @@ facility_device %>%
 # `r if (is_rct){'Pragmatic cluster Randomised Controlled Trial (RCT)'} else{'Longitudinal Observational Study (LS)'}`
 
 ```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
-```
-
-```{r db-export-withdrawals-subsection, child = 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
 ```{r}
@@ -301,10 +313,10 @@ if (day28fu_is_not_empty) {
 ```{r db-export-day28fu-subsection, child = if (is_rct) 'database_export_sub_rctls_day28.Rmd'}
 ```
 
-```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
+```{r db-export-withdrawals-subsection, child = 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-```{r db-export-flowchart-subsection, child = 'database_export_sub_rctls_flowchart.Rmd'}
+```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
 ```
 
 \newpage

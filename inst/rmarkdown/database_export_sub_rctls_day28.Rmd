@@ -53,12 +53,12 @@ timci::format_nrow("", allday28fu_data_uids, "records with non-valid participant
 timci::format_nrow("", day28fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 28 follow-up database.")
 ```
 
-```{r, results='asis', eval=!is.null(allday28fu_data_uids)}
-allday28fu_data_uids_fn <- "DQC_28_01_nonvalid_ids_day28fu"
-fn <- timci::export_df2xlsx(allday28fu_data_uids[c("child_id", "uuid")],
+```{r, results = 'asis'}
+timci::quality_check_export(allday28fu_data_uids[c("child_id", "uuid")],
+                            qc_nonvalid_day28fu,
+                            "nonvalid_ids_day28fu",
                             qc_dir,
-                            allday28fu_data_uids_fn)
-cat(paste0("The table of Day 28 follow-ups for which the child ID does not correspond to any ID found the locked Day 0 database is exported to **", allday28fu_data_uids_fn, "**"))
+                            "the child ID does not correspond to any ID found the locked Day 0 database")
 ```
 
 ### Duplicate management
@@ -118,42 +118,52 @@ if (!is.null(locked_day28fu_data)) {
 }
 ```
 
+```{r}
+timci::create_flowchart(nrow(allday28fu_data),
+                        nrow(locked_day28fu_data),
+                        'NA',
+                        'NA',
+                        'NA',
+                        'NA',
+                        'NA')
+```
+
 ### Data export
 
-```{r export-RCT-LS-ODK-fu-day28-data, results = 'asis'}
-day28_export_name <- "06a_timci_followup_day28_data"
-if (!is.null(day28fu_data)) {
-  
-  fn <- timci::export_df2csvxlsx(day28fu_data,
-                                 params$rctls_dir,
-                                 "06_timci_followup_successful_day28_data")
-  fn <- timci::export_df2csvxlsx(locked_day28fu_data,
-                                 locked_db_dir,
-                                 "06_timci_followup_successful_day28_data")
-}
-if (!is.null(allday28fu_data)) {
-  
-  fn <- timci::export_df2csvxlsx(allday28fu_data,
-                                 params$rctls_dir,
-                                 day28_export_name)
-  fn <- timci::export_df2csvxlsx(locked_allday28fu_data,
-                                 qc_dir,
-                                 day28_export_name)
-  fn <- timci::export_df2csvxlsx(allday28fu_data_uids,
-                                 qc_dir,
-                                 "06c_timci_followup_day28_data_unknown_ids")
-}
+```{r, results = 'asis'}
+timci::dataset_export(allday28fu_data,
+                      "06a",
+                      "timci_followup_day28_data",
+                      rctls_dir,
+                      "Raw Day 28 follow-up data")
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw Day 28 data are exported in ", day28_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+timci::dataset_export(day28fu_data,
+                      "06b",
+                      "timci_followup_successful_day28_data",
+                      rctls_dir,
+                      "Raw successful Day 28 follow-up only)")
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked Day 28 data are exported in ", day28_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+timci::dataset_export(locked_allday28fu_data,
+                      "06a",
+                      "timci_followup_day28_data",
+                      locked_db_dir,
+                      "Cleaned Day 28 follow-up data")
 ```
 
 ```{r, results = 'asis'}
+timci::dataset_export(locked_day28fu_data,
+                      "06b",
+                      "timci_followup_successful_day28_data",
+                      locked_db_dir,
+                      "Cleaned successful Day 28 follow-up data")
+```
+
+```{r, results = 'asis'}
+fu28all <- NULL
 if (!is.null(pii) & !is.null(raw_day28fu_data)) {
   fu28all <- timci::generate_fu_log(pii,
                                     raw_day28fu_data,
@@ -163,6 +173,13 @@ if (!is.null(pii) & !is.null(raw_day28fu_data)) {
                                     32,
                                     ext = TRUE,
                                     deidentify = TRUE)
-  fn <- timci::export_df2xlsx(fu28all, params$rctls_dir, "06d_timci_day28_fu_weekly_log_all")
 }
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(fu28all,
+                      "06d",
+                      "timci_day28_fu_weekly_log_all",
+                      rctls_dir,
+                      "Weekly Day 28 follow-up data")
 ```

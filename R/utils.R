@@ -4,7 +4,7 @@
 #' @param dirname directory where the Excel file will be created.
 #' @param prefix filename prefix
 #' @param rnames Row names
-#' @return creation timestamp of the Excel file
+#' @return This function returns the creation timestamp of the Excel file
 #' @export
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
@@ -26,9 +26,9 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 #' Write dataframe to a CSV file format, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.
-#' @param dirname directory where the RDS file will be created.
+#' @param dirname directory where the CSV file will be created.
 #' @param prefix filename prefix
-#' @return creation timestamp of the CSV file
+#' @return This function returns the creation timestamp of the CSV file
 #' @export
 
 export_df2csv <- function(df, dirname, prefix) {
@@ -52,17 +52,18 @@ export_df2csv <- function(df, dirname, prefix) {
 #' @param df dataframe.
 #' @param dirname directory where the RDS file will be created.
 #' @param prefix filename prefix
+#' @return This function return a list that contains the creation timestamps of the Excel and the CSV files
 #' @export
 
 export_df2csvxlsx <- function(df, dirname, prefix) {
 
   t1 <- timci::export_df2xlsx(df,
-                                dirname,
-                                prefix)
+                              dirname,
+                              prefix)
   t2 <- timci::export_df2csv(df,
-                               dirname,
-                               prefix)
-  t <- paste0(t1,'\n',t2)
+                             dirname,
+                             prefix)
+  t <- list(t1, t2)
 
 }
 

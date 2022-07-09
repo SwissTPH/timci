@@ -6,34 +6,24 @@ write("Export service provision assessment (SPA) data and run corresponding qual
 
 ### Data export
 
-```{r facility-assessment-export}
-spa_fa_export_name <- "01_timci_spa_facility_assessment_data"
-if (!is.null(spa_fa_data)) {
-  fn <- timci::export_df2csvxlsx(spa_fa_data,
-                                 params$spa_dir,
-                                 spa_fa_export_name)
-}
-```
-
-```{r, results = 'asis'}
-cat(paste0("* Raw SPA facility assessment data are exported in ", spa_fa_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+```{r facility-assessment-export, results = 'asis'}
+timci::dataset_export(spa_fa_data,
+                      "01",
+                      "timci_spa_facility_assessment_data",
+                      params$spa_dir,
+                      "Raw SPA facility assessment data")
 ```
 
 ## Caregiver exit interview
 
 ### Data export
 
-```{r cg-exit-interview-export}
-spa_cgei_export_name <- "03_timci_spa_exit_interview_data"
-if (!is.null(spa_cgei_data)) {
-  fn <- timci::export_df2csvxlsx(spa_cgei_data,
-                                 params$spa_dir,
-                                 spa_cgei_export_name)
-}
-```
-
-```{r, results = 'asis'}
-cat(paste0("* Raw SPA caregiver exit interview data are exported in ", spa_cgei_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+```{r cg-exit-interview-export, results = 'asis'}
+timci::dataset_export(spa_cgei_data,
+                      "03",
+                      "timci_spa_exit_interview_data",
+                      params$spa_dir,
+                      "Raw SPA caregiver exit interview data")
 ```
 
 ## Sick child observation data quality checks
@@ -126,42 +116,37 @@ if (!is.null(spa_sco_data)) {
 
 ### Data export
 
-```{r sick-child-observation-export}
-spa_sco_export_name <- "04_timci_spa_consultation_obs_data"
-if (!is.null(spa_sco_data)) {
-  if (deidentification_on == 1) {
-    deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
-    fn <- timci::export_df2csvxlsx(deidentified_spa_sco_data,
-                                   params$spa_dir,
-                                   spa_sco_export_name)
-    fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
-                                   locked_db_dir,
-                                   spa_sco_export_name)
-    
-    fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   qc_dir,
-                                   "04_timci_spa_consultation_obs_data_unknown_ids")
-  } else {
-    fn <- timci::export_df2csvxlsx(spa_sco_data,
-                                   params$spa_dir,
-                                   spa_sco_export_name)
-    fn <- timci::export_df2csvxlsx(locked_spa_sco_data,
-                                   locked_db_dir,
-                                   spa_sco_export_name)
-    fn <- timci::export_df2csvxlsx(spa_sco_data_uids,
-                                   qc_dir,
-                                   "04_timci_spa_consultation_obs_data_unknown_ids")
-  }
-  
-}
+```{r sick-child-observation-export, eval=deidentification_on}
+deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
+timci::dataset_export(deidentified_spa_sco_data,
+                      "04",
+                      "timci_spa_consultation_obs_data",
+                      params$spa_dir,
+                      "Raw SPA sick child observation data")
 ```
 
-```{r, results = 'asis'}
-cat(paste0("* Raw SPA sick child observation data are exported in ", spa_sco_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
+```{r, eval=!deidentification_on}
+timci::dataset_export(spa_sco_data,
+                      "04",
+                      "timci_spa_consultation_obs_data",
+                      params$spa_dir,
+                      "Raw SPA sick child observation data")
 ```
 
-```{r, results = 'asis'}
-cat(paste0("* Locked SPA sick child observation data are exported in ", spa_sco_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
+```{r}
+timci::dataset_export(locked_spa_sco_data,
+                      "04",
+                      "timci_spa_consultation_obs_data",
+                      locked_db_dir,
+                      "Cleaned SPA sick child observation data")
+```
+
+```{r}
+timci::quality_check_export(spa_sco_data_uids,
+                            qc_unknown_spa_sco_patient_id,
+                            "timci_spa_consultation_obs_data_unknown_ids",
+                            qc_dir,
+                            "child IDs are not found in the Day 0 dataset")
 ```
 
 ## Healthcare provider interview data quality checks
@@ -242,27 +227,18 @@ if (!is.null(spa_hcpi_data)) {
 
 ### Data export
 
-```{r hcp-interview-export}
-spa_hcpi_export_name <- "02_timci_spa_provider_interview_data"
-if (!is.null(spa_hcpi_data)) {
-  fn <- timci::export_df2csvxlsx(spa_hcpi_data,
-                                 params$spa_dir,
-                                 spa_hcpi_export_name)
-  
-  fn <- timci::export_df2csvxlsx(locked_spa_hcpi_data,
-                                 locked_db_dir,
-                                 spa_hcpi_export_name)
-}
+```{r hcp-interview-export-raw-data}
+timci::dataset_export(spa_hcpi_data,
+                      "02",
+                      "timci_spa_provider_interview_data",
+                      params$spa_dir,
+                      "Raw SPA healthcare provider interview data")
 ```
 
-```{r, results = 'asis'}
-if (!is.null(spa_hcpi_data)) {
-  cat(paste0("* Raw SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", params$spa_dir, " folder"))
-}
-```
-
-```{r, results = 'asis'}
-if (!is.null(spa_hcpi_data)) {
-  cat(paste0("* Locked SPA healthcare provider interview data are exported in ", spa_hcpi_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
-}
+```{r hcp-interview-export-cleaned-data}
+timci::dataset_export(locked_spa_hcpi_data,
+                      "02",
+                      "timci_spa_provider_interview_data",
+                      locked_db_dir,
+                      "Cleaned SPA healthcare provider interview data")
 ```

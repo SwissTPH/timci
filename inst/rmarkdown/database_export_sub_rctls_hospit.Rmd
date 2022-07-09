@@ -30,7 +30,7 @@ if (!is.null(pii)) {
 
 ### Non-valid participant IDs
 
-Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
+**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database.
 
 ```{r}
 hospit_data_uids <- NULL
@@ -49,7 +49,7 @@ format_nrow("", hospit_data_uids, "records with non-valid participant IDs were d
 
 ```{r, results='asis'}
 if (!is.null(hospit_data)) {
-  cat("Rule: keep duplicated records if they correspond to different hospitalisations")
+  cat("**Rule:** keep duplicated records if they correspond to different hospitalisations")
 }
 ```
 
@@ -74,36 +74,41 @@ if (!is.null(hospit_data)) {
 format_nrow("", hospit_data_duplicates, "duplicated IDs were detected and removed in the locked hospitalisation database.")
 ```
 
+### Data cleaning summary
+
+```{r}
+timci::create_day0_qc_flowchart(n_raw_records,
+                                n_nonvalid_deviceid_records,
+                                n_after_lockdate_records,
+                                n_locked_screening,
+                                'NA',
+                                'NA',
+                                'NA',
+                                'NA')
+```
+
 ### Data export
 
-```{r export-RCT-LS-ODK-fu-hospit-data}
-hospit_export_name <- "05a_timci_followup_hospit_data"
-if (!is.null(hospit_data)) {
-  fn <- timci::export_df2csvxlsx(hospit_data,
-                                 params$rctls_dir,
-                                 hospit_export_name)
-}
-if (!is.null(locked_hospit_data)) {
-  fn <- timci::export_df2csvxlsx(locked_hospit_data,
-                                 locked_db_dir,
-                                 hospit_export_name)
-}
+```{r export-RCT-LS-ODK-fu-hospit-data, results = 'asis'}
+timci::dataset_export(hospit_data,
+                      "05a",
+                      "timci_followup_hospit_data",
+                      rctls_dir,
+                      "Raw hospitalisation data")
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Raw hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
+timci::dataset_export(locked_hospit_data,
+                      "05a",
+                      "timci_followup_hospit_data",
+                      locked_db_dir,
+                      "Cleaned hospitalisation data")
 ```
 
 ```{r, results = 'asis'}
-cat(paste0("* Locked hospitalisation data are exported in ", hospit_export_name, ".csv/xslx in the ", locked_db_dir, " folder"))
-```
-
-```{r, results = 'asis'}
-hospit_fu_export_name <- "05b_timci_deidentified_hospit_fu_log_all"
-if (!is.null(hospit_fu)) {
-  fn <- timci::export_df2xlsx(hospit_fu,
-                              params$rctls_dir,
-                              hospit_fu_export_name)
-  cat(paste0("* Hospitalisation log is exported in ", hospit_fu_export_name, ".csv/xslx in the ", params$rctls_dir, " folder"))
-}
+timci::dataset_export(hospit_fu,
+                      "05b",
+                      "timci_deidentified_hospit_fu_log_all",
+                      rctls_dir,
+                      "Hospitalisation log data")
 ```

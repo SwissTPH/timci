@@ -30,6 +30,7 @@ if (nrow(locked_day0_data) > 0) {
 
 ```{r}
 day0_data_id_withdrawal <- NULL
+non_reconciled_withdrawn_ids <- NULL
 `%!in%` <- Negate(`%in%`)
 
 if (nrow(locked_day0_data) > 0) {
@@ -69,22 +70,25 @@ if (nrow(locked_day0_data) > 0) {
 ```
 
 ```{r, results = 'asis'}
-withdrawal_export_name <- "99_withdrawal_data"
-if (!is.null(raw_withdrawal_data)) {
-  ts <- timci::export_df2csvxlsx(raw_withdrawal_data,
-                                 params$rctls_dir,
-                                 withdrawal_export_name)
-  cat(paste0("* Raw withdrawal data are exported (**", ts, "**) in **", withdrawal_export_name, ".csv/xslx** in the **", basename(params$rctls_dir), "** folder"))
-}
+timci::quality_check_export(non_reconciled_withdrawn_ids,
+                            qc_nonreconciled_withdrawals_id,
+                            "non_reconciled_withdrawn_ids",
+                            qc_dir,
+                            "withdrawals were not reconciled")
 ```
 
 ```{r, results = 'asis'}
-if (!is.null(raw_withdrawal_data)) {
-  if (!is.null(day0_data_id_withdrawal)) {
-    ts <- timci::export_df2csvxlsx(day0_data_id_withdrawal,
-                                   locked_db_dir,
-                                   withdrawal_export_name)
-    cat(paste0("* Locked withdrawal data are exported (**", ts, "**) in **", withdrawal_export_name, ".csv/xslx** in the **", basename(locked_db_dir), "** folder"))
-  }
-}
+timci::dataset_export(raw_withdrawal_data,
+                      "99",
+                      "withdrawal_data",
+                      params$rctls_dir,
+                      "Raw withdrawal data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(day0_data_id_withdrawal,
+                      "99",
+                      "withdrawal_data",
+                      locked_db_dir,
+                      "Cleaned withdrawal data") 
 ```

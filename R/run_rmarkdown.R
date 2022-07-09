@@ -103,7 +103,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   filter <- NULL
   if (is_test){
-    odata_start_date <- lock_date - 35
+    odata_start_date <- lock_date - 30
     odata_end_date <- lock_date + 1
     filter <- paste0("__system/submissionDate ge ",
                      odata_start_date,
@@ -716,8 +716,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   # RCT data quality report #
   ###########################
 
-  full_export <- 1
-  if(full_export == 1){
+  full_export <- FALSE
+  if(full_export){
 
     write(formats2h1("Explore Day 0 data"), stderr())
 

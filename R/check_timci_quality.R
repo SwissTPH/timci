@@ -14,22 +14,31 @@ quality_check_export <- function(df,
                                  cdir,
                                  description) {
 
-  filename <- paste(idx, label, separator = "_")
-  timestamp <- timci::export_df2xlsx(df, cdir, filename)
   msg <- paste0("The table of participants for whom **",
                 description,
-                "** has been exported (**",
-                timestamp,
-                "**) to **",
-                filename,
-                ".xlsx** in the **",
-                basename(cdir),
-                "** folder.")
+                "** is a NULL object and cannot be exported.")
+
+  if (!is.null(df)) {
+
+    filename <- paste(idx, label, sep = "_")
+    timestamp <- timci::export_df2xlsx(df, cdir, filename)
+    msg <- paste0("The table of participants for whom ",
+                  description,
+                  " has been exported to **",
+                  filename,
+                  ".xlsx** (**",
+                  timestamp,
+                  "**) in the **",
+                  basename(cdir),
+                  "** folder.")
+
+  }
+
   cat(msg)
 
 }
 
-#' Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
+#' Export datasets
 #'
 #' @param df quality check dataframe.
 #' @param idx directory where the Excel file will be created.
@@ -39,23 +48,34 @@ quality_check_export <- function(df,
 #' @return creation timestamp of the Excel file
 #' @export
 
-database_export <- function(df,
-                            idx,
-                            label,
-                            cdir,
-                            description) {
+dataset_export <- function(df,
+                           idx,
+                           label,
+                           cdir,
+                           description) {
 
-  filename <- paste(idx, label, separator = "_")
-  timestamp <- timci::export_df2csvxlsx(df, cdir, filename)
   msg <- paste0("**",
                 description,
-                "** have been exported (**",
-                timestamp,
-                "**) to **",
-                filename,
-                ".csv/xslx** in the **",
-                basename(cdir),
-                "** folder.")
+                "** is a NULL object and cannot be exported.")
+
+  if (!is.null(df)) {
+
+    filename <- paste(idx, label, sep = "_")
+    timestamps <- timci::export_df2csvxlsx(df, cdir, filename)
+    msg <- paste0(description,
+                  " have been exported to **",
+                  filename,
+                  ".xslx** (**",
+                  timestamps[[1]],
+                  "**) and to **",
+                  filename,
+                  ".csv** (**",
+                  timestamps[[2]],
+                  "**) in the **",
+                  basename(cdir),
+                  "** folder.")
+  }
+
   cat(msg)
 
 }
