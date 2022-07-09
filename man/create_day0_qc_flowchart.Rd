@@ -20,7 +20,7 @@ create_day0_qc_flowchart(
 
 \item{n_nonvalid_deviceid_records}{Number of records with a non-valid device ID}
 
-\item{n_after_lockdate_records}{Number of Day 0 records entered after the lock date}
+\item{n_after_lockdate_records}{Number of Day 0 records with an entry date posterior to the lock date}
 
 \item{n_screening}{TBD}
 
