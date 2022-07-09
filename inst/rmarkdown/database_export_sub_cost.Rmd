@@ -2,6 +2,8 @@
 write(formats2h2("Export cost & cost-effectiveness data"), stderr())
 ```
 
+No data cleaning for the lock.
+
 ```{r medical-cost-subsection, results="asis"}
 if (!is.null(medical_cost_data)){
   out <- knitr::knit_child('database_export_medicalcost_sub.Rmd',

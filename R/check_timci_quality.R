@@ -14,9 +14,9 @@ quality_check_export <- function(df,
                                  cdir,
                                  description) {
 
-  msg <- paste0("The table of participants for whom **",
+  msg <- paste0("The table of participants for whom ",
                 description,
-                "** is a NULL object and cannot be exported.")
+                " is a NULL object and cannot be exported.")
 
   if (!is.null(df)) {
 

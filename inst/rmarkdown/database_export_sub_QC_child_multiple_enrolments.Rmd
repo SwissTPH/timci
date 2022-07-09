@@ -80,7 +80,7 @@ timci::quality_check_export(duplicates2,
                             "possible multiple enrolment of the same child with sex discrepancy")
 ```
 
-```{r export-duplicates}
+```{r export-duplicates, results='asis'}
 timci::quality_check_export(day0_qc,
                             qc_summary_id,
                             "data_quality_check_summary",

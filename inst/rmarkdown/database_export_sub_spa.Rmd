@@ -32,7 +32,7 @@ timci::dataset_export(spa_cgei_data,
 locked_spa_sco_data <- NULL
 if (!is.null(spa_sco_data)) {
   locked_spa_sco_data <- spa_sco_data %>% dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
-  cat(paste0("There are ", nrow(locked_spa_sco_data), " records between ", spa_start_date, " and ", lock_date, " in the raw SPA sick child observation database."))
+  cat(paste0("There are **", nrow(locked_spa_sco_data), "** records between ", spa_start_date, " and ", lock_date, " in the raw SPA sick child observation database."))
 }
 ```
 
@@ -47,7 +47,7 @@ knitr::kable(spa_sco_data_hcp_edits, caption = "Healthcare provider ID to be cor
 
 ### Non-valid participant IDs
 
-Rule: keep only IDs of children who are enrolled in the locked Day 0 database.
+**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database.
 
 ```{r}
 spa_sco_data_uids <- NULL
@@ -76,9 +76,7 @@ if (!is.null(spa_sco_data_uids)) {
 
 ### Duplicate management
 
-```{r, results='asis'}
-cat("Rule: keep duplicated records and investigate the reason for having duplicates")
-```
+**Rule:** keep duplicated records and investigate the reason for having duplicates.
 
 ```{r, results='asis'}
 if (!is.null(spa_sco_data)) {
@@ -154,13 +152,13 @@ timci::quality_check_export(spa_sco_data_uids,
 ```{r, results = 'asis'}
 if (!is.null(spa_hcpi_data)) {
   spa_hcpi_data <- process_spa_hcpi_data(spa_hcpi_data)
-  cat(paste0("There are ", nrow(spa_hcpi_data), " records in the raw SPA healthcare provider interview database."))
+  cat(paste0("There are **", nrow(spa_hcpi_data), "** records in the raw SPA healthcare provider interview database."))
 }
 ```
 
 ### Non-valid participant IDs
 
-Rule: keep only IDs of healthcare providers who are observed in the locked SPA sick child observation database.
+**Rule:** keep only IDs of healthcare providers who are observed in the locked SPA sick child observation database.
 
 ```{r}
 # Extract entries of child IDs enrolled in the Day 0 database
@@ -187,9 +185,7 @@ if (!is.null(spa_hcpi_data)) {
 
 ### Duplicate management
 
-```{r, results='asis'}
-cat("Rule: keep duplicated records and investigate the reason for duplicates")
-```
+**Rule:** keep duplicated records and investigate the reason for duplicates.
 
 ```{r check-SPA-hcp-interview-data, results='asis'}
 if (!is.null(spa_hcpi_data)) {
