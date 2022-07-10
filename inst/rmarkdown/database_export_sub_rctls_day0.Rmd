@@ -316,11 +316,9 @@ if (nrow(qc_transfer_ab1day) > 0) {
 }
 ```
 
-### Duplicate management\n\n
+### Duplicate management [compliance check]\n\n
 
-#### Child ID duplicates [compliance check] 
-
-`r if ( is_tanzania | is_kenya ) { paste0('##### Initial check ', qc_duplicate_id1, '\n\n') }`
+`r if ( is_tanzania | is_kenya ) { paste0('#### Initial check ', qc_duplicate_id1, '\n\n') }`
 
 ```{r, eval=!is.null(locked_day0_data)&(is_tanzania|is_kenya), results='asis'}
 qc_description <- "To be updated later"
@@ -338,7 +336,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania ) { '##### Test data removed\n\n' }`
+`r if ( is_tanzania ) { '#### Test data removed\n\n' }`
 
 To be completed
 
@@ -359,9 +357,9 @@ if (!is.null(duplicate_edits)) {
 }
 ```
 
-`r if ( is_tanzania | is_kenya ) { paste0('##### Second check after manual edits', qc_duplicate_id2, '\n\n') }`
+`r if ( is_tanzania | is_kenya ) { paste0('#### Second check after manual edits', qc_duplicate_id2, '\n\n') }`
 
-```{r, eval=!is.null(locked_day0_data)&(is_tanzania|is_kenya), results='asis'}
+```{r, eval=!is.null(locked_day0_data), results='asis'}
 qc_description <- "To be updated later"
 qc_rule <- "Remaining child ID duplicates are removed in the locked database."
 qc_type <- "duplicates"
@@ -371,7 +369,7 @@ col_date <- "start"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicate_id2
 qc_export_label <- "timci_day0_data_id_duplicates"
-qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the databse"
+qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
