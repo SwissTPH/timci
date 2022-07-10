@@ -116,3 +116,5 @@ T-F0034-P0893,uuid:ed218d89-43c8-41f6-92f2-8ae787191cf1,T-F0034-P0892,RA wrongly
 T-F0082-P0993,uuid:cf9b354b-c545-403b-a674-23e11076b097,T-F0082-P0995,RA wrongly entered pid,correct,2022-07-10,IHI,2022-07-01
 T-F0014-P1009,uuid:d0556644-720f-40b3-aac8-5cd0f2e70a79,T-F0014-P1012,,correct,2022-07-10,IHI,2022-07-04
 T-F0013-P1052,uuid:f92ce941-f012-4abc-90a1-775bbab71d0b,T-F0013-P1053,RA wrongly entered pid,correct,2022-07-10,IHI,2022-07-06
+T-F0021-P0290,uuid:b13fc67a-2959-439b-af61-63fc5c101963,T-F0021-C0290,data manager created duplicate when correcting T-F0021-P0287,correct,2022-07-10
+T-F0039-P0899,uuid:2fdb2774-0369-4391-926c-a93f56243490,T-R0039-P0899,RA wrongly entered it was a repeat visit,move to repeat,2022-07-10,IHI
