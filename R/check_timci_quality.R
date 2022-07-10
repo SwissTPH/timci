@@ -142,52 +142,39 @@ detect_id_duplicates <- function(df, col = child_id) {
 
 }
 
-#' Identify child ID duplicates with dates (TIMCI-specific function)
+#' Identify ID duplicates by dates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
-#' @param date_col name of the column containing dates in `df`
+#' @param col_date name of the column containing dates in `df`
+#' @param col_id name of the column containing IDs in `df`
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 #' @export
 #' @import dplyr magrittr
 
-identify_duplicates_with_dates <- function(df, date_col) {
+identify_duplicates_by_dates <- function(df,
+                                         col_id,
+                                         col_date) {
 
-  out <- df %>%
-    dplyr::arrange(!!dplyr::enquo(date_col)) %>% # order by ascending dates
-    dplyr::group_by(child_id) %>%
-    dplyr::mutate(row_n = row_number()) %>%
-    tidyr::pivot_wider(child_id,
-                       names_from = row_n,
-                       values_from = c(date_col),
-                       names_prefix = "date_")
-  if ("date_2" %in% colnames(out)) {
-    out <- out %>%
-      filter(!is.na(date_2))
-  }
+  out <- NULL
 
-  out
+  if ( timci::is_not_empty(df) ) {
 
-}
+    col_id <- dplyr::enquo(col_id)
 
-#' Identify follow-up ID duplicates with dates (TIMCI-specific function)
-#'
-#' @param df dataframe containing the processed facility data
-#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
-#' @export
-#' @import dplyr magrittr
+    out <- df %>%
+      dplyr::arrange(!!dplyr::enquo(col_date)) %>% # order by ascending dates
+      dplyr::rename(val = !!col_id) %>%
+      dplyr::group_by(val) %>%
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(val,
+                         names_from = row_n,
+                         values_from = c(col_date),
+                         names_prefix = "date_")
+    if ("date_2" %in% colnames(out)) {
+      out <- out %>%
+        filter(!is.na(date_2))
+    }
 
-identify_dayfu_id_duplicates_with_dates <- function(df) {
-
-  out <- df %>%
-    dplyr::arrange(date_call) %>% # order by ascending dates
-    dplyr::group_by(child_id) %>%
-    dplyr::mutate(row_n = row_number()) %>%
-    tidyr::pivot_wider(child_id,
-                       names_from = row_n,
-                       values_from = c("date_call"),
-                       names_prefix = "date_")
-  if ("date_2" %in% colnames(out)) {
-    out <- out %>% filter(!is.na(date_2))
   }
 
   out
@@ -341,14 +328,71 @@ detect_namedob_duplicates <- function(df) {
 #' Detect inconsistent dates (TIMCI-specific function)
 #'
 #' @param df1 dataframe containing the processed facility data
+#' @param col_date1 column
 #' @param df2 dataframe containing the processed facility data
+#' @param col_date2 column
 #' @return This function returns a dataframe containing data of possible duplicate participants only
 #' @export
 #' @import dplyr magrittr
 
-detect_inconsistent_dates <- function(df1, df2) {
+detect_inconsistent_dates <- function(df1,
+                                      col_date1,
+                                      df2,
+                                      col_date2) {
 
   # To complete
+
+}
+
+#' Detect missing clinical presentation (TIMCI-specific function)
+#'
+#' @param facility_df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing only participants with no clinical presentation
+#' @export
+#' @import dplyr
+
+detect_missing_clinical_presentation <- function(facility_df) {
+
+  out <- NULL
+
+  if ( timci::is_not_empty(facility_df) ) {
+
+    facility_df$sx_vomit_evthing[is.na(facility_df$sx_vomit_evthing)] <- 0
+    facility_df$sx_unable_feed[is.na(facility_df$sx_unable_feed)] <- 0
+
+    out <- facility_df %>%
+      dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
+                                          1,
+                                          0)) %>%
+      dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
+                                                           1,
+                                                           0)) %>%
+      filter(missing_clinical_presentation == 1)
+
+  }
+
+  out
+
+}
+
+#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
+#'
+#' @param df1 dataframe containing the data to check
+#' @param col_id1 column name containing IDs in `df1`
+#' @param df2 reference dataframe
+#' @param col_id2 column name containing IDs in `df2`
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+
+identify_nonvalid_ids <- function(df1,
+                                  col_id1,
+                                  df2,
+                                  col_id2) {
+
+  qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
+  cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  list(qc_df, cleaned_df)
 
 }
 
@@ -368,57 +412,3 @@ detect_inconsistent_dates <- function(df1, df2) {
 
 #Baseline visit identification
 #New visit anterior to last visit received
-
-#' Detect missing clinical presentation (TIMCI-specific function)
-#'
-#' @param facility_df dataframe containing the processed facility data
-#' @return This function returns a dataframe containing only participants with no clinical presentation
-#' @export
-#' @import dplyr
-
-detect_missing_clinical_presentation <- function(facility_df) {
-
-  out <- NULL
-
-  if (!is.null(facility_df)) {
-    if (nrow(facility_df) > 0) {
-
-      facility_df$sx_vomit_evthing[is.na(facility_df$sx_vomit_evthing)] <- 0
-      facility_df$sx_unable_feed[is.na(facility_df$sx_unable_feed)] <- 0
-
-      out <- facility_df %>%
-        dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
-                                            1,
-                                            0)) %>%
-        dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
-                                                             1,
-                                                             0)) %>%
-        filter(missing_clinical_presentation == 1)
-
-    }
-  }
-
-  out
-
-}
-
-#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
-#'
-#' @param df1 dataframe containing the data to check
-#' @param idcol1 column name containing IDs in `df1`
-#' @param df2 reference dataframe
-#' @param idcol2 column name containing IDs in `df2`
-#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
-#' @export
-
-identify_nonvalid_ids <- function(df1,
-                                  idcol1,
-                                  df2,
-                                  idcol2) {
-
-  qc_df <- df1[!df1[[idcol1]] %in% df2[[idcol2]], ]
-  cleaned_df <- df1[df1[[idcol1]] %in% df2[[idcol2]], ]
-
-  list(qc_df, cleaned_df)
-
-}

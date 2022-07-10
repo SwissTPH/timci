@@ -34,9 +34,18 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+```{r, eval=(qc_type=="nonvalid_ids_no_cleaning")}
+out <- timci::identify_nonvalid_ids(df,
+                                    idcol1,
+                                    refdf,
+                                    idcol2)
+qc_df <- out[[1]]
+```
+
 ```{r, eval=(qc_type=="duplicates")}
-qc_df <- timci::identify_duplicates_with_dates(df,
-                                               date_col)
+qc_df <- timci::identify_duplicates_by_dates(df,
+                                             col_id,
+                                             col_date)
 ```
 
 ```{r, eval=(qc_type=="missing_clinical_presentation")}

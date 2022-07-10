@@ -4,16 +4,16 @@
 \alias{identify_nonvalid_ids}
 \title{Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)}
 \usage{
-identify_nonvalid_ids(df1, idcol1, df2, idcol2)
+identify_nonvalid_ids(df1, col_id1, df2, col_id2)
 }
 \arguments{
 \item{df1}{dataframe containing the data to check}
 
-\item{idcol1}{column name containing IDs in `df1`}
+\item{col_id1}{column name containing IDs in `df1`}
 
 \item{df2}{reference dataframe}
 
-\item{idcol2}{column name containing IDs in `df2`}
+\item{col_id2}{column name containing IDs in `df2`}
 }
 \value{
 This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.

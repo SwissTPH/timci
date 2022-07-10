@@ -154,8 +154,10 @@ qc_duplicated_hospitfu <- "DQC_HS_02"
 qc_nonvalid_day28fu <- "DQC_28_01"
 qc_duplicated_day28fu <- "DQC_28_02"
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
-qc_spa_sco_nonvalid_childid <- "DQC_SP_01"
-qc_spa_hcpi_nonvalid_hcpid <- "DQC_SP_02"
+qc_spa_sco_nonvalid_ids <- "DQC_SP_01"
+qc_spa_sco_duplicates <- "DQC_SP_02"
+qc_spa_hcpi_nonvalid_ids <- "DQC_SP_03"
+qc_spa_hcpi_duplicates <- "DQC_SP_04"
 ```
 
 \newpage

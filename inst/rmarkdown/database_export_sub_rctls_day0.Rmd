@@ -6,9 +6,10 @@ write(timci::formats2h2("Review, process and export facility data"), stderr())
 write("Export Day 0 data and run corresponding quality checks", stderr())
 ```
 
-## Day 0 data quality checks
+## Day 0 data quality checks\n\n
 
 ```{r}
+db_name <- "Day 0"
 screening_data <- timci::extract_screening_data(facility_data)
 out <- timci::extract_enrolled_participants(facility_data)
 day0_data <- out[[1]]
@@ -27,7 +28,7 @@ day0_is_not_empty <- timci::is_not_empty(day0_data)
 
 Initially, there are **`r n_raw_records`** screening record(s) in the raw facility database from the start of the study on **`r start_date`**, including **`r n_day0`** record(s) corresponding to new Day 0 enrolments.
 
-### Non-valid device IDs [context check]
+### Non-valid device IDs [context check]\n\n
 
 **Rule:** records from devices different from the ones listed in the first section of this report are removed in the locked database. These *non-valid* devices were either used to collect training data or to collect data for another study than the one considered for this report.
 
@@ -59,7 +60,7 @@ cat(paste0("**", n_nonvalid_deviceid_records, "** record(s) with non-valid devic
 day0_data <- locked_day0_data
 ```
 
-### Lock date [context check]
+### Lock date [context check]\n\n
 
 **Rule:** records entered after the lock date on **`r lock_date`** are removed in the locked database.
 
@@ -81,20 +82,19 @@ n_after_lockdate_records <- n_locked_screening - nrow(locked_screening_data)
 cat(paste0("**", n_after_lockdate_records, "** record(s) with an entry date posterior to the lock date on **", lock_date, "** detected and removed in the locked facility database, including **", n_locked_day0 - nrow(locked_day0_data), "** Day 0 record(s)."))
 ```
 
-### Non-valid enrolling facility IDs [compliance check]
+### Non-valid enrolling facility IDs [compliance check]\n\n
 
 `r if (is_kenya) {'#### Initial check\n\n'}`
 
 ```{r, eval=(!is.null(locked_day0_data)&is_kenya), results='asis'}
 qc_description <- ""
-qc_rule <- "Records from facility IDs not listed in the first section of this report are detected and corrected proactively where possible."
-qc_type <- "nonvalid_ids"
+qc_rule <- "Records corresponding to facility IDs not listed in the first section of this report are detected and corrected proactively where possible."
+qc_type <- "nonvalid_ids_no_cleaning"
 df <- locked_day0_data
 idcol1 <- "fid"
 refdf <- research_facilities
 idcol2 <- "facility_id"
 qc_text <- "facility ID not valid"
-db_name <- "Day 0"
 qc_idx <- qc_nonvalid_fid1
 qc_export_label <- "nonvalid_fids"
 qc_export_description <- "the facility ID is not valid"
@@ -120,14 +120,13 @@ if (!is.null(facility_edits)) {
 
 ```{r, eval=!is.null(locked_day0_data), results='asis'}
 qc_description <- ""
-qc_rule <- "Records from facility IDs not listed in the first section of this report are removed in the locked database."
+qc_rule <- "Records corresponding to facility IDs not listed in the first section of this report are removed in the locked database."
 qc_type <- "nonvalid_ids"
 df <- locked_day0_data
 idcol1 <- "fid"
 refdf <- research_facilities
 idcol2 <- "facility_id"
 qc_text <- "facility ID not valid"
-db_name <- "Day 0"
 qc_idx <- qc_nonvalid_fid2
 qc_export_label <- "nonvalid_fids"
 qc_export_description <- "the facility ID is not valid"
@@ -177,9 +176,9 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
-### Non-valid enrolment [compliance check]
+### Non-valid enrolment [compliance check]\n\n
 
-#### Caregiver eligibility
+#### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
 
 ```{r, eval=!is.null(locked_day0_data), results='asis'}
 qc_description <- "Caregivers must be above 18 years old to be able provide consent for the child to be part in the study."
@@ -187,7 +186,6 @@ qc_rule <- "Children with a caregiver below 18 years old are removed from the da
 qc_type <- "underaged_cg"
 df <- locked_day0_data
 qc_text <- "a consenting caregiver below 18 years old"
-db_name <- "Day 0"
 qc_idx <- qc_underaged_cg_id
 qc_export_label <- "underaged_cg"
 qc_export_description <- "the consenting caregiver is below 18 years old"
@@ -200,9 +198,9 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_day0_data <- cleaned_df
 ```
 
-### Submission timeliness [compliance checks]
+### Submission timeliness [compliance checks]\n\n
 
-#### Non-timely completion [compliance check `r qc_nontimely_completion_id`]
+#### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
 
 ```{r}
 qc_completion_ab1day <- NULL
@@ -239,7 +237,7 @@ if (nrow(qc_completion_ab1day) > 0) {
 }
 ```
 
-#### Non-timely submission [compliance check `r qc_nontimely_submission_id`]
+#### Non-timely submission [compliance check `r qc_nontimely_submission_id`]\n\n
 
 **Definition:** transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet.
 
@@ -318,22 +316,82 @@ if (nrow(qc_transfer_ab1day) > 0) {
 }
 ```
 
-### Duplicate management
+### Duplicate management\n\n
 
-```{r child_duplicate-subsection, child = 'database_export_QC_child_duplicates.Rmd'}
+#### Child ID duplicates [compliance check] 
+
+`r if ( is_tanzania | is_kenya ) { paste0('##### Initial check ', qc_duplicate_id1, '\n\n') }`
+
+```{r, eval=!is.null(locked_day0_data)&(is_tanzania|is_kenya), results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "child ID duplicates are detected and corrected proactively were possible."
+qc_type <- "duplicates"
+df <- locked_day0_data
+col_id <- "child_id"
+col_date <- "start"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicate_id1
+qc_export_label <- "timci_day0_data_id_duplicates"
+qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-### Possible multiple enrolments
+`r if ( is_tanzania ) { '##### Test data removed\n\n' }`
+
+To be completed
+
+`r if ( is_tanzania ) { '##### Child ID repeat visit manual correction\n\n' }`
+
+To be completed
+
+`r if ( is_tanzania | is_kenya ) { '##### Child ID duplicate manual edits\n\n' }`
+
+```{r, results='asis'}
+out <- timci::correct_day0_child_ids(locked_day0_data)
+locked_day0_data <- out[[1]]
+duplicate_edits <- out[[2]]
+if (!is.null(duplicate_edits)) {
+  duplicate_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+`r if ( is_tanzania | is_kenya ) { paste0('##### Second check after manual edits', qc_duplicate_id2, '\n\n') }`
+
+```{r, eval=!is.null(locked_day0_data)&(is_tanzania|is_kenya), results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "Remaining child ID duplicates are removed in the locked database."
+qc_type <- "duplicates"
+df <- locked_day0_data
+col_id <- "child_id"
+col_date <- "start"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicate_id2
+qc_export_label <- "timci_day0_data_id_duplicates"
+qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_day0_data <- cleaned_df
+```
+
+### Possible multiple enrolments\n\n
 
 ```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
-### Withdrawal management
+### Withdrawal management\n\n
 
 ```{r, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-### Clinical presentation [Mandatory check `r qc_missing_cp_id`]
+### Clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
 
 ```{r, results='asis', eval=!is.null(locked_day0_data)}
 qc_description <- "All participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
@@ -351,7 +409,6 @@ qc_rule <- "No modification of the database, only reporting."
 qc_type <- "missing_clinical_presentation"
 df <- locked_day0_data
 qc_text <- "missing clinical presentation"
-db_name <- "Day 0"
 qc_idx <- qc_missing_cp_id
 qc_export_label <- "missing_clinical_presentation"
 qc_export_description <- "the clinical presentation is missing"
@@ -360,19 +417,19 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Diagnosis [Mandatory check]
+### Diagnosis [Mandatory check]\n\n
 
 **Description:** all participants should have complete information about their diagnosis for their Day 0 visit.
 
 Check not implemented yet.
 
-### Management [Mandatory check]
+### Management [Mandatory check]\n\n
 
 **Description:** all participants should have complete information about their management for their Day 0 visit.
 
 Check not implemented yet.
 
-### Data cleaning summary
+### Data cleaning summary\n\n
 
 ```{r, results = 'asis'}
 timci::format_nrow("There are", locked_day0_data, "records in the locked Day 0 database.")
@@ -389,7 +446,7 @@ timci::create_day0_qc_flowchart(n_raw_records,
                                 'NA')
 ```
 
-### Data export
+### Data export\n\n
 
 ```{r export-facility-audit, results = 'asis'}
 timci::dataset_export(facility_data_audit,
