@@ -4,7 +4,7 @@ write("Export hospital/hospitalisation data and run corresponding quality checks
 
 \newpage
 
-## Hospitalisation data quality checks
+## Hospitalisation data quality checks\n\n
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- timci::format_hospital_data(raw_hospit_data)
@@ -19,7 +19,7 @@ locked_hospit_data <- NULL
 hospit_fu <- NULL
 ```
 
-### Non-valid participant IDs
+### Non-valid participant IDs\n\n
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "To be updated later"
@@ -41,14 +41,15 @@ n_nonvalid_pids_hospitfu <- n_detected
 locked_hospit_data <- cleaned_df
 ```
 
-### Duplicate management
+### Duplicate management\n\n
 
-```{r, eval=!is.null(hospit_data), results='asis'}
+```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "To be updated later"
 qc_rule <- "Keep duplicated records if they correspond to different hospitalisations."
 qc_type <- "duplicates"
 df <- locked_hospit_data
-date_col <- "start"
+col_id <- "child_id"
+col_date <- "start"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicated_hospitfu
 qc_export_label <- "duplicated_hospitfu"
@@ -58,7 +59,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Lost-to-follow-up
+### Lost-to-follow-up\n\n
 
 ```{r, eval=!is.null(pii)}
 hospit_fu <- timci::generate_hospital_log(pii = pii,
@@ -68,7 +69,7 @@ hospit_fu <- timci::generate_hospital_log(pii = pii,
                                           deidentify = TRUE)
 ```
 
-### Data cleaning summary
+### Data cleaning summary\n\n
 
 ```{r}
 timci::create_day7fu_qc_flowchart(nrow(hospit_data),
@@ -80,7 +81,7 @@ timci::create_day7fu_qc_flowchart(nrow(hospit_data),
                                   'NA')
 ```
 
-### Data export
+### Data export\n\n
 
 ```{r export-RCT-LS-ODK-fu-hospit-data, results = 'asis'}
 timci::dataset_export(hospit_data,

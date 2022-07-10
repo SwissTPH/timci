@@ -4,7 +4,7 @@ write("Export Day 28 data and run corresponding quality checks", stderr())
 
 \newpage
 
-## Day 28 data quality checks
+## Day 28 data quality checks\n\n
 
 ```{r}
 raw_day28_fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
@@ -22,14 +22,15 @@ day28fu_data_duplicates <- NULL
 ```
 
 ```{r format-RCT-LS-ODK-fu-day28-data, eval=raw_day28_fu_is_not_empty}
+db_name <- "Day 28 follow-up"
 out <- timci::format_day28_data(raw_day28fu_data)
 day28fu_data <- out[[1]]
 allday28fu_data <- out[[3]]
 ```
 
-There are **`r if ( !is.null(allday28fu_data) ) { nrow(allday28fu_data) } else { 'NA' }`** records in the raw Day 28 follow-up database, among which **`r if ( !is.null(day28fu_data) ) { nrow(day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
+There are **`r if ( !is.null(allday28fu_data) ) { nrow(allday28fu_data) } else { 'NA' }`** records in the raw `r db_name` database, among which **`r if ( !is.null(day28fu_data) ) { nrow(day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]
+### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]\n\n
 
 **Rule:** keep only IDs of children who are found in the locked Day 0 database.
 
@@ -56,7 +57,7 @@ timci::quality_check_export(allday28fu_data_uids[c("child_id", "uuid")],
                             "the child ID does not correspond to any ID found the locked Day 0 database")
 ```
 
-### Duplicate management [compliance check `r qc_duplicated_day28fu`]
+### Duplicate management [compliance check `r qc_duplicated_day28fu`]\n\n
 
 **Rule:** only the most recent successful Day 28 follow-up is kept.
 
@@ -96,7 +97,7 @@ if (n > 1) {
 }
 ```
 
-### Lost-to-follow-up
+### Lost-to-follow-up\n\n
 
 ```{r, results = 'asis'}
 fu28all <- NULL
@@ -112,7 +113,7 @@ if (!is.null(pii) & !is.null(raw_day28fu_data)) {
 }
 ```
 
-### Data cleaning summary
+### Data cleaning summary\n\n
 
 There are **`r if ( !is.null(locked_allday28fu_data) ) { nrow(locked_allday28fu_data) } else { 'NA' }`** records in the locked Day 28 follow-up database, among which **`r if ( !is.null(locked_day28fu_data) ) { nrow(locked_day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
 
@@ -126,7 +127,11 @@ timci::create_day7fu_qc_flowchart(n_raw_records = nrow(allday28fu_data),
                                   'NA')
 ```
 
-### Data export
+### Data export\n\n
+
+```{r}
+write(" o Export Day 28 data", stderr())
+```
 
 ```{r, results = 'asis'}
 timci::dataset_export(allday28fu_data,

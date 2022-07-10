@@ -4,7 +4,7 @@ write("Export Day 7 data and run corresponding quality checks", stderr())
 
 \newpage
 
-## Day 7 data quality checks
+## Day 7 data quality checks\n\n
 
 ```{r}
 allday7fu_data <- NULL
@@ -15,14 +15,15 @@ locked_allday7fu_data <- NULL
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
+db_name <- "Day 7 follow-up"
 out <- timci::format_day7_data(raw_day7fu_data)
 day7fu_data <- out[[1]]
 allday7fu_data <- out[[3]]
 ```
 
-There are **`r nrow(allday7fu_data)`** records in the raw Day 7 follow-up database, among which **`r nrow(day7fu_data)`** records documenting successful Day 7 follow-ups.
+There are **`r nrow(allday7fu_data)`** records in the raw `r db_name` database, among which **`r nrow(day7fu_data)`** records documenting successful follow-ups.
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_day7fu`]
+### Non-valid participant IDs [compliance check `r qc_nonvalid_day7fu`]\n\n
 
 ```{r}
 write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
@@ -41,9 +42,9 @@ locked_day7fu_data <- locked_day7fu_data %>%
   dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
 ```
 
-* **`r if ( !is.null(allday7fu_data_uids) ) { nrow(allday7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked Day 7 follow-up database.
+* **`r if ( !is.null(allday7fu_data_uids) ) { nrow(allday7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked `r db_name` database.
 
-* **`r if ( !is.null(day7fu_data_uids) ) { nrow(day7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked successful Day 7 follow-up database.
+* **`r if ( !is.null(day7fu_data_uids) ) { nrow(day7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked successful `r db_name` database.
 
 ```{r, results = 'asis'}
 timci::quality_check_export(allday7fu_data_uids[c("child_id", "uuid")],
@@ -58,9 +59,9 @@ timci::quality_check_export(allday7fu_data_uids[c("child_id", "uuid")],
 day7fu_data <- locked_day7fu_data
 ```
 
-### Duplicate management
+### Duplicate management\n\n
 
-#### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]
+#### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]\n\n
 
 ```{r}
 write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr())
@@ -68,27 +69,20 @@ write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr()
 
 `r if (is_kenya) {'##### Initial check'}`
 
-```{r check-RCT-LS-ODK-fu-day7-data}
-if (!is.null(day7fu_data)) {
-  day7fu_qc <- timci::detect_id_duplicates(locked_day7fu_data)
-  day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
-}
-```
-
-```{r, results='asis', eval=timci::is_not_empty(day7fu_duplicates)}
-cat(paste0("**", nrow(day7fu_duplicates), "** duplicated successful follow-ups detected."))
-```
-
-```{r, eval=timci::is_not_empty(locked_day7fu_data)}
-id_duplicates <- timci::identify_dayfu_id_duplicates_with_dates(locked_day7fu_data)
-```
-
-```{r, results = 'asis'}
-timci::quality_check_export(id_duplicates,
-                            qc_duplicated_day7fu,
-                            "duplicated_successful_day7fu",
-                            qc_dir,
-                            "Day 7 follow-ups are duplicated")
+```{r, eval=!is.null(locked_day7fu_data)&is_kenya, results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "Keep duplicated records if they correspond to different follow-ups."
+qc_type <- "duplicates"
+df <- locked_day7fu_data
+col_id <- "child_id"
+col_date <- "start"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicated_day7fu
+qc_export_label <- "duplicated_successful_day7fu"
+qc_export_description <- "Day 7 follow-ups are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 `r if (is_kenya) {'##### Child ID duplicate manual edits'}`
@@ -104,39 +98,35 @@ if (!is.null(duplicate_edits)) {
 }
 ```
 
-```{r, results='asis', eval=is_kenya}
-cat("##### Second check after manual edits")
+`r if (is_kenya) {'##### Second check after manual edits'}`
+
+```{r, eval=!is.null(locked_day7fu_data), results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "Only the most recent successful Day 7 follow-up is kept."
+qc_type <- "duplicates"
+df <- locked_day7fu_data
+col_id <- "child_id"
+col_date <- "start"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicated_day7fu
+qc_export_label <- "duplicated_successful_day7fu"
+qc_export_description <- "Day 7 follow-ups are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-**Rule:** only the most recent successful Day 7 follow-up is kept.
-
-```{r}
-if (!is.null(day7fu_data)) {
-  # Process duplicates separately
-  day7fu_data_duplicates <- locked_day7fu_data[locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
-  # Remove all duplicates from the dataframe
-  locked_day7fu_data <- locked_day7fu_data[!locked_day7fu_data$child_id %in% day7fu_duplicates$child_id, ]
-  # Process duplicates
-  processed_day7fu_data_duplicates <- day7fu_data_duplicates %>%
-    dplyr::group_by(child_id) %>%
-    dplyr::slice_max(order_by = window) %>%
-    dplyr::slice_min(order_by = days)
-  # Concatenate with processed duplicates
-  locked_day7fu_data <- rbind(locked_day7fu_data, processed_day7fu_data_duplicates)
-}
-```
-
-```{r, results = 'asis'}
-if (!is.null(day7fu_data)) {
+```{r, results = 'asis', eval=FALSE}
+if (!is.null(locked_day7fu_data)) {
   cat(paste0("**", nrow(day7fu_data_duplicates) - nrow(processed_day7fu_data_duplicates), "** records were removed in the locked successful Day 7 follow-up database. Note that records duplicated on the same day are kept - we need to define a rule for this."))
 }
 ```
 
-### Day 7 follow-up anterior to enrolment date [consistency check]
+### Day 7 follow-up anterior to enrolment date [consistency check]\n\n
 
 To be implemented
 
-### Data cleaning summary
+### Data cleaning summary\n\n
 
 ```{r}
 write(" o Data cleaning summary", stderr())
@@ -190,10 +180,10 @@ timci::create_day7fu_qc_flowchart(nrow(allday7fu_data),
                                   'NA')
 ```
 
-### Data export
+### Data export\n\n
 
 ```{r}
-write("Export Day 7 data", stderr())
+write(" o Export Day 7 data", stderr())
 ```
 
 ```{r, results = 'asis'}
