@@ -383,7 +383,11 @@ locked_day0_data <- cleaned_df
 
 ### Possible multiple enrolments\n\n
 
-```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
+```{r}
+multiple <- FALSE
+```
+
+```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
 ### Withdrawal management\n\n
