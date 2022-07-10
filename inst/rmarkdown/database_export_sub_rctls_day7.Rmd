@@ -7,21 +7,22 @@ write("Export Day 7 data and run corresponding quality checks", stderr())
 ## Day 7 data quality checks
 
 ```{r}
-day7fu_data <- NULL
 allday7fu_data <- NULL
+day7fu_data <- NULL
+
+locked_day7fu_data <- NULL
+locked_allday7fu_data <- NULL
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
-res <- timci::format_day7_data(raw_day7fu_data)
-day7fu_data <- res[[1]]
-allday7fu_data <- res[[3]]
+out <- timci::format_day7_data(raw_day7fu_data)
+day7fu_data <- out[[1]]
+allday7fu_data <- out[[3]]
 ```
 
-```{r, results = 'asis'}
-cat(paste0("There are **", nrow(allday7fu_data), "** records in the raw Day 7 follow-up database, among which **", nrow(day7fu_data), "** records documenting successful Day 7 follow-ups."))
-```
+There are **`r nrow(allday7fu_data)`** records in the raw Day 7 follow-up database, among which **`r nrow(day7fu_data)`** records documenting successful Day 7 follow-ups.
 
-### Non-valid participant IDs [compliance check]
+### Non-valid participant IDs [compliance check `r qc_nonvalid_day7fu`]
 
 ```{r}
 write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
@@ -29,38 +30,20 @@ write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
 
 **Rule:** keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still active, all participants enrolled after the date set for the lock will be considered as 'invalid' IDs).
 
-```{r}
-locked_day7fu_data <- NULL
-locked_allday7fu_data <- NULL
-if (!is.null(raw_day7fu_data)) {
-  if (nrow(raw_day7fu_data) > 0) {
-    # All follow-ups
-    locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
-    allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
-    # Successful follow-ups
-    locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
-    day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
-    locked_day7fu_data <- locked_day7fu_data %>%
-      dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
-  }
-}
+```{r, eval=timci::is_not_empty(raw_day7fu_data)}
+# All follow-ups
+locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
+# Successful follow-ups
+locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
+day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
+locked_day7fu_data <- locked_day7fu_data %>%
+  dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
 ```
 
-```{r, results = 'asis'}
-if (!is.null(allday7fu_data)) {
-  if (nrow(allday7fu_data) > 0) {
-    timci::format_nrow("", allday7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked Day 7 follow-up database.")
-  }
-}
-```
+* **`r if ( !is.null(allday7fu_data_uids) ) { nrow(allday7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked Day 7 follow-up database.
 
-```{r, results = 'asis'}
-if (!is.null(day7fu_data)) {
-  if (nrow(day7fu_data) > 0) {
-    timci::format_nrow("", day7fu_data_uids, "records with non-valid participant IDs were detected and removed in the locked successful Day 7 follow-up database.")
-  }
-}
-```
+* **`r if ( !is.null(day7fu_data_uids) ) { nrow(day7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked successful Day 7 follow-up database.
 
 ```{r, results = 'asis'}
 timci::quality_check_export(allday7fu_data_uids[c("child_id", "uuid")],
@@ -77,49 +60,38 @@ day7fu_data <- locked_day7fu_data
 
 ### Duplicate management
 
-#### Successful follow-up duplicates
+#### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]
 
 ```{r}
 write(" o Successful follow-up duplicates [Day 7 data quality checks]", stderr())
 ```
 
-```{r, results='asis', eval=is_kenya}
-cat("##### Initial check")
-```
+`r if (is_kenya) {'##### Initial check'}`
 
-```{r check-RCT-LS-ODK-fu-day7-data, results='asis'}
+```{r check-RCT-LS-ODK-fu-day7-data}
 if (!is.null(day7fu_data)) {
   day7fu_qc <- timci::detect_id_duplicates(locked_day7fu_data)
   day7fu_duplicates <- day7fu_qc[day7fu_qc$id_fq > 1,]
 }
-
-if (!is.null(day7fu_data)) {
-  if (length(day7fu_duplicates) > 0) { 
-    cat(paste0("**", nrow(day7fu_duplicates), "** duplicated successful follow-ups detected."))
-  }
-}
-
 ```
 
-```{r}
-if (!is.null(locked_day7fu_data)) {
-  if (nrow(locked_day7fu_data) > 0) {
-    id_duplicates <- timci::identify_dayfu_id_duplicates_with_dates(locked_day7fu_data)
-  }
-}
+```{r, results='asis', eval=timci::is_not_empty(day7fu_duplicates)}
+cat(paste0("**", nrow(day7fu_duplicates), "** duplicated successful follow-ups detected."))
 ```
 
-```{r, results='asis', eval=!is.null(id_duplicates)}
-duplicated_day7fu_ids_fn <- "DQC_07_01_duplicated_successful_day7fu"
-ts <- timci::export_df2xlsx(id_duplicates,
+```{r, eval=timci::is_not_empty(locked_day7fu_data)}
+id_duplicates <- timci::identify_dayfu_id_duplicates_with_dates(locked_day7fu_data)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(id_duplicates,
+                            qc_duplicated_day7fu,
+                            "duplicated_successful_day7fu",
                             qc_dir,
-                            duplicated_day7fu_ids_fn)
-cat(paste0("The table of Day 7 follow-ups that are duplicated has been exported (**", ts,"**) to **", duplicated_day7fu_ids_fn, ".xlsx**."))
+                            "Day 7 follow-ups are duplicated")
 ```
 
-```{r, results='asis', eval=is_kenya}
-cat("##### Child ID duplicate manual edits")
-```
+`r if (is_kenya) {'##### Child ID duplicate manual edits'}`
 
 ```{r, results='asis', eval=is_kenya}
 out <- timci::correct_day7_duplicates(locked_day7fu_data)
@@ -136,11 +108,7 @@ if (!is.null(duplicate_edits)) {
 cat("##### Second check after manual edits")
 ```
 
-To modify
-
-```{r, results='asis'}
-cat("Rule: only one successful follow-up is kept with the following priority rule: day 7 > day 8 > day 9 > day 10 > day 6 > day 11 and above")
-```
+**Rule:** only the most recent successful Day 7 follow-up is kept.
 
 ```{r}
 if (!is.null(day7fu_data)) {
@@ -213,13 +181,13 @@ if (!is.null(locked_allday7fu_data)) {
 ```
 
 ```{r}
-timci::create_flowchart(nrow(allday7fu_data),
-                        nrow(locked_allday7fu_data),
-                        'NA',
-                        'NA',
-                        'NA',
-                        'NA',
-                        'NA')
+timci::create_day7fu_qc_flowchart(nrow(allday7fu_data),
+                                  nrow(locked_allday7fu_data),
+                                  'NA',
+                                  'NA',
+                                  'NA',
+                                  'NA',
+                                  'NA')
 ```
 
 ### Data export

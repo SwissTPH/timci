@@ -1,0 +1,79 @@
+---
+title: "Database export - quality check "
+author: "H. LANGET"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+**Check description:** `r qc_description`
+
+**Rule:** `r qc_rule`
+
+```{r}
+cleaned_df <- NULL
+n_detected <- 0
+cleaned_df_status_update <- ""
+```
+
+```{r, eval=(qc_type=="underaged_cg")}
+qc_df <- df[df$cg_eligibility == 0, ]
+cleaned_df <- df[df$cg_eligibility == 1, ]
+```
+
+```{r, eval=(qc_type=="nonvalid_ids")}
+out <- timci::identify_nonvalid_ids(df,
+                                    idcol1,
+                                    refdf,
+                                    idcol2)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="duplicates")}
+qc_df <- timci::identify_duplicates_with_dates(df,
+                                               date_col)
+```
+
+```{r, eval=(qc_type=="missing_clinical_presentation")}
+qc_df <- timci::detect_missing_clinical_presentation(df)
+```
+
+```{r, eval=(qc_type=="missing_clinical_presentation"), results='asis'}
+cols1 <- c("child_id", "fid", "date_visit", "uuid")
+cols2 <- c("Child ID", "Facility ID", "Enrolment date", "uuid")
+qc_df %>%
+  dplyr::select(cols1) %>%
+  dplyr::arrange(fid) %>%
+  knitr::kable(col.names = cols2,
+               row.names = FALSE)
+```
+
+```{r, eval=(qc_type=="nonvalid_pids_fu")}
+qc_df <- df[!df$child_id %in% refdf$child_id, ]
+cleaned_df <- df[df$child_id %in% refdf$child_id, ]
+```
+
+```{r, eval=!is.null(qc_df)}
+n_detected <- nrow(qc_df)
+```
+
+**Check output:** the check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
+
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_idx,
+                            label = qc_export_label,
+                            cdir = qc_dir,
+                            description = qc_export_description)
+```
+
+```{r, eval=!is.null(cleaned_df)}
+cleaned_df_status_update <- paste0('After deletion of the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the cleaned ', db_name, ' database.')
+```
+
+`r cleaned_df_status_update`

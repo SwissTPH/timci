@@ -7,6 +7,14 @@ output:
     number_sections: true
     toc: true
     toc_depth: 4
+    extra_dependencies:
+      float: null
+      flafter: null
+      bm: null
+      babel: ["french","english"]
+      graphicx: null
+      fancyhdr: null
+      lastpage: null
   word_document:
     toc: true
     toc_depth: 4
@@ -128,18 +136,26 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r}
-qc_nontimely_completion_id <- "DQC_00_01"
-qc_nontimely_submission_id <- "DQC_00_02"
-qc_duplicate_id1 <- "DQC_00_03a"
-qc_duplicate_id2 <- "DQC_00_03b"
-qc_multiple_enrolment_id <- "DQC_00_04"
-qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_05"
-qc_missing_cp_id <- "DQC_00_06"
-qc_summary_id <- "DQC_00_07"
+qc_nonvalid_fid1 <- "DQC_00_01a"
+qc_nonvalid_fid2 <- "DQC_00_01b"
+qc_underaged_cg_id <- "DQC_00_02"
+qc_nontimely_completion_id <- "DQC_00_03"
+qc_nontimely_submission_id <- "DQC_00_04"
+qc_duplicate_id1 <- "DQC_00_05a"
+qc_duplicate_id2 <- "DQC_00_05b"
+qc_multiple_enrolment_id <- "DQC_00_06"
+qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_07"
+qc_missing_cp_id <- "DQC_00_08"
+qc_summary_id <- "DQC_00_09"
 qc_nonvalid_day7fu <- "DQC_07_01"
+qc_duplicated_day7fu <- "DQC_07_02"
+qc_nonvalid_hospitfu <- "DQC_HS_01"
+qc_duplicated_hospitfu <- "DQC_HS_02"
 qc_nonvalid_day28fu <- "DQC_28_01"
+qc_duplicated_day28fu <- "DQC_28_02"
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
-qc_unknown_spa_sco_patient_id <- "DQC_SPA_01"
+qc_spa_sco_nonvalid_childid <- "DQC_SP_01"
+qc_spa_hcpi_nonvalid_hcpid <- "DQC_SP_02"
 ```
 
 \newpage
@@ -155,10 +171,7 @@ write("Write contextual information including dates, study facilities, facility 
 start_date <- NULL
 end_date <- NULL
 facility_data_is_not_null <- !is.null(facility_data)
-facility_data_is_not_empty <- FALSE
-if (facility_data_is_not_null) {
-  facility_data_is_not_empty <- nrow(facility_data) > 0
-}
+facility_data_is_not_empty <- timci::is_not_empty(facility_data)
 ```
 
 ## Dates
@@ -285,32 +298,33 @@ facility_device %>%
 
 \newpage
 
-# `r if (is_rct){'Pragmatic cluster Randomised Controlled Trial (RCT)'} else{'Longitudinal Observational Study (LS)'}`
+# `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
 ```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
 ```
 
 ```{r}
-day7fu_is_not_empty <- !is.null(raw_day7fu_data)
-if (day7fu_is_not_empty) {
-  day7fu_is_not_empty <- nrow(raw_day7fu_data) > 0
-}
+day7fu_is_not_null <- !is.null(raw_day7fu_data)
+day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
 ```
 
 ```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
 ```
 
-```{r db-export-hospit-subsection, child = 'database_export_sub_rctls_hospit.Rmd'}
+```{r}
+hospitfu_is_not_null <- !is.null(raw_hospit_data)
+hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
+```
+
+```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
 ```
 
 ```{r}
-day28fu_is_not_empty <- !is.null(raw_day28fu_data)
-if (day28fu_is_not_empty) {
-  day28fu_is_not_empty <- nrow(raw_day28fu_data) > 0
-}
+day28fu_is_not_null <- !is.null(raw_day28fu_data)
+day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
-```{r db-export-day28fu-subsection, child = if (is_rct) 'database_export_sub_rctls_day28.Rmd'}
+```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
 ```
 
 ```{r db-export-withdrawals-subsection, child = 'database_export_sub_rctls_withdrawals.Rmd'}

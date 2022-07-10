@@ -20,7 +20,7 @@ if (!is.null(facility_data)) {
 ```{r}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    id_duplicates <- timci::identify_day0_id_duplicates_with_dates(locked_day0_data)
+    id_duplicates <- timci::identify_duplicates_with_dates(locked_day0_data, "start")
   }
 }
 ```
@@ -97,7 +97,7 @@ if (!is.null(facility_data)) {
 ```{r}
 if (!is.null(facility_data)) {
   if (nrow(locked_day0_data) > 0) {
-    id_duplicates <- timci::identify_day0_id_duplicates_with_dates(locked_day0_data)
+    id_duplicates <- timci::identify_duplicates_with_dates(locked_day0_data, "start")
   }
 }
 ```

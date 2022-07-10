@@ -1,0 +1,84 @@
+```{r}
+write("Export SPA healthcare provider interview data and run corresponding quality checks", stderr())
+```
+
+```{r}
+spa_hcpi_data <- process_spa_hcpi_data(spa_hcpi_data)
+n_raw_spa_hcpi_data <- nrow(spa_hcpi_data)
+spa_hcpi_db_name <- "SPA healthcare provider interview"
+```
+
+There are **`r n_raw_spa_hcpi_data`** records in the raw `r spa_hcpi_db_name` database.
+
+### Non-valid participant IDs [compliance check `r qc_spa_hcpi_nonvalid_hcpid`]\n\n
+
+```{r, eval=!is.null(spa_hcpi_data), results='asis'}
+qc_description <- ""
+qc_rule <- "Keep only records for which the healthcare provider ID (X-Fxxx-Hxx) has been found in the locked SPA sick child observation database."
+qc_type <- "nonvalid_ids"
+df <- spa_hcpi_data
+idcol1 <- "hcp_id"
+refdf <- locked_spa_sco_data
+idcol2 <- "hcp_identification-hcpid"
+qc_text <- "healthcare provider ID not valid"
+db_name <- spa_hcpi_db_name
+qc_idx <- qc_spa_hcpi_nonvalid_hcpid
+qc_export_label <- "nonvalid_hcpid"
+qc_export_description <- "non-valid participant ID"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_spa_hcpi_data <- cleaned_df
+```
+
+### Duplicate management
+
+**Rule:** keep duplicated records and investigate the reason for duplicates.
+
+```{r check-SPA-hcp-interview-data, results='asis'}
+spa_hcpi_data_qc <- timci::detect_id_duplicates(locked_spa_hcpi_data, hcp_id)
+spa_hcpi_data_duplicates <- spa_hcpi_data_qc[spa_hcpi_data_qc$id_fq > 1,]
+if (timci::is_not_empty(spa_hcpi_data_duplicates)) {
+  spa_hcpi_data_duplicates %>%
+    knitr::kable(caption = "ID duplicates")
+} else {
+  cat("No ID duplicates detected")
+}
+```
+
+```{r, results='asis', eval=(length(spa_hcpi_data_duplicates) > 0)}
+cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs detected. No action was taken in the locked SPA healthcare provider interview database."))
+```
+
+```{r, results='asis', eval=(length(spa_hcpi_data_duplicates) == 0)}
+cat(paste0("No duplicated IDs were detected. No action was taken in the locked SPA healthcare provider interview database."))
+```
+
+```{r}
+n_locked_spa_hcpi_data <- nrow(locked_spa_hcpi_data)
+```
+
+### Data cleaning summary
+
+There are **`r n_locked_spa_hcpi_data`** records in the locked SPA healthcare provider interview database.
+
+### Data export
+
+```{r hcp-interview-export-raw-data, results='asis'}
+timci::dataset_export(spa_hcpi_data,
+                      "02",
+                      "timci_spa_provider_interview_data",
+                      params$spa_dir,
+                      "Raw SPA healthcare provider interview data")
+```
+
+```{r hcp-interview-export-cleaned-data, results='asis'}
+timci::dataset_export(locked_spa_hcpi_data,
+                      "02",
+                      "timci_spa_provider_interview_data",
+                      locked_db_dir,
+                      "Cleaned SPA healthcare provider interview data")
+```

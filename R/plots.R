@@ -529,7 +529,7 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 
 }
 
-#' Create flowchart (TIMCI-specific)
+#' Create cleaning flowchart for Day 0 data (TIMCI-specific)
 #'
 #' @param n_raw_records Number of records
 #' @param n_nonvalid_deviceid_records Number of records with a non-valid device ID
@@ -551,19 +551,23 @@ create_day0_qc_flowchart <- function(n_raw_records,
                                      e,
                                      f,
                                      g) {
+
+  n_excl1 <- n_nonvalid_deviceid_records + n_after_lockdate_records
+
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Records\n(N = %s)']
-                  m1 [label = 'Excluded (N=...)\n%s non-valid device IDs\n%s posterior to the lock date']
-                  2 [label = 'Screenings\n(N = %s)']
+                  m1 [label = 'Excluded (N = %s)\n%s non-valid device IDs\n%s posterior to the lock date']
+                  2 [label = 'Cleaned screenings\n(N = %s)']
                   m2 [label = 'Excluded\nNon-eligible (N = %s)']
                   3 [label = 'Enrolment\n(N = %s)']
                   m3 [label = 'Excluded\nNon-valid enrolling facility IDs (N = %s)']
+                  4 [label = 'Cleaned enrolment\n(N = ...)']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2; p2 -> 3;
+                  p1 -> 2; p2 -> 3 -> 4;
                   {rank=same; p1 -> m1}
                   {rank=same; p2 -> m2}
                   {rank=same; p3 -> m3}
@@ -572,9 +576,61 @@ create_day0_qc_flowchart <- function(n_raw_records,
                   1 -> p1; 2 -> p2; 3 -> p3
                 }",
                 n_raw_records,
+                n_excl1,
                 n_nonvalid_deviceid_records,
                 n_after_lockdate_records,
                 n_screening,
+                d,
+                e,
+                f,
+                g)
+
+  DiagrammeR::grViz(gr)
+
+}
+
+#' Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)
+#'
+#' @param n_raw_records Number of records
+#' @param n_nonvalid_pids Number of records with a non-valid participan ID
+#' @param n_clean_records TBD
+#' @param d TBD
+#' @param e TBD
+#' @param f TBD
+#' @param g TBD
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_day7fu_qc_flowchart <- function(n_raw_records,
+                                       n_nonvalid_pids,
+                                       n_clean_records,
+                                       d,
+                                       e,
+                                       f,
+                                       g) {
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+                  1 [label = 'Raw follow-up records\n(N = %s)']
+                  m1 [label = 'Excluded\nNon-valid child IDs (N = %s)']
+                  2 [label = 'Clean follow-up records\n(N = %s)']
+                  m2 [label = 'Excluded %s']
+                  3 [label = 'Enrolment\n(N = %s)']
+                  4 [label = 'Day 7 follow-up\n(N = %s)']
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> 2; p2 -> 3 -> 4;
+                  {rank=same; p1 -> m1}
+                  {rank=same; p2 -> m2}
+
+                  edge [dir=none]
+                  1 -> p1; 2 -> p2;
+                }",
+                n_raw_records,
+                n_nonvalid_pids,
+                n_clean_records,
                 d,
                 e,
                 f,
@@ -602,25 +658,31 @@ create_flowchart <- function(n_raw_records,
                                      e,
                                      f,
                                      g) {
-  gr <- sprintf("
-    digraph flowchart {
-      # node definitions with substituted label text
-      node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-      1 [label = 'Records\n(N = %s)']
-      m1 [label = 'Excluded\nNon-valid device IDs (N = %s)']
-      2 [label = 'Screenings\n(N = %s)']
-      m2 [label = 'Excluded %s']
-      3 [label = 'Enrolment\n(N = %s)']
-      4 [label = 'Day 7 follow-up\n(N = %s)']
+                  1 [label = 'Records\n(N = %s)']
+                  m1 [label = 'Excluded\nNon-valid device IDs (N = %s)']
+                  2 [label = 'Screenings\n(N = %s)']
+                  m2 [label = 'Excluded %s']
+                  3 [label = 'Enrolment\n(N = %s)']
+                  4 [label = 'Day 7 follow-up\n(N = %s)']
 
-      node [shape=none, width=0, height=0, label='']
-      p1 -> 2; p2 -> 3 -> 4;
-      {rank=same; p1 -> m1}
-      {rank=same; p2 -> m2}
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> 2; p2 -> 3 -> 4;
+                  {rank=same; p1 -> m1}
+                  {rank=same; p2 -> m2}
 
-      edge [dir=none]
-      1 -> p1; 2 -> p2;
-    }", n_raw_records, n_nonvalid_deviceid_records, n_screening, d, e, f, g)
+                  edge [dir=none]
+                  1 -> p1; 2 -> p2;
+                }",
+                n_raw_records,
+                n_nonvalid_deviceid_records,
+                n_screening,
+                d,
+                e,
+                f,
+                g)
   DiagrammeR::grViz(gr)
 }

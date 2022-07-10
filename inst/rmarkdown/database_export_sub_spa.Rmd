@@ -2,239 +2,36 @@
 write("Export service provision assessment (SPA) data and run corresponding quality checks", stderr())
 ```
 
-## Facility assessment
+```{r spa-conditions}
+spa_sco_is_not_null <- is.null(spa_sco_data)
+spa_sco_is_not_empty <- timci::is_not_empty(spa_sco_data)
 
-### Data export
+spa_cgei_is_not_null <- !is.null(spa_cgei_data)
+spa_cgei_is_not_empty <- timci::is_not_empty(spa_cgei_data)
 
-```{r facility-assessment-export, results = 'asis'}
-timci::dataset_export(spa_fa_data,
-                      "01",
-                      "timci_spa_facility_assessment_data",
-                      params$spa_dir,
-                      "Raw SPA facility assessment data")
+spa_fa_is_not_null <- !is.null(spa_fa_data)
+spa_fa_is_not_empty <- timci::is_not_empty(spa_fa_data)
+
+spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+spa_hcpi_is_not_empty <- timci::is_not_empty(spa_hcpi_data)
 ```
 
-## Caregiver exit interview
+## Facility assessment data quality checks
 
-### Data export
+```{r, child = if(spa_fa_is_not_empty) 'database_export_sub_spa_fa.Rmd'}
+```
 
-```{r cg-exit-interview-export, results = 'asis'}
-timci::dataset_export(spa_cgei_data,
-                      "03",
-                      "timci_spa_exit_interview_data",
-                      params$spa_dir,
-                      "Raw SPA caregiver exit interview data")
+## Caregiver exit interview data quality checks
+
+```{r, child = if(spa_cgei_is_not_empty) 'database_export_sub_spa_cgei.Rmd'}
 ```
 
 ## Sick child observation data quality checks
 
-```{r, results = 'asis'}
-locked_spa_sco_data <- NULL
-if (!is.null(spa_sco_data)) {
-  locked_spa_sco_data <- spa_sco_data %>% dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
-  cat(paste0("There are **", nrow(locked_spa_sco_data), "** records between ", spa_start_date, " and ", lock_date, " in the raw SPA sick child observation database."))
-}
-```
-
-### Non-valid provider IDs
-
-```{r, results='asis', eval=!is.null(spa_sco_data)}
-out <- timci::correct_spa_sco_hcp_ids(locked_spa_sco_data)
-locked_spa_sco_data <- out[[1]]
-spa_sco_data_hcp_edits <- out[[2]]
-knitr::kable(spa_sco_data_hcp_edits, caption = "Healthcare provider ID to be corrected")
-```
-
-### Non-valid participant IDs
-
-**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database.
-
-```{r}
-spa_sco_data_uids <- NULL
-if (!is.null(spa_sco_data)) {
-  # Extract entries of child IDs enrolled in the Day 0 database
-  spa_sco_data_uids <- locked_spa_sco_data[!locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
-  locked_spa_sco_data <- locked_spa_sco_data[locked_spa_sco_data$'child_identification-pid' %in% locked_day0_data$child_id, ]
-  
-  spa_sco_data_uids$'child_identification-pid' %>%
-    knitr::kable(col.names = c("child_id"))
-}
-```
-
-```{r, results='asis'}
-if (!is.null(spa_sco_data_uids)) {
-  n <- nrow(spa_sco_data_uids)
-  if (n > 1) {
-    cat(paste0(n, " records with non-valid participant IDs were detected and removed in the locked SPA sick child observation database."))
-  } else if (n == 1) {
-    cat(paste0(n, " record with non-valid participant IDs was detected and removed in the locked SPA sick child observation database."))
-  } else{
-    cat("No records with non-valid participant IDs were detected.")
-  }
-}
-```
-
-### Duplicate management
-
-**Rule:** keep duplicated records and investigate the reason for having duplicates.
-
-```{r, results='asis'}
-if (!is.null(spa_sco_data)) {
-  if (length(spa_sco_data) > 0) {
-    spa_sco_data_qc <- timci::detect_id_duplicates(locked_spa_sco_data %>% dplyr::rename(child_id = 'child_identification-pid'))
-    spa_sco_data_duplicates <- spa_sco_data_qc[spa_sco_data_qc$id_fq > 1,]
-    if (length(spa_sco_data_duplicates) > 0) {
-      if (nrow(spa_sco_data_duplicates) > 0) {
-         knitr::kable(spa_sco_data_duplicates, caption = "ID duplicates")
-      }
-    } else {
-      cat("No ID duplicates detected")
-    }
-  }
-}
-```
-
-```{r, results='asis'}
-if (!is.null(spa_sco_data)) {
-  if (length(spa_sco_data_duplicates) > 0) { 
-    cat(paste0(nrow(spa_sco_data_duplicates), " duplicated IDs were detected. No action was taken in the locked SPA sick child observation database."))
-  } else {
-    cat(paste0("No duplicated IDs were detected. No action was taken in the locked SPA sick child observation database."))
-  }
-}
-```
-
-### Data cleaning summary
-
-```{r, results = 'asis'}
-if (!is.null(spa_sco_data)) {
-  cat(paste0("There are ", nrow(locked_spa_sco_data), " records in the locked SPA sick child observation database."))
-}
-```
-
-### Data export
-
-```{r sick-child-observation-export, eval=deidentification_on}
-deidentified_spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
-timci::dataset_export(deidentified_spa_sco_data,
-                      "04",
-                      "timci_spa_consultation_obs_data",
-                      params$spa_dir,
-                      "Raw SPA sick child observation data")
-```
-
-```{r, eval=!deidentification_on}
-timci::dataset_export(spa_sco_data,
-                      "04",
-                      "timci_spa_consultation_obs_data",
-                      params$spa_dir,
-                      "Raw SPA sick child observation data")
-```
-
-```{r}
-timci::dataset_export(locked_spa_sco_data,
-                      "04",
-                      "timci_spa_consultation_obs_data",
-                      locked_db_dir,
-                      "Cleaned SPA sick child observation data")
-```
-
-```{r}
-timci::quality_check_export(spa_sco_data_uids,
-                            qc_unknown_spa_sco_patient_id,
-                            "timci_spa_consultation_obs_data_unknown_ids",
-                            qc_dir,
-                            "child IDs are not found in the Day 0 dataset")
+```{r, child = if(spa_sco_is_not_empty) 'database_export_sub_spa_sco.Rmd'}
 ```
 
 ## Healthcare provider interview data quality checks
 
-```{r, results = 'asis'}
-if (!is.null(spa_hcpi_data)) {
-  spa_hcpi_data <- process_spa_hcpi_data(spa_hcpi_data)
-  cat(paste0("There are **", nrow(spa_hcpi_data), "** records in the raw SPA healthcare provider interview database."))
-}
-```
-
-### Non-valid participant IDs
-
-**Rule:** keep only IDs of healthcare providers who are observed in the locked SPA sick child observation database.
-
-```{r}
-# Extract entries of child IDs enrolled in the Day 0 database
-if (!is.null(spa_hcpi_data)) {
-  spa_hcpi_data_uids <- spa_hcpi_data[!spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
-  locked_spa_hcpi_data <- spa_hcpi_data[spa_hcpi_data$hcp_id %in% locked_spa_sco_data$'hcp_identification-hcpid', ]
-  
-  spa_hcpi_data_uids$hcp_id %>% knitr::kable(col.names = c("hcp_id"))
-}
-```
-
-```{r, results='asis'}
-if (!is.null(spa_hcpi_data)) {
-  n <- nrow(spa_hcpi_data_uids)
-  if (n > 1) {
-    cat(paste0(n, " records with non-valid participant IDs were detected and removed in the locked SPA healthcare provider interview database."))
-  } else if (n == 1) {
-    cat(paste0(n, " record with non-valid participant IDs was detected and removed in the locked SPA healthcare provider interview database."))
-  } else{
-    cat("No records with non-valid participant IDs were detected.")
-  }
-}
-```
-
-### Duplicate management
-
-**Rule:** keep duplicated records and investigate the reason for duplicates.
-
-```{r check-SPA-hcp-interview-data, results='asis'}
-if (!is.null(spa_hcpi_data)) {
-  if (length(spa_hcpi_data) > 0) { 
-    spa_hcpi_data_qc <- timci::detect_id_duplicates(locked_spa_hcpi_data, hcp_id)
-    spa_hcpi_data_duplicates <- spa_hcpi_data_qc[spa_hcpi_data_qc$id_fq > 1,]
-    if (length(spa_hcpi_data_duplicates) > 0) {
-      if (nrow(spa_hcpi_data_duplicates) > 0) {
-        knitr::kable(spa_hcpi_data_duplicates, caption = "ID duplicates")
-      }
-    } else {
-      cat("No ID duplicates detected")
-    }
-  }
-}
-```
-
-```{r, results='asis'}
-if (!is.null(spa_hcpi_data)) {
-  if (length(spa_hcpi_data_duplicates) > 0) { 
-    cat(paste0(nrow(spa_hcpi_data_duplicates), " duplicated IDs were detected. No action was taken in the locked SPA healthcare provider interview database."))
-  } else {
-    cat(paste0("No duplicated IDs were detected. No action was taken in the locked SPA healthcare provider interview database."))
-  }
-}
-```
-
-### Data cleaning summary
-
-```{r, results = 'asis'}
-if (!is.null(spa_hcpi_data)) {
-  cat(paste0("There are ", nrow(locked_spa_hcpi_data), " records in the locked SPA healthcare provider interview database."))
-}
-```
-
-### Data export
-
-```{r hcp-interview-export-raw-data}
-timci::dataset_export(spa_hcpi_data,
-                      "02",
-                      "timci_spa_provider_interview_data",
-                      params$spa_dir,
-                      "Raw SPA healthcare provider interview data")
-```
-
-```{r hcp-interview-export-cleaned-data}
-timci::dataset_export(locked_spa_hcpi_data,
-                      "02",
-                      "timci_spa_provider_interview_data",
-                      locked_db_dir,
-                      "Cleaned SPA healthcare provider interview data")
+```{r, child = if(spa_hcpi_is_not_empty) 'database_export_sub_spa_hcpi.Rmd'}
 ```

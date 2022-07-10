@@ -1,8 +1,7 @@
 ---
-title: "Untitled"
+title: "Monitoring report - subsection with focus on individual facilities"
 author: "H. LANGET"
-date: "14 9 2021"
-output: html_document
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 ---
 
 ```{r, include=FALSE}

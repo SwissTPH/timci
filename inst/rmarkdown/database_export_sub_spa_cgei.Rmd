@@ -1,0 +1,13 @@
+```{r}
+write("Export SPA caregiver exit interview data and run corresponding quality checks", stderr())
+```
+
+### Data export
+
+```{r cg-exit-interview-export, results='asis'}
+timci::dataset_export(spa_cgei_data,
+                      "03",
+                      "timci_spa_exit_interview_data",
+                      params$spa_dir,
+                      "Raw SPA caregiver exit interview data")
+```

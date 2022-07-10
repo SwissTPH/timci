@@ -30,7 +30,7 @@ if (!is.null(facility_data)) {
 #print(qc3)
 ```
 
-```{r, results = 'asis', eval=(length(duplicates) > 0 & nrow(duplicates) > 0)}
+```{r, results = 'asis'}
 timci::quality_check_export(duplicates,
                             qc_multiple_enrolment_id,
                             "possible_multiple_enrolments",
@@ -72,7 +72,7 @@ if (!is.null(facility_data)) {
 #print(qc3)
 ```
 
-```{r, results = 'asis', eval=(length(duplicates2) > 0 & nrow(duplicates2) > 0)}
+```{r, results = 'asis'}
 timci::quality_check_export(duplicates2,
                             qc_multiple_enrolment_sex_discrepancy_id,
                             "possible_multiple_enrolments_with_sex_discrepancy",

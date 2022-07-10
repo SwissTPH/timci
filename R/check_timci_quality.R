@@ -16,7 +16,7 @@ quality_check_export <- function(df,
 
   msg <- paste0("The table of participants for whom ",
                 description,
-                " is a NULL object and cannot be exported.")
+                " is empty and therefore has not been exported.")
 
   if (!is.null(df)) {
 
@@ -142,25 +142,27 @@ detect_id_duplicates <- function(df, col = child_id) {
 
 }
 
-#' Identify Day 0 ID duplicates with dates (TIMCI-specific function)
+#' Identify child ID duplicates with dates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param date_col name of the column containing dates in `df`
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 #' @export
 #' @import dplyr magrittr
 
-identify_day0_id_duplicates_with_dates <- function(df) {
+identify_duplicates_with_dates <- function(df, date_col) {
 
   out <- df %>%
-    dplyr::arrange(date_visit) %>% # order by ascending dates
+    dplyr::arrange(!!dplyr::enquo(date_col)) %>% # order by ascending dates
     dplyr::group_by(child_id) %>%
     dplyr::mutate(row_n = row_number()) %>%
     tidyr::pivot_wider(child_id,
                        names_from = row_n,
-                       values_from = c("date_visit"),
+                       values_from = c(date_col),
                        names_prefix = "date_")
   if ("date_2" %in% colnames(out)) {
-    out <- out %>% filter(!is.na(date_2))
+    out <- out %>%
+      filter(!is.na(date_2))
   }
 
   out
@@ -397,5 +399,26 @@ detect_missing_clinical_presentation <- function(facility_df) {
   }
 
   out
+
+}
+
+#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
+#'
+#' @param df1 dataframe containing the data to check
+#' @param idcol1 column name containing IDs in `df1`
+#' @param df2 reference dataframe
+#' @param idcol2 column name containing IDs in `df2`
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+
+identify_nonvalid_ids <- function(df1,
+                                  idcol1,
+                                  df2,
+                                  idcol2) {
+
+  qc_df <- df1[!df1[[idcol1]] %in% df2[[idcol2]], ]
+  cleaned_df <- df1[df1[[idcol1]] %in% df2[[idcol2]], ]
+
+  list(qc_df, cleaned_df)
 
 }

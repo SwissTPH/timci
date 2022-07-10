@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{create_day0_qc_flowchart}
 \alias{create_day0_qc_flowchart}
-\title{Create flowchart (TIMCI-specific)}
+\title{Create cleaning flowchart for Day 0 data (TIMCI-specific)}
 \usage{
 create_day0_qc_flowchart(
   n_raw_records,
@@ -36,5 +36,5 @@ create_day0_qc_flowchart(
 This function returns a graph object
 }
 \description{
-Create flowchart (TIMCI-specific)
+Create cleaning flowchart for Day 0 data (TIMCI-specific)
 }

@@ -7,84 +7,77 @@ write("Export hospital/hospitalisation data and run corresponding quality checks
 ## Hospitalisation data quality checks
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
-hospit_data <- NULL
-if (!is.null(raw_hospit_data)) {
-  hospit_data <- timci::format_hospital_data(raw_hospit_data)
-}
+hospit_data <- timci::format_hospital_data(raw_hospit_data)
+db_name <- "hospitalisation follow-up"
 ```
 
-```{r, results = 'asis'}
-format_nrow("There are", hospit_data, "records in the raw hospitalisation follow-up database.")
-```
-
-```{r}
-hospit_fu <- NULL
-if (!is.null(pii)) {
-  hospit_fu <- timci::generate_hospital_log(pii = pii,
-                                            fu7df = raw_day7fu_data,
-                                            day0df = day0_data,
-                                            hospitdf = raw_hospit_data,
-                                            deidentify = TRUE)
-}
-```
-
-### Non-valid participant IDs
-
-**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database.
+There are **`r if ( !is.null(hospit_data) ) { nrow(hospit_data) } else { 'NA' }`** record(s) in the raw `r db_name` database.
 
 ```{r}
 hospit_data_uids <- NULL
 locked_hospit_data <- NULL
-if (!is.null(hospit_data)) {
-  hospit_data_uids <- hospit_data[!hospit_data$child_id %in% locked_day0_data$child_id, ]
-  locked_hospit_data <- hospit_data[hospit_data$child_id %in% locked_day0_data$child_id, ]
-}
+hospit_fu <- NULL
 ```
 
-```{r, results = 'asis'}
-format_nrow("", hospit_data_uids, "records with non-valid participant IDs were detected and removed in the locked hospitalisation database.")
+### Non-valid participant IDs
+
+```{r, eval=!is.null(hospit_data), results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "Keep only IDs of participant who are found in the locked Day 0 database."
+qc_type <- "nonvalid_pids_fu"
+df <- hospit_data
+refdf <- locked_day0_data
+qc_text <- "non-valid participant IDs"
+qc_idx <- qc_nonvalid_hospitfu
+qc_export_label <- "nonvalid_pids_hospitfu"
+qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_nonvalid_pids_hospitfu <- n_detected
+locked_hospit_data <- cleaned_df
 ```
 
 ### Duplicate management
 
-```{r, results='asis'}
-if (!is.null(hospit_data)) {
-  cat("**Rule:** keep duplicated records if they correspond to different hospitalisations")
-}
+```{r, eval=!is.null(hospit_data), results='asis'}
+qc_description <- "To be updated later"
+qc_rule <- "Keep duplicated records if they correspond to different hospitalisations."
+qc_type <- "duplicates"
+df <- locked_hospit_data
+date_col <- "start"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicated_hospitfu
+qc_export_label <- "duplicated_hospitfu"
+qc_export_description <- "hospitalisation follow-ups are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-```{r check-RCT-LS-ODK-fu-hospit-data, results='asis'}
-hospit_data_duplicates <- NULL
-if (!is.null(hospit_data)) {
-  if (length(hospit_data) > 0) { 
-    hospit_data_qc <- timci::detect_id_duplicates(locked_hospit_data)
-    hospit_data_duplicates <- hospit_data_qc[hospit_data_qc$id_fq > 1,]
-    if (length(hospit_data_duplicates) > 0) {
-      if (nrow(hospit_data_duplicates) > 0) { 
-         knitr::kable(hospit_data_duplicates, caption = "ID duplicates")
-      }
-    } else {
-      cat("No ID duplicates detected")
-    }
-  }
-}
-```
+### Lost-to-follow-up
 
-```{r, results = 'asis'}
-format_nrow("", hospit_data_duplicates, "duplicated IDs were detected and removed in the locked hospitalisation database.")
+```{r, eval=!is.null(pii)}
+hospit_fu <- timci::generate_hospital_log(pii = pii,
+                                          fu7df = raw_day7fu_data,
+                                          day0df = day0_data,
+                                          hospitdf = raw_hospit_data,
+                                          deidentify = TRUE)
 ```
 
 ### Data cleaning summary
 
 ```{r}
-timci::create_day0_qc_flowchart(n_raw_records,
-                                n_nonvalid_deviceid_records,
-                                n_after_lockdate_records,
-                                n_locked_screening,
-                                'NA',
-                                'NA',
-                                'NA',
-                                'NA')
+timci::create_day7fu_qc_flowchart(nrow(hospit_data),
+                                  n_nonvalid_pids_hospitfu,
+                                  nrow(locked_hospit_data),
+                                  'NA',
+                                  'NA',
+                                  'NA',
+                                  'NA')
 ```
 
 ### Data export
@@ -107,7 +100,7 @@ timci::dataset_export(locked_hospit_data,
 
 ```{r, results = 'asis'}
 timci::dataset_export(hospit_fu,
-                      "05b",
+                      "05c",
                       "timci_deidentified_hospit_fu_log_all",
                       rctls_dir,
                       "Hospitalisation log data")
