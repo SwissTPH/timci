@@ -1,4 +1,4 @@
-old_child_id,uuid,new_child_id,reason,action,date
+old_child_id,uuid,new_child_id,reason,action,date,author,date_ihi
 T-F0005-P0001,uuid:c09cb75f-d3ad-4093-806f-5e571947494a,T-F0006-P0001
 T-F0005-P0002,uuid:922f97a0-5a91-45f7-999b-95e128847ce2,T-F0006-P0002
 T-F0005-P0003,uuid:b3bdc54e-cdb5-4718-a99a-05cec3805e3d,T-F0006-P0003
@@ -107,3 +107,12 @@ T-F0092-P0788,uuid:0ae30e94-ca2b-476f-98f9-0ffcfeeee5cf,T-F0092-P0789,manual ent
 T-F0100-P0464,uuid:3628410a-2283-40ca-9d31-fa7998e9b5f2,T-F0100-P0664,manual entry,correct,2022-06-26
 T-F0021-P0287,uuid:792309cc-e6ce-4e27-887f-f25155b466f2,T-F0021-P0290,manual entry,correct,2022-06-27
 T-F0082-P0949,uuid:d1e75357-5134-418f-ae45-f5c2d4b65631,T-F0082-C0949,manual entry,correct,2022-06-27
+T-F0021-P0043,uuid:2b76f9f4-3310-4142-896c-857eaf9945f0,T-F0021-P0305,RA wrongly scanned pid,correct,2022-07-10,IHI,2022-07-01
+T-F0018-P0153,uuid:9e32c133-c2c3-47d5-bad5-0a031b2427d2,T-F0018-C0153,record from 29th april sent 4th july,correct,2022-07-10
+T-F0100-P0688,uuid:7df221ce-ab79-43ba-b8cd-a784dc36e358,T-F0100-P0687,RA wrongly entered pid,correct,2022-07-10,IHI,2022-06-28
+T-F0100-P0695,uuid:e5fb5b6e-763e-44ab-8ed0-5bdc806a4f64,T-F0100-P0685,RA wrongly entered pid,correct,2022-07-10,IHI,2022-06-28
+T-F0083-P0895,uuid:567f8851-61f5-4f93-a641-63508d452837,T-F0083-P0896,RA wrongly entered pid,correct,2022-07-10,IHI,2022-06-28
+T-F0034-P0893,uuid:ed218d89-43c8-41f6-92f2-8ae787191cf1,T-F0034-P0892,RA wrongly entered pid,correct,2022-07-10,IHI,2022-06-30
+T-F0082-P0993,uuid:cf9b354b-c545-403b-a674-23e11076b097,T-F0082-P0995,RA wrongly entered pid,correct,2022-07-10,IHI,2022-07-01
+T-F0014-P1009,uuid:d0556644-720f-40b3-aac8-5cd0f2e70a79,T-F0014-P1012,,correct,2022-07-10,IHI,2022-07-04
+T-F0013-P1052,uuid:f92ce941-f012-4abc-90a1-775bbab71d0b,T-F0013-P1053,RA wrongly entered pid,correct,2022-07-10,IHI,2022-07-06
