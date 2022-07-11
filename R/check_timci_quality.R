@@ -391,6 +391,33 @@ detect_missing_clinical_presentation <- function(facility_df) {
 
 }
 
+#' Detect missing referral (TIMCI-specific function)
+#'
+#' @param facility_df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing only participants with no clinical presentation
+#' @export
+#' @import dplyr
+
+detect_missing_referral <- function(facility_df) {
+
+  out <- NULL
+
+  if ( timci::is_not_empty(facility_df) ) {
+
+    facility_df$referral_cg <- ifelse(!is.na(facility_df$referral_cg), facility_df$referral_cg, 100)
+
+    out <- facility_df %>%
+      dplyr::mutate(missing_referral_cg = ifelse(referral_cg == 98 | referral_cg == 97 | referral_cg == 100,
+                                                 1,
+                                                 0)) %>%
+      filter(missing_referral_cg == 1)
+
+  }
+
+  out
+
+}
+
 #' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
 #'
 #' @param df1 dataframe containing the data to check

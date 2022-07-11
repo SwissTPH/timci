@@ -2,6 +2,8 @@
 write("Export Day 28 data and run corresponding quality checks", stderr())
 ```
 
+\newpage
+
 ## Day 28 data quality checks\n\n
 
 ```{r}

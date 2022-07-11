@@ -337,11 +337,21 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 Check not implemented yet.
 
-### Management [Mandatory check]\n\n
+### Referral [Mandatory check `r qc_missing_referral_id`]\n\n
 
-**Check description:** all participants should have complete information about their management for their Day 0 visit.
-
-Check not implemented yet.
+```{r, results='asis', eval=!is.null(locked_day0_data)}
+qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. However, participants may be lost at the exit of the consultation, so that these information may be missing."
+qc_rule <- "No modification of the database, only reporting."
+qc_type <- "missing_referral"
+df <- locked_day0_data
+qc_text <- "missing referral information (source: caregiver at the exit of the consultation)"
+qc_idx <- qc_missing_referral_id
+qc_export_label <- "missing_referral_cg"
+qc_export_description <- "the referral information that should have been obtained from the caregiver at the exit of the consultation) is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
 
 ### Data cleaning summary\n\n
 

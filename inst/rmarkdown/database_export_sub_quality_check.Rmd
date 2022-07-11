@@ -87,6 +87,18 @@ cleaned_df <- out[[2]]
 
 ```{r, eval=(qc_type=="missing_clinical_presentation")}
 qc_df <- timci::detect_missing_clinical_presentation(df)
+cols1 <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(cols1) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="missing_referral")}
+qc_df <- timci::detect_missing_referral(df)
+cols1 <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(cols1) %>%
+  dplyr::arrange(fid)
 ```
 
 ```{r, eval=!is.null(qc_df)}
@@ -94,16 +106,6 @@ n_detected <- nrow(qc_df)
 ```
 
 **Check output:** The check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
-
-```{r, eval=(qc_type=="missing_clinical_presentation"), results='asis'}
-cols1 <- c("child_id", "fid", "date_visit", "uuid")
-cols2 <- c("Child ID", "Facility ID", "Enrolment date", "uuid")
-qc_df %>%
-  dplyr::select(cols1) %>%
-  dplyr::arrange(fid) %>%
-  knitr::kable(col.names = cols2,
-               row.names = FALSE)
-```
 
 ```{r}
 qc_df_is_not_empty <- timci::is_not_empty(qc_df)
@@ -117,7 +119,7 @@ if (qc_df_is_not_empty) {
 
 ```{r, eval=partial_disp, results='asis'}
 qc_df %>%
-  select(1:min(length(qc_df),3)) %>%
+  select(1:min(length(qc_df), 5)) %>%
   head(5) %>%
   knitr::kable(rowNames = FALSE,
                caption = "Five first rows")
@@ -129,7 +131,7 @@ cat("...")
 
 ```{r, eval=partial_disp, results='asis'}
 qc_df %>%
-  select(1:min(length(qc_df),3)) %>%
+  select(1:min(length(qc_df), 5)) %>%
   tail(5) %>%
   knitr::kable(rowNames = FALSE,
                caption = "Five last rows")
@@ -137,7 +139,7 @@ qc_df %>%
 
 ```{r, eval=full_disp, results='asis'}
 qc_df %>%
-  select(1:min(length(qc_df),3)) %>%
+  select(1:min(length(qc_df), 5)) %>%
   knitr::kable(rowNames = FALSE)
 ```
 
