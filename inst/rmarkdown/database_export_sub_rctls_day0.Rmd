@@ -310,14 +310,14 @@ multiple <- FALSE
 ```{r, results='asis', eval=!is.null(locked_day0_data)}
 qc_description <- "All participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
 
-* No convulsions (sx_convulsions != 1)
-* No lethargy (sx_lethargy != 1)
-* No vomiting (sx_vomit = 0 or sx_vomit = 98)
+* No convulsions (*sx_convulsions* != 1)
+* No lethargy (*sx_lethargy* != 1)
+* No vomiting (*sx_vomit* = 0 or *sx_vomit* = 98)
 * No feeding less than usual (sx_less_feed = 0 or sx_less_feed = 98)
 * No cough (sx_cough = 0 or sx_cough = 98)
 * No difficulty breathing (sx_difficulty_breath = 0 or sx_difficulty_breath = 98)
-* No diarrhoea (sx_diarrhoea = 0 or sx_diarrhoea == 98)
-* No fever (sx_fever = 0 or sx_fever == 98)
+* No diarrhoea (sx_diarrhoea = 0 or sx_diarrhoea = 98)
+* No fever (sx_fever = 0 or sx_fever = 98)
 * No other complaint (sx_var = 96)"
 qc_rule <- "No modification of the database, only reporting."
 qc_type <- "missing_clinical_presentation"
@@ -340,14 +340,14 @@ Check not implemented yet.
 ### Referral [Mandatory check `r qc_missing_referral_id`]\n\n
 
 ```{r, results='asis', eval=!is.null(locked_day0_data)}
-qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. However, participants may be lost at the exit of the consultation, so that these information may be missing."
+qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. This information is collected from 2 soures: the caregiver at the exit of the consultation and the facility registries/consultation notes. However, caregivers may be lost at the exit of the consultation, so that the referral information from this source would then be missing."
 qc_rule <- "No modification of the database, only reporting."
 qc_type <- "missing_referral"
 df <- locked_day0_data
 qc_text <- "missing referral information (source: caregiver at the exit of the consultation)"
 qc_idx <- qc_missing_referral_id
 qc_export_label <- "missing_referral_cg"
-qc_export_description <- "the referral information that should have been obtained from the caregiver at the exit of the consultation) is missing"
+qc_export_description <- "the referral information that should have been obtained from the caregiver at the exit of the consultation is missing"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
