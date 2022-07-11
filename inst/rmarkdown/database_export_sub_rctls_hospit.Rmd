@@ -19,14 +19,16 @@ locked_hospit_data <- NULL
 hospit_fu <- NULL
 ```
 
-### Non-valid participant IDs\n\n
+### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]\n\n
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "To be updated later"
 qc_rule <- "Keep only IDs of participant who are found in the locked Day 0 database."
-qc_type <- "nonvalid_pids_fu"
+qc_type <- "nonvalid_ids"
 df <- hospit_data
+idcol1 <- "child_id"
 refdf <- locked_day0_data
+idcol2 <- "child_id"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_hospitfu
 qc_export_label <- "nonvalid_pids_hospitfu"
@@ -41,7 +43,7 @@ n_nonvalid_pids_hospitfu <- n_detected
 locked_hospit_data <- cleaned_df
 ```
 
-### Duplicate management\n\n
+### Duplicate management [compliance check `r qc_duplicated_hospitfu`]\n\n
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "To be updated later"

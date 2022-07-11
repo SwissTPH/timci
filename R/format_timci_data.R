@@ -136,6 +136,10 @@ process_facility_data <- function(df) {
     } else{
       df$'crfs-t02b-a4_c_4' <- ''
     }
+
+    # Convert to characters
+    df$'crfs-t02b-a4_c_4' <- as.character(df$'crfs-t02b-a4_c_4')
+
     df$'crfs-t02b-a4_c_4_cpy' <- df$'crfs-t02b-a4_c_4'
     if ('crfs-t02b-a4_c_4a' %in% cols) {
       df$'crfs-t02b-a4_c_4a' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4a'),
@@ -148,6 +152,10 @@ process_facility_data <- function(df) {
     } else{
       df$'crfs-t02b-a4_c_4a' <- ''
     }
+
+    # Convert to characters
+    df$'crfs-t02b-a4_c_4a' <- as.character(df$'crfs-t02b-a4_c_4a')
+
     if ('crfs-t02b-a4_c_4b' %in% cols) {
       df$'crfs-t02b-a4_c_4b' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4b'),
                                        ifelse(df$'crfs-t02b-a4_c_4b' != 99,
@@ -159,6 +167,10 @@ process_facility_data <- function(df) {
     } else{
       df$'crfs-t02b-a4_c_4b' <- ''
     }
+
+    # Convert to characters
+    df$'crfs-t02b-a4_c_4b' <- as.character(df$'crfs-t02b-a4_c_4b')
+
     if ('crfs-t02b-a4_c_4c' %in% cols) {
       df$'crfs-t02b-a4_c_4c' <- ifelse(!is.na(df$'crfs-t02b-a4_c_4c'),
                                        ifelse(df$'crfs-t02b-a4_c_4c' != 99,
@@ -170,6 +182,10 @@ process_facility_data <- function(df) {
     } else{
       df$'crfs-t02b-a4_c_4c' <- ''
     }
+
+    # Convert to characters
+    df$'crfs-t02b-a4_c_4c' <- as.character(df$'crfs-t02b-a4_c_4c')
+
     df$'crfs-t02b-a4_c_4' <- paste0(df$'crfs-t02b-a4_c_4',
                                     ifelse(df$'crfs-t02b-a4_c_4' != '' & df$'crfs-t02b-a4_c_4a' != '', ' - ', ''),
                                     df$'crfs-t02b-a4_c_4a',
@@ -177,6 +193,9 @@ process_facility_data <- function(df) {
                                     df$'crfs-t02b-a4_c_4b',
                                     ifelse(df$'crfs-t02b-a4_c_4b' != '' & df$'crfs-t02b-a4_c_4c' != '', ' - ', ''),
                                     df$'crfs-t02b-a4_c_4c')
+
+    # Convert to characters
+    df$'crfs-t02b-a4_c_4' <- as.character(df$'crfs-t02b-a4_c_4')
   }
 
   # Extract the way the child ID has been recorded (manual entry or scan)
@@ -186,6 +205,8 @@ process_facility_data <- function(df) {
   if ('consent-a1_a_4a' %in% cols) {
     df$'consent-a1_a_4a' <- ifelse(!is.na(df$'consent-a1_a_4a'), 1, 0)
   }
+  # Convert to integer
+  df$'consent-a1_a_4' <- as.integer(df$'consent-a1_a_4')
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"

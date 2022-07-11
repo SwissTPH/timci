@@ -25,13 +25,13 @@ qc_df <- df[df$cg_eligibility == 0, ]
 cleaned_df <- df[df$cg_eligibility == 1, ]
 ```
 
-```{r, eval=(qc_type=="nonvalid_ids")}
-out <- timci::identify_nonvalid_ids(df,
-                                    idcol1,
-                                    refdf,
-                                    idcol2)
+```{r, eval=(qc_type=="ids_outside_lock_range")}
+out <- timci::identify_ids_outside_lock_range(df = df,
+                                              col_id = idcol,
+                                              day0_df = day0_data,
+                                              start_date = start_date,
+                                              end_date = lock_date)
 qc_df <- out[[1]]
-cleaned_df <- out[[2]]
 ```
 
 ```{r, eval=(qc_type=="nonvalid_ids_no_cleaning")}
@@ -42,15 +42,33 @@ out <- timci::identify_nonvalid_ids(df,
 qc_df <- out[[1]]
 ```
 
+```{r, eval=(qc_type=="nonvalid_ids")}
+out <- timci::identify_nonvalid_ids(df,
+                                    idcol1,
+                                    refdf,
+                                    idcol2)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="duplicates")}
-qc_df <- timci::identify_duplicates_by_dates(df,
-                                             col_id,
-                                             col_date)
+out <- timci::identify_duplicates_by_dates(df,
+                                           col_id,
+                                           col_date,
+                                           cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
 ```
 
 ```{r, eval=(qc_type=="missing_clinical_presentation")}
 qc_df <- timci::detect_missing_clinical_presentation(df)
 ```
+
+```{r, eval=!is.null(qc_df)}
+n_detected <- nrow(qc_df)
+```
+
+**Check output:** the check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
 
 ```{r, eval=(qc_type=="missing_clinical_presentation"), results='asis'}
 cols1 <- c("child_id", "fid", "date_visit", "uuid")
@@ -62,16 +80,41 @@ qc_df %>%
                row.names = FALSE)
 ```
 
-```{r, eval=(qc_type=="nonvalid_pids_fu")}
-qc_df <- df[!df$child_id %in% refdf$child_id, ]
-cleaned_df <- df[df$child_id %in% refdf$child_id, ]
+```{r}
+qc_df_is_not_empty <- timci::is_not_empty(qc_df)
+partial_disp <- FALSE
+full_disp <- FALSE
+if (qc_df_is_not_empty) {
+  partial_disp <- qc_df_is_not_empty & ( nrow(qc_df) > 10 )
+  full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
+}
 ```
 
-```{r, eval=!is.null(qc_df)}
-n_detected <- nrow(qc_df)
+```{r, eval=partial_disp, results='asis'}
+qc_df %>%
+  select(1:min(length(qc_df),3)) %>%
+  head(5) %>%
+  knitr::kable(rowNames = FALSE,
+               caption = "Five first rows")
 ```
 
-**Check output:** the check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
+```{r, eval=partial_disp, results='asis'}
+cat("...")
+```
+
+```{r, eval=partial_disp, results='asis'}
+qc_df %>%
+  select(1:min(length(qc_df),3)) %>%
+  tail(5) %>%
+  knitr::kable(rowNames = FALSE,
+               caption = "Five last rows")
+```
+
+```{r, eval=full_disp, results='asis'}
+qc_df %>%
+  select(1:min(length(qc_df),3)) %>%
+  knitr::kable(rowNames = FALSE)
+```
 
 ```{r, results = 'asis'}
 timci::quality_check_export(df = qc_df,

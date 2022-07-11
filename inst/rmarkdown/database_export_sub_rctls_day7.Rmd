@@ -29,12 +29,55 @@ There are **`r nrow(allday7fu_data)`** records in the raw `r db_name` database, 
 write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
 ```
 
-**Rule:** keep only IDs of children who are enrolled in the locked Day 0 database (note: if data collection is still active, all participants enrolled after the date set for the lock will be considered as 'invalid' IDs).
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+qc_description <- "Day 7 follow-ups are relevant only if associated to participants who were enrolled at Day 0."
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_type <- "nonvalid_ids"
+df <- allday7fu_data
+idcol1 <- "child_id"
+refdf <- day0_data
+idcol2 <- "child_id"
+qc_text <- "non-valid participant IDs"
+qc_idx <- qc_nonvalid_day7fu
+qc_export_label <- "nonvalid_pids_day7fu"
+qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_nonvalid_pids_day7fu <- n_detected
+locked_day7fu_data <- cleaned_df
+```
+
+### Participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+qc_description <- paste0("Day 7 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids"
+df <- locked_day7fu_data
+idcol1 <- "child_id"
+refdf <- day0_data
+idcol2 <- "child_id"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_day7fu
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_afterlock_pids_day7fu <- n_detected
+locked_day7fu_data <- cleaned_df
+```
+
+#### To move somewhere else
 
 ```{r, eval=timci::is_not_empty(raw_day7fu_data)}
-# All follow-ups
-locked_allday7fu_data <- allday7fu_data[allday7fu_data$child_id %in% locked_day0_data$child_id, ]
-allday7fu_data_uids <- allday7fu_data[!allday7fu_data$child_id %in% locked_day0_data$child_id, ]
 # Successful follow-ups
 locked_day7fu_data <- day7fu_data[day7fu_data$child_id %in% locked_day0_data$child_id, ]
 day7fu_data_uids <- day7fu_data[!day7fu_data$child_id %in% locked_day0_data$child_id, ]
@@ -42,17 +85,7 @@ locked_day7fu_data <- locked_day7fu_data %>%
   dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
 ```
 
-* **`r if ( !is.null(allday7fu_data_uids) ) { nrow(allday7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked `r db_name` database.
-
 * **`r if ( !is.null(day7fu_data_uids) ) { nrow(day7fu_data_uids) } else {'NA'}`** records with non-valid participant IDs detected and removed in the locked successful `r db_name` database.
-
-```{r, results = 'asis'}
-timci::quality_check_export(allday7fu_data_uids[c("child_id", "uuid")],
-                            qc_nonvalid_day7fu,
-                            "nonvalid_ids_day7fu",
-                            qc_dir,
-                            "the child ID does not correspond to any ID found the locked Day 0 database")
-```
 
 ```{r}
 # Replace Day 7 data by locked Day 7 data so that non-valid device IDs/facilities do not appear in the export
@@ -107,6 +140,7 @@ qc_type <- "duplicates"
 df <- locked_day7fu_data
 col_id <- "child_id"
 col_date <- "start"
+cleaning <- "none"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicated_day7fu
 qc_export_label <- "duplicated_successful_day7fu"

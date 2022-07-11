@@ -30,6 +30,10 @@ allday28fu_data <- out[[3]]
 
 There are **`r if ( !is.null(allday28fu_data) ) { nrow(allday28fu_data) } else { 'NA' }`** records in the raw `r db_name` database, among which **`r if ( !is.null(day28fu_data) ) { nrow(day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
 
+### Participants enrolled outside the lock date range [context check]\n\n
+
+To be completed
+
 ### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]\n\n
 
 **Rule:** keep only IDs of children who are found in the locked Day 0 database.

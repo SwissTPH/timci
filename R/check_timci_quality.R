@@ -147,37 +147,48 @@ detect_id_duplicates <- function(df, col = child_id) {
 #' @param df dataframe containing the processed facility data
 #' @param col_date name of the column containing dates in `df`
 #' @param col_id name of the column containing IDs in `df`
+#' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 #' @export
 #' @import dplyr magrittr
 
 identify_duplicates_by_dates <- function(df,
                                          col_id,
-                                         col_date) {
+                                         col_date,
+                                         cleaning = "none") {
 
-  out <- NULL
+  qc_df <- NULL
+  cleaned_df <- NULL
 
   if ( timci::is_not_empty(df) ) {
 
-    col_id <- dplyr::enquo(col_id)
-
-    out <- df %>%
+    qc_df <- df %>%
       dplyr::arrange(!!dplyr::enquo(col_date)) %>% # order by ascending dates
-      dplyr::rename(val = !!col_id) %>%
+      dplyr::rename(val = !!dplyr::enquo(col_id)) %>%
       dplyr::group_by(val) %>%
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(val,
                          names_from = row_n,
                          values_from = c(col_date),
                          names_prefix = "date_")
-    if ("date_2" %in% colnames(out)) {
-      out <- out %>%
+
+    if ( "date_2" %in% colnames(qc_df) ) {
+      qc_df <- qc_df %>%
         filter(!is.na(date_2))
+    } else {
+      qc_df <- NULL
+    }
+
+    if ( !is.null(qc_df) & cleaning == "drop_all" ) {
+      cleaned_df <- df[!df[[col_id]] %in% qc_df$val, ]
+    }
+    if ( !is.null(qc_df) & cleaning == "keep_latest" ) {
+      cleaned_df <- df[!df[[col_id]] %in% qc_df$val, ]
     }
 
   }
 
-  out
+  list(qc_df, cleaned_df)
 
 }
 
@@ -391,6 +402,34 @@ identify_nonvalid_ids <- function(df1,
 
   qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
   cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  list(qc_df, cleaned_df)
+
+}
+
+#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
+#'
+#' @param df dataframe containing the data to check
+#' @param col_id column name containing IDs in `df1`
+#' @param day0_df Day 0 dataframe
+#' @param start_date start date
+#' @param end_date end date
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+
+identify_ids_outside_lock_range <- function(df,
+                                            col_id,
+                                            day0_df,
+                                            start_date,
+                                            end_date) {
+
+  # Filter Day 0 data so as to only keep enrolment data outside the lock range
+  day0_df <- day0_df %>%
+    dplyr::filter(date_visit < as.Date(start_date, "%Y-%m-%d") | date_visit > as.Date(lock_date, "%Y-%m-%d"))
+  # Identify valid follow-ups outside the lock range
+  qc_df <- df[df[[col_id]] %in% day0_df$child_id, ]
+  # Remove valid follow-ups outside lock range from the cleaned dataframe
+  cleaned_df <- df[!df[[col_id]] %in% day0_df$child_id, ]
 
   list(qc_df, cleaned_df)
 

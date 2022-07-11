@@ -4,7 +4,7 @@
 \alias{identify_duplicates_by_dates}
 \title{Identify ID duplicates by dates (TIMCI-specific function)}
 \usage{
-identify_duplicates_by_dates(df, col_id, col_date)
+identify_duplicates_by_dates(df, col_id, col_date, cleaning = "none")
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}
@@ -12,6 +12,8 @@ identify_duplicates_by_dates(df, col_id, col_date)
 \item{col_id}{name of the column containing IDs in `df`}
 
 \item{col_date}{name of the column containing dates in `df`}
+
+\item{cleaning}{type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)}
 }
 \value{
 This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.

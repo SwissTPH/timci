@@ -42,25 +42,19 @@ correct_day0_non_valid_facilities <- function(df) {
 #' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
 #'
 #' @param df dataframe
-#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @return This function returns a list that contains an edited dataframe and the list of edits
 #' @import dplyr
 #' @export
 
-correct_day0_child_ids <- function(df) {
+edit_day0_child_ids <- function(df) {
 
-  csv_filename <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    csv_filename <- "day0_duplicate_correction_tanzania.csv"
-  }
-  else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "day0_duplicate_correction_kenya.csv"
-  }
-  else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    csv_filename <- "day0_duplicate_correction_senegal.csv"
-  }
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_duplicate_correction_tanzania.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_duplicate_correction_kenya.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_duplicate_correction_senegal.csv",
+                            TRUE ~ "")
 
   out <- list(df, NULL)
-  if (!is.null(csv_filename)) {
+  if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
     df <- df %>%
@@ -68,7 +62,10 @@ correct_day0_child_ids <- function(df) {
             by.x=c("child_id", "uuid"),
             by.y=c("old_child_id", "uuid"),
             all.x=TRUE)
-    df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+    df$child_id <- ifelse(is.na(df$new_child_id),
+                          df$child_id,
+                          df$new_child_id)
+    df$child_id <- as.character(df$child_id)
     df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
     if("fid_from_device" %in% colnames(df))
     {
@@ -80,6 +77,31 @@ correct_day0_child_ids <- function(df) {
     df <- df[,!(names(df) %in% drop)]
 
     out <- list(df, edits)
+  }
+  out
+
+}
+
+#' Drop incorrect child IDs in Day 0 data entries (TIMCI-specific function)
+#' This function can be used to drop documented child IDs
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a cleaned dataframe and the list of dropped records
+#' @import dplyr
+#' @export
+
+delete_day0_child_ids <- function(df) {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_drop_dummy_tanzania.csv",
+                            TRUE ~ "")
+
+  out <- list(df, NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    records_to_drop <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    df <- df[!(df$uuid %in% records_to_drop$uuid), ]
+
+    out <- list(df, records_to_drop)
   }
   out
 
