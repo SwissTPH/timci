@@ -119,7 +119,7 @@ correct_day0_all <- function(df) {
   # Correct incorrect facility of enrolment
   df <- timci::correct_day0_non_valid_facilities(df)[[1]]
   # Correct duplicated child IDs
-  df <- timci::correct_day0_child_ids(df)[[1]]
+  df <- timci::edit_day0_child_ids(df)[[1]]
 
 }
 

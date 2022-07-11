@@ -1,0 +1,94 @@
+```{r}
+write("Export screening data and run corresponding quality checks", stderr())
+```
+
+## Screening quality checks\n\n
+
+```{r}
+db_name <- "screening"
+raw_day0_data <- timci::extract_enrolled_participants(facility_data)[[1]]
+screening_data <- timci::extract_screening_data(facility_data)
+n_raw_records <- nrow(facility_data)
+```
+
+Initially, there are **`r n_raw_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
+
+### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
+
+```{r, eval=!is.null(facility_data), results='asis'}
+qc_description <- "*Non-valid* devices were either used to collect training data or to collect data for another study."
+qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted from the database."
+qc_type <- "nonvalid_deviceids"
+df <- facility_data
+qc_text <- "non-valid device IDs"
+qc_idx <- qc_screening_w_nonvalid_deviceid
+qc_export_label <- "nonvalid_deviceids"
+qc_export_description <- "the device ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_facility_data <- cleaned_df
+n_locked_screening <- nrow(locked_facility_data)
+n_nonvalid_deviceid_records <- nrow(qc_df)
+```
+
+### Lock date [context check `r qc_screening_after_lockdate`]\n\n
+
+```{r, eval=!is.null(facility_data), results='asis'}
+qc_description <- "To be updated"
+qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
+qc_type <- "posterior_to_lockdate"
+df <- locked_facility_data
+qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
+qc_idx <- qc_screening_after_lockdate
+qc_export_label <- "posterior_to_lockdate"
+qc_export_description <- "the device ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_facility_data <- cleaned_df
+locked_screening_data <- timci::extract_screening_data(locked_facility_data)
+n_locked_screening1 <- nrow(locked_facility_data)
+n_after_lockdate_records <- nrow(qc_df)
+```
+
+### Data cleaning summary\n\n
+
+```{r}
+timci::create_screening_qc_flowchart(n_raw_records,
+                                     n_nonvalid_deviceid_records,
+                                     n_after_lockdate_records,
+                                     n_locked_screening)
+```
+
+### Data export\n\n
+
+```{r export-facility-audit, results = 'asis'}
+timci::dataset_export(facility_data_audit,
+                      "00",
+                      "timci_facility_audit_data",
+                      rctls_dir,
+                      "Screening audit data")
+```
+
+```{r export-screening-data, results = 'asis'}
+timci::dataset_export(screening_data,
+                      "01",
+                      "timci_screening_data",
+                      rctls_dir,
+                      "Raw screening data")
+```
+
+```{r export-locked-screening-data, results = 'asis'}
+timci::dataset_export(locked_screening_data,
+                      "01",
+                      "timci_screening_data",
+                      locked_db_dir,
+                      "Cleaned screening data")
+```

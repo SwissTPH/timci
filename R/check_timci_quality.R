@@ -121,13 +121,37 @@ detect_non_timely_completion <- function(df) {
 
 }
 
+#' Detect inconsistent dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param col_date_start column
+#' @param col_date_end column
+#' @return This function returns a dataframe containing data of possible duplicate participants only
+#' @export
+#' @import dplyr
+
+detect_inconsistent_dates <- function(df,
+                                      col_date_start,
+                                      col_date_end) {
+
+  cleaned_df <- NULL
+
+  # Duration from form completion to transfer on the server
+  df$diff <- as.Date(as.character(df[[col_date_end]]), format="%Y-%m-%d %T") - as.Date(as.character(df[[col_date_start]]), format="%Y-%m-%d %T")
+  qc_df <- df[df$diff > 0, c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")] %>%
+    dplyr::arrange(diff, fid)
+
+  list(qc_df, cleaned_df)
+
+}
+
 #' Detect ID duplicates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
 #' @param col vector containing a column of the processed facility data
 #' @return This function returns a dataframe containing IDs and their frequencies (a frequency strictly superior to 1 indicates a duplicate).
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 detect_id_duplicates <- function(df, col = child_id) {
 
@@ -150,7 +174,7 @@ detect_id_duplicates <- function(df, col = child_id) {
 #' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 identify_duplicates_by_dates <- function(df,
                                          col_id,
@@ -198,7 +222,7 @@ identify_duplicates_by_dates <- function(df,
 #' @param df dataframe containing the processed facility data
 #' @return This function returns a dataframe containing IDs and names of duplicate names
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 detect_name_duplicates <- function(df) {
 
@@ -333,25 +357,6 @@ detect_namedob_duplicates <- function(df) {
   #qc <- merge(qc, qc3, by.x = 'full_name', by.y = 'switched_name')
 
   qc %>% dplyr::select(child_id, ex_name2_fq, sw_name2_fq)
-
-}
-
-#' Detect inconsistent dates (TIMCI-specific function)
-#'
-#' @param df1 dataframe containing the processed facility data
-#' @param col_date1 column
-#' @param df2 dataframe containing the processed facility data
-#' @param col_date2 column
-#' @return This function returns a dataframe containing data of possible duplicate participants only
-#' @export
-#' @import dplyr magrittr
-
-detect_inconsistent_dates <- function(df1,
-                                      col_date1,
-                                      df2,
-                                      col_date2) {
-
-  # To complete
 
 }
 

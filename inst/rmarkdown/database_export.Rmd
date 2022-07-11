@@ -136,22 +136,23 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r}
-qc_day0_after_lockdate <- "DQC_00_01"
-qc_nonvalid_fid1 <- "DQC_00_01a"
-qc_nonvalid_fid2 <- "DQC_00_01b"
-qc_underaged_cg_id <- "DQC_00_02"
-qc_nontimely_completion_id <- "DQC_00_03"
-qc_incorrect_enrolment_date <- "DQC_00_03"
-qc_nontimely_submission_id <- "DQC_00_04"
-qc_duplicate_id1 <- "DQC_00_05a"
-qc_duplicate_id2 <- "DQC_00_05b"
-qc_multiple_enrolment_id <- "DQC_00_06"
-qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_07"
-qc_missing_cp_id <- "DQC_00_08"
-qc_summary_id <- "DQC_00_09"
+qc_screening_w_nonvalid_deviceid <- "DQC_00_01"
+qc_screening_after_lockdate <- "DQC_00_02"
+qc_nonvalid_fid1 <- "DQC_00_03a"
+qc_nonvalid_fid2 <- "DQC_00_03b"
+qc_underaged_cg_id <- "DQC_00_04"
+qc_incorrect_enrolment_date <- "DQC_00_05"
+qc_nontimely_completion_id <- "DQC_00_06"
+qc_nontimely_submission_id <- "DQC_00_07"
+qc_duplicate_id1 <- "DQC_00_08a"
+qc_duplicate_id2 <- "DQC_00_08b"
+qc_multiple_enrolment_id <- "DQC_00_09"
+qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_10"
+qc_missing_cp_id <- "DQC_00_11"
+qc_summary_id <- "DQC_00_12"
 qc_pids_out_lock_range_day7fu <- "DQC_07_01"
-qc_nonvalid_day7fu <- "DQC_07_01"
-qc_duplicated_day7fu <- "DQC_07_02"
+qc_nonvalid_day7fu <- "DQC_07_02"
+qc_duplicated_day7fu <- "DQC_07_03"
 qc_nonvalid_hospitfu <- "DQC_HS_01"
 qc_duplicated_hospitfu <- "DQC_HS_02"
 qc_nonvalid_day28fu <- "DQC_28_01"
@@ -305,8 +306,15 @@ facility_device %>%
 
 # `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
+```{r db-export-screening-subsection, child = 'database_export_sub_rctls_screening.Rmd'}
+```
+
+\newpage
+
 ```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
 ```
+
+\newpage
 
 ```{r}
 day7fu_is_not_null <- !is.null(raw_day7fu_data)
@@ -316,6 +324,8 @@ day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
 ```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
 ```
 
+\newpage
+
 ```{r}
 hospitfu_is_not_null <- !is.null(raw_hospit_data)
 hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
@@ -324,6 +334,8 @@ hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
 ```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
 ```
 
+`r if (is_rct) { '\newpage' }`
+
 ```{r}
 day28fu_is_not_null <- !is.null(raw_day28fu_data)
 day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
@@ -331,6 +343,8 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 
 ```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
 ```
+
+\newpage
 
 ```{r db-export-withdrawals-subsection, child = 'database_export_sub_rctls_withdrawals.Rmd'}
 ```

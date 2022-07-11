@@ -2,8 +2,6 @@
 write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())
 ```
 
-\newpage
-
 ## Hospitalisation data quality checks\n\n
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
@@ -47,9 +45,9 @@ locked_hospit_data <- cleaned_df
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "To be updated later"
-qc_rule <- "Keep duplicated records if they correspond to different hospitalisations."
+qc_rule <- "Keep duplicated records only if they correspond to different hospitalisations."
 qc_type <- "duplicates"
-df <- locked_hospit_data
+df <- locked_hospit_data %>% filter(found == 1)
 col_id <- "child_id"
 col_date <- "start"
 qc_text <- "duplicated IDs"
@@ -74,13 +72,10 @@ hospit_fu <- timci::generate_hospital_log(pii = pii,
 ### Data cleaning summary\n\n
 
 ```{r}
-timci::create_day7fu_qc_flowchart(nrow(hospit_data),
+timci::create_hospit_qc_flowchart(nrow(hospit_data),
                                   n_nonvalid_pids_hospitfu,
-                                  nrow(locked_hospit_data),
-                                  'NA',
-                                  'NA',
-                                  'NA',
-                                  'NA')
+                                  nrow(qc_df),
+                                  nrow(locked_hospit_data))
 ```
 
 ### Data export\n\n

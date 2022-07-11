@@ -111,3 +111,62 @@ allocate_screening_facility <- function(facility_data,
   out[,!(names(out) %in% drop)]
 
 }
+
+#' Allocate the screening facility (copy to allow for a list output - to merge with function above when time allows for it)
+#'
+#' Several information can be triangulated to:
+#' the device ID,
+#' the GPS coordinates,
+#' the selection of the facility by the research assistant
+#' and the child ID
+#'
+#' @param facility_data dataframe containing the processed facility data
+#' @param research_facilities dataframe containing the list of research facilities and their characteristics
+#'
+#' @export
+#' @import dplyr
+
+allocate_screening_facility2 <- function(facility_data,
+                                        research_facilities) {
+
+  # Extract the main device ID used in a facility
+  ddf1 <- extract_main_facility_for_deviceid(facility_data,
+                                             research_facilities) %>%
+    dplyr::rename(fid_from_main_device = fid,
+                  facility_name_from_main_device = facility_name)
+
+  # Extract the main device ID used in a facility at a given date
+  ddf2 <- extract_daily_facility_for_deviceid(facility_data,
+                                              research_facilities) %>%
+    dplyr::rename(fid_from_daily_device = fid,
+                  facility_name_from_daily_device = facility_name)
+
+  fn <- timci::export_df2xlsx(ddf1,
+                              getwd(),
+                              "devices")
+
+  # Remove all data that originates from non-valid device IDs
+  out <- facility_data[facility_data$device_id %in% ddf2$device_id,]
+  qc_df <- facility_data[!facility_data$device_id %in% ddf2$device_id,]
+
+  out <- out %>%
+    merge(y = ddf1[, c("device_id", "fid_from_main_device", "facility_name_from_main_device")],
+          by = c('device_id'),
+          all.x = TRUE) %>%
+    merge(y = ddf2[, c("date_visit", "device_id", "fid_from_daily_device", "facility_name_from_daily_device")],
+          by = c('date_visit', 'device_id'),
+          all.x = TRUE)
+  out <- out %>%
+    ungroup() %>%
+    dplyr::mutate(fid_from_device = ifelse(!is.na(fid_from_daily_device), fid_from_daily_device, fid_from_main_device)) %>%
+    dplyr::mutate(facility_name = ifelse(!is.na(fid_from_daily_device), facility_name_from_daily_device, facility_name_from_main_device)) %>%
+    dplyr::mutate(fid_discrepancy = ifelse(fid_from_device != fid_from_main_device, 1, 0))
+
+  drop <- c("fid_from_daily_device",
+            "facility_name_from_daily_device")
+
+  out <- out[,!(names(out) %in% drop)]
+
+  list(qc_df, out)
+
+}

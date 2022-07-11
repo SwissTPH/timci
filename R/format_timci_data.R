@@ -55,6 +55,11 @@ process_facility_data <- function(df) {
 
   cols <- colnames(df)
 
+  if ( 'crfs-t02b-contact_start' %in% cols ) {
+    df$'crfs-t02b-contact_start' <- strftime(x = df$'crfs-t02b-contact_start',
+                                             format = "%Y-%m-%d %T")
+  }
+
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
     df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
