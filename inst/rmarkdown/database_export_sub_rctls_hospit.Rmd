@@ -34,10 +34,10 @@ qc_export_description <- "the child ID does not correspond to any ID found the l
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_nonvalid_pids_hospitfu <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_nonvalid_pids_hospitfu <- n_detected
 locked_hospit_data <- cleaned_df
 ```
 
@@ -57,7 +57,12 @@ qc_export_description <- "hospitalisation follow-ups are duplicated"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_duplicates_hospitfu <- n_detected
 ```
+
+### Date [context check `r qc_duplicated_hospitfu`]\n\n
+
+To be updated
 
 ### Lost-to-follow-up\n\n
 
@@ -74,7 +79,7 @@ hospit_fu <- timci::generate_hospital_log(pii = pii,
 ```{r}
 timci::create_hospit_qc_flowchart(nrow(hospit_data),
                                   n_nonvalid_pids_hospitfu,
-                                  nrow(qc_df),
+                                  n_duplicates_hospitfu,
                                   nrow(locked_hospit_data))
 ```
 

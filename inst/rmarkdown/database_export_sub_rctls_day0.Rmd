@@ -329,13 +329,25 @@ qc_export_description <- "the clinical presentation is missing"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_missing_cp <- n_detected
 ```
 
-### Diagnosis [Mandatory check]\n\n
+### Diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
-**Check description:** all participants should have complete information about their diagnosis for their Day 0 visit.
-
-Check not implemented yet.
+```{r, results='asis', eval=!is.null(locked_day0_data)}
+qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit."
+qc_rule <- "No modification of the database, only reporting."
+qc_type <- "missing_diagnosis"
+df <- locked_day0_data
+qc_text <- "missing diagnosis"
+qc_idx <- qc_missing_diagnosis_id
+qc_export_label <- "missing_diagnosis"
+qc_export_description <- "the diagnosis is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_diagnosis <- n_detected
+```
 
 ### Referral [Mandatory check `r qc_missing_referral_id`]\n\n
 
@@ -351,7 +363,12 @@ qc_export_description <- "the referral information that should have been obtaine
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_missing_referral_cg <- n_detected
 ```
+
+### Referral [Context check `r qc_missing_referral_id`]\n\n
+
+To be updated
 
 ### Data cleaning summary\n\n
 

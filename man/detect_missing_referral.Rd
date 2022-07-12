@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_timci_quality.R
 \name{detect_missing_referral}
 \alias{detect_missing_referral}
-\title{Detect missing referral (TIMCI-specific function)}
+\title{Detect missing referral reported by caregiver at the exit of the consultation (TIMCI-specific function)}
 \usage{
 detect_missing_referral(facility_df)
 }
@@ -10,8 +10,8 @@ detect_missing_referral(facility_df)
 \item{facility_df}{dataframe containing the processed facility data}
 }
 \value{
-This function returns a dataframe containing only participants with no clinical presentation
+This function returns a dataframe containing only participants with no referral information at the exit of the consultation.
 }
 \description{
-Detect missing referral (TIMCI-specific function)
+Detect missing referral reported by caregiver at the exit of the consultation (TIMCI-specific function)
 }
