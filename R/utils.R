@@ -208,3 +208,20 @@ is_not_empty <- function(df) {
   df_is_not_empty
 
 }
+
+#' Calculate a normalised Levenshtein ratio between two strings
+#'
+#' @param s1 string
+#' @param s2 string
+#' @return This function returns a normalised levenshtein ratio.
+#' @export
+#' @import stringdist
+
+normalised_levenshtein_ratio <- function(s1, s2) {
+
+  n <- max(nchar(s1),nchar(s2))
+  d <- stringdist(s1, s2, method = 'lv')
+  out <- 100 * (1-d/n)
+
+}
+
