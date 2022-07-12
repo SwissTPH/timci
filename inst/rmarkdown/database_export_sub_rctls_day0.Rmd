@@ -5,28 +5,27 @@ write("Export Day 0 data and run corresponding quality checks", stderr())
 ## Day 0 quality checks\n\n
 
 ```{r}
-out <- timci::extract_enrolled_participants(locked_facility_data)
-day0_data <- out[[1]]
-pii <- out[[2]]
-```
-
-```{r}
+day0_data <- facility_data %>%
+    dplyr::filter(enrolled == 1)
 day0_is_not_null <- !is.null(day0_data)
 day0_is_not_empty <- timci::is_not_empty(day0_data)
 ```
 
 ```{r}
-n_raw_day0 <- nrow(day0_data)
+n_raw_day0_records <- nrow(day0_data)
 ```
 
-Among the **`r n_locked_screening`** cleaned screening record(s), there are **`r n_raw_day0`** record(s) corresponding to new Day 0 enrolment(s) in the `r db_name` database.
+Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) in the `r db_name` database.
 
 ```{r}
 db_name <- "Day 0"
-locked_day0_data <- day0_data
 ```
 
 ### Non-valid enrolling facility IDs [compliance checks]\n\n
+
+```{r}
+write(" o Non-valid enrolling facility IDs", stderr())
+```
 
 `r if (is_kenya) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
 
@@ -34,7 +33,7 @@ locked_day0_data <- day0_data
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
 qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are detected and manually corrected before Day 7 follow-up is conducted where possible."
 qc_type <- "nonvalid_ids_no_cleaning"
-df <- lock_day0_data
+df <- day0_data
 idcol1 <- "fid"
 refdf <- research_facilities
 idcol2 <- "facility_id"
@@ -49,24 +48,36 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 `r if (is_kenya) {'#### Facility ID manual edits\n\n'}`
 
-```{r, results='asis', eval=is_kenya}
-out <- timci::correct_day0_non_valid_facilities(day0_data)
-locked_day0_data <- out[[1]]
-facility_edits <- out[[2]]
-if (!is.null(facility_edits)) {
-  facility_edits %>%
-    select(old_child_id, uuid, new_child_id) %>%
-    knitr::kable()
-}
+```{r}
+edited_records <- NULL
+edited_df_status_update <- ""
 ```
 
-`r if (is_kenya) { paste0('#### Second check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
+```{r, eval=is_kenya}
+out <- timci::correct_day0_non_valid_facilities(day0_data)
+day0_data <- out[[1]]
+edited_records <- out[[2]]
+```
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
-qc_description <- ""
-qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are removed."
+```{r, eval=is_kenya&!is.null(edited_records)}
+edited_df_status_update <- paste0('**', nrow(edited_records), '** record(s) were manually edited in the ', db_name, ' database.')
+```
+
+`r edited_df_status_update`
+
+```{r, eval=is_kenya&!is.null(edited_records), results='asis'}
+edited_records %>%
+  dplyr::select(old_child_id, uuid, new_child_id) %>%
+  knitr::kable()
+```
+
+`r if (is_kenya) { paste0('#### Final check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
+
+```{r, eval=!is.null(day0_data), results='asis'}
+qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
+qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are deleted."
 qc_type <- "nonvalid_ids"
-df <- locked_day0_data
+df <- day0_data
 idcol1 <- "fid"
 refdf <- research_facilities
 idcol2 <- "facility_id"
@@ -77,11 +88,11 @@ qc_export_description <- "the facility ID is not valid"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_nonvalid_fids <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-locked_day0_data <- cleaned_df
-n_nonvalid_fids <- nrow(qc_df)
+day0_data <- cleaned_df
 ```
 
 `r if (is_india) {'### Inconsistent facility information [Context check]\n\n'}`
@@ -91,9 +102,9 @@ n_nonvalid_fids <- nrow(qc_df)
 ```{r}
 qc_inconsistent_facility <- NULL
 if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-  if (!is.null(locked_day0_data)) {
-    if (nrow(locked_day0_data) > 0) {
-      qc_inconsistent_facility <- locked_day0_data[locked_day0_data$fid != locked_day0_data$fid_ra, ]
+  if (!is.null(day0_data)) {
+    if (nrow(day0_data) > 0) {
+      qc_inconsistent_facility <- day0_data[day0_data$fid != day0_data$fid_ra, ]
       qc_inconsistent_facility <- qc_inconsistent_facility[c("child_id", "fid", "fid_ra", "uuid")]
     }
   }
@@ -119,11 +130,15 @@ if (!is.null(qc_inconsistent_facility)) {
 
 ### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
+```{r}
+write(" o Caregiver eligibility", stderr())
+```
+
+```{r, eval=!is.null(day0_data), results='asis'}
 qc_description <- "Caregivers must be above 18 years old to be able provide consent for the child to be part in the study."
-qc_rule <- "Children with a caregiver below 18 years old are removed from the database."
+qc_rule <- "Children with a caregiver below 18 years old are deleted from the database."
 qc_type <- "underaged_cg"
-df <- locked_day0_data
+df <- day0_data
 qc_text <- "a consenting caregiver below 18 years old"
 qc_idx <- qc_underaged_cg_id
 qc_export_label <- "underaged_cg"
@@ -131,20 +146,24 @@ qc_export_description <- "the consenting caregiver is below 18 years old"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_ineligible_cg <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-locked_day0_data <- cleaned_df
-n_ineligible_cg <- nrow(qc_df)
+day0_data <- cleaned_df
 ```
 
 ### Incorrect enrolment date [context check `r qc_incorrect_enrolment_date`]\n\n
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
+```{r}
+write(" o Incorrect enrolment date", stderr())
+```
+
+```{r, eval=!is.null(day0_data)&is_tanzania, results='asis'}
 qc_description <- "The enrolment date is defined as the start date of the form. However if research assistants reuse on old form to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date would not be correct."
-qc_rule <- "No modification of the database, only reporting."
+qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- locked_day0_data
+df <- day0_data
 col_date1 <- "start"
 col_date2 <- "start_contact"
 qc_text <- "an incorrect enrolment date"
@@ -158,11 +177,11 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
+```{r, eval=!is.null(day0_data), results='asis'}
 qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
-qc_rule <- "No modification of the database, only reporting."
+qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- locked_day0_data
+df <- day0_data
 col_date1 <- "start"
 col_date2 <- "end"
 qc_text <- "the submission was not finalised on the same day it was started"
@@ -184,11 +203,11 @@ hist(as.numeric(qc_df$diff),
 
 ### Non-timely submission [compliance check `r qc_nontimely_submission_id`]\n\n
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
+```{r, eval=!is.null(day0_data), results='asis'}
 qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
-qc_rule <- "No modification of the database, only reporting."
+qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- locked_day0_data
+df <- day0_data
 col_date1 <- "end"
 col_date2 <- "submission_date"
 qc_text <- "the submission was not transferred on the same day it was finalised"
@@ -212,11 +231,11 @@ hist(as.numeric(qc_df$diff),
 
 `r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
 
-```{r, eval=!is.null(locked_day0_data)&(is_tanzania|is_kenya), results='asis'}
-qc_description <- "All participants should have a distinct ID. Duplicated IDs generate errors for the conduct of follow-ups and lead to ambiguities once the database is deidentified."
-qc_rule <- "child ID duplicates are detected and corrected proactively were possible."
+```{r, eval=!is.null(day0_data)&(is_tanzania|is_kenya), results='asis'}
+qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
 qc_type <- "duplicates"
-df <- locked_day0_data
+df <- day0_data
 col_id <- "child_id"
 col_date <- "start"
 cleaning <- "none"
@@ -229,52 +248,57 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania ) { '#### Test/dummy data manual deletion\n\n' }`
+`r if ( is_tanzania ) { '#### Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
 
-```{r, results='asis'}
-out <- timci::delete_day0_child_ids(locked_day0_data)
-locked_day0_data <- out[[1]]
+```{r}
+deleted_records_status_update <- ""
+out <- timci::delete_day0_records(day0_data)
+day0_data <- out[[1]]
 dropped_records <- out[[2]]
-if (!is.null(dropped_records)) {
-  dropped_records %>%
-    select(old_child_id, uuid, new_child_id) %>%
-    knitr::kable()
-}
+dropped_records_is_not_empty <- timci::is_not_empty(dropped_records)
 ```
 
-`r if ( is_tanzania ) { '#### Child ID repeat visit manual correction\n\n' }`
+```{r, eval=dropped_records_is_not_empty}
+deleted_records_status_update <- paste0('After the manual deletion of the **', nrow(dropped_records), '** record(s) listed below, there are **', nrow(day0_data), '** record(s) in the ', db_name, ' database.')
+```
 
-```{r, results='asis'}
-out <- timci::edit_day0_child_ids(locked_day0_data)
-locked_day0_data <- out[[1]]
+`r deleted_records_status_update`
+
+```{r, eval=dropped_records_is_not_empty, results='asis'}
+dropped_records %>%
+  select(old_child_id, uuid) %>%
+  knitr::kable()
+```
+
+`r if ( is_tanzania | is_kenya | is_senegal ) { '#### Manual correction of duplicated IDs\n\n' }`
+
+```{r}
+edited_records_status_update <- ""
+out <- timci::edit_day0_child_ids(day0_data)
+day0_data <- out[[1]]
 duplicate_edits <- out[[2]]
-if (!is.null(duplicate_edits)) {
-  duplicate_edits %>%
-    select(old_child_id, uuid, new_child_id) %>%
-    knitr::kable()
-}
+duplicate_edits_is_not_empty <- timci::is_not_empty(duplicate_edits)
 ```
 
-`r if ( is_tanzania | is_kenya | is_senegal ) { '#### Child ID duplicate manual edits\n\n' }`
-
-```{r, results='asis'}
-out <- timci::edit_day0_child_ids(locked_day0_data)
-locked_day0_data <- out[[1]]
-duplicate_edits <- out[[2]]
-if (!is.null(duplicate_edits)) {
-  duplicate_edits %>%
-    select(old_child_id, uuid, new_child_id) %>%
-    knitr::kable()
-}
+```{r, eval=duplicate_edits_is_not_empty}
+edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s) manually corrected in the ', db_name, ' database.')
 ```
 
-`r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Second check after manual edits [compliance check ', qc_duplicate_id2, ']\n\n') }`
+`r edited_records_status_update`
 
-```{r, eval=!is.null(locked_day0_data), results='asis'}
-qc_description <- "All participants should have a distinct ID. Duplicated IDs generate errors for the conduct of follow-ups and lead to ambiguities once the database is deidentified."
-qc_rule <- "Remaining child ID duplicates are removed in the database."
+```{r, eval=duplicate_edits_is_not_empty, results='asis'}
+duplicate_edits %>%
+  select(old_child_id, uuid, new_child_id) %>%
+  knitr::kable()
+```
+
+`r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Final check after manual edits [compliance check ', qc_duplicate_id2, ']\n\n') }`
+
+```{r, eval=!is.null(day0_data), results='asis'}
+qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_rule <- "Remaining duplicated child IDs are deleted from the database."
 qc_type <- "duplicates"
-df <- locked_day0_data
+df <- day0_data
 col_id <- "child_id"
 col_date <- "start"
 cleaning <- "drop_all"
@@ -288,40 +312,37 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-locked_day0_data <- cleaned_df
+day0_data <- cleaned_df
 ```
 
-### Possible multiple enrolments\n\n
+### Detection of multiple 28-disease episodes for the same children\n\n
 
 ```{r}
 multiple <- FALSE
 ```
 
+`r if( !multiple) {'Only implemented for the final analysis - disabled for the interim analysis'}`
+
 ```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
-```
-
-### Withdrawal management\n\n
-
-```{r, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
 ### Clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
 
-```{r, results='asis', eval=!is.null(locked_day0_data)}
+```{r, results='asis', eval=!is.null(day0_data)}
 qc_description <- "All participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
 
-* No convulsions (*sx_convulsions* != 1)
-* No lethargy (*sx_lethargy* != 1)
+* No convulsions (*sx_convulsions* $\\neq$ 1)
+* No lethargy (*sx_lethargy* $\\neq$ 1)
 * No vomiting (*sx_vomit* = 0 or *sx_vomit* = 98)
-* No feeding less than usual (sx_less_feed = 0 or sx_less_feed = 98)
-* No cough (sx_cough = 0 or sx_cough = 98)
-* No difficulty breathing (sx_difficulty_breath = 0 or sx_difficulty_breath = 98)
-* No diarrhoea (sx_diarrhoea = 0 or sx_diarrhoea = 98)
-* No fever (sx_fever = 0 or sx_fever = 98)
-* No other complaint (sx_var = 96)"
-qc_rule <- "No modification of the database, only reporting."
+* No feeding less than usual (*sx_less_feed* = 0 or *sx_less_feed* = 98)
+* No cough (*sx_cough* = 0 or *sx_cough* = 98)
+* No difficulty breathing (*sx_difficulty_breath* = 0 or *sx_difficulty_breath* = 98)
+* No diarrhoea (*sx_diarrhoea* = 0 or *sx_diarrhoea* = 98)
+* No fever (*sx_fever* = 0 or *sx_fever* = 98)
+* No other complaint (*sx_var* = 96)"
+qc_rule <- action_alert_no_modification
 qc_type <- "missing_clinical_presentation"
-df <- locked_day0_data
+df <- day0_data
 qc_text <- "missing clinical presentation"
 qc_idx <- qc_missing_cp_id
 qc_export_label <- "missing_clinical_presentation"
@@ -334,11 +355,11 @@ n_missing_cp <- n_detected
 
 ### Diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
-```{r, results='asis', eval=!is.null(locked_day0_data)}
+```{r, results='asis', eval=!is.null(day0_data)}
 qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit."
-qc_rule <- "No modification of the database, only reporting."
+qc_rule <- action_alert_no_modification
 qc_type <- "missing_diagnosis"
-df <- locked_day0_data
+df <- day0_data
 qc_text <- "missing diagnosis"
 qc_idx <- qc_missing_diagnosis_id
 qc_export_label <- "missing_diagnosis"
@@ -351,11 +372,11 @@ n_missing_diagnosis <- n_detected
 
 ### Referral [Mandatory check `r qc_missing_referral_id`]\n\n
 
-```{r, results='asis', eval=!is.null(locked_day0_data)}
-qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. This information is collected from 2 soures: the caregiver at the exit of the consultation and the facility registries/consultation notes. However, caregivers may be lost at the exit of the consultation, so that the referral information from this source would then be missing."
-qc_rule <- "No modification of the database, only reporting."
+```{r, results='asis', eval=!is.null(day0_data)}
+qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. This information is collected from 2 soures: the caregiver at the exit of the consultation and the facility registries/consultation notes. However, caregivers may be lost at the exit of the consultation, so that the referral information from this source would be missing (*referral_cg* = 'NA')."
+qc_rule <- action_alert_no_modification
 qc_type <- "missing_referral"
-df <- locked_day0_data
+df <- day0_data
 qc_text <- "missing referral information (source: caregiver at the exit of the consultation)"
 qc_idx <- qc_missing_referral_id
 qc_export_label <- "missing_referral_cg"
@@ -366,21 +387,18 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_referral_cg <- n_detected
 ```
 
-### Referral [Context check `r qc_missing_referral_id`]\n\n
-
-To be updated
-
 ### Data cleaning summary\n\n
 
-```{r, results = 'asis'}
-timci::format_nrow("There are", locked_day0_data, "records in the locked Day 0 database.")
+```{r}
+day0_data <- timci::extract_pii(day0_data)[[1]]
+n_cleaned_day0_records <- nrow(day0_data)
 ```
 
 ```{r}
-timci::create_day0_qc_flowchart(n_raw_day0,
+timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fids,
                                 n_ineligible_cg,
-                                nrow(locked_day0_data),
+                                n_cleaned_day0_records,
                                 'NA',
                                 'NA',
                                 'NA',
@@ -389,29 +407,16 @@ timci::create_day0_qc_flowchart(n_raw_day0,
 
 ### Data export\n\n
 
-```{r, eval=(!is.null(facility_data) & deidentification_on)}
-deidentified_day0_data <- timci::deidentify_data(day0_data)
-locked_day0_data <- timci::deidentify_data(locked_day0_data)
-```
-
 ```{r, eval=!deidentification_on, results = 'asis'}
-timci::dataset_export(day0_data,
+timci::dataset_export(raw_day0_data,
                       "02",
                       "timci_day0_data",
                       rctls_dir,
                       "Raw Day 0 data")
 ```
 
-```{r, eval=deidentification_on, results = 'asis'}
-timci::dataset_export(deidentified_day0_data,
-                      "02",
-                      "timci_day0_data",
-                      rctls_dir,
-                      "Deidentified raw Day 0 data")
-```
-
 ```{r, results = 'asis'}
-timci::dataset_export(locked_day0_data,
+timci::dataset_export(day0_data,
                       "02",
                       "timci_day0_data",
                       locked_db_dir,
@@ -419,7 +424,7 @@ timci::dataset_export(locked_day0_data,
 ```
 
 ```{r split-pii-from-research-data, eval=!is.null(facility_data)}
-ts <- timci::export_df2xlsx(pii,
+ts <- timci::export_df2xlsx(raw_pii,
                             tempdir(),
                             "timci_contact_data")
 pii_pwd <- Sys.getenv("TIMCI_PII_PW")
@@ -432,17 +437,8 @@ zip(params$participant_zip,
 study_data <- timci::extract_all_visits(facility_data)
 ```
 
-```{r, eval=!deidentification_on, results = 'asis'}
+```{r, results = 'asis'}
 timci::dataset_export(study_data,
-                      "03",
-                      "timci_facility_visits_data",
-                      rctls_dir,
-                      "Facility visit data")
-```
-
-```{r, eval=deidentification_on, results = 'asis'}
-deidentified_facility_data <- timci::deidentify_data(study_data)
-timci::dataset_export(deidentified_facility_data,
                       "03",
                       "timci_facility_visits_data",
                       rctls_dir,

@@ -216,6 +216,52 @@ identify_duplicates_by_dates <- function(df,
 
 }
 
+#' Identify ID duplicates by dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param col_date name of the column containing dates in `df`
+#' @param col_id name of the column containing IDs in `df`
+#' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr
+
+identify_repeat_duplicate <- function(df,
+                                      col_id,
+                                      col_date,
+                                      cleaning = "none") {
+
+  qc_df <- NULL
+  cleaned_df <- NULL
+
+  if ( timci::is_not_empty(df) ) {
+
+    qc_df <- df %>%
+      dplyr::filter(enrolled == 1) %>%
+      dplyr::mutate(full_name = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+      dplyr::rename(val = !!dplyr::enquo(col_id)) %>%
+      dplyr::group_by(val) %>%
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(val,
+                         names_from = row_n,
+                         values_from = c("full_name"),
+                         names_prefix = "name_")
+
+      if ( "name_2" %in% colnames(qc_df) ) {
+        qc_df <- qc_df %>%
+          dplyr::filter(!is.na(name_2)) %>%
+          dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2))
+      } else {
+        qc_df <- NULL
+      }
+
+
+  }
+
+  list(qc_df, cleaned_df)
+
+}
+
 #' Detect name duplicates (TIMCI-specific function)
 #' Search for exact matches and switches
 #'
@@ -404,17 +450,11 @@ detect_missing_diagnosis <- function(facility_df) {
 
   if ( timci::is_not_empty(facility_df) ) {
 
-    facility_df$sx_vomit_evthing[is.na(facility_df$sx_vomit_evthing)] <- 0
-    facility_df$sx_unable_feed[is.na(facility_df$sx_unable_feed)] <- 0
-
     out <- facility_df %>%
-      dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
-                                          1,
-                                          0)) %>%
-      dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
-                                                           1,
-                                                           0)) %>%
-      filter(missing_clinical_presentation == 1)
+      dplyr::mutate(missing_diagnosis = ifelse( dx_severe == 0 & dx_pneumonia == 0 & dx_diarrhoea == 0 & dx_dehydration == 0 & dx_malaria == 0 & dx_ear_infection == 0 & dx_malnutrition == 0 &	dx_anaemia == 0	&	dx_mlist == 96 & dx_oth_yn == 0,
+                                               1,
+                                               0 )) %>%
+      filter(missing_diagnosis == 1)
 
   }
 

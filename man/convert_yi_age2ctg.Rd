@@ -4,10 +4,18 @@
 \alias{convert_yi_age2ctg}
 \title{Convert age in days to age categories (TIMCI-specific function)}
 \usage{
-convert_yi_age2ctg(val)
+convert_yi_age2ctg(yi_ctg, yr_ctg, val, incl, excl)
 }
 \arguments{
+\item{yi_ctg}{character containing the category of young infant}
+
+\item{yr_ctg}{scalar value}
+
 \item{val}{scalar value containing the age of the child in days}
+
+\item{incl}{boolean value}
+
+\item{excl}{boolean}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

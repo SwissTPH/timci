@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Data Quality Report"
+title: "TIMCI Data Quality Report - Details by facility"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 output:
@@ -61,49 +61,7 @@ write(formats2h2("Explore Day 0 data"), stderr())
 ## Day 0 data
 
 ```{r, results='asis'}
-skimr::skim(locked_day0_data)
-```
-
-## Day 7 follow-up data
-
-```{r, results='asis'}
-skimr::skim(locked_allday7fu_data)
-```
-
-## Day 28 follow-up data
-
-```{r, results='asis'}
-skimr::skim(locked_allday28fu_data)
-```
-
-## Hospital visit follow-up data
-
-```{r, results='asis'}
-skimr::skim(locked_hospit_data)
-```
-
-# Service Provision Assessment (SPA)
-
-## Sick child observation data
-
-```{r, results='asis'}
-skimr::skim(locked_spa_sco_data)
-```
-
-## Caregiver exit interview data
-
-```{r, results='asis', eval=(!is.null(spa_cgei_data))}
-skimr::skim(spa_cgei_data)
-```
-
-## Healthcare provider interview data
-
-```{r, results='asis', eval=(!is.null(locked_spa_hcpi_data))}
-skimr::skim(locked_spa_hcpi_data)
-```
-
-## Facility Assessment
-
-```{r, results='asis', eval=(!is.null(spa_fa_data))}
-skimr::skim(spa_fa_data)
+locked_day0_data %>%
+  dplyr::group_by(facility) %>%
+  skim()
 ```

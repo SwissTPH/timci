@@ -75,15 +75,27 @@ process_facility_data <- function(df) {
     df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y"), '')
   }
 
-  # Young infants: extract age in days (WHO category)
+  # Extract age in days (WHO category)
   if ('a3-a3_a_9' %in% cols) {
-    df$yi_age_ctg_tmp <- sapply(df$'a3-a3_a_9', timci::convert_yi_age2ctg)
+    #df$yi_age_ctg_tmp <- sapply(df$'a3-a3_a_9', timci::convert_yi_age2ctg)
+    df$yi_age_ctg_tmp <- mapply(timci::convert_yi_age2ctg,
+                                df[['a3-a3_a_8']],
+                                df[['a3-a3_a_2']],
+                                df[['a3-a3_a_9']],
+                                df[['a3-incl1']],
+                                df[['a3-excl1']])
   }
   if ('a3-a3_a_9a' %in% cols) {
-    df$yi_age_ctg_tmp2 <- sapply(df$'a3-a3_a_9a', timci::convert_yi_age2ctg)
+    #df$yi_age_ctg_tmp2 <- sapply(df$'a3-a3_a_9a', timci::convert_yi_age2ctg)
+    df$yi_age_ctg_tmp2 <- mapply(timci::convert_yi_age2ctg,
+                                 df[['a3-a3_a_8']],
+                                 df[['a3-a3_a_2']],
+                                 df[['a3-a3_a_9a']],
+                                 df[['a3-incl1']],
+                                 df[['a3-excl1']])
   }
   if ('a3-a3_a_8' %in% cols) {
-    df$'a3-a3_a_8' <- ifelse(is.na(df$'a3-a3_a_8') & df$'a3-is_young_infant' == 1,
+    df$'a3-a3_a_8' <- ifelse(is.na(df$'a3-a3_a_8'),
                              ifelse(!is.na(df$'a3-a3_a_9') & df$'a3-dobk' == 1,
                                     df$yi_age_ctg_tmp,
                                     ifelse(!is.na(df$'a3-a3_a_9a'),
@@ -776,21 +788,29 @@ count_baseline_vs_repeat <- function(df) {
 
 #' Convert age in days to age categories (TIMCI-specific function)
 #'
+#' @param yi_ctg character containing the category of young infant
+#' @param yr_ctg scalar value
 #' @param val scalar value containing the age of the child in days
+#' @param incl boolean value
+#' @param excl boolean
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 
-convert_yi_age2ctg <- function(val) {
-  res <- ""
+convert_yi_age2ctg <- function(yi_ctg,
+                               yr_ctg,
+                               val,
+                               incl,
+                               excl) {
+
   val <- as.integer(val)
-  if (!is.na(val)) {
-    if (val >= 1 & val < 7) {
-      res <- "[1-6d]"
-    } else if (val >= 7 & val < 28) {
-      res <- "[7-27d]"
-    } else if (val >= 28 & val < 60) {
-      res <- "[28-59d]"
-    }
-  }
-  res
+  yr_ctg <- as.integer(yr_ctg)
+
+  out <- case_when( ( val >= 1 & val < 7 ) ~ "[1-6d]",
+                    ( val >= 7 & val < 28 ) ~ "[7-27d]",
+                    ( val >= 28 & val < 60 ) ~ "[28-59d]",
+                    ( val >= 60 & val < 365 ) ~ "[60-364d]",
+                    yr_ctg == 0 ~ "[60-364d]",
+                    yr_ctg > 0 ~ "[12-59m]",
+                    ( incl == 1 & excl != 1 ) ~ "[12-59m]",
+                    TRUE ~ "")
 }

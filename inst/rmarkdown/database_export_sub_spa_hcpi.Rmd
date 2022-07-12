@@ -36,8 +36,8 @@ locked_spa_hcpi_data <- cleaned_df
 ### Duplicate management [compliance check `r qc_spa_hcpi_duplicates`]\n\n
 
 ```{r, eval=!is.null(locked_spa_hcpi_data), results='asis'}
-qc_description <- "To be updated later"
-qc_rule <- "Keep duplicated records and investigate the reason for duplicates."
+qc_description <- "Keep duplicated records and investigate the reason for duplicates."
+qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
 df <- locked_spa_hcpi_data
 col_id <- "hcp_id"

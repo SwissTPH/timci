@@ -103,7 +103,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   filter <- NULL
   if (is_test){
-    odata_start_date <- lock_date - 29
+    odata_start_date <- lock_date - 30
     odata_end_date <- lock_date + 1
     filter <- paste0("__system/submissionDate ge ",
                      odata_start_date,
@@ -183,6 +183,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   # Dirty fix - To be moved when time allows
   col_specs <- list(
+    'a3-a3_a_5' = col_integer(),
+    'crfs-t09a1-t08a-f2_9' = col_integer(),
+    'crfs-t09a1-t08a-f2_8' = col_integer(),
+    'crfs-t09a1-t06a-d2_3b' = col_double(),
+    'crfs-t09a1-t06a-d2_2b' = col_double(),
+    'crfs-t09a1-t05b-c3_6' = col_integer(),
     'a4_c_10a' = col_integer(),
     'crfs-t04a-b2_3' = col_integer(),
     'crfs-t03-m3_1b' = col_integer(),
@@ -727,7 +733,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     load(file = "timci_locked_data.rda")
     setwd(wdir)
 
-    # Global data report
+    # Global data reports
     params <- list(locked_day0_data = locked_day0_data,
                    locked_allday7fu_data = locked_allday7fu_data,
                    locked_hospit_data = locked_hospit_data,
@@ -739,7 +745,23 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       params <- append(params,
                        list(locked_allday28fu_data = locked_allday28fu_data))
     }
-    generate_word_report(report_dir, "database_summary.Rmd", "timci_data_summary_report", params)
+    # Aggregated data report
+    generate_word_report(report_dir,
+                         "database_summary.Rmd",
+                         "timci_data_summary_report",
+                         params)
+
+    # Data report disaggregated by facility
+    generate_word_report(report_dir,
+                         "database_summary_by_facility.Rmd",
+                         "timci_data_by_facility_summary_report",
+                         params)
+
+    # Young infant data report
+    generate_word_report(report_dir,
+                         "database_summary_yi.Rmd",
+                         "timci_young_infant_data_summary_report",
+                         params)
 
     # Detailed data reports
     library(dataMaid)

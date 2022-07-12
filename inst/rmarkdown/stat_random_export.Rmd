@@ -15,8 +15,6 @@ library(readxl)
 
 cdate <- Sys.Date()
 
-myxlsx0 <- paste0("C:/Users/langhe/Documents/Tanzania/timci_exports/export_", cdate, "/02_Tanzania_main_study_interim_analysis_lock/08a_Tanzania_quality_checks/02_timci_day0_data.xlsx")
-
 myxlsx0 <- paste0("C:/Users/langhe/Documents/Tanzania/timci_exports/export_", cdate, "/02_Tanzania_main_study_interim_analysis_lock/08b_Tanzania_cleaned_datasets/02_timci_day0_data.xlsx")
 myxlsx1 <- paste0("C:/Users/langhe/Documents/Tanzania/timci_exports/export_", cdate, "/02_Tanzania_main_study_interim_analysis_lock/08b_Tanzania_cleaned_datasets/04a_timci_followup_day7_data.xlsx")
 myxlsx2 <- paste0("C:/Users/langhe/Documents/Tanzania/timci_exports/export_", cdate, "/02_Tanzania_main_study_interim_analysis_lock/08b_Tanzania_cleaned_datasets/06a_timci_followup_day28_data.xlsx")
@@ -27,16 +25,16 @@ set.seed(2021)
 
 ## Loading data
 ```{r, echo=TRUE, message=FALSE}
-df0 <- readxl::read_excel(myxlsx0)
+df0 <- readxl::read_excel(myxlsx0, col_types = "text")
 print(nrow(df0))
 ```
 ```{r, echo=TRUE, message=FALSE}
-df1 <- readxl::read_excel(myxlsx1)
+df1 <- readxl::read_excel(myxlsx1, col_types = "text")
 print(nrow(df1))
 ```
 
 ```{r, echo=TRUE, message=FALSE}
-df2 <- readxl::read_excel(myxlsx2)
+df2 <- readxl::read_excel(myxlsx2, col_types = "text")
 print(nrow(df2))
 ```
 

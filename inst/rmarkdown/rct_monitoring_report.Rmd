@@ -1309,16 +1309,28 @@ all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
 all["dx_severe"[!("dx_severe" %in% colnames(all))]] <- NA
 
 all <- all %>%
-  dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1, 1, 0)) %>%
-  dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96, 1, 0)) %>%
-  dplyr::mutate(missing_referral_cg = ifelse(referral_cg == 98 | referral_cg == 97 | referral_cg == 100, 1, 0)) %>%
-  dplyr::mutate(missing_diagnosis = ifelse((dx == 999 & is.na(dx_oth)), 1, 0))
+  dplyr::mutate(danger_signs = ifelse(sx_convulsions == 1 | sx_lethargy == 1 | sx_vomit_evthing == 1 | sx_unable_feed == 1,
+                                      1,
+                                      0)) %>%
+  dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
+                                                       1,
+                                                       0)) %>%
+  dplyr::mutate(missing_referral_cg = ifelse(referral_cg == 98 | referral_cg == 97 | referral_cg == 100,
+                                             1,
+                                             0)) %>%
+  dplyr::mutate(missing_diagnosis = ifelse((dx == 999 & is.na(dx_oth)),
+                                           1,
+                                           0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(cold = ifelse(2 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(cold = ifelse(2 %in% as.integer(unlist(strsplit(sx_var, split = ";"))),
+                              1,
+                              0))
 all <- all %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(ear = ifelse(3 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))
+  dplyr::mutate(ear = ifelse(3 %in% as.integer(unlist(strsplit(sx_var, split = ";"))),
+                             1,
+                             0))
 all <- all %>%
   dplyr::rowwise() %>%
   dplyr::mutate(eye = ifelse(4 %in% as.integer(unlist(strsplit(sx_var, split = ";"))), 1, 0))

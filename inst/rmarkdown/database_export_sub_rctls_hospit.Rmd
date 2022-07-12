@@ -25,7 +25,7 @@ qc_rule <- "Keep only IDs of participant who are found in the locked Day 0 datab
 qc_type <- "nonvalid_ids"
 df <- hospit_data
 idcol1 <- "child_id"
-refdf <- locked_day0_data
+refdf <- day0_data
 idcol2 <- "child_id"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_hospitfu
@@ -66,8 +66,8 @@ To be updated
 
 ### Lost-to-follow-up\n\n
 
-```{r, eval=!is.null(pii)}
-hospit_fu <- timci::generate_hospital_log(pii = pii,
+```{r, eval=!is.null(raw_pii)}
+hospit_fu <- timci::generate_hospital_log(pii = raw_pii,
                                           fu7df = raw_day7fu_data,
                                           day0df = day0_data,
                                           hospitdf = raw_hospit_data,

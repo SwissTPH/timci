@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = FALSE,
 
 **Check description:** `r qc_description`
 
-**Rule:** `r qc_rule`
+**Action:** `r qc_rule`
 
 ```{r}
 cleaned_df <- NULL
@@ -28,10 +28,10 @@ cleaned_df <- out[[2]]
 ```
 
 ```{r, eval=(qc_type=="posterior_to_lockdate")}
-qc_df <- locked_facility_data %>%
+qc_df <- df %>%
   dplyr::filter(date_visit > as.Date(lock_date, "%Y-%m-%d")) %>%
   dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
-cleaned_df <- locked_facility_data %>%
+cleaned_df <- df %>%
   dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")) %>%
   dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
 ```
@@ -81,6 +81,15 @@ out <- timci::identify_duplicates_by_dates(df,
                                            col_id,
                                            col_date,
                                            cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="duplicates_check_pii")}
+out <- timci::identify_repeat_duplicate(df,
+                                        col_id,
+                                        col_date,
+                                        cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
@@ -160,7 +169,7 @@ timci::quality_check_export(df = qc_df,
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-cleaned_df_status_update <- paste0('After deletion of the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the cleaned ', db_name, ' database.')
+cleaned_df_status_update <- paste0('After deletion of all the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the ', db_name, ' database.')
 ```
 
 `r cleaned_df_status_update`

@@ -29,7 +29,7 @@ qc_rule <- "Keep only IDs of children who are found in the locked Day 0 database
 qc_type <- "nonvalid_ids"
 df <- locked_spa_sco_data
 idcol1 <- "child_identification-pid"
-refdf <- locked_day0_data
+refdf <- day0_data
 idcol2 <- "child_id"
 qc_text <- "participant ID not valid"
 qc_idx <- qc_spa_sco_nonvalid_ids
@@ -47,8 +47,8 @@ locked_spa_sco_data <- cleaned_df
 ### Duplicate management [compliance check `r qc_spa_sco_duplicates`]\n\n
 
 ```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
-qc_description <- "To be updated later"
-qc_rule <- "Keep duplicated records and investigate the reason for duplicates."
+qc_description <- "Keep duplicated records and investigate the reason for duplicates."
+qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
 df <- locked_spa_sco_data
 col_id <- "child_identification-pid"

@@ -55,8 +55,17 @@ edit_day0_child_ids <- function(df) {
 
   out <- list(df, NULL)
   if ( csv_filename != "" ) {
+
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+
+    found_edits <- edits[, c("old_child_id", "uuid", "new_child_id")] %>%
+      merge(df[, c("child_id", "uuid")],
+            by.x = c("old_child_id", "uuid"),
+            by.y = c("child_id", "uuid"),
+            all.x = FALSE,
+            all.y = FALSE)
+
     df <- df %>%
       merge(edits[, c("old_child_id", "uuid", "new_child_id")],
             by.x=c("child_id", "uuid"),
@@ -76,7 +85,58 @@ edit_day0_child_ids <- function(df) {
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, found_edits)
+  }
+  out
+
+}
+
+#' Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
+#' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains an edited dataframe and the list of edits
+#' @import dplyr
+#' @export
+
+edit_day0_to_repeat <- function(df) {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_repeat_correction_tanzania.csv",
+                            TRUE ~ "")
+
+  out <- list(df, NULL)
+  if ( csv_filename != "" ) {
+
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+
+    found_edits <- edits[, c("old_child_id", "uuid")] %>%
+      merge(df[, c("child_id", "uuid")],
+            by.x = c("old_child_id", "uuid"),
+            by.y = c("child_id", "uuid"),
+            all.x = FALSE,
+            all.y = FALSE)
+
+    df <- df %>%
+      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+            by.x=c("child_id", "uuid"),
+            by.y=c("old_child_id", "uuid"),
+            all.x=TRUE)
+    df$repeat_consult <- ifelse(is.na(df$new_child_id),
+                                df$repeat_consult,
+                                1)
+    df$consent <- ifelse(is.na(df$new_child_id),
+                         df$consent,
+                         NA)
+    df$enrolled <- ifelse(is.na(df$new_child_id),
+                          df$enrolled,
+                          NA)
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_child_id")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, found_edits)
   }
   out
 
@@ -90,18 +150,26 @@ edit_day0_child_ids <- function(df) {
 #' @import dplyr
 #' @export
 
-delete_day0_child_ids <- function(df) {
+delete_day0_records <- function(df) {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_drop_dummy_tanzania.csv",
                             TRUE ~ "")
 
   out <- list(df, NULL)
   if ( csv_filename != "" ) {
+
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     records_to_drop <- readr::with_edition(1, readr::read_csv(csv_pathname))
+
+    found_records <- records_to_drop %>%
+      merge(df[, c("child_id", "uuid")],
+            by.x = c("old_child_id", "uuid"),
+            by.y = c("child_id", "uuid"),
+            all.x = FALSE,
+            all.y = FALSE)
     df <- df[!(df$uuid %in% records_to_drop$uuid), ]
 
-    out <- list(df, records_to_drop)
+    out <- list(df, found_records)
   }
   out
 
@@ -118,6 +186,8 @@ correct_day0_all <- function(df) {
 
   # Correct incorrect facility of enrolment
   df <- timci::correct_day0_non_valid_facilities(df)[[1]]
+  # Delete dummy/test data
+  df <- timci::delete_day0_records(df)[[1]]
   # Correct duplicated child IDs
   df <- timci::edit_day0_child_ids(df)[[1]]
 

@@ -40,11 +40,11 @@ To be completed
 
 ```{r, eval=!is.null(day28fu_data)}
 # All follow-ups
-locked_allday28fu_data <- allday28fu_data[allday28fu_data$child_id %in% locked_day0_data$child_id, ]
-allday28fu_data_uids <- allday28fu_data[!allday28fu_data$child_id %in% locked_day0_data$child_id, ]
+locked_allday28fu_data <- allday28fu_data[allday28fu_data$child_id %in% day0_data$child_id, ]
+allday28fu_data_uids <- allday28fu_data[!allday28fu_data$child_id %in% day0_data$child_id, ]
 # Successful follow-ups
-locked_day28fu_data <- day28fu_data[day28fu_data$child_id %in% locked_day0_data$child_id, ]
-day28fu_data_uids <- day28fu_data[!day28fu_data$child_id %in% locked_day0_data$child_id, ]
+locked_day28fu_data <- day28fu_data[day28fu_data$child_id %in% day0_data$child_id, ]
+day28fu_data_uids <- day28fu_data[!day28fu_data$child_id %in% day0_data$child_id, ]
 locked_day28fu_data <- locked_day28fu_data %>% 
   dplyr::mutate(window = ifelse(days >= 28 & days <= 32, 1, 0))
 ```
@@ -105,8 +105,8 @@ if (n > 1) {
 
 ```{r, results = 'asis'}
 fu28all <- NULL
-if (!is.null(pii) & !is.null(raw_day28fu_data)) {
-  fu28all <- timci::generate_fu_log(pii,
+if (!is.null(raw_pii) & !is.null(raw_day28fu_data)) {
+  fu28all <- timci::generate_fu_log(raw_pii,
                                     raw_day28fu_data,
                                     0,
                                     32,

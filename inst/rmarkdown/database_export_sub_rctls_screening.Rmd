@@ -6,12 +6,10 @@ write("Export screening data and run corresponding quality checks", stderr())
 
 ```{r}
 db_name <- "screening"
-raw_day0_data <- timci::extract_enrolled_participants(facility_data)[[1]]
-screening_data <- timci::extract_screening_data(facility_data)
-n_raw_records <- nrow(facility_data)
+n_raw_screening_records <- nrow(raw_screening_data)
 ```
 
-Initially, there are **`r n_raw_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
+Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
 ### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
 
@@ -27,12 +25,11 @@ qc_export_description <- "the device ID is not valid"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_nonvalid_deviceid_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-locked_facility_data <- cleaned_df
-n_locked_screening <- nrow(locked_facility_data)
-n_nonvalid_deviceid_records <- nrow(qc_df)
+facility_data <- cleaned_df
 ```
 
 ### Lock date [context check `r qc_screening_after_lockdate`]\n\n
@@ -41,7 +38,7 @@ n_nonvalid_deviceid_records <- nrow(qc_df)
 qc_description <- "To be updated"
 qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
 qc_type <- "posterior_to_lockdate"
-df <- locked_facility_data
+df <- facility_data
 qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
 qc_idx <- qc_screening_after_lockdate
 qc_export_label <- "posterior_to_lockdate"
@@ -49,36 +46,93 @@ qc_export_description <- "the device ID is not valid"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_after_lockdate_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-locked_facility_data <- cleaned_df
-locked_screening_data <- timci::extract_screening_data(locked_facility_data)
-n_locked_screening1 <- nrow(locked_facility_data)
-n_after_lockdate_records <- nrow(qc_df)
+facility_data <- cleaned_df
+```
+
+### Repeat visits incorrectly recorded as new enrolments [compliance checks]
+
+`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
+
+```{r, eval=!is.null(facility_data)&(is_tanzania), results='asis'}
+qc_description <- ""
+qc_rule <- ""
+qc_type <- "duplicates_check_pii"
+df <- facility_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_dup_repeats_id1
+qc_export_label <- "timci_repeat_visit_duplicates"
+qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+`r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs\n\n' }`
+
+`r if ( is_tanzania ) { paste0('Records are deleted from the ', db_name, ' database and need to be added to the visit database.\n\n') }`
+
+```{r}
+edited_records_status_update <- ""
+out <- timci::edit_day0_to_repeat(facility_data)
+facility_data <- out[[1]]
+repeat_visit_edits <- out[[2]]
+repeat_visit_edits_is_not_empty <- timci::is_not_empty(repeat_visit_edits)
+```
+
+```{r, eval=repeat_visit_edits_is_not_empty}
+edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+```
+
+`r edited_records_status_update`
+
+```{r, eval=repeat_visit_edits_is_not_empty, results='asis'}
+repeat_visit_edits %>%
+  select(old_child_id, uuid) %>%
+  knitr::kable()
+```
+
+```{r, eval=!is.null(facility_data), results='asis'}
+qc_description <- ""
+qc_rule <- ""
+qc_type <- "duplicates_check_pii"
+df <- facility_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_dup_repeats_id2
+qc_export_label <- "timci_repeat_visit_duplicates"
+qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Data cleaning summary\n\n
 
 ```{r}
-timci::create_screening_qc_flowchart(n_raw_records,
+screening_data <- timci::extract_screening_data(facility_data)
+n_cleaned_screening_records <- nrow(screening_data)
+```
+
+```{r}
+timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
                                      n_after_lockdate_records,
-                                     n_locked_screening)
+                                     n_cleaned_screening_records)
 ```
 
 ### Data export\n\n
 
-```{r export-facility-audit, results = 'asis'}
-timci::dataset_export(facility_data_audit,
-                      "00",
-                      "timci_facility_audit_data",
-                      rctls_dir,
-                      "Screening audit data")
-```
-
 ```{r export-screening-data, results = 'asis'}
-timci::dataset_export(screening_data,
+timci::dataset_export(raw_screening_data,
                       "01",
                       "timci_screening_data",
                       rctls_dir,
@@ -86,9 +140,17 @@ timci::dataset_export(screening_data,
 ```
 
 ```{r export-locked-screening-data, results = 'asis'}
-timci::dataset_export(locked_screening_data,
+timci::dataset_export(screening_data,
                       "01",
                       "timci_screening_data",
                       locked_db_dir,
                       "Cleaned screening data")
+```
+
+```{r export-facility-audit, results = 'asis'}
+timci::dataset_export(facility_data_audit,
+                      "00",
+                      "timci_facility_audit_data",
+                      rctls_dir,
+                      "Screening audit data")
 ```
