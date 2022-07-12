@@ -14,7 +14,7 @@ Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_
 ### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
 
 ```{r, eval=!is.null(facility_data), results='asis'}
-qc_description <- "*Non-valid* devices were either used to collect training data or to collect data for another study."
+qc_description <- "Other devices than the ones whose IDs are listed in Section 2.3 of this report may have been used for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
 qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted from the database."
 qc_type <- "nonvalid_deviceids"
 df <- facility_data
@@ -35,7 +35,7 @@ facility_data <- cleaned_df
 ### Lock date [context check `r qc_screening_after_lockdate`]\n\n
 
 ```{r, eval=!is.null(facility_data), results='asis'}
-qc_description <- "To be updated"
+qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
 qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
 qc_type <- "posterior_to_lockdate"
 df <- facility_data
