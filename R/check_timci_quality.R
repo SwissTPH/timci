@@ -126,17 +126,19 @@ detect_non_timely_completion <- function(df) {
 #' @param df dataframe containing the processed facility data
 #' @param col_date_start column
 #' @param col_date_end column
+#' @param cleaning type of cleaning to be performed on inconsistent dates, by default set to "none" (i.e., no cleaning following the identification of inconsistent dates)
 #' @return This function returns a dataframe containing data of possible duplicate participants only
 #' @export
 #' @import dplyr
 
 detect_inconsistent_dates <- function(df,
                                       col_date_start,
-                                      col_date_end) {
+                                      col_date_end,
+                                      cleaning = "none") {
 
+  qc_df <- NULL
   cleaned_df <- NULL
 
-  # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df[[col_date_end]]), format="%Y-%m-%d %T") - as.Date(as.character(df[[col_date_start]]), format="%Y-%m-%d %T")
   kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
   if ( !"start" %in% kcols ) {
@@ -145,8 +147,20 @@ detect_inconsistent_dates <- function(df,
   if ( !"end" %in% kcols ) {
     kcols <- c(kcols, "end")
   }
-  qc_df <- df[df$diff > 0, kcols] %>%
-    dplyr::arrange(diff, fid)
+
+  qc_df <- df %>%
+    dplyr::filter(diff > 0)
+
+  if (timci::is_not_empty(qc_df)) {
+    qc_df <- qc_df %>%
+      dplyr::select(kcols) %>%
+      dplyr::arrange(diff, fid)
+  }
+
+  if ( !is.null(qc_df) & cleaning == "replace_by_end_date" ) {
+    cleaned_df <- df
+    cleaned_df$start <- ifelse(cleaned_df$uuid %in% qc_df$uuid, cleaned_df[[col_date_end]], cleaned_df$start)
+  }
 
   list(qc_df, cleaned_df)
 
@@ -196,10 +210,10 @@ identify_duplicates_by_dates <- function(df,
 
     qc_df <- df %>%
       dplyr::arrange(!!dplyr::enquo(col_date)) %>% # order by ascending dates
-      dplyr::rename(val = !!dplyr::enquo(col_id)) %>%
-      dplyr::group_by(val) %>%
+      dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
+      dplyr::group_by(id) %>%
       dplyr::mutate(row_n = row_number()) %>%
-      tidyr::pivot_wider(val,
+      tidyr::pivot_wider(id,
                          names_from = row_n,
                          values_from = c(col_date),
                          names_prefix = "date_")
@@ -207,16 +221,16 @@ identify_duplicates_by_dates <- function(df,
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
         filter(!is.na(date_2))
-      qc_df2 <- df[df[[col_id]] %in% qc_df$val, ]
+      qc_df2 <- df[df[[col_id]] %in% qc_df$id, ]
     } else {
       qc_df <- NULL
     }
 
     if ( !is.null(qc_df) & cleaning == "drop_all" ) {
-      cleaned_df <- df[!df[[col_id]] %in% qc_df$val, ]
+      cleaned_df <- df[!df[[col_id]] %in% qc_df$id, ]
     }
     if ( !is.null(qc_df) & cleaning == "keep_latest" ) {
-      cleaned_df <- df[!df[[col_id]] %in% qc_df$val, ]
+      cleaned_df <- df[!duplicated(df[[col_id]]), ]
     }
 
   }
@@ -247,21 +261,28 @@ identify_repeat_duplicate <- function(df,
 
     qc_df <- df %>%
       dplyr::filter(enrolled == 1) %>%
-      dplyr::mutate(full_name = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
-      dplyr::rename(val = !!dplyr::enquo(col_id)) %>%
-      dplyr::group_by(val) %>%
+      dplyr::arrange(desc(date_visit)) %>%
+      dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+      dplyr::rename(id = !!dplyr::enquo(col_id),
+                    date = date_visit) %>%
+      dplyr::group_by(id) %>%
       dplyr::mutate(row_n = row_number()) %>%
-      tidyr::pivot_wider(val,
+      tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c("full_name"),
-                         names_prefix = "name_")
+                         values_from = c("date", "name"))
 
-      if ( "name_2" %in% colnames(qc_df) ) {
+      if ( "date_2" %in% colnames(qc_df) ) {
         qc_df <- qc_df %>%
           dplyr::filter(!is.na(name_2)) %>%
           dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2))
         # Threshold to be determined exactly
-        qc_df <- qc_df[qc_df$lvr > 75,]
+        qc_df <- qc_df[qc_df$lvr > 75, c("id", "date_1", "date_2", "lvr")]
+
+        # Filter so that keep only repeat visits (between Day 1 and Day 28)
+        qc_df$diff <- as.Date(as.character(qc_df$date_1), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_2), format="%Y-%m-%d")
+        qc_df <- qc_df %>%
+          dplyr::filter(diff >= 0 & diff <= 28)
+
       } else {
         qc_df <- NULL
       }

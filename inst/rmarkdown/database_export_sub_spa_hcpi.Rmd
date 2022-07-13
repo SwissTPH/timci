@@ -13,7 +13,7 @@ There are **`r n_raw_spa_hcpi_data`** records in the raw `r db_name` database.
 ### Non-valid participant IDs [compliance check `r qc_spa_hcpi_nonvalid_ids`]\n\n
 
 ```{r, eval=!is.null(spa_hcpi_data), results='asis'}
-qc_description <- ""
+qc_description <- "Healthcare providers who are interviewed as part of the SPA should have been observed during their consultation. If there is no observation recorded for a provider, their ID is considered as non-valid."
 qc_rule <- "Keep only records for which the healthcare provider ID (X-Fxxxx-Hxx) has been found in the locked SPA sick child observation database."
 qc_type <- "nonvalid_ids"
 df <- spa_hcpi_data
@@ -42,6 +42,7 @@ qc_type <- "duplicates"
 df <- locked_spa_hcpi_data
 col_id <- "hcp_id"
 col_date <- "interview_start"
+cleaning <- "none"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_spa_hcpi_duplicates
 qc_export_label <- "duplicated_spa_hcpi"
@@ -75,4 +76,10 @@ timci::dataset_export(locked_spa_hcpi_data,
                       "timci_spa_provider_interview_data",
                       locked_db_dir,
                       "Cleaned SPA healthcare provider interview data")
+```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(locked_spa_hcpi_data)
 ```

@@ -4,7 +4,7 @@
 \alias{detect_inconsistent_dates}
 \title{Detect inconsistent dates (TIMCI-specific function)}
 \usage{
-detect_inconsistent_dates(df, col_date_start, col_date_end)
+detect_inconsistent_dates(df, col_date_start, col_date_end, cleaning = "none")
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}
@@ -12,6 +12,8 @@ detect_inconsistent_dates(df, col_date_start, col_date_end)
 \item{col_date_start}{column}
 
 \item{col_date_end}{column}
+
+\item{cleaning}{type of cleaning to be performed on inconsistent dates, by default set to "none" (i.e., no cleaning following the identification of inconsistent dates)}
 }
 \value{
 This function returns a dataframe containing data of possible duplicate participants only

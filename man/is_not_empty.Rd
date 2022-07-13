@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{is_not_empty}
 \alias{is_not_empty}
-\title{Check that a datframe is not empty}
+\title{Check that a dataframe is not empty}
 \usage{
 is_not_empty(df)
 }
@@ -13,5 +13,5 @@ is_not_empty(df)
 This function returns a boolean that is equal to TRUE if the dataframe contains at least 1 row and 1 column.
 }
 \description{
-Check that a datframe is not empty
+Check that a dataframe is not empty
 }

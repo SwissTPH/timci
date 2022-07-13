@@ -193,7 +193,7 @@ pivot_duplicates_to_columns <- function(df) {
 
 }
 
-#' Check that a datframe is not empty
+#' Check that a dataframe is not empty
 #'
 #' @param df dataframe.
 #' @return This function returns a boolean that is equal to TRUE if the dataframe contains at least 1 row and 1 column.

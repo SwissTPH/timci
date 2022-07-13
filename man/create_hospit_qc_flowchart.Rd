@@ -6,6 +6,7 @@
 \usage{
 create_hospit_qc_flowchart(
   n_raw_hospit_records,
+  n_afterlock_pids_hospitfu_records,
   n_nonvalid_pid_records,
   n_duplicated_records,
   n_cleaned_hospit_records
@@ -13,6 +14,8 @@ create_hospit_qc_flowchart(
 }
 \arguments{
 \item{n_raw_hospit_records}{Initial number of hospitalisation records}
+
+\item{n_afterlock_pids_hospitfu_records}{Number of records outside of lock range}
 
 \item{n_nonvalid_pid_records}{Number of screening records with a non-valid device ID}
 

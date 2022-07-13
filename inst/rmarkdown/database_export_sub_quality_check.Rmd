@@ -75,7 +75,7 @@ out <- timci::identify_nonvalid_ids2(df,
                                      idcol1,
                                      refdf,
                                      idcol2,
-                                     col_date = "date_call",
+                                     col_date,
                                      lock_date = lock_date)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
@@ -88,7 +88,6 @@ out <- timci::detect_inconsistent_dates(df,
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
-
 
 ```{r, eval=(qc_type=="duplicates")}
 out <- timci::identify_duplicates_by_dates(df,
@@ -131,6 +130,17 @@ outcols <- c("child_id", "fid", "date_visit", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="incomplete_spa_observation")}
+df <- df %>% 
+  rename(child_id = "child_identification-pid",
+         back_from_lab = "child_identification-back_from_lab")
+df1 <- df %>% 
+  dplyr::filter(back_from_lab == 0)
+df2 <- df %>%
+  dplyr::filter(back_from_lab == 1)
+qc_df <- df2[!df2$child_id %in% df1$child_id, ]
 ```
 
 ```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}

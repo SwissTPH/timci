@@ -11,3 +11,9 @@ timci::dataset_export(spa_cgei_data,
                       params$spa_dir,
                       "Raw SPA caregiver exit interview data")
 ```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(spa_cgei_data)
+```

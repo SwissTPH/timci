@@ -8,11 +8,11 @@ write("Export Day 7 follow-up data and run corresponding quality checks", stderr
 db_name <- "Day 7 follow-up"
 out <- timci::format_day7_data(raw_day7fu_data)
 raw_allday7fu_data <- out[[3]]
-n_raw_allday7fu_data <- nrow(raw_allday7fu_data)
+n_raw_allday7fu_data_records <- nrow(raw_allday7fu_data)
 raw_successday7fu_data <- out[[1]]
 ```
 
-There are **`r n_raw_allday7fu_data`** records in the raw `r db_name` database.
+There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` database.
 
 ### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
 
@@ -20,7 +20,7 @@ There are **`r n_raw_allday7fu_data`** records in the raw `r db_name` database.
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
 ```
 
-```{r, eval=!is.null(n_raw_allday7fu_data), results='asis'}
+```{r, eval=!is.null(raw_allday7fu_data), results='asis'}
 qc_description <- paste0("Day 7 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
 qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
 qc_type <- "nonvalid_ids2"
@@ -29,6 +29,7 @@ idcol1 <- "child_id"
 refdf <- facility_data_after_lock %>%
   filter( !is.na(child_id) )
 idcol2 <- "child_id"
+col_date <- "date_call"
 qc_text <- "participant IDs outside the lock date range"
 qc_idx <- qc_pids_out_lock_range_day7fu
 qc_export_label <- "pids_outside_lock_range"
@@ -39,7 +40,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_afterlock_pids_day7fu <- n_detected
+n_afterlock_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
@@ -50,7 +51,7 @@ write(" o Non-valid participant IDs", stderr())
 ```
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
-qc_description <- "Day 7 follow-ups are relevant only if associated to participants who were enrolled at Day 0."
+qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "nonvalid_ids"
 df <- allday7fu_data
@@ -67,7 +68,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_nonvalid_pids_day7fu <- n_detected
+n_nonvalid_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
@@ -82,12 +83,10 @@ n_cleaned_allday7fu_records <- nrow(allday7fu_data)
 ```
 
 ```{r}
-timci::create_screening_qc_flowchart(n_raw_allday7fu_data,
-                                     n_nonvalid_deviceid_records,
-                                     n_after_lockdate_records,
-                                     n_ineligible_cg_records,
-                                     nrow(repeat_visit_edits),
-                                     n_cleaned_allday7fu_records)
+timci::create_day7fu_qc_flowchart(n_raw_allday7fu_data_records,
+                                  n_afterlock_pids_day7fu_records,
+                                  n_nonvalid_pids_day7fu_records,
+                                  n_cleaned_allday7fu_records)
 ```
 
 ### Data export\n\n

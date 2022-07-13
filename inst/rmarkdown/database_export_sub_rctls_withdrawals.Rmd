@@ -66,8 +66,10 @@ if (nrow(day0_data) > 0) {
 if (nrow(day0_data) > 0) {
   if (!is.null(non_reconciled_withdrawn_ids)) {
     non_reconciled_withdrawn_ids %>%
-      dplyr::select(c("child_id", "date")) %>%
-      knitr::kable(col.names = c("Child ID", "Withdrawal date"),
+      dplyr::select(c("child_id", "date", "page-withdrawal_reason")) %>%
+      knitr::kable(col.names = c("Child ID",
+                                 "Withdrawal date",
+                                 "Documented reason"),
                    caption = "List of withdrawals which could not be reconciled with any child ID in the Day 0 locked database")
   }
 }

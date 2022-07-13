@@ -11,3 +11,9 @@ timci::dataset_export(spa_fa_data,
                       params$spa_dir,
                       "Raw SPA facility assessment data")
 ```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(spa_fa_data)
+```

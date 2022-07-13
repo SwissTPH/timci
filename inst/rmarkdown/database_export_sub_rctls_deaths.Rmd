@@ -35,48 +35,51 @@ if (nrow(locked_day7fu_deaths) > 0) {
 }
 ```
 
-```{r, eval=!is.null(day7_deaths)}
-day7_death_export_name <- "14_timci_day7_death_data"
-fn <- timci::export_df2csvxlsx(day7_deaths,
-                               params$rctls_dir,
-                               day7_death_export_name)
+```{r, results = 'asis'}
+timci::dataset_export(day7_deaths,
+                      "14",
+                      "timci_day27_death_data",
+                      rctls_dir,
+                      "Raw Day 7 death data")
 ```
 
-```{r, eval=!is.null(locked_day7fu_deaths)}
-fn <- timci::export_df2csvxlsx(locked_day7fu_deaths,
-                               locked_db_dir,
-                               day7_death_export_name)
+```{r, results = 'asis'}
+timci::dataset_export(locked_day7fu_deaths,
+                      "14",
+                      "timci_day7_death_data",
+                      locked_db_dir,
+                      "Cleaned Day 7 death data")
 ```
 
 ### Export death data reported at Day 28
 
 ```{r, eval=is_rct}
-day28_deaths <- allday28fu_data %>% filter(status_day28 == 3)
+day28_deaths <- allday28fu_data %>%
+  dplyr::filter(status_day28 == 3)
 if (nrow(day28_deaths) > 0) {
   day28_deaths <- pivot_duplicates_to_columns(day28_deaths)
 }
-locked_day28fu_deaths <- locked_allday28fu_data %>% filter(status_day28 == 3)
+locked_day28fu_deaths <- locked_allday28fu_data %>%
+  dplyr::filter(status_day28 == 3)
 if (nrow(locked_day28fu_deaths) > 0) {
   locked_day28fu_deaths <- pivot_duplicates_to_columns(locked_day28fu_deaths)
 }
 ```
 
-```{r, eval=is_rct}
-if(!is.null(day28_deaths)){
-  day28_death_export_name <- "15_timci_day28_death_data"
-  fn <- timci::export_df2csvxlsx(day28_deaths,
-                                 params$rctls_dir,
-                                 day28_death_export_name)
-}
-
+```{r, results = 'asis'}
+timci::dataset_export(day28_deaths,
+                      "15",
+                      "timci_day28_death_data",
+                      rctls_dir,
+                      "Raw Day 28 death data")
 ```
 
-```{r, eval=is_rct}
-if(!is.null(locked_day28fu_deaths)){
-  fn <- timci::export_df2csvxlsx(locked_day28fu_deaths,
-                                 locked_db_dir,
-                                 day28_death_export_name)
-}
+```{r, results = 'asis'}
+timci::dataset_export(locked_day28fu_deaths,
+                      "15",
+                      "timci_day28_death_data",
+                      locked_db_dir,
+                      "Cleaned Day 28 death data")
 ```
 
 ### Combined death data
@@ -104,20 +107,18 @@ locked_all_deaths <- locked_day7fu_deaths %>%
         all.x = TRUE)
 ```
 
-```{r, eval=is_rct}
-if(!is.null(all_deaths)){
-  all_death_export_name <- "16_timci_all_death_data"
-  fn <- timci::export_df2csvxlsx(all_deaths,
-                                 params$rctls_dir,
-                                 all_death_export_name)
-}
-
+```{r, results = 'asis'}
+timci::dataset_export(all_deaths,
+                      "16",
+                      "timci_all_death_data",
+                      rctls_dir,
+                      "Raw all death data")
 ```
 
-```{r, eval=is_rct}
-if(!is.null(locked_all_deaths)){
-  fn <- timci::export_df2csvxlsx(locked_all_deaths,
-                                 locked_db_dir,
-                                 all_death_export_name)
-}
+```{r, results = 'asis'}
+timci::dataset_export(locked_all_deaths,
+                      "16",
+                      "timci_all_death_data",
+                      locked_db_dir,
+                      "Cleaned all death data")
 ```

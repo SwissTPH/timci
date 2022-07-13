@@ -7,138 +7,100 @@ write("Export Day 28 data and run corresponding quality checks", stderr())
 ```
 
 ```{r}
-raw_day28_fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
-
-allday28fu_data <- NULL
-day28fu_data <- NULL
-
-locked_allday28fu_data <- NULL
-locked_day28fu_data <- NULL
-allday28fu_data_uids <- NULL
-day28fu_data_uids <- NULL
-
-day28fu_duplicates <- NULL
-day28fu_data_duplicates <- NULL
-```
-
-```{r format-RCT-LS-ODK-fu-day28-data, eval=raw_day28_fu_is_not_empty}
 db_name <- "Day 28 follow-up"
 out <- timci::format_day28_data(raw_day28fu_data)
-day28fu_data <- out[[1]]
-allday28fu_data <- out[[3]]
+raw_allday28fu_data <- out[[3]]
+n_raw_allday28fu_data_records <- nrow(raw_allday28fu_data)
+raw_successday28fu_data <- out[[1]]
+
+raw_day28_fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
-There are **`r if ( !is.null(allday28fu_data) ) { nrow(allday28fu_data) } else { 'NA' }`** records in the raw `r db_name` database, among which **`r if ( !is.null(day28fu_data) ) { nrow(day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
+There are **`r n_raw_allday28fu_data_records`** records in the raw `r db_name` database.
 
-### Participants enrolled outside the lock date range [context check]\n\n
+### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]\n\n
 
-To be completed
+```{r}
+write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
+```
+
+```{r, eval=!is.null(raw_allday28fu_data), results='asis'}
+qc_description <- paste0("Day 28 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids2"
+df <- raw_allday28fu_data
+idcol1 <- "child_id"
+refdf <- facility_data_after_lock %>%
+  filter( !is.na(child_id) )
+idcol2 <- "child_id"
+col_date <- "date_call"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_day28fu
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_afterlock_pids_day28fu_records <- n_detected
+allday28fu_data <- cleaned_df
+```
 
 ### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]\n\n
 
-**Rule:** keep only IDs of children who are found in the locked Day 0 database.
-
-```{r, eval=!is.null(day28fu_data)}
-# All follow-ups
-locked_allday28fu_data <- allday28fu_data[allday28fu_data$child_id %in% day0_data$child_id, ]
-allday28fu_data_uids <- allday28fu_data[!allday28fu_data$child_id %in% day0_data$child_id, ]
-# Successful follow-ups
-locked_day28fu_data <- day28fu_data[day28fu_data$child_id %in% day0_data$child_id, ]
-day28fu_data_uids <- day28fu_data[!day28fu_data$child_id %in% day0_data$child_id, ]
-locked_day28fu_data <- locked_day28fu_data %>% 
-  dplyr::mutate(window = ifelse(days >= 28 & days <= 32, 1, 0))
+```{r}
+write(" o Non-valid participant IDs", stderr())
 ```
 
-* **`r if ( !is.null(allday28fu_data_uids) ) { nrow(allday28fu_data_uids) } else {'NA'}`** records with non-valid participant IDs were detected and removed in the locked Day 28 follow-up database.
-
-* **`r if ( !is.null(day28fu_data_uids) ) { nrow(day28fu_data_uids) } else {'NA'}`** records with non-valid participant IDs were detected and removed in the locked successful Day 28 follow-up database.
-
-```{r, results = 'asis'}
-timci::quality_check_export(allday28fu_data_uids[c("child_id", "uuid")],
-                            qc_nonvalid_day28fu,
-                            "nonvalid_ids_day28fu",
-                            qc_dir,
-                            "the child ID does not correspond to any ID found the locked Day 0 database")
+```{r, eval=!is.null(allday28fu_data), results='asis'}
+qc_description <- "Day 28 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_type <- "nonvalid_ids"
+df <- allday28fu_data
+idcol1 <- "child_id"
+refdf <- day0_data
+idcol2 <- "child_id"
+qc_text <- "non-valid participant IDs"
+qc_idx <- qc_nonvalid_day28fu
+qc_export_label <- "nonvalid_pids_day28fu"
+qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-### Duplicate management [compliance check `r qc_duplicated_day28fu`]\n\n
-
-**Rule:** only the most recent successful Day 28 follow-up is kept.
-
-```{r check-RCT-LS-ODK-fu-day28-data, eval=!is.null(locked_day28fu_data)}
-day28fu_qc <- timci::detect_id_duplicates(locked_day28fu_data)
-day28fu_duplicates <- day28fu_qc[day28fu_qc$id_fq > 1,]
-```
-
-```{r, results = 'asis'}
-timci::quality_check_export(day28fu_duplicates,
-                            qc_duplicated_day28fu,
-                            "duplicated_successful_day28fu",
-                            qc_dir,
-                            "Day 28 follow-ups are duplicated")
-```
-
-```{r, eval=!is.null(day28fu_data)}
-# Process duplicates separately
-day28fu_data_duplicates <- locked_day28fu_data[locked_day28fu_data$child_id %in% day28fu_duplicates$child_id, ]
-processed_day28fu_data_duplicates <- day28fu_data_duplicates %>%
-  dplyr::group_by(child_id) %>%
-  dplyr::slice_max(order_by = window) %>%
-  dplyr::slice_min(order_by = days)
-# Remove all duplicates from the list and concatenate with the filtered list
-locked_day28fu_data <- locked_day28fu_data[!locked_day28fu_data$child_id %in% day28fu_duplicates$child_id, ]
-locked_day28fu_data <- rbind(locked_day28fu_data, processed_day28fu_data_duplicates)
-```
-
-```{r, results = 'asis', eval=!is.null(day28fu_data_duplicates)}
-n <- nrow(day28fu_data_duplicates) - nrow(processed_day28fu_data_duplicates)
-if (n > 1) {
-  cat(paste0("**", n, "** records were removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this)."))
-} else if (n == 1) {
-  cat("**1** record was removed in the locked successful Day 28 follow-up database (records duplicated on the same day may be kept - we need to define a rule for this).")
-} else{
-  cat(paste0("No records were removed in the locked successful Day 28 follow-up database."))
-}
-```
-
-### Lost-to-follow-up\n\n
-
-```{r, results = 'asis'}
-fu28all <- NULL
-if (!is.null(raw_pii) & !is.null(raw_day28fu_data)) {
-  fu28all <- timci::generate_fu_log(raw_pii,
-                                    raw_day28fu_data,
-                                    0,
-                                    32,
-                                    28,
-                                    32,
-                                    ext = TRUE,
-                                    deidentify = TRUE)
-}
+```{r, eval=!is.null(cleaned_df)}
+n_nonvalid_pids_day28fu_records <- n_detected
+allday28fu_data <- cleaned_df
 ```
 
 ### Data cleaning summary\n\n
 
-There are **`r if ( !is.null(locked_allday28fu_data) ) { nrow(locked_allday28fu_data) } else { 'NA' }`** records in the locked Day 28 follow-up database, among which **`r if ( !is.null(locked_day28fu_data) ) { nrow(locked_day28fu_data) } else { 'NA' }`** records documenting successful follow-ups.
+```{r}
+write(" o Data cleaning summary", stderr())
+```
 
 ```{r}
-timci::create_day7fu_qc_flowchart(n_raw_records = nrow(allday28fu_data),
-                                  n_nonvalid_pids = nrow(allday28fu_data_uids),
-                                  n_clean_records = nrow(locked_allday28fu_data),
-                                  'NA',
-                                  'NA',
-                                  'NA',
-                                  'NA')
+n_cleaned_allday28fu_records <- nrow(allday28fu_data)
+```
+
+```{r}
+timci::create_day28fu_qc_flowchart(n_raw_allday28fu_data_records,
+                                   n_afterlock_pids_day28fu_records,
+                                   n_nonvalid_pids_day28fu_records,
+                                   n_cleaned_allday28fu_records)
 ```
 
 ### Data export\n\n
 
 ```{r}
-write(" o Export Day 28 data", stderr())
+write(" o Data export", stderr())
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(allday28fu_data,
+timci::dataset_export(raw_allday28fu_data,
                       "06a",
                       "timci_followup_day28_data",
                       rctls_dir,
@@ -146,33 +108,9 @@ timci::dataset_export(allday28fu_data,
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(day28fu_data,
-                      "06b",
-                      "timci_followup_successful_day28_data",
-                      rctls_dir,
-                      "Raw successful Day 28 follow-up only)")
-```
-
-```{r, results = 'asis'}
-timci::dataset_export(locked_allday28fu_data,
+timci::dataset_export(allday28fu_data,
                       "06a",
                       "timci_followup_day28_data",
                       locked_db_dir,
                       "Cleaned Day 28 follow-up data")
-```
-
-```{r, results = 'asis'}
-timci::dataset_export(locked_day28fu_data,
-                      "06b",
-                      "timci_followup_successful_day28_data",
-                      locked_db_dir,
-                      "Cleaned successful Day 28 follow-up data")
-```
-
-```{r, results = 'asis'}
-timci::dataset_export(fu28all,
-                      "06d",
-                      "timci_day28_fu_weekly_log_all",
-                      rctls_dir,
-                      "Weekly Day 28 follow-up data")
 ```

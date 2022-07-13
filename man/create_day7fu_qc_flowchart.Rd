@@ -5,29 +5,20 @@
 \title{Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)}
 \usage{
 create_day7fu_qc_flowchart(
-  n_raw_records,
-  n_nonvalid_pids,
-  n_clean_records,
-  d,
-  e,
-  f,
-  g
+  n_raw_allday7fu_records,
+  n_after_lockdate_records,
+  n_nonvalid_pid_records,
+  n_cleaned_allday7fu_records
 )
 }
 \arguments{
-\item{n_raw_records}{Number of records}
+\item{n_raw_allday7fu_records}{Number of records}
 
-\item{n_nonvalid_pids}{Number of records with a non-valid participan ID}
+\item{n_after_lockdate_records}{TBD}
 
-\item{n_clean_records}{TBD}
+\item{n_nonvalid_pid_records}{Number of records with a non-valid participan ID}
 
-\item{d}{TBD}
-
-\item{e}{TBD}
-
-\item{f}{TBD}
-
-\item{g}{TBD}
+\item{n_cleaned_allday7fu_records}{TBD}
 }
 \value{
 This function returns a graph object

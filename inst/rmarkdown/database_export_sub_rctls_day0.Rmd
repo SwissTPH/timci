@@ -1,4 +1,4 @@
-## Day 0 quality checks\n\n
+## Day 0 data quality checks\n\n
 
 ```{r}
 write("Export Day 0 data and run corresponding quality checks", stderr())
@@ -124,91 +124,6 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
-### Incorrect enrolment date [context check `r qc_incorrect_enrolment_date`]\n\n
-
-```{r}
-write(" o Incorrect enrolment date", stderr())
-```
-
-```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
-qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day0_data
-col_date1 <- "start"
-col_date2 <- "start_contact"
-qc_text <- "an incorrect date of enrolment"
-qc_idx <- qc_incorrect_enrolment_date
-qc_export_label <- "incorrect_enrolment_date"
-qc_export_description <- "the enrolment date is not correct"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_incorrect_enroldate_records <- n_detected
-```
-
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-hist(as.numeric(qc_df$diff),
-     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Number of days between submission start and entry of participant contact details" ,
-     ylab="Occurences",
-     main="")
-```
-
-CORRECTION TO BE ADDED
-
-### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
-
-```{r, eval=day0_is_not_null, results='asis'}
-qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day0_data
-col_date1 <- "start"
-col_date2 <- "end"
-qc_text <- "the submission was not finalised on the same day it was started"
-qc_idx <- qc_nontimely_completion_id
-qc_export_label <- "nontimely_day0_completion"
-qc_export_description <- "the submission was not finalised on the same day it was started"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-hist(as.numeric(qc_df$diff),
-     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Number of days between submission start and finalisation" ,
-     ylab="Occurences",
-     main="")
-```
-
-### Non-timely submission [compliance check `r qc_nontimely_submission_id`]\n\n
-
-```{r, eval=day0_is_not_null, results='asis'}
-qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day0_data
-col_date1 <- "end"
-col_date2 <- "submission_date"
-qc_text <- "the submission was not transferred on the same day it was finalised"
-qc_idx <- qc_nontimely_submission_id
-qc_export_label <- "nontimely_day0_submission"
-qc_export_description <- "the submission was not transferred on the same day it was finalised"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-hist(as.numeric(qc_df$diff),
-     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Number of days between submission finalisation and transfer" ,
-     ylab="Occurences",
-     main="")
-```
-
 ### Duplicate management\n\n
 
 `r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
@@ -297,6 +212,96 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 day0_data <- cleaned_df
 ```
 
+### Incorrect enrolment date [context check `r qc_incorrect_enrolment_date`]\n\n
+
+```{r}
+write(" o Incorrect enrolment date", stderr())
+```
+
+```{r}
+qc_df <- NULL
+n_incorrect_enroldate_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "start"
+col_date2 <- "start_contact"
+cleaning <- "replace_by_end_date"
+qc_text <- "an incorrect date of enrolment"
+qc_idx <- qc_incorrect_enrolment_date
+qc_export_label <- "incorrect_enrolment_date"
+qc_export_description <- "the enrolment date is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_enroldate_records <- n_detected
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and entry of participant contact details" ,
+     ylab="Occurences",
+     main="")
+```
+
+### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
+
+```{r, eval=day0_is_not_null, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "start"
+col_date2 <- "end"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_completion_id
+qc_export_label <- "nontimely_day0_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and finalisation" ,
+     ylab="Occurences",
+     main="")
+```
+
+### Non-timely submission [compliance check `r qc_nontimely_submission_id`]\n\n
+
+```{r, eval=day0_is_not_null, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_submission_id
+qc_export_label <- "nontimely_day0_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission finalisation and transfer" ,
+     ylab="Occurences",
+     main="")
+```
+
 ### Detection of multiple 28-disease episodes for the same children\n\n
 
 ```{r}
@@ -338,7 +343,17 @@ n_missing_cp <- n_detected
 ### Diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
 ```{r, results='asis', eval=day0_is_not_null}
-qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit."
+qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit, i.e. a participant cannot have simultaneously:
+
+* No danger signs (*dx_severe* = 0)
+* No pneumonia (*dx_pneumonia* = 0)
+* No diarrhoea (*dx_diarrhoea* = 0)
+* No dehydration (*dx_dehydration* = 0)
+* No malaria (*dx_malaria* = 0)
+* No ear infection (*dx_ear_infection* = 0)
+* No malnutrition (*dx_malnutrition* = 0)
+* No anaemia (*dx_anaemia == 0*)
+* No other diagnoses (*sx_var* = 96 and *dx_oth_yn* = 1)"
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_diagnosis"
 df <- day0_data
@@ -367,6 +382,41 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_missing_referral_cg <- n_detected
+```
+
+### Clinical measurements\n\n
+
+#### Temperature\n\n
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::visualize(day0_data$temp_meas)
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::identifyOutliers(day0_data$temp_meas,
+                           nMax = 50)
+```
+
+#### Pulse oximetry\n\n
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::visualize(day0_data$spo2_meas1)
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::identifyOutliers(day0_data$spo2_meas1,
+                           nMax = 50)
+```
+
+#### Respiratory rate\n\n
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::visualize(day0_data$rr_meas)
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::identifyOutliers(day0_data$rr_meas,
+                           nMax = 50)
 ```
 
 ### Data cleaning summary\n\n
@@ -429,7 +479,7 @@ timci::dataset_export(study_data,
                       "Facility visit data")
 ```
 
-### Data summary\n\n
+### Data summary statistics\n\n
 
 ```{r, results='asis'}
 skimr::skim(day0_data)

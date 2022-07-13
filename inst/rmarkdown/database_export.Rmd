@@ -61,6 +61,7 @@ params:
 library(dplyr)
 library(knitr)
 library(skimr)
+library(dataMaid)
 ```
 
 ```{r setup-options, include=FALSE}
@@ -154,19 +155,28 @@ qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_11"
 qc_missing_cp_id <- "DQC_00_12"
 qc_missing_diagnosis_id <- "DQC_00_13"
 qc_missing_referral_id <- "DQC_00_14"
-qc_summary_id <- "DQC_00_15"
+qc_pox_ <- "DQC_00_15"
+qc_summary_id <- "DQC_00_16"
 qc_pids_out_lock_range_day7fu <- "DQC_07_01"
 qc_nonvalid_day7fu <- "DQC_07_02"
 qc_duplicated_day7fu <- "DQC_07_03"
-qc_nonvalid_hospitfu <- "DQC_HS_01"
-qc_duplicated_hospitfu <- "DQC_HS_02"
-qc_nonvalid_day28fu <- "DQC_28_01"
-qc_duplicated_day28fu <- "DQC_28_02"
+qc_hospit_before_enrolment_day7fu <- "DQC_07_04"
+qc_death_before_enrolment_day7fu <- "DQC_07_05"
+qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
+qc_nonvalid_hospitfu <- "DQC_HS_02"
+qc_duplicated_hospitfu <- "DQC_HS_03"
+qc_hospit_before_enrolment <- "DQC_HS_04"
+qc_pids_out_lock_range_day28fu <- "DQC_28_01"
+qc_nonvalid_day28fu <- "DQC_28_02"
+qc_duplicated_day28fu <- "DQC_28_03"
+qc_hospit_before_enrolment_day28fu <- "DQC_28_04"
+qc_death_before_enrolment_day28fu <- "DQC_28_05"
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
 qc_spa_sco_nonvalid_ids <- "DQC_SP_01"
 qc_spa_sco_duplicates <- "DQC_SP_02"
-qc_spa_hcpi_nonvalid_ids <- "DQC_SP_03"
-qc_spa_hcpi_duplicates <- "DQC_SP_04"
+qc_spa_sco_incomplete <- "DQC_SP_03"
+qc_spa_hcpi_nonvalid_ids <- "DQC_SP_04"
+qc_spa_hcpi_duplicates <- "DQC_SP_05"
 
 action_alert_no_modification <- "Alert to the study team. No modification of the database."
 ```
@@ -354,18 +364,16 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
 ```
 
-\newpage
-
-```{r db-export-withdrawals-subsection, child = 'database_export_sub_rctls_withdrawals.Rmd'}
+```{r db-export-successfulday28fu-subsection, child = if(is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28_outcome.Rmd'}
 ```
 
 \newpage
 
-```{r, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
+```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-#```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
-#```
+```{r db-export-deaths-subsection, child = if (!day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
+```
 
 \newpage
 
@@ -395,12 +403,40 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-qual-subsection, child = 'database_export_sub_qual.Rmd'}
 ```
 
+\newpage
+
+# Technical information
+
+```{r, results='asis'}
+df_session <- devtools::session_info(include_base = TRUE)
+```
+
+```{r, results='asis'}
+df_session_platform <- df_session$platform %>% 
+  unlist(.) %>% 
+  as.data.frame(.) %>% 
+  tibble::rownames_to_column(.)
+colnames(df_session_platform) <- c("Setting", "Value")
+df_session_platform %>%
+  knitr::kable()
+```
+
+```{r, results='asis', echo=FALSE}
+df_session_packages <- df_session$packages[c("loadedversion", "date", "source")]
+colnames(df_session_packages) <- c("Loaded version", "Date", "Source")
+df_session_packages %>%
+  knitr::kable()
+```
+
 ```{r}
 locked_day0_data <- day0_data
 locked_allday7fu_data <- allday7fu_data
 ```
 
 ```{r, eval=is_rct}
+
+locked_allday28fu_data <- allday28fu_data
+
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
 save(locked_day0_data,
      locked_allday7fu_data,

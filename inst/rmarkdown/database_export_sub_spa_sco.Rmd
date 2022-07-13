@@ -11,9 +11,9 @@ db_name <- "SPA sick child observation"
 
 There are **`r n_raw_spa_sco_data`** records between **`r spa_start_date`** and **`r lock_date`** in the raw `r db_name` database.
 
-### Non-valid provider IDs\n\n
+`r if (is_kenya) { '### Non-valid provider IDs\n\n' }`
 
-```{r, results='asis'}
+```{r, eval=is_kenya, results='asis'}
 out <- timci::correct_spa_sco_hcp_ids(locked_spa_sco_data)
 locked_spa_sco_data <- out[[1]]
 spa_sco_data_hcp_edits <- out[[2]]
@@ -22,6 +22,10 @@ spa_sco_data_hcp_edits %>%
 ```
 
 ### Non-valid participant IDs [compliance check `r qc_spa_sco_nonvalid_ids`]\n\n
+
+```{r}
+cleaned_df <- NULL
+```
 
 ```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
 qc_description <- "Children can be part of the SPA sick child,observation protocol only if they have been enrolled in the RCT/LS and on their Day 0 visit."
@@ -46,6 +50,10 @@ locked_spa_sco_data <- cleaned_df
 
 ### Duplicate management [compliance check `r qc_spa_sco_duplicates`]\n\n
 
+```{r}
+cleaned_df <- NULL
+```
+
 ```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
 qc_description <- "Keep duplicated records and investigate the reason for duplicates."
 qc_rule <- action_alert_no_modification
@@ -53,10 +61,31 @@ qc_type <- "duplicates"
 df <- locked_spa_sco_data
 col_id <- "child_identification-pid"
 col_date <- "start"
+cleaning <- "none"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_spa_sco_duplicates
-qc_export_label <- "duplicated_spa_hcpi"
+qc_export_label <- "duplicated_spa_sco"
 qc_export_description <- "SPA sick child observations are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_spa_sco_data <- cleaned_df
+```
+
+### Incomplete observations [compliance check `r qc_spa_sco_incomplete`]\n\n
+
+```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
+qc_description <- "Observation of children back from the laboratory should not be a stand-alone observation, but should complement the observation of the initial consultation (before the child was sent to the lab)."
+qc_rule <- action_alert_no_modification
+qc_type <- "incomplete_spa_observation"
+df <- locked_spa_sco_data
+qc_text <- "incomplete SPA observations"
+qc_idx <- qc_spa_sco_incomplete
+qc_export_label <- "incomplete_spa_sco"
+qc_export_description <- "SPA sick child observations are incomplete (observation back from lab available, but main observation missing)"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -86,4 +115,10 @@ timci::dataset_export(locked_spa_sco_data,
                       "timci_spa_consultation_obs_data",
                       locked_db_dir,
                       "Cleaned SPA sick child observation data")
+```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(locked_spa_sco_data)
 ```

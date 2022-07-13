@@ -17,10 +17,40 @@ locked_hospit_data <- NULL
 hospit_fu <- NULL
 ```
 
+### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]\n\n
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
+```
+
+```{r, eval=!is.null(hospit_data), results='asis'}
+qc_description <- paste0("Hospitalisation follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids2"
+df <- hospit_data
+idcol1 <- "child_id"
+refdf <- facility_data_after_lock %>%
+  filter( !is.na(child_id) )
+idcol2 <- "child_id"
+col_date <- "date"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_hospitfu
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_afterlock_pids_hospitfu_records <- n_detected
+hospit_data <- cleaned_df
+```
+
 ### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]\n\n
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
-qc_description <- "To be updated later"
+qc_description <- "Hospitalisation follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of participant who are found in the locked Day 0 database."
 qc_type <- "nonvalid_ids"
 df <- hospit_data
@@ -44,12 +74,14 @@ locked_hospit_data <- cleaned_df
 ### Duplicate management [compliance check `r qc_duplicated_hospitfu`]\n\n
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
-qc_description <- "To be updated later"
-qc_rule <- "Keep duplicated records only if they correspond to different hospitalisations."
+qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
+qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
-df <- locked_hospit_data %>% filter(found == 1)
+df <- locked_hospit_data %>% 
+  filter(found == 1)
 col_id <- "child_id"
 col_date <- "start"
+cleaning <- "none"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicated_hospitfu
 qc_export_label <- "duplicated_hospitfu"
@@ -60,24 +92,33 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_duplicates_hospitfu <- n_detected
 ```
 
-### Date [context check `r qc_duplicated_hospitfu`]\n\n
+### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment`]\n\n
 
-To be updated
-
-### Lost-to-follow-up\n\n
-
-```{r, eval=!is.null(raw_pii)}
-hospit_fu <- timci::generate_hospital_log(pii = raw_pii,
-                                          fu7df = raw_day7fu_data,
-                                          day0df = day0_data,
-                                          hospitdf = raw_hospit_data,
-                                          deidentify = TRUE)
+```{r, eval=!is.null(locked_hospit_data), results='asis'}
+qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- locked_hospit_data %>%
+  filter(found == 1) %>% 
+  merge(day0_data,
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_visit_rhf"
+col_date2 <- "date_visit"
+qc_text <- "a date of hospitalisation before the enrolment date"
+qc_idx <- qc_hospit_before_enrolment
+qc_export_label <- "hospit_before_enrolment"
+qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Data cleaning summary\n\n
 
 ```{r}
 timci::create_hospit_qc_flowchart(nrow(hospit_data),
+                                  n_afterlock_pids_hospitfu_records,
                                   n_nonvalid_pids_hospitfu,
                                   n_duplicates_hospitfu,
                                   nrow(locked_hospit_data))
@@ -101,10 +142,24 @@ timci::dataset_export(locked_hospit_data,
                       "Cleaned hospitalisation data")
 ```
 
+```{r, eval=!is.null(raw_pii)}
+hospit_fu <- timci::generate_hospital_log(pii = raw_pii,
+                                          fu7df = raw_day7fu_data,
+                                          day0df = day0_data,
+                                          hospitdf = raw_hospit_data,
+                                          deidentify = TRUE)
+```
+
 ```{r, results = 'asis'}
 timci::dataset_export(hospit_fu,
                       "05c",
                       "timci_deidentified_hospit_fu_log_all",
                       rctls_dir,
                       "Hospitalisation log data")
+```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(locked_hospit_data)
 ```

@@ -16,16 +16,6 @@ spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
 spa_hcpi_is_not_empty <- timci::is_not_empty(spa_hcpi_data)
 ```
 
-## Facility assessment data quality checks
-
-```{r, child = if(spa_fa_is_not_empty) 'database_export_sub_spa_fa.Rmd'}
-```
-
-## Caregiver exit interview data quality checks
-
-```{r, child = if(spa_cgei_is_not_empty) 'database_export_sub_spa_cgei.Rmd'}
-```
-
 ## Sick child observation data quality checks
 
 ```{r, child = if(spa_sco_is_not_empty) 'database_export_sub_spa_sco.Rmd'}
@@ -34,4 +24,14 @@ spa_hcpi_is_not_empty <- timci::is_not_empty(spa_hcpi_data)
 ## Healthcare provider interview data quality checks
 
 ```{r, child = if(spa_hcpi_is_not_empty) 'database_export_sub_spa_hcpi.Rmd'}
+```
+
+## Facility assessment data quality checks
+
+```{r, child = if(spa_fa_is_not_empty) 'database_export_sub_spa_fa.Rmd'}
+```
+
+## Caregiver exit interview data quality checks
+
+```{r, child = if(spa_cgei_is_not_empty) 'database_export_sub_spa_cgei.Rmd'}
 ```
