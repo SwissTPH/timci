@@ -13,9 +13,13 @@ Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_
 
 ### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
 
+```{r}
+write(" o non-valid device IDs", stderr())
+```
+
 ```{r, eval=!is.null(facility_data), results='asis'}
-qc_description <- "Other devices than the ones whose IDs are listed in Section 2.3 of this report may have been used for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
-qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted from the database."
+qc_description <- "Devices different from the ones whose IDs are listed in Section 2.3 of this report are considered as *non-valid* and may have been used for instance for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
+qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted."
 qc_type <- "nonvalid_deviceids"
 df <- facility_data
 qc_text <- "non-valid device IDs"
@@ -32,21 +36,25 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Lock date [context check `r qc_screening_after_lockdate`]\n\n
+### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
+
+```{r}
+write(" o Caregiver eligibility", stderr())
+```
 
 ```{r, eval=!is.null(facility_data), results='asis'}
-qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
-qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
-qc_type <- "posterior_to_lockdate"
+qc_description <- "Caregivers must be above 18 years old to be able provide consent for the child to be part in the study."
+qc_rule <- "Children with a caregiver below 18 years old are deleted from the database."
+qc_type <- "underaged_cg"
 df <- facility_data
-qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
-qc_idx <- qc_screening_after_lockdate
-qc_export_label <- "posterior_to_lockdate"
-qc_export_description <- "the device ID is not valid"
+qc_text <- "a consenting caregiver below 18 years old"
+qc_idx <- qc_underaged_cg_id
+qc_export_label <- "underaged_cg"
+qc_export_description <- "the consenting caregiver is below 18 years old"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_after_lockdate_records <- n_detected
+n_ineligible_cg_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -55,7 +63,11 @@ facility_data <- cleaned_df
 
 ### Repeat visits incorrectly recorded as new enrolments [compliance checks]
 
-`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
+```{r}
+write(" o repeat visits incorrectly recorded as new enrolments", stderr())
+```
+
+`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']\n\n') }`
 
 ```{r, eval=!is.null(facility_data)&(is_tanzania), results='asis'}
 qc_description <- ""
@@ -76,7 +88,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 `r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs\n\n' }`
 
-`r if ( is_tanzania ) { paste0('Records are deleted from the ', db_name, ' database and need to be added to the visit database.\n\n') }`
+`r if ( is_tanzania ) { paste0('Detected records are edited in the ', db_name, ' database as described below:\n\n* *repeat_consult* set to 1\n\n* *consent* set to NA\n\n* *enrolled* set to NA') }`
 
 ```{r}
 edited_records_status_update <- ""
@@ -87,7 +99,7 @@ repeat_visit_edits_is_not_empty <- timci::is_not_empty(repeat_visit_edits)
 ```
 
 ```{r, eval=repeat_visit_edits_is_not_empty}
-edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+edited_records_status_update <- paste0('**', nrow(repeat_visit_edits), '** record(s) manually corrected in the ', db_name, ' database.')
 ```
 
 `r edited_records_status_update`
@@ -97,6 +109,8 @@ repeat_visit_edits %>%
   select(old_child_id, uuid) %>%
   knitr::kable()
 ```
+
+`r if ( is_tanzania ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']\n\n') }`
 
 ```{r, eval=!is.null(facility_data), results='asis'}
 qc_description <- ""
@@ -115,6 +129,31 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Lock date [context check `r qc_screening_after_lockdate`]\n\n
+
+```{r}
+write(" o lock date context", stderr())
+```
+
+```{r, eval=!is.null(facility_data), results='asis'}
+qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
+qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
+qc_type <- "posterior_to_lockdate"
+df <- facility_data
+qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
+qc_idx <- qc_screening_after_lockdate
+qc_export_label <- "posterior_to_lockdate"
+qc_export_description <- "the device ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_after_lockdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
 ### Data cleaning summary\n\n
 
 ```{r}
@@ -126,6 +165,8 @@ n_cleaned_screening_records <- nrow(screening_data)
 timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
                                      n_after_lockdate_records,
+                                     n_ineligible_cg_records,
+                                     nrow(repeat_visit_edits),
                                      n_cleaned_screening_records)
 ```
 

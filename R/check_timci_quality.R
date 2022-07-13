@@ -138,7 +138,14 @@ detect_inconsistent_dates <- function(df,
 
   # Duration from form completion to transfer on the server
   df$diff <- as.Date(as.character(df[[col_date_end]]), format="%Y-%m-%d %T") - as.Date(as.character(df[[col_date_start]]), format="%Y-%m-%d %T")
-  qc_df <- df[df$diff > 0, c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")] %>%
+  kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  if ( !"start" %in% kcols ) {
+    kcols <- c(kcols, "start")
+  }
+  if ( !"end" %in% kcols ) {
+    kcols <- c(kcols, "end")
+  }
+  qc_df <- df[df$diff > 0, kcols] %>%
     dplyr::arrange(diff, fid)
 
   list(qc_df, cleaned_df)
@@ -251,6 +258,8 @@ identify_repeat_duplicate <- function(df,
         qc_df <- qc_df %>%
           dplyr::filter(!is.na(name_2)) %>%
           dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2))
+        # Threshold to be determined exactly
+        qc_df <- qc_df[qc_df$lvr > 0.6,]
       } else {
         qc_df <- NULL
       }

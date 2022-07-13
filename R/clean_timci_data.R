@@ -122,15 +122,30 @@ edit_day0_to_repeat <- function(df) {
             by.x=c("child_id", "uuid"),
             by.y=c("old_child_id", "uuid"),
             all.x=TRUE)
-    df$repeat_consult <- ifelse(is.na(df$new_child_id),
-                                df$repeat_consult,
-                                1)
+    df$prev_enrl <- ifelse(is.na(df$new_child_id),
+                           df$prev_enrl,
+                           1)
+    df$prev_id <- ifelse(is.na(df$new_child_id),
+                         df$prev_id,
+                         df$child_id)
+    df$prev_hf_name_card <- ifelse(is.na(df$new_child_id),
+                                   df$prev_hf_name_card,
+                                   df$facility)
+    df$repeat_consult <- as.integer( ifelse(is.na(df$new_child_id),
+                                            df$repeat_consult,
+                                            1) )
     df$consent <- ifelse(is.na(df$new_child_id),
                          df$consent,
                          NA)
     df$enrolled <- ifelse(is.na(df$new_child_id),
                           df$enrolled,
                           NA)
+    df$child_id_scan <- as.integer( ifelse(is.na(df$new_child_id),
+                                           df$child_id_scan,
+                                           0) )
+    df$child_id_manual <- as.integer( ifelse(is.na(df$new_child_id),
+                                             df$child_id_manual,
+                                             0) )
 
     # Remove the column new_child_id from the dataframe
     drop <- c("new_child_id")

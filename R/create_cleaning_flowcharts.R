@@ -3,6 +3,8 @@
 #' @param n_raw_screening_records Initial number of screening records
 #' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID
 #' @param n_after_lockdate_records Number of screening records with an entry date posterior to the lock date
+#' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
+#' @param n_edited_repeat_visit_records Number of screening records that were edited manually
 #' @param n_cleaned_screening_records Number of cleaned screening records
 #' @return This function returns a graph object
 #' @export
@@ -11,16 +13,19 @@
 create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_nonvalid_deviceid_records,
                                           n_after_lockdate_records,
+                                          n_ineligible_cg_records,
+                                          n_edited_repeat_visit_records,
                                           n_cleaned_screening_records) {
 
-  n_excl1 <- n_nonvalid_deviceid_records + n_after_lockdate_records
+  n_excluded <- n_nonvalid_deviceid_records + n_after_lockdate_records + n_ineligible_cg_records
+  n_edited <- n_edited_repeat_visit_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw screenings\n(N = %s)']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) posterior to the lock date']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) with ineligible caregiver\n%s record(s) posterior to the lock date\n\nManually edited (N = %s)\n%s record(s) corrected to repeat visit']
                   2 [label = 'Cleaned screenings\n(N = %s)']
 
                   node [shape=none, width=0, height=0, label='']
@@ -31,9 +36,12 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   1 -> p1;
                 }",
                 n_raw_screening_records,
-                n_excl1,
+                n_excluded,
                 n_nonvalid_deviceid_records,
+                n_ineligible_cg_records,
                 n_after_lockdate_records,
+                n_edited,
+                n_edited_repeat_visit_records,
                 n_cleaned_screening_records)
 
   DiagrammeR::grViz(gr)
@@ -42,59 +50,46 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
 #' Create cleaning flowchart for Day 0 data (TIMCI-specific)
 #'
-#' @param n_raw_day0_records Number of records
-#' @param n_nonvalid_fid_records Number of records with a non-valid device ID
-#' @param n_ineligible_cg_records Number of Day 0 records with an entry date posterior to the lock date
+#' @param n_raw_day0_records Initial number of Day 0 records
+#' @param n_nonvalid_fid_records Number of Day 0 records with a non-valid device ID
+#' @param n_incorrect_enroldate_records Number of Day 0 records with an entry date posterior to the lock date
+#' @param n_edited_duplicate_records Number of Day 0 records with an entry date posterior to the lock date
 #' @param n_cleaned_day0_records TBD
-#' @param d TBD
-#' @param e TBD
-#' @param f TBD
-#' @param g TBD
 #' @return This function returns a graph object
 #' @export
 #' @import DiagrammeR
 
 create_day0_qc_flowchart <- function(n_raw_day0_records,
                                      n_nonvalid_fid_records,
-                                     n_ineligible_cg_records,
-                                     n_cleaned_day0_records,
-                                     d,
-                                     e,
-                                     f,
-                                     g) {
+                                     n_incorrect_enroldate_records,
+                                     n_edited_duplicate_records,
+                                     n_cleaned_day0_records) {
 
-  n_excl1 <- n_nonvalid_fid_records + n_ineligible_cg_records
+  n_excluded <- n_nonvalid_fid_records
+  n_edited <- n_incorrect_enroldate_records + n_edited_duplicate_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw enrolments\n(N = %s)']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with non-eligible caregiver']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n\nManually edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a duplicated ID']
                   2 [label = 'Cleaned enrolments\n(N = %s)']
-                  m2 [label = 'Excluded\nNon-eligible (N = %s)']
-                  3 [label = 'Enrolment\n(N = %s)']
-                  m3 [label = 'Excluded\nNon-valid enrolling facility IDs (N = %s)']
-                  4 [label = 'Cleaned enrolment\n(N = ...)']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2; p2 -> 3 -> 4;
+                  p1 -> 2;
                   {rank=same; p1 -> m1}
-                  {rank=same; p2 -> m2}
-                  {rank=same; p3 -> m3}
 
                   edge [dir=none]
-                  1 -> p1; 2 -> p2; 3 -> p3
+                  1 -> p1;
                 }",
                 n_raw_day0_records,
-                n_excl1,
+                n_excluded,
                 n_nonvalid_fid_records,
-                n_ineligible_cg_records,
-                n_cleaned_day0_records,
-                d,
-                e,
-                f,
-                g)
+                n_edited,
+                n_incorrect_enroldate_records,
+                n_edited_duplicate_records,
+                n_cleaned_day0_records)
 
   DiagrammeR::grViz(gr)
 

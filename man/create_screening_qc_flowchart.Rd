@@ -8,6 +8,8 @@ create_screening_qc_flowchart(
   n_raw_screening_records,
   n_nonvalid_deviceid_records,
   n_after_lockdate_records,
+  n_ineligible_cg_records,
+  n_edited_repeat_visit_records,
   n_cleaned_screening_records
 )
 }
@@ -17,6 +19,10 @@ create_screening_qc_flowchart(
 \item{n_nonvalid_deviceid_records}{Number of screening records with a non-valid device ID}
 
 \item{n_after_lockdate_records}{Number of screening records with an entry date posterior to the lock date}
+
+\item{n_ineligible_cg_records}{Number of screening records with an ineligible caregiver}
+
+\item{n_edited_repeat_visit_records}{Number of screening records that were edited manually}
 
 \item{n_cleaned_screening_records}{Number of cleaned screening records}
 }

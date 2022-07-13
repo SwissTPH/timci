@@ -7,27 +7,26 @@ write("Export Day 0 data and run corresponding quality checks", stderr())
 ```{r}
 day0_data <- facility_data %>%
     dplyr::filter(enrolled == 1)
+repeat_data <- facility_data %>%
+    dplyr::filter(repeat_consult == 1)
 day0_is_not_null <- !is.null(day0_data)
 day0_is_not_empty <- timci::is_not_empty(day0_data)
 ```
 
 ```{r}
+db_name <- "Day 0"
 n_raw_day0_records <- nrow(day0_data)
 ```
 
-Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) in the `r db_name` database.
+Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
 
-```{r}
-db_name <- "Day 0"
-```
-
-### Non-valid enrolling facility IDs [compliance checks]\n\n
+### Non-valid enrolling facility IDs [compliance `r if ( is_kenya ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 
 ```{r}
 write(" o Non-valid enrolling facility IDs", stderr())
 ```
 
-`r if (is_kenya) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
+`r if ( is_kenya ) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
 
 ```{r, eval=(day0_is_not_null&is_kenya), results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
@@ -46,7 +45,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if (is_kenya) {'#### Facility ID manual edits\n\n'}`
+`r if ( is_kenya ) {'#### Facility ID manual edits\n\n'}`
 
 ```{r}
 edited_records <- NULL
@@ -88,7 +87,7 @@ qc_export_description <- "the facility ID is not valid"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_nonvalid_fids <- n_detected
+n_nonvalid_fid_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -128,31 +127,6 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
-### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
-
-```{r}
-write(" o Caregiver eligibility", stderr())
-```
-
-```{r, eval=!is.null(day0_data), results='asis'}
-qc_description <- "Caregivers must be above 18 years old to be able provide consent for the child to be part in the study."
-qc_rule <- "Children with a caregiver below 18 years old are deleted from the database."
-qc_type <- "underaged_cg"
-df <- day0_data
-qc_text <- "a consenting caregiver below 18 years old"
-qc_idx <- qc_underaged_cg_id
-qc_export_label <- "underaged_cg"
-qc_export_description <- "the consenting caregiver is below 18 years old"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_ineligible_cg <- n_detected
-```
-
-```{r, eval=!is.null(cleaned_df)}
-day0_data <- cleaned_df
-```
-
 ### Incorrect enrolment date [context check `r qc_incorrect_enrolment_date`]\n\n
 
 ```{r}
@@ -160,7 +134,7 @@ write(" o Incorrect enrolment date", stderr())
 ```
 
 ```{r, eval=!is.null(day0_data)&is_tanzania, results='asis'}
-qc_description <- "The enrolment date is defined as the start date of the form. However if research assistants reuse on old form to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date would not be correct."
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- day0_data
@@ -173,7 +147,10 @@ qc_export_description <- "the enrolment date is not correct"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_incorrect_enroldate_records <- n_detected
 ```
+
+CORRECTION TO BE ADDED
 
 ### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
 
@@ -396,13 +373,9 @@ n_cleaned_day0_records <- nrow(day0_data)
 
 ```{r}
 timci::create_day0_qc_flowchart(n_raw_day0_records,
-                                n_nonvalid_fids,
-                                n_ineligible_cg,
-                                n_cleaned_day0_records,
-                                'NA',
-                                'NA',
-                                'NA',
-                                'NA')
+                                n_nonvalid_fid_records,
+                                n_incorrect_enroldate_records,
+                                n_cleaned_day0_records)
 ```
 
 ### Data export\n\n

@@ -7,30 +7,21 @@
 create_day0_qc_flowchart(
   n_raw_day0_records,
   n_nonvalid_fid_records,
-  n_ineligible_cg_records,
-  n_cleaned_day0_records,
-  d,
-  e,
-  f,
-  g
+  n_incorrect_enroldate_records,
+  n_edited_duplicate_records,
+  n_cleaned_day0_records
 )
 }
 \arguments{
-\item{n_raw_day0_records}{Number of records}
+\item{n_raw_day0_records}{Initial number of Day 0 records}
 
-\item{n_nonvalid_fid_records}{Number of records with a non-valid device ID}
+\item{n_nonvalid_fid_records}{Number of Day 0 records with a non-valid device ID}
 
-\item{n_ineligible_cg_records}{Number of Day 0 records with an entry date posterior to the lock date}
+\item{n_incorrect_enroldate_records}{Number of Day 0 records with an entry date posterior to the lock date}
+
+\item{n_edited_duplicate_records}{Number of Day 0 records with an entry date posterior to the lock date}
 
 \item{n_cleaned_day0_records}{TBD}
-
-\item{d}{TBD}
-
-\item{e}{TBD}
-
-\item{f}{TBD}
-
-\item{g}{TBD}
 }
 \value{
 This function returns a graph object
