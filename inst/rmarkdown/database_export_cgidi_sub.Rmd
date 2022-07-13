@@ -21,7 +21,7 @@ No data cleaning for the lock.
 
 ```{r cg-idi-potential-participants}
 if (!is.null(day0_data) && !is.null(day7fu_data)) {
-  cg_qual_export_data <- timci::generate_cg_log(day0_data, locked_day7fu_data)
+  cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
 }
 ```
 

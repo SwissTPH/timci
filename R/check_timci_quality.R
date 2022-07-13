@@ -189,6 +189,7 @@ identify_duplicates_by_dates <- function(df,
                                          cleaning = "none") {
 
   qc_df <- NULL
+  qc_df2 <- NULL
   cleaned_df <- NULL
 
   if ( timci::is_not_empty(df) ) {
@@ -206,6 +207,7 @@ identify_duplicates_by_dates <- function(df,
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
         filter(!is.na(date_2))
+      qc_df2 <- df[df[[col_id]] %in% qc_df$val, ]
     } else {
       qc_df <- NULL
     }
@@ -219,7 +221,7 @@ identify_duplicates_by_dates <- function(df,
 
   }
 
-  list(qc_df, cleaned_df)
+  list(qc_df, cleaned_df, qc_df2)
 
 }
 
@@ -259,7 +261,7 @@ identify_repeat_duplicate <- function(df,
           dplyr::filter(!is.na(name_2)) %>%
           dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2))
         # Threshold to be determined exactly
-        qc_df <- qc_df[qc_df$lvr > 0.6,]
+        qc_df <- qc_df[qc_df$lvr > 75,]
       } else {
         qc_df <- NULL
       }
@@ -514,6 +516,32 @@ identify_nonvalid_ids <- function(df1,
 
   qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
   cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  list(qc_df, cleaned_df)
+
+}
+
+#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
+#'
+#' @param df1 dataframe containing the data to check
+#' @param col_id1 column name containing IDs in `df1`
+#' @param df2 reference dataframe
+#' @param col_id2 column name containing IDs in `df2`
+#' @param col_date column name containing dates in `df1`
+#' @param lock_date lock date
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+
+identify_nonvalid_ids2 <- function(df1,
+                                   col_id1,
+                                   df2,
+                                   col_id2,
+                                   col_date,
+                                   lock_date) {
+
+  qc_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+  qc_df <- qc_df[qc_df[[col_date]] > as.Date(lock_date, "%Y-%m-%d"), ]
+  cleaned_df <- df1[!df1[[col_id1]] %in% qc_df[[col_id2]], ]
 
   list(qc_df, cleaned_df)
 

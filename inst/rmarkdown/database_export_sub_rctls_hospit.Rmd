@@ -1,8 +1,8 @@
+## Hospitalisation data quality checks\n\n
+
 ```{r}
 write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())
 ```
-
-## Hospitalisation data quality checks\n\n
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
 hospit_data <- timci::format_hospital_data(raw_hospit_data)

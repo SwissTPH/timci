@@ -1,30 +1,52 @@
-```{r}
-write("Export Day 7 follow-up data and run corresponding quality checks", stderr())
-```
-
 ## Day 7 follow-up data quality checks\n\n
 
 ```{r}
-allday7fu_data <- NULL
-day7fu_data <- NULL
-
-locked_day7fu_data <- NULL
-locked_allday7fu_data <- NULL
+write("Export Day 7 follow-up data and run corresponding quality checks", stderr())
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
 db_name <- "Day 7 follow-up"
 out <- timci::format_day7_data(raw_day7fu_data)
-day7fu_data <- out[[1]]
-allday7fu_data <- out[[3]]
+raw_allday7fu_data <- out[[3]]
+n_raw_allday7fu_data <- nrow(raw_allday7fu_data)
+raw_successday7fu_data <- out[[1]]
 ```
 
-There are **`r nrow(allday7fu_data)`** records in the raw `r db_name` database.
+There are **`r n_raw_allday7fu_data`** records in the raw `r db_name` database.
+
+### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
+```
+
+```{r, eval=!is.null(n_raw_allday7fu_data), results='asis'}
+qc_description <- paste0("Day 7 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids2"
+df <- raw_allday7fu_data
+idcol1 <- "child_id"
+refdf <- facility_data_after_lock %>%
+  filter( !is.na(child_id) )
+idcol2 <- "child_id"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_day7fu
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_afterlock_pids_day7fu <- n_detected
+allday7fu_data <- cleaned_df
+```
 
 ### Non-valid participant IDs [compliance check `r qc_nonvalid_day7fu`]\n\n
 
 ```{r}
-write(" o Non-valid participant IDs [Day 7 data quality checks]", stderr())
+write(" o Non-valid participant IDs", stderr())
 ```
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
@@ -46,29 +68,46 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r, eval=!is.null(cleaned_df)}
 n_nonvalid_pids_day7fu <- n_detected
-locked_day7fu_data <- cleaned_df
+allday7fu_data <- cleaned_df
 ```
 
-### Participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
+### Data cleaning summary\n\n
 
-```{r, eval=!is.null(allday7fu_data), results='asis'}
-qc_description <- paste0("Day 7 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
-qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
-qc_type <- "nonvalid_ids"
-df <- locked_day7fu_data
-idcol1 <- "child_id"
-refdf <- day0_data
-idcol2 <- "child_id"
-qc_text <- "participant IDs outside the lock date range"
-qc_idx <- qc_pids_out_lock_range_day7fu
-qc_export_label <- "pids_outside_lock_range"
-qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
+```{r}
+write(" o Data cleaning summary", stderr())
 ```
 
-```{r, eval=!is.null(cleaned_df)}
-n_afterlock_pids_day7fu <- n_detected
-locked_day7fu_data <- cleaned_df
+```{r}
+n_cleaned_allday7fu_records <- nrow(allday7fu_data)
+```
+
+```{r}
+timci::create_screening_qc_flowchart(n_raw_allday7fu_data,
+                                     n_nonvalid_deviceid_records,
+                                     n_after_lockdate_records,
+                                     n_ineligible_cg_records,
+                                     nrow(repeat_visit_edits),
+                                     n_cleaned_allday7fu_records)
+```
+
+### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(raw_allday7fu_data,
+                      "04a",
+                      "timci_followup_day7_data",
+                      rctls_dir,
+                      "Raw Day 7 follow-up data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(allday7fu_data,
+                      "04a",
+                      "timci_followup_day7_data",
+                      locked_db_dir,
+                      "Cleaned Day 7 follow-up data")
 ```

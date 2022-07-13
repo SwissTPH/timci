@@ -60,6 +60,7 @@ params:
 ```{r setup-library, include=FALSE}
 library(dplyr)
 library(knitr)
+library(skimr)
 ```
 
 ```{r setup-options, include=FALSE}
@@ -312,13 +313,6 @@ facility_device %>%
 
 # `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
-```{r}
-raw_screening_data <- timci::extract_screening_data(facility_data)
-out <- timci::extract_enrolled_participants(facility_data)
-raw_day0_data <- out[[1]]
-raw_pii <- out[[2]]
-```
-
 ```{r db-export-screening-subsection, child = 'database_export_sub_rctls_screening.Rmd'}
 ```
 
@@ -341,7 +335,6 @@ day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
 
 ```{r db-export-successfulday7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7_outcome.Rmd'}
 ```
-
 
 \newpage
 
@@ -404,6 +397,7 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 
 ```{r}
 locked_day0_data <- day0_data
+locked_allday7fu_data <- allday7fu_data
 ```
 
 ```{r, eval=is_rct}

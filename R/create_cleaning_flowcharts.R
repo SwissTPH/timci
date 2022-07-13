@@ -24,9 +24,9 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw screenings\n(N = %s)']
+                  1 [label = 'Raw screening records\n(N = %s)']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) with ineligible caregiver\n%s record(s) posterior to the lock date\n\nManually edited (N = %s)\n%s record(s) corrected to repeat visit']
-                  2 [label = 'Cleaned screenings\n(N = %s)']
+                  2 [label = 'Cleaned screening records\n(N = %s)']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -53,6 +53,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 #' @param n_raw_day0_records Initial number of Day 0 records
 #' @param n_nonvalid_fid_records Number of Day 0 records with a non-valid device ID
 #' @param n_incorrect_enroldate_records Number of Day 0 records with an entry date posterior to the lock date
+#' @param n_dropped_duplicate_records Number of Day 0 records that were dropped
 #' @param n_edited_duplicate_records Number of Day 0 records with an entry date posterior to the lock date
 #' @param n_cleaned_day0_records TBD
 #' @return This function returns a graph object
@@ -62,19 +63,20 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 create_day0_qc_flowchart <- function(n_raw_day0_records,
                                      n_nonvalid_fid_records,
                                      n_incorrect_enroldate_records,
+                                     n_dropped_duplicate_records,
                                      n_edited_duplicate_records,
                                      n_cleaned_day0_records) {
 
-  n_excluded <- n_nonvalid_fid_records
+  n_excluded <- n_nonvalid_fid_records + n_dropped_duplicate_records
   n_edited <- n_incorrect_enroldate_records + n_edited_duplicate_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw enrolments\n(N = %s)']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n\nManually edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a duplicated ID']
-                  2 [label = 'Cleaned enrolments\n(N = %s)']
+                  1 [label = 'Raw Day 0 records\n(N = %s)']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s dummy record(s) with a non-unique child ID\n\nManually edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a non-unique child ID']
+                  2 [label = 'Cleaned Day 0 records\n(N = %s)']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -86,6 +88,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                 n_raw_day0_records,
                 n_excluded,
                 n_nonvalid_fid_records,
+                n_dropped_duplicate_records,
                 n_edited,
                 n_incorrect_enroldate_records,
                 n_edited_duplicate_records,

@@ -15,6 +15,8 @@ knitr::opts_chunk$set(echo = FALSE,
 **Action:** `r qc_rule`
 
 ```{r}
+qc_df <- NULL
+qc_df2 <- NULL
 cleaned_df <- NULL
 n_detected <- 0
 cleaned_df_status_update <- ""
@@ -68,6 +70,17 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+```{r, eval=(qc_type=="nonvalid_ids2")}
+out <- timci::identify_nonvalid_ids2(df,
+                                     idcol1,
+                                     refdf,
+                                     idcol2,
+                                     col_date = "date_call",
+                                     lock_date = lock_date)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="date_discrepancy")}
 out <- timci::detect_inconsistent_dates(df,
                                         col_date_start = col_date1,
@@ -84,6 +97,7 @@ out <- timci::identify_duplicates_by_dates(df,
                                            cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
 ```
 
 ```{r, eval=(qc_type=="duplicates_check_pii")}
@@ -119,8 +133,12 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
-```{r, eval=!is.null(qc_df)}
+```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}
 n_detected <- nrow(qc_df)
+```
+
+```{r, eval=(qc_type=="duplicates")&!is.null(qc_df2)}
+n_detected <- nrow(qc_df2)
 ```
 
 **Check output:** The check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.

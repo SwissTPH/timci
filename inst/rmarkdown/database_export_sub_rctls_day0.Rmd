@@ -1,21 +1,18 @@
+## Day 0 quality checks\n\n
+
 ```{r}
 write("Export Day 0 data and run corresponding quality checks", stderr())
 ```
 
-## Day 0 quality checks\n\n
-
 ```{r}
+db_name <- "Day 0"
 day0_data <- facility_data %>%
     dplyr::filter(enrolled == 1)
+n_raw_day0_records <- nrow(day0_data)
 repeat_data <- facility_data %>%
     dplyr::filter(repeat_consult == 1)
 day0_is_not_null <- !is.null(day0_data)
 day0_is_not_empty <- timci::is_not_empty(day0_data)
-```
-
-```{r}
-db_name <- "Day 0"
-n_raw_day0_records <- nrow(day0_data)
 ```
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
@@ -72,7 +69,7 @@ edited_records %>%
 
 `r if (is_kenya) { paste0('#### Final check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
 
-```{r, eval=!is.null(day0_data), results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
 qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are deleted."
 qc_type <- "nonvalid_ids"
@@ -101,7 +98,7 @@ day0_data <- cleaned_df
 ```{r}
 qc_inconsistent_facility <- NULL
 if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-  if (!is.null(day0_data)) {
+  if (day0_is_not_null) {
     if (nrow(day0_data) > 0) {
       qc_inconsistent_facility <- day0_data[day0_data$fid != day0_data$fid_ra, ]
       qc_inconsistent_facility <- qc_inconsistent_facility[c("child_id", "fid", "fid_ra", "uuid")]
@@ -133,14 +130,14 @@ if (!is.null(qc_inconsistent_facility)) {
 write(" o Incorrect enrolment date", stderr())
 ```
 
-```{r, eval=!is.null(day0_data)&is_tanzania, results='asis'}
+```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- day0_data
 col_date1 <- "start"
 col_date2 <- "start_contact"
-qc_text <- "an incorrect enrolment date"
+qc_text <- "an incorrect date of enrolment"
 qc_idx <- qc_incorrect_enrolment_date
 qc_export_label <- "incorrect_enrolment_date"
 qc_export_description <- "the enrolment date is not correct"
@@ -150,11 +147,19 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_incorrect_enroldate_records <- n_detected
 ```
 
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and entry of participant contact details" ,
+     ylab="Occurences",
+     main="")
+```
+
 CORRECTION TO BE ADDED
 
 ### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
 
-```{r, eval=!is.null(day0_data), results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -173,14 +178,14 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, results='asis', eval=timci::is_not_empty(qc_df)}
 hist(as.numeric(qc_df$diff),
      breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Days between submission start and finalisation" ,
+     xlab="Number of days between submission start and finalisation" ,
      ylab="Occurences",
      main="")
 ```
 
 ### Non-timely submission [compliance check `r qc_nontimely_submission_id`]\n\n
 
-```{r, eval=!is.null(day0_data), results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -199,7 +204,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, results='asis', eval=timci::is_not_empty(qc_df)}
 hist(as.numeric(qc_df$diff),
      breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Days between submission start and finalisation" ,
+     xlab="Number of days between submission finalisation and transfer" ,
      ylab="Occurences",
      main="")
 ```
@@ -208,7 +213,7 @@ hist(as.numeric(qc_df$diff),
 
 `r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
 
-```{r, eval=!is.null(day0_data)&(is_tanzania|is_kenya), results='asis'}
+```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
 qc_type <- "duplicates"
@@ -271,7 +276,7 @@ duplicate_edits %>%
 
 `r if ( is_tanzania | is_kenya | is_senegal ) { paste0('#### Final check after manual edits [compliance check ', qc_duplicate_id2, ']\n\n') }`
 
-```{r, eval=!is.null(day0_data), results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Remaining duplicated child IDs are deleted from the database."
 qc_type <- "duplicates"
@@ -298,14 +303,14 @@ day0_data <- cleaned_df
 multiple <- FALSE
 ```
 
-`r if( !multiple) {'Only implemented for the final analysis - disabled for the interim analysis'}`
+`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the interim analysis'}`
 
 ```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
 ### Clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
 
-```{r, results='asis', eval=!is.null(day0_data)}
+```{r, results='asis', eval=day0_is_not_null}
 qc_description <- "All participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
 
 * No convulsions (*sx_convulsions* $\\neq$ 1)
@@ -332,7 +337,7 @@ n_missing_cp <- n_detected
 
 ### Diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
-```{r, results='asis', eval=!is.null(day0_data)}
+```{r, results='asis', eval=day0_is_not_null}
 qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit."
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_diagnosis"
@@ -349,7 +354,7 @@ n_missing_diagnosis <- n_detected
 
 ### Referral [Mandatory check `r qc_missing_referral_id`]\n\n
 
-```{r, results='asis', eval=!is.null(day0_data)}
+```{r, results='asis', eval=day0_is_not_null}
 qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. This information is collected from 2 soures: the caregiver at the exit of the consultation and the facility registries/consultation notes. However, caregivers may be lost at the exit of the consultation, so that the referral information from this source would be missing (*referral_cg* = 'NA')."
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_referral"
@@ -375,10 +380,16 @@ n_cleaned_day0_records <- nrow(day0_data)
 timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fid_records,
                                 n_incorrect_enroldate_records,
+                                nrow(dropped_records),
+                                nrow(duplicate_edits),
                                 n_cleaned_day0_records)
 ```
 
 ### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
 
 ```{r, eval=!deidentification_on, results = 'asis'}
 timci::dataset_export(raw_day0_data,
@@ -416,4 +427,10 @@ timci::dataset_export(study_data,
                       "timci_facility_visits_data",
                       rctls_dir,
                       "Facility visit data")
+```
+
+### Data summary\n\n
+
+```{r, results='asis'}
+skimr::skim(day0_data)
 ```
