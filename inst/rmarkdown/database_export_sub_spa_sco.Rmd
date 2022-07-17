@@ -77,7 +77,7 @@ locked_spa_sco_data <- cleaned_df
 
 ### Incomplete observations [compliance check `r qc_spa_sco_incomplete`]\n\n
 
-```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
+```{r, eval=!is.null(locked_spa_sco_data)&!is_senegal, results='asis'}
 qc_description <- "Observation of children back from the laboratory should not be a stand-alone observation, but should complement the observation of the initial consultation (before the child was sent to the lab)."
 qc_rule <- action_alert_no_modification
 qc_type <- "incomplete_spa_observation"
