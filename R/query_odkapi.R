@@ -1,4 +1,5 @@
 #' Create an ODK Central draft form
+#' See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/creating-a-draft-form} for more details.
 #'
 #' @param un string containing the ODK Central username.
 #' @param pw string containing the password for user `un`.
@@ -17,6 +18,7 @@ create_odkc_draft_form <- function(un, pw, form_url) {
 }
 
 #' Upload the new CSV created as a form attachment
+#' See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/uploading-a-draft-form-attachment} for more details.
 #'
 #' @param un string containing the ODK Central username.
 #' @param pw string containing the password for user `un`.
@@ -37,11 +39,12 @@ upload_odkc_csv_attachment <- function(un, pw, form_url, csv_path) {
 }
 
 #' Publish a draft form
+#' See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/publishing-a-draft-form} for more details.
 #'
 #' @param un string containing the ODK Central username.
 #' @param pw string containing the password for user `un`.
 #' @param form_url string containing the URL of the ODK Central form to be published, e.g. "https://sandbox.central.getodk.org/v1/projects/project-id/forms/form-id".
-#' @param new_id string containing the version of the form to be published, to be written in its XForms XML definition.
+#' @param new_id string containing the version of the form to be published. If `new_id` conflicts with an older version of the form, you will get an error.
 #' @return This function returns the content of the request to the ODK Central API.
 #' @export
 #' @import dplyr magrittr
