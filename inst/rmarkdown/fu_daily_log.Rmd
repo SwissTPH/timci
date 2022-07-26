@@ -249,9 +249,14 @@ if (fu_fid %in% rct_ls_form_list) {
 ```{r, eval=(fu_fid %in% rct_ls_form_list)}
 form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", rctls_pid, "/forms/", fu_fid)
 # Create a new draft of the form
-draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
+draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(),
+                                                 ruODK::get_default_pw(),
+                                                 form_url)
 # Upload the new CSV created as a form attachment
-csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv_filename)
+csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(),
+                                                         ruODK::get_default_pw(),
+                                                         form_url,
+                                                         csv_filename)
 ```
 
 **`r form_url`**
@@ -264,7 +269,10 @@ csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un()
 
 ```{r, eval=(fu_fid %in% rct_ls_form_list) & is_tanzania}
 # Upload the new CSV for physical follow-up created as a form attachment
-physicalfu_csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, physicalfu_csv_filename)
+physicalfu_csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(),
+                                                                    ruODK::get_default_pw(),
+                                                                    form_url,
+                                                                    physicalfu_csv_filename)
 cat(paste0("* Upload the CSV containing the current physical follow-up log as an attachment to the draft: **", physicalfu_csv_upload_response$success, "**"))
 ```
 
@@ -275,7 +283,10 @@ new_version <- as.character(current_version + 0.000000001)
 if (!is.na(encryption_version)) {
   new_version <- paste0(new_version, "[", encryption_version)
 }
-publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)
+publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(),
+                                                       ruODK::get_default_pw(),
+                                                       form_url,
+                                                       new_version)
 ```
 
 * Publish the updated form with version number **`r new_version`**: **`r publication_response$success`**
