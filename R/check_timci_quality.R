@@ -230,6 +230,12 @@ identify_duplicates_by_dates <- function(df,
       cleaned_df <- df[!df[[col_id]] %in% qc_df$id, ]
     }
     if ( !is.null(qc_df) & cleaning == "keep_latest" ) {
+      # Order data by descending dates
+      df <- df %>%
+        dplyr::arrange(desc(!!dplyr::enquo(col_date)))
+      # Duplicated() determines which elements of a vector or data frame are duplicates of elements with smaller subscripts
+      # (i.e. in the present situation: duplicates of elements with a later record available)
+      # Extract unique elements by selecting only those elements that are not duplicates of elements detected earlier
       cleaned_df <- df[!duplicated(df[[col_id]]), ]
     }
 
