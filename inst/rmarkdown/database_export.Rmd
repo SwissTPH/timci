@@ -372,7 +372,7 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-```{r db-export-deaths-subsection, child = if (!day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
+```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
 ```
 
 \newpage

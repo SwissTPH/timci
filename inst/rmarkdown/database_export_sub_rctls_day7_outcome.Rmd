@@ -85,8 +85,6 @@ n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
 day7fu_data <- cleaned_df
 ```
 
-
-
 ### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day7fu`]\n\n
 
 ```{r, eval=!is.null(day7fu_data), results='asis'}
