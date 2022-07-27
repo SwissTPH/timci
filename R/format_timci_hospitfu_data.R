@@ -13,9 +13,15 @@ format_hospital_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "hospit_dict.xlsx"), package = 'timci'))
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+    xls_filename <- "hospit_dict_tanzania.xlsx"
+  } else{
+    xls_filename <- "hospit_dict.xlsx"
+  }
+
+  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_filename), package = 'timci'))
   sub <- subset(dictionary, deidentified == 1)
-  df <- match_from_xls_dict(df, "hospit_dict.xlsx")
+  df <- match_from_xls_dict(df, xls_filename)
   df <- df[sub$new]
 
 }

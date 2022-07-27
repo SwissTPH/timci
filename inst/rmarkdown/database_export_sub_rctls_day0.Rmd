@@ -422,6 +422,7 @@ dataMaid::identifyOutliers(day0_data$rr_meas,
 ### Data cleaning summary\n\n
 
 ```{r}
+allday0_data <- day0_data
 day0_data <- timci::extract_pii(day0_data)[[1]]
 n_cleaned_day0_records <- nrow(day0_data)
 ```

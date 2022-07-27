@@ -6,6 +6,101 @@ write("Export death data for monitoring", stderr())
 
 ## Death data
 
+```{r}
+dropped_cols <- c("start",
+                  "duration",
+                  "device_id",
+                  "sys_submit_id",
+                  "uuid")
+dropped_cols_day0 <- c(dropped_cols,
+                       "start_time",
+                       "end",
+                       "end_time",
+                       "submission_date",
+                       "fid_ra",
+                       "district_ra",
+                       "district",
+                       "facility",
+                       "location",
+                       "location_lvl1",
+                       "location_lvl2",
+                       "location_lvl3",
+                       "location_lvl4",
+                       "physical_fu_instructions",
+                       "cg_common_name",
+                       "latitude",
+                       "longitude",
+                       "altitude",
+                       "gps_accuracy",
+                       "start_contact",
+                       "ra_name",
+                       "arm",
+                       "cg_fs_name",
+                       "cg_ls_name",
+                       "phone_nb",
+                       "phone_nb2",
+                       "phone_nb3",
+                       "cmty_contact",
+                       "fs_name",
+                       "ms_name",
+                       "ls_name",
+                       "mother_fs_name",
+                       "mother_ls_name",
+                       "child_hf_id",
+                       "fid_from_main_device",
+                       "facility_name_from_main_device",
+                       "fid_from_device",
+                       "facility_name",
+                       "fid_discrepancy",
+                       "t_screening_start",
+                       "dob_knwn",
+                       "ymdob",
+                       "ymob",
+                       "yob",
+                       "prev_enrl",
+                       "prev_id",
+                       "prev_hf_name_card",
+                       "prev_hf_id_cg",
+                       "prev_hf_name_cg",
+                       "date_prev",
+                       "enrl_days_cg",
+                       "enrl_days_card",
+                       "repeat_consult")
+dropped_cols_fu <- c(dropped_cols,
+                     "main_cg",
+                     "district",
+                     "hf_name",
+                     "rhf_loc_name",
+                     "rhf_name",
+                     "rhf_oth",
+                     "na.rm",
+                     "window",
+                     "days",
+                     "rhf_loc_oth")
+dropped_cols_day7 <- c(dropped_cols_fu,
+                       "date_day0",
+                       "qual_ok",
+                       "cure_day7",
+                       "fid",
+                       "first_attempt",
+                       "respondent",
+                       "respondent_oth",
+                       "respondent_ok",
+                       "valid_phone",
+                       "phone_off")
+dropped_cols_day28 <- c(dropped_cols_fu,
+                        "date_day0",
+                        "cure_day28",
+                        "hf_id",
+                        "rhf_loc_oth",
+                        "call_ok")
+dropped_cols_hosp <- c(dropped_cols,
+                       "rhf_name_hosp",
+                       "dob_knwn_hf",
+                       "date_visit_cg")
+```
+
+
 ### Export death data reported at Day 7
 
 ```{r, eval=is_tanzania}
@@ -14,9 +109,14 @@ allday7_deaths <- raw_successday7fu_data %>%
 if (nrow(allday7_deaths) > 0) {
   allday7_deaths <- pivot_duplicates_to_columns(allday7_deaths)
 }
+```
 
+```{r, eval=is_tanzania}
 locked_day7fu_deaths <- day7fu_data %>%
   filter(status_day7 == 3 | fu_type == 3)
+
+# Remove the columns `dropped_cols` from the exported data frame
+locked_day7fu_deaths <- locked_day7fu_deaths[,!(names(locked_day7fu_deaths) %in% dropped_cols_day7)]
 ```
 
 ```{r, eval=!is_tanzania}
@@ -25,7 +125,7 @@ allday7_deaths <- raw_successday7fu_data %>%
 if (nrow(allday7_deaths) > 0) {
   allday7_deaths <- pivot_duplicates_to_columns(allday7_deaths)
 }
-locked_day7fu_deaths <- locked_allday7fu_data %>%
+locked_day7fu_deaths <- day7fu_data %>%
   filter(status_day7 == 3)
 ```
 
@@ -53,11 +153,17 @@ allday28_deaths <- raw_successday28fu_data %>%
 if (nrow(allday28_deaths) > 0) {
   allday28_deaths <- pivot_duplicates_to_columns(allday28_deaths)
 }
-locked_day28fu_deaths <- day28fu_data %>%
-  dplyr::filter(status_day28 == 3)
 ```
 
-```{r, results = 'asis'}
+```{r, eval=is_rct}
+locked_day28fu_deaths <- day28fu_data %>%
+  dplyr::filter(status_day28 == 3)
+
+# Remove the columns `dropped_cols` from the exported data frame
+locked_day28fu_deaths <- locked_day28fu_deaths[,!(names(locked_day28fu_deaths) %in% dropped_cols_day28)]
+```
+
+```{r, eval=is_rct, results = 'asis'}
 timci::dataset_export(allday28_deaths,
                       "15",
                       "timci_day28_death_data",
@@ -65,7 +171,7 @@ timci::dataset_export(allday28_deaths,
                       "Raw Day 28 death data")
 ```
 
-```{r, results = 'asis'}
+```{r, eval=is_rct, results = 'asis'}
 timci::dataset_export(locked_day28fu_deaths,
                       "15",
                       "timci_day28_death_data",
@@ -80,7 +186,7 @@ all_deaths <- allday7_deaths %>%
   merge(allday28_deaths,
         by = 'child_id',
         all = TRUE) %>%
-  merge(day0_data,
+  merge(allday0_data,
         by = 'child_id',
         all.x = TRUE) %>%
   merge(hospit_data,
@@ -88,17 +194,72 @@ all_deaths <- allday7_deaths %>%
         all.x = TRUE)
 ```
 
+```{r}
+# Remove the columns `dropped_cols` from the exported data frame
+day0_data_subset <- allday0_data[,!(names(allday0_data) %in% dropped_cols_day0)]
+hospit_data_subset <- hospit_data[,!(names(hospit_data) %in% dropped_cols_hosp)]
+```
+
 ```{r, eval=is_rct}
 locked_all_deaths <- locked_day7fu_deaths %>%
   merge(locked_day28fu_deaths,
         by = 'child_id',
-        all = TRUE) %>%
-  merge(day0_data,
+        all = TRUE,
+        suffixes = c("_day7","_day28")) %>%
+  merge(day0_data_subset,
         by = 'child_id',
-        all.x = TRUE)
+        all.x = TRUE) %>%
+  merge(hospit_data_subset,
+        by = 'child_id',
+        all.x = TRUE,
+        suffixes = c("","_hosp"))
 ```
 
-```{r, results = 'asis'}
+```{r, eval=is_rct}
+locked_all_deaths <- locked_all_deaths %>%
+  dplyr::relocate(fid,
+                  .after = child_id) %>%
+  dplyr::relocate(main_cg,
+                  main_cg_lbl,
+                  status_day7,
+                  status_day28,
+                  location_death_day7,
+                  location_death_day28,
+                  .before = fu_type_day7) %>%
+  dplyr::relocate(fu_type_day28,
+                  .after = fu_type_day7) %>%
+  dplyr::mutate(days_diff_day0_day7 = as.Date(date_call_day7) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_hosp_day7 = as.Date(date_hosp_day7) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_day28 = as.Date(date_call_day28) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_hosp_day28 = as.Date(date_hosp_day28) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_hosp_hosp = as.Date(date_visit_rhf) - as.Date(date_visit)) %>%
+  dplyr::mutate(age_days_death_day7 = as.Date(date_death_day7) - as.Date(dob)) %>%
+  dplyr::mutate(age_days_death_day28 = as.Date(date_death_day28) - as.Date(dob)) %>%
+  dplyr::mutate(age_days_death_hosp = as.Date(date_death) - as.Date(dob)) %>%
+  dplyr::relocate(days_diff_day0_day7,
+                  days_diff_day0_day28,
+                  days_diff_day0_hosp_hosp,
+                  .after = fid) %>%
+  dplyr::relocate(age_days_death_day7,
+                  age_days_death_day28,
+                  age_days_death_hosp,
+                  .before = location_death_day7)
+
+# Remove date columns used for day difference calculation
+dropped_cols <- c("date_visit",
+                  "dob",
+                  "date_call_day7",
+                  "date_hosp_day7",
+                  "date_death_day7",
+                  "date_call_day28",
+                  "date_hosp_day28",
+                  "date_death_day28",
+                  "date_visit_rhf",
+                  "date_death")
+locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
+```
+
+```{r, eval=is_rct, results = 'asis'}
 timci::dataset_export(all_deaths,
                       "16",
                       "timci_all_death_data",
@@ -106,7 +267,7 @@ timci::dataset_export(all_deaths,
                       "Raw all death data")
 ```
 
-```{r, results = 'asis'}
+```{r, eval=is_rct, results = 'asis'}
 timci::dataset_export(locked_all_deaths,
                       "16",
                       "timci_all_death_data",

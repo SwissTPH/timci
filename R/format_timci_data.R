@@ -225,11 +225,13 @@ process_facility_data <- function(df) {
                   "crfs-t09a1-injection_types",
                   "crfs-t09a1-h2_2",
                   "crfs-t09a2-g3_1",
+                  "crfs-t09a1-t09a2-g3_1",
+                  "crfs-t09a2-rxothermain",
+                  "crfs-t09a1-t09a2-rxothermain",
                   "crfs-t09a2-h2_2a",
                   "crfs-t08a-f2_1",
                   "crfs-t05b-c3_6",
-                  "crfs-t09a2-rxothermain",
-                  "crfs-t09a1-t09a2-rxothermain")
+                  "crfs-t09a1-antimalarials")
 
   df <- format_multiselect_asws(df, multi_cols, sep)
 
