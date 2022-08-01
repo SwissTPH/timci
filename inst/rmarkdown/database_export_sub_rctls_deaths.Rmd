@@ -95,6 +95,10 @@ dropped_cols_day28 <- c(dropped_cols_fu,
                         "rhf_loc_oth",
                         "call_ok")
 dropped_cols_hosp <- c(dropped_cols,
+                       "sex",
+                       "rhf_name",
+                       "date_enrol",
+                       "dob_knwn_hf",
                        "rhf_name_hosp",
                        "dob_knwn_hf",
                        "date_visit_cg")
@@ -228,6 +232,7 @@ locked_all_deaths <- locked_all_deaths %>%
                   .before = fu_type_day7) %>%
   dplyr::relocate(fu_type_day28,
                   .after = fu_type_day7) %>%
+  dplyr::mutate(month_day0 = lubridate::month(date_visit, label = TRUE)) %>%
   dplyr::mutate(days_diff_day0_day7 = as.Date(date_call_day7) - as.Date(date_visit)) %>%
   dplyr::mutate(days_diff_day0_hosp_day7 = as.Date(date_hosp_day7) - as.Date(date_visit)) %>%
   dplyr::mutate(days_diff_day0_day28 = as.Date(date_call_day28) - as.Date(date_visit)) %>%
@@ -236,6 +241,7 @@ locked_all_deaths <- locked_all_deaths %>%
   dplyr::mutate(age_days_death_day7 = as.Date(date_death_day7) - as.Date(dob)) %>%
   dplyr::mutate(age_days_death_day28 = as.Date(date_death_day28) - as.Date(dob)) %>%
   dplyr::mutate(age_days_death_hosp = as.Date(date_death) - as.Date(dob)) %>%
+  dplyr::mutate(days_diff_day0_discharge_hosp = as.Date(date_discharge) - as.Date(date_visit)) %>%
   dplyr::relocate(days_diff_day0_day7,
                   days_diff_day0_day28,
                   days_diff_day0_hosp_hosp,
@@ -255,7 +261,8 @@ dropped_cols <- c("date_visit",
                   "date_hosp_day28",
                   "date_death_day28",
                   "date_visit_rhf",
-                  "date_death")
+                  "date_death",
+                  "date_discharge")
 locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
 ```
 
