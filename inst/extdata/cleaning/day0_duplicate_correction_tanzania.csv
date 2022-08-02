@@ -136,3 +136,15 @@ T-F0095-P1641,uuid:e81592e9-f35b-4a73-9d21-2681c3679fdb,T-F0095-P1644,,edit,2022
 T-F0004-P1180,uuid:97a34332-8927-430b-b7c3-71cdb9a2fa33,T-F0004-P1197,,edit,2022-07-24,IHI,2022-07-20
 T-F0043-P1714,uuid:157bc471-ec99-44be-9b0c-a8da2f23eb83,T-F0043-P1715,,edit,2022-08-01,IHI,2022-07-25
 T-F0095-P1644,uuid:c01bbf98-2ee4-40e7-bf0d-628837a3c46b,T-F0095-P1679,,edit,2022-08-01,IHI,2022-07-25
+T-F0010-P1688,uuid:e540cc28-a204-4fe5-914e-b9c59a82f628,T-F0010-P1708,,edit,2022-08-01,IHI,2022-01-26
+T-F0088-P0593,uuid:1b9dccf8-5269-4e95-bb58-7244514f0710,T-F0088-P0592,,edit,2022-08-01,IHI,2022-01-26
+T-F0010-P1008,uuid:4294db02-7e4c-4e28-a7d4-cc854b709df2,T-F0010-P1707,,edit,2022-08-01,IHI,2022-01-27
+T-F0010-P1009,uuid:e28367a1-b1ed-4330-88c9-bde0b1e3fb70,T-F0010-P1706,,edit,2022-08-01,IHI,2022-01-27
+T-F0010-P1015,uuid:a49ab32d-f7ae-4ff4-b087-303ac3759bfe,T-F0010-P1705,,edit,2022-08-01,IHI,2022-01-27
+T-F0091-P0368,uuid:3ab49627-e6d4-4c93-8a67-1a0f846277a9,T-F0091-P0369,,edit,2022-08-01,IHI,2022-01-27
+T-F0095-P1697,uuid:d7f7c5c1-62f3-44c5-8cc9-708e43b63967,T-F0095-P1698,,edit,2022-08-01,IHI,2022-01-27
+T-F0102-P0983,uuid:98324f13-aec8-46c0-abb1-30c66f6e1b0f,T-F0102-P1087,,edit,2022-08-01,IHI,2022-01-27
+T-F0001-P0376,uuid:5ff0643e-8ab3-4a38-ad5d-64cfbc142c5c,T-F0021-P0376,manual entry with incorrect facility code,edit,2022-08-02,IHI,2022-01-22
+T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,T-F9021-P0376,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
+T-F0001-P0377,uuid:53ac17b0-edea-4144-9df7-5fa28c5b17d2,T-F0021-P0377,manual entry with incorrect facility code,edit,2022-08-02,IHI,2022-01-22
+T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,T-F9021-P0377,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
