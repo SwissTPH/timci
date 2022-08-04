@@ -18,7 +18,7 @@ format_day7_data <- function(df) {
   multi_cols = c("n1_o3_1a",
                  "n1_o3_1b",
                  "n1_o3_2b",
-                 "n1_o3_3")
+                 "n1-o3_1a")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
@@ -80,7 +80,8 @@ format_day28_data <- function(df) {
   sep <- ";"
   multi_cols = c("n1_o3_1a",
                  "n1_o3_1b",
-                 "n1_o3_2b")
+                 "n1_o3_2b",
+                 "n1-o3_1a")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Separate submissions that relate to complete Day 28 follow-up and unsuccessful attempts

@@ -81,12 +81,21 @@ generate_hospital_log <- function(pii,
       day7fu_data <- timci::format_day7_data(fu7df)[[3]]
 
       if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-        hospit_log <- day7fu_data %>%
-          dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hf_visit_type == 13) )
+        day7fu_data <- day7fu_data %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(hosp_visit = ifelse(13 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
+                                     1,
+                                     0))
       } else{
-        hospit_log <- day7fu_data %>%
-          dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hf_visit_type == 1) )
+        day7fu_data <- day7fu_data %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(hosp_visit = ifelse(1 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
+                                            1,
+                                            0))
       }
+
+      hospit_log <- day7fu_data %>%
+        dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hosp_visit == 1) )
 
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
       if (!is.null(hospit_log)) {
