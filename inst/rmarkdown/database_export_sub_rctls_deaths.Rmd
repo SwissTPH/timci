@@ -208,10 +208,11 @@ locked_all_deaths <- locked_day7fu_deaths %>%
   merge(locked_day28fu_deaths,
         by = 'child_id',
         all = TRUE,
-        suffixes = c("_day7","_day28")) %>%
-  merge(day0_data_subset,
+        suffixes = c("_day7","_day28"))
+locked_all_deaths <- day0_data_subset %>%
+  merge(locked_all_deaths,
         by = 'child_id',
-        all.x = TRUE) %>%
+        all.y = TRUE) %>%
   merge(hospit_data_subset,
         by = 'child_id',
         all.x = TRUE,
@@ -220,35 +221,37 @@ locked_all_deaths <- locked_day7fu_deaths %>%
 
 ```{r, eval=is_rct}
 locked_all_deaths <- locked_all_deaths %>%
+  dplyr::relocate(child_id) %>%
   dplyr::relocate(fid,
                   .after = child_id) %>%
-  dplyr::relocate(main_cg,
-                  main_cg_lbl,
-                  status_day7,
-                  status_day28,
-                  location_death_day7,
-                  location_death_day28,
-                  .before = fu_type_day7) %>%
-  dplyr::relocate(fu_type_day28,
-                  .after = fu_type_day7) %>%
   dplyr::mutate(month_day0 = lubridate::month(date_visit, label = TRUE)) %>%
   dplyr::mutate(days_diff_day0_day7 = as.Date(date_call_day7) - as.Date(date_visit)) %>%
-  dplyr::mutate(days_diff_day0_hosp_day7 = as.Date(date_hosp_day7) - as.Date(date_visit)) %>%
   dplyr::mutate(days_diff_day0_day28 = as.Date(date_call_day28) - as.Date(date_visit)) %>%
-  dplyr::mutate(days_diff_day0_hosp_day28 = as.Date(date_hosp_day28) - as.Date(date_visit)) %>%
-  dplyr::mutate(days_diff_day0_hosp_hosp = as.Date(date_visit_rhf) - as.Date(date_visit)) %>%
-  dplyr::mutate(age_days_death_day7 = as.Date(date_death_day7) - as.Date(dob)) %>%
-  dplyr::mutate(age_days_death_day28 = as.Date(date_death_day28) - as.Date(dob)) %>%
-  dplyr::mutate(age_days_death_hosp = as.Date(date_death) - as.Date(dob)) %>%
-  dplyr::mutate(days_diff_day0_discharge_hosp = as.Date(date_discharge) - as.Date(date_visit)) %>%
-  dplyr::relocate(days_diff_day0_day7,
+  dplyr::mutate(days_diff_day0_hosp_s7 = as.Date(date_hosp_day7) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_hosp_s28 = as.Date(date_hosp_day28) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_hosp_sh = as.Date(date_visit_rhf) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_death_s7 = as.Date(date_death_day7) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_death_s28 = as.Date(date_death_day28) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_death_sh = as.Date(date_death) - as.Date(date_visit)) %>%
+  dplyr::mutate(age_days_day0 = as.Date(date_visit) - as.Date(dob)) %>%
+  dplyr::mutate(age_days_death_s7 = as.Date(date_death_day7) - as.Date(dob)) %>%
+  dplyr::mutate(age_days_death_s28 = as.Date(date_death_day28) - as.Date(dob)) %>%
+  dplyr::mutate(age_days_death_sh = as.Date(date_death) - as.Date(dob)) %>%
+  dplyr::mutate(days_diff_day0_discharge_sh = as.Date(date_discharge) - as.Date(date_visit)) %>%
+  dplyr::relocate(month_day0,
+                  age_days_day0,
+                  days_diff_day0_day7,
                   days_diff_day0_day28,
-                  days_diff_day0_hosp_hosp,
-                  .after = fid) %>%
-  dplyr::relocate(age_days_death_day7,
-                  age_days_death_day28,
-                  age_days_death_hosp,
-                  .before = location_death_day7)
+                  days_diff_day0_hosp_s7,
+                  days_diff_day0_hosp_s28,
+                  days_diff_day0_hosp_sh,
+                  days_diff_day0_death_s7,
+                  days_diff_day0_death_s28,
+                  days_diff_day0_death_sh,
+                  age_days_death_s7,
+                  age_days_death_s28,
+                  age_days_death_sh,
+                  .after = fid)
 
 # Remove date columns used for day difference calculation
 dropped_cols <- c("date_visit",
