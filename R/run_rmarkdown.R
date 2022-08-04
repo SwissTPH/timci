@@ -293,7 +293,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     day7_col_specs <- list(
       'a1-enroldate' = col_date(),
       'o1-o1_2' = col_date(),
-      'o1-o1_2a' = col_character()
+      'o1-o1_2a' = col_character(),
+      'n1-o3_1a' = col_character()
     )
 
     raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
@@ -323,7 +324,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       day28_col_specs <- list(
         'a1-enroldate' = col_date(),
         'o1-o1_2' = col_date(),
-        'o1-o1_2a' = col_character()
+        'o1-o1_2a' = col_character(),
+        'n1-o3_1a' = col_character()
       )
 
       if (crf_day28_fid %in% rct_ls_form_list) {
