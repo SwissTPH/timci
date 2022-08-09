@@ -148,3 +148,9 @@ T-F0001-P0376,uuid:5ff0643e-8ab3-4a38-ad5d-64cfbc142c5c,T-F0021-P0376,manual ent
 T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,T-F9021-P0376,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
 T-F0001-P0377,uuid:53ac17b0-edea-4144-9df7-5fa28c5b17d2,T-F0021-P0377,manual entry with incorrect facility code,edit,2022-08-02,IHI,2022-01-22
 T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,T-F9021-P0377,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
+T-F0039-P0671,uuid:84e4e42a-cdc5-47f1-8738-e74a54ff4728,T-F0043-P1814,,edit,2022-08-09,IHI,2022-08-01
+T-F0001-P0363,uuid:73ce57fd-65b8-4946-8707-8b6bacc8b626,T-F0001-P0538,,edit,2022-08-09,IHI,2022-08-02
+T-F0083-P1072,uuid:928e3a0d-17c1-47b2-86d7-451aded69d52,T-F0083-P1073,,edit,2022-08-09,IHI,2022-08-02
+T-F0002-P0560,uuid:060ba416-c73d-4873-9822-63d064c186f3,T-F0002-P0561,,edit,2022-08-09,IHI,2022-08-02
+T-F0084-P0512,uuid:03dd2a5c-1f32-4b8a-992f-18ccf58a761c,T-F0084-P0521,,edit,2022-08-09,IHI,2022-08-05
+T-F0027-P0794,uuid:932c05a7-477a-42bc-93c4-f20dc37c3b4e,T-F0027-P0814,,edit,2022-08-09,IHI,2022-08-06
