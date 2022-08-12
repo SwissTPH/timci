@@ -17,15 +17,15 @@ day0_is_not_empty <- timci::is_not_empty(day0_data)
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
 
-### Non-valid enrolling facility IDs [compliance `r if ( is_kenya ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
+### Non-valid enrolling facility IDs [compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 
 ```{r}
 write(" o Non-valid enrolling facility IDs", stderr())
 ```
 
-`r if ( is_kenya ) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
+`r if ( is_kenya | is_tanzania ) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
 
-```{r, eval=(day0_is_not_null&is_kenya), results='asis'}
+```{r, eval=(day0_is_not_null & (is_kenya | is_tanzania)), results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
 qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are detected and manually corrected before Day 7 follow-up is conducted where possible."
 qc_type <- "nonvalid_ids_no_cleaning"
@@ -42,32 +42,32 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_kenya ) {'#### Facility ID manual edits\n\n'}`
+`r if ( is_kenya | is_tanzania ) {'#### Facility ID manual edits\n\n'}`
 
 ```{r}
 edited_records <- NULL
 edited_df_status_update <- ""
 ```
 
-```{r, eval=is_kenya}
+```{r, eval=is_kenya | is_tanzania}
 out <- timci::correct_day0_non_valid_facilities(day0_data)
 day0_data <- out[[1]]
 edited_records <- out[[2]]
 ```
 
-```{r, eval=is_kenya&!is.null(edited_records)}
+```{r, eval=(is_kenya | is_tanzania)&!is.null(edited_records)}
 edited_df_status_update <- paste0('**', nrow(edited_records), '** record(s) were manually edited in the ', db_name, ' database.')
 ```
 
 `r edited_df_status_update`
 
-```{r, eval=is_kenya&!is.null(edited_records), results='asis'}
+```{r, eval=(is_kenya | is_tanzania)&!is.null(edited_records), results='asis'}
 edited_records %>%
   dplyr::select(old_child_id, uuid, new_child_id) %>%
   knitr::kable()
 ```
 
-`r if (is_kenya) { paste0('#### Final check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
+`r if (is_kenya | is_tanzania) { paste0('#### Final check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."

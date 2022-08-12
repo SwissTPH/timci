@@ -7,10 +7,9 @@
 
 correct_day0_non_valid_facilities <- function(df) {
 
-  csv_filename <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "day0_non_valid_facility_correction_kenya.csv"
-  }
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_non_valid_facility_correction_tanzania.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_non_valid_facility_correction_kenya.csv",
+                            TRUE ~ "")
 
   out <- list(df,NULL)
   if (!is.null(csv_filename)) {
