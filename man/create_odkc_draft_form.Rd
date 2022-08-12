@@ -2,7 +2,8 @@
 % Please edit documentation in R/query_odkapi.R
 \name{create_odkc_draft_form}
 \alias{create_odkc_draft_form}
-\title{Create an ODK Central draft form}
+\title{Create an ODK Central draft form
+See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/creating-a-draft-form} for more details.}
 \usage{
 create_odkc_draft_form(un, pw, form_url)
 }
@@ -18,4 +19,5 @@ This function returns the content of the request to the ODK Central API.
 }
 \description{
 Create an ODK Central draft form
+See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/creating-a-draft-form} for more details.
 }

@@ -8,6 +8,7 @@
 #' @param fu_dir path to the output folder for the follow-up exports (mandatory parameter)
 #' @param start_date start date (optional parameter)
 #' @param end_date end date (optional parameter)
+#' @param for_today boolean that enables to generate the follow-up for today (defaut set to `FALSE`)
 #' @import rmarkdown ruODK
 #' @export
 
@@ -16,7 +17,8 @@ generate_fu_logs <- function(rctls_pid,
                              research_facilities,
                              fu_dir,
                              start_date = NULL,
-                             end_date = NULL) {
+                             end_date = NULL,
+                             for_today = FALSE) {
 
 
   ###########################
@@ -191,6 +193,13 @@ generate_fu_logs <- function(rctls_pid,
     fu_end <- 12
   }
 
+  if (for_today) {
+    fu_start <- fu_start + 1
+    physicalfu_start <- physicalfu_start + 1
+    fu_end <- fu_end + 1
+    physicalfu_end <- physicalfu_end + 1
+  }
+
   params <- list(output_dir = fu_dir,
                  rct_ls_form_list = rct_ls_form_list,
                  facility_data = facility_data,
@@ -264,6 +273,13 @@ generate_fu_logs <- function(rctls_pid,
     physicalfu_start <- 29
     fu_end <- 35
     physicalfu_end <- 40
+
+    if (for_today) {
+      fu_start <- fu_start + 1
+      physicalfu_start <- physicalfu_start + 1
+      fu_end <- fu_end + 1
+      physicalfu_end <- physicalfu_end + 1
+    }
 
     params <- list(output_dir = fu_dir,
                    rct_ls_form_list = rct_ls_form_list,

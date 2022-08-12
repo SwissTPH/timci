@@ -2,7 +2,8 @@
 % Please edit documentation in R/query_odkapi.R
 \name{upload_odkc_csv_attachment}
 \alias{upload_odkc_csv_attachment}
-\title{Upload the new CSV created as a form attachment}
+\title{Upload the new CSV created as a form attachment
+See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/uploading-a-draft-form-attachment} for more details.}
 \usage{
 upload_odkc_csv_attachment(un, pw, form_url, csv_path)
 }
@@ -20,4 +21,5 @@ This function returns the response of the request to the ODK Central API.
 }
 \description{
 Upload the new CSV created as a form attachment
+See reference ODK API documentation in \url{https://odkcentral.docs.apiary.io/#reference/forms/draft-form/uploading-a-draft-form-attachment} for more details.
 }
