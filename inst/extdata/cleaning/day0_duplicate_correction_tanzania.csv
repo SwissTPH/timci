@@ -154,3 +154,6 @@ T-F0083-P1072,uuid:928e3a0d-17c1-47b2-86d7-451aded69d52,T-F0083-P1073,,edit,2022
 T-F0002-P0560,uuid:060ba416-c73d-4873-9822-63d064c186f3,T-F0002-P0561,,edit,2022-08-09,IHI,2022-08-02
 T-F0084-P0512,uuid:03dd2a5c-1f32-4b8a-992f-18ccf58a761c,T-F0084-P0521,,edit,2022-08-09,IHI,2022-08-05
 T-F0027-P0794,uuid:932c05a7-477a-42bc-93c4-f20dc37c3b4e,T-F0027-P0814,,edit,2022-08-09,IHI,2022-08-06
+T-F0027-P0794,uuid:89a22e58-f790-42e8-957c-43817fae3c6c,T-F9027-P0794,child withdrew because the age entered at screening was later found to be incorrect and the child was above 5,delete,2022-08-11,IHI,2022-08-06
+T-F0022-P0360,uuid:521823cd-ca5e-498f-b825-14a75c721393,T-F0023-P0360,Ra entered manually pid and wrote wrongly the pid,edit,2022-08-12,IHI,2022-08-12
+T-F0022-P0395,uuid:e1c987d7-17ce-4ff6-8b15-d3eabcf6affa,T-F0023-P0395,Ra entered manually pid and wrote wrongly the pidedit,2022-08-12,IHI,2022-08-12
