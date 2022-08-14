@@ -12,7 +12,7 @@ correct_day0_non_valid_facilities <- function(df) {
                             TRUE ~ "")
 
   out <- list(df,NULL)
-  if (!is.null(csv_filename)) {
+  if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
     df <- df %>%
