@@ -361,7 +361,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  verbose = TRUE)
     wfa_data <- NULL
     if (!is.null(raw_wfa_data)) {
-      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data)
+      wfa_data <- timci::process_weekly_fa_data(raw_wfa_data, is_pilot)
     }
 
     # Load problem report data

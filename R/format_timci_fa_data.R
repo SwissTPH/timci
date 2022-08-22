@@ -1,16 +1,18 @@
 #' Process weekly facility assessment data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the (raw) ODK data collected in the weekly facility assessment
+#' @param is_pilot Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr lubridate
 
-process_weekly_fa_data <- function(df) {
+process_weekly_fa_data <- function(df,
+                                   is_pilot = FALSE) {
 
   df$"page1-pox_use" <- as.integer(df$"page1-pox_use")
   df$"page1-new_hcp" <- as.integer(df$"page1-new_hcp")
   df$"page1-hcp_leave" <- as.integer(df$"page1-hcp_leave")
-  if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania") {
+  if (Sys.getenv('TIMCI_COUNTRY') != "Tanzania" | is_pilot) {
     df$"page1-drug_stock_out" <- as.integer(df$"page1-drug_stock_out")
   } else{
     df$"page1-AmoxicillinDT" <- as.integer(df$"page1-AmoxicillinDT")
