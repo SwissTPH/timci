@@ -342,7 +342,7 @@ n_missing_cp <- n_detected
 
 ### Diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
-```{r, results='asis', eval=day0_is_not_null}
+```{r, results='asis', eval=day0_is_not_null&!is_india}
 qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit, i.e. a participant cannot have simultaneously:
 
 * No danger signs (*dx_severe* = 0)

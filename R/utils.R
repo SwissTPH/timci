@@ -93,8 +93,10 @@ export_df2rds <- function(df, dirname, prefix) {
 #' @import digest
 
 anonymise_dataframe <- function(df, cols_to_anon, algo = "sha256") {
+
   to_anon <- subset(df, select = cols_to_anon)
   unname(apply(to_anon, 1, digest::digest, algo = algo))
+
 }
 
 #' Extract and match variable names using a dictionary
@@ -108,7 +110,7 @@ anonymise_dataframe <- function(df, cols_to_anon, algo = "sha256") {
 match_from_dict <- function(df, dictionary) {
 
   # Add column if it does not exit
-  df[setdiff(dictionary$old,names(df))] <- NA
+  df[setdiff(dictionary$old, names(df))] <- NA
 
   # Rename column names based on the dictionary
   names(df)[match(dictionary$old, names(df))] <- dictionary$new

@@ -9,6 +9,7 @@
 #' @param start_date start date (optional parameter)
 #' @param end_date end date (optional parameter)
 #' @param for_today boolean that enables to generate the follow-up for today (defaut set to `FALSE`)
+#' @param hospitfu_ok boolean that enables to generate the hospital follow-up for today (defaut set to `TRUE`)
 #' @import rmarkdown ruODK
 #' @export
 
@@ -18,8 +19,8 @@ generate_fu_logs <- function(rctls_pid,
                              fu_dir,
                              start_date = NULL,
                              end_date = NULL,
-                             for_today = FALSE) {
-
+                             for_today = FALSE,
+                             hospitfu_ok = TRUE) {
 
   ###########################
   # Set up current language #
@@ -78,6 +79,9 @@ generate_fu_logs <- function(rctls_pid,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
                                                         end_date)
+  write("Generate follow-up logs 5", stderr())
+
+
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
     write(nrow(facility_data), stderr())
@@ -241,19 +245,21 @@ generate_fu_logs <- function(rctls_pid,
   # Hospitalisation follow-up log #
   #################################
 
-  hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
-  dir.create(hospitfu_dir, showWarnings = FALSE)
+  if (hospitfu_ok){
+    hospitfu_dir <- file.path(fu_dir, "hospitalisation_log")
+    dir.create(hospitfu_dir, showWarnings = FALSE)
 
-  params <- list(output_dir = fu_dir,
-                 rct_ls_form_list = rct_ls_form_list,
-                 pii = pii,
-                 day0_data = facility_data,
-                 rctls_pid = rctls_pid,
-                 raw_day7fu_data = raw_day7fu_data,
-                 raw_hospit_data = raw_hospit_data,
-                 raw_withdrawal_data = raw_withdrawal_data,
-                 fu_end = 12)
-  generate_word_report(hospitfu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+    params <- list(output_dir = fu_dir,
+                   rct_ls_form_list = rct_ls_form_list,
+                   pii = pii,
+                   day0_data = facility_data,
+                   rctls_pid = rctls_pid,
+                   raw_day7fu_data = raw_day7fu_data,
+                   raw_hospit_data = raw_hospit_data,
+                   raw_withdrawal_data = raw_withdrawal_data,
+                   fu_end = 12)
+    generate_word_report(hospitfu_dir, "hospit_fu_log.Rmd", "timci_hospit_fu_log", params)
+  }
 
   #######################
   # Day 28 follow-up log #
