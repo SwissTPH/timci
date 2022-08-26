@@ -515,10 +515,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
          hcpidi_interview_data,
          kii_interview_data,
          online_survey_data,
-         file = "C:\\Users\\langhe\\Documents\\Tanzania\\Interim analysis\\timci_save_interim_analysis.rda")
+         file = Sys.getenv("RDA_PATH"))
 
   } else {
-    load(file = "C:\\Users\\langhe\\Documents\\Tanzania\\Interim analysis\\timci_save_interim_analysis.rda")
+    load(file=Sys.getenv("RDA_PATH"))
   }
 
   ########################
