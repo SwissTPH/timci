@@ -4,7 +4,10 @@
 \alias{read_day0_xls_dict}
 \title{Load the Day 0 dictionary - adapted for each country to account for differences in the data collection (TIMCI-specific function)}
 \usage{
-read_day0_xls_dict()
+read_day0_xls_dict(is_pilot = FALSE)
+}
+\arguments{
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a dataframe that will be used as a dictionary to convert data exported from ODK Central to a statistician-friendly format.

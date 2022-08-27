@@ -12,7 +12,8 @@ generate_fu_logs(
   start_date = NULL,
   end_date = NULL,
   for_today = FALSE,
-  hospitfu_ok = TRUE
+  hospitfu_ok = TRUE,
+  is_pilot = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ generate_fu_logs(
 \item{for_today}{boolean that enables to generate the follow-up for today (defaut set to `FALSE`)}
 
 \item{hospitfu_ok}{boolean that enables to generate the hospital follow-up for today (defaut set to `TRUE`)}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \description{
 This function runs follow-up Rmarkdown files to generate standardised follow-up logs for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

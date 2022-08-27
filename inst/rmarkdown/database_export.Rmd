@@ -55,6 +55,7 @@ params:
   hcpidi_interview_data: NULL
   kii_interview_data: NULL
   online_survey_data: NULL
+  is_pilot: FALSE
 ---
 
 ```{r setup-library, include=FALSE}
@@ -133,6 +134,7 @@ if (!is.null(params$facility_data)) {
   hcpidi_interview_data <- params$hcpidi_interview_data
   kii_interview_data <- params$kii_interview_data
   online_survey_data <- params$online_survey_data
+  is_pilot <- params$is_pilot
   
 }
 ```

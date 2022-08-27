@@ -64,7 +64,8 @@ dropped_cols_day0 <- c(dropped_cols,
                        "date_prev",
                        "enrl_days_cg",
                        "enrl_days_card",
-                       "repeat_consult")
+                       "repeat_consult",
+                       "form_version")
 dropped_cols_fu <- c(dropped_cols,
                      "main_cg",
                      "district",
@@ -75,7 +76,8 @@ dropped_cols_fu <- c(dropped_cols,
                      "na.rm",
                      "window",
                      "days",
-                     "rhf_loc_oth")
+                     "rhf_loc_oth",
+                     "form_version")
 dropped_cols_day7 <- c(dropped_cols_fu,
                        "date_day0",
                        "qual_ok",
@@ -197,6 +199,14 @@ all_deaths <- allday7_deaths %>%
         all.x = TRUE)
 ```
 
+```{r, eval=is_rct, results = 'asis'}
+timci::dataset_export(all_deaths,
+                      "16",
+                      "timci_all_death_data",
+                      rctls_dir,
+                      "Raw all death data")
+```
+
 ```{r}
 # Remove the columns `dropped_cols` from the exported data frame
 day0_data_subset <- allday0_data[,!(names(allday0_data) %in% dropped_cols_day0)]
@@ -209,6 +219,9 @@ locked_all_deaths <- locked_day7fu_deaths %>%
         by = 'child_id',
         all = TRUE,
         suffixes = c("_day7","_day28"))
+```
+
+```{r, eval=is_rct}
 locked_all_deaths <- day0_data_subset %>%
   merge(locked_all_deaths,
         by = 'child_id',
@@ -219,11 +232,15 @@ locked_all_deaths <- day0_data_subset %>%
         suffixes = c("","_hosp"))
 ```
 
-```{r, eval=is_rct}
+```{r, eval=is_tanzania}
 locked_all_deaths <- locked_all_deaths %>%
   dplyr::relocate(child_id) %>%
   dplyr::relocate(fid,
-                  .after = child_id) %>%
+                  .after = child_id)
+```
+
+```{r, eval=is_rct}
+locked_all_deaths <- locked_all_deaths %>%
   dplyr::mutate(month_day0 = lubridate::month(date_visit, label = TRUE)) %>%
   dplyr::mutate(days_diff_day0_day7 = as.Date(date_call_day7) - as.Date(date_visit)) %>%
   dplyr::mutate(days_diff_day0_day28 = as.Date(date_call_day28) - as.Date(date_visit)) %>%
@@ -237,7 +254,11 @@ locked_all_deaths <- locked_all_deaths %>%
   dplyr::mutate(age_days_death_s7 = as.Date(date_death_day7) - as.Date(dob)) %>%
   dplyr::mutate(age_days_death_s28 = as.Date(date_death_day28) - as.Date(dob)) %>%
   dplyr::mutate(age_days_death_sh = as.Date(date_death) - as.Date(dob)) %>%
-  dplyr::mutate(days_diff_day0_discharge_sh = as.Date(date_discharge) - as.Date(date_visit)) %>%
+  dplyr::mutate(days_diff_day0_discharge_sh = as.Date(date_discharge) - as.Date(date_visit))
+```
+
+```{r, eval=is_tanzania}
+locked_all_deaths <- locked_all_deaths %>%
   dplyr::relocate(month_day0,
                   age_days_day0,
                   days_diff_day0_day7,
@@ -252,7 +273,9 @@ locked_all_deaths <- locked_all_deaths %>%
                   age_days_death_s28,
                   age_days_death_sh,
                   .after = fid)
+```
 
+```{r, eval=is_rct}
 # Remove date columns used for day difference calculation
 dropped_cols <- c("date_visit",
                   "dob",
@@ -266,14 +289,6 @@ dropped_cols <- c("date_visit",
                   "date_death",
                   "date_discharge")
 locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
-```
-
-```{r, eval=is_rct, results = 'asis'}
-timci::dataset_export(all_deaths,
-                      "16",
-                      "timci_all_death_data",
-                      rctls_dir,
-                      "Raw all death data")
 ```
 
 ```{r, eval=is_rct, results = 'asis'}

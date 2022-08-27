@@ -1,10 +1,11 @@
 #' Match facility data using the Day 0 dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)
 #'
 #' @param df dataframe
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe with columns that match the specified country dictionary.
 #' @export
 
-match_from_day0_xls_dict <- function(df) {
+match_from_day0_xls_dict <- function(df, is_pilot = FALSE) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     xls_filename <- "main_dict_senegal.xlsx"
@@ -13,7 +14,11 @@ match_from_day0_xls_dict <- function(df) {
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "main_dict_tanzania.xlsx"
+    if (is_pilot) {
+      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+    } else{
+      xls_filename <- "main_dict_tanzania.xlsx"
+    }
   } else{
     xls_filename <- "main_dict_tanzania.xlsx"
   }
@@ -23,10 +28,11 @@ match_from_day0_xls_dict <- function(df) {
 
 #' Load the Day 0 dictionary - adapted for each country to account for differences in the data collection (TIMCI-specific function)
 #'
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe that will be used as a dictionary to convert data exported from ODK Central to a statistician-friendly format.
 #' @export
 
-read_day0_xls_dict <- function() {
+read_day0_xls_dict <- function(is_pilot = FALSE) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     xls_filename <- "main_dict_senegal.xlsx"
@@ -35,7 +41,11 @@ read_day0_xls_dict <- function() {
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "main_dict_tanzania.xlsx"
+    if (is_pilot) {
+      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+    } else{
+      xls_filename <- "main_dict_tanzania.xlsx"
+    }
   } else{
     xls_filename <- "main_dict_tanzania.xlsx"
   }
@@ -47,11 +57,12 @@ read_day0_xls_dict <- function() {
 #' Process facility data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr magrittr stringr
 
-process_facility_data <- function(df) {
+process_facility_data <- function(df, is_pilot) {
 
   cols <- colnames(df)
 
@@ -258,7 +269,7 @@ process_facility_data <- function(df) {
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
-  df <- match_from_day0_xls_dict(df)
+  df <- match_from_day0_xls_dict(df, is_pilot)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
@@ -273,11 +284,12 @@ process_facility_data <- function(df) {
 #' Process Tanzania facility data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr magrittr stringr
 
-process_tanzania_facility_data <- function(df) {
+process_tanzania_facility_data <- function(df, is_pilot) {
 
   cols <- colnames(df)
 
@@ -368,20 +380,21 @@ process_tanzania_facility_data <- function(df) {
           'crfs-t09a1-t05b-c3_6',
           'crfs-t09a1-t05b-c3_6o')
   df <- combine_columns(df, c1, c2)
-  process_facility_data(df)
+  process_facility_data(df, is_pilot)
 
 }
 
 #' Extract screening data (TIMCI-specific function)
 #'
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @param df dataframe containing the processed facility data
 #' @return This function returns a dataframe containing screening data only
 #' @export
 #' @import dplyr magrittr
 
-extract_screening_data <- function(df) {
+extract_screening_data <- function(df, is_pilot) {
 
-  dictionary <- read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, screening == 1)
   df[sub$new]
 
@@ -426,7 +439,7 @@ extract_pii <- function(df) {
 
   # Extract de-identified baseline data
   # Merge dictionaries
-  dictionary <- read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict()
   sub <- subset(dictionary, day0 == 1)
   demog <- df[sub$new]
 
@@ -448,7 +461,7 @@ extract_pii <- function(df) {
 
 extract_all_visits <- function(df) {
 
-  dictionary <- read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict()
   sub <- subset(dictionary, visits == 1)
   df <- df[sub$new]
   df %>%

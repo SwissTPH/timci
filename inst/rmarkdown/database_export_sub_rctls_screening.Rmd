@@ -9,7 +9,7 @@ db_name <- "screening"
 
 facility_data_is_not_null <- !is.null(facility_data)
 
-raw_screening_data <- timci::extract_screening_data(facility_data)
+raw_screening_data <- timci::extract_screening_data(facility_data, is_pilot)
 n_raw_screening_records <- nrow(raw_screening_data)
 
 out <- timci::extract_enrolled_participants(facility_data)
@@ -176,7 +176,7 @@ write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
-screening_data <- timci::extract_screening_data(facility_data)
+screening_data <- timci::extract_screening_data(facility_data, is_pilot)
 n_cleaned_screening_records <- nrow(screening_data)
 ```
 

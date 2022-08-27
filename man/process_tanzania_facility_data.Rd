@@ -4,10 +4,12 @@
 \alias{process_tanzania_facility_data}
 \title{Process Tanzania facility data (TIMCI-specific function)}
 \usage{
-process_tanzania_facility_data(df)
+process_tanzania_facility_data(df, is_pilot)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data collected at the facility level}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

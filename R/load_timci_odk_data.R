@@ -53,6 +53,7 @@ set_odkc_connection <- function(verbose = FALSE) {
 #' @param rctls_pp Encryption passphrase associated with the RCT/LS ODK ODK Central project
 #' @param rctls_start_date RCT/LS data collection start date
 #' @param rctls_end_date RCT/LS data collection end date
+#' @param is_pilot Boolean, default set to `FALSE`
 #'
 #' @return list of ODK central project IDs
 #' @export
@@ -61,7 +62,8 @@ load_rctls_data <- function(odkc_project_list,
                             rctls_pid,
                             rctls_pp,
                             rctls_start_date,
-                            rctls_end_date) {
+                            rctls_end_date,
+                            is_pilot) {
 
   # RCT/LS environment variables ---------------------------
   crf_facility_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
@@ -183,9 +185,9 @@ load_rctls_data <- function(odkc_project_list,
                                                           local_dir = t,
                                                           col_specs = col_specs)
     if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-      facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+      facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
     } else{
-      facility_data <- timci::process_facility_data(raw_facility_data)
+      facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
     }
 
     # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
