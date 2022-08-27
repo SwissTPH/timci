@@ -4,7 +4,7 @@
 \alias{process_facility_data}
 \title{Process facility data (TIMCI-specific function)}
 \usage{
-process_facility_data(df, is_pilot)
+process_facility_data(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data collected at the facility level}

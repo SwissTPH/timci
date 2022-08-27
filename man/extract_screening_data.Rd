@@ -4,7 +4,7 @@
 \alias{extract_screening_data}
 \title{Extract screening data (TIMCI-specific function)}
 \usage{
-extract_screening_data(df, is_pilot)
+extract_screening_data(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}

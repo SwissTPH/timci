@@ -4,10 +4,12 @@
 \alias{extract_all_visits}
 \title{Extract visits (TIMCI-specific function)}
 \usage{
-extract_all_visits(df)
+extract_all_visits(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a dataframe containing data of all baseline and repeat visits

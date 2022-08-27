@@ -5,7 +5,8 @@
 #' @return This function returns a dataframe with columns that match the specified country dictionary.
 #' @export
 
-match_from_day0_xls_dict <- function(df, is_pilot = FALSE) {
+match_from_day0_xls_dict <- function(df,
+                                     is_pilot = FALSE) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     xls_filename <- "main_dict_senegal.xlsx"
@@ -14,7 +15,7 @@ match_from_day0_xls_dict <- function(df, is_pilot = FALSE) {
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    if (is_pilot) {
+    if ( is_pilot ) {
       xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
     } else{
       xls_filename <- "main_dict_tanzania.xlsx"
@@ -41,9 +42,9 @@ read_day0_xls_dict <- function(is_pilot = FALSE) {
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    if (is_pilot) {
+    if ( is_pilot ) {
       xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-    } else{
+    } else {
       xls_filename <- "main_dict_tanzania.xlsx"
     }
   } else{
@@ -62,7 +63,8 @@ read_day0_xls_dict <- function(is_pilot = FALSE) {
 #' @export
 #' @import dplyr magrittr stringr
 
-process_facility_data <- function(df, is_pilot) {
+process_facility_data <- function(df,
+                                  is_pilot = FALSE) {
 
   cols <- colnames(df)
 
@@ -289,7 +291,8 @@ process_facility_data <- function(df, is_pilot) {
 #' @export
 #' @import dplyr magrittr stringr
 
-process_tanzania_facility_data <- function(df, is_pilot) {
+process_tanzania_facility_data <- function(df,
+                                           is_pilot = FALSE) {
 
   cols <- colnames(df)
 
@@ -386,13 +389,14 @@ process_tanzania_facility_data <- function(df, is_pilot) {
 
 #' Extract screening data (TIMCI-specific function)
 #'
-#' @param is_pilot Boolean, default set to `FALSE`
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing screening data only
 #' @export
 #' @import dplyr magrittr
 
-extract_screening_data <- function(df, is_pilot) {
+extract_screening_data <- function(df,
+                                   is_pilot = FALSE) {
 
   dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, screening == 1)
@@ -403,15 +407,17 @@ extract_screening_data <- function(df, is_pilot) {
 #' Extract enrolled participants (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing data of enrolled participants only
 #' @export
 #' @import dplyr magrittr
 
-extract_enrolled_participants <- function(df) {
+extract_enrolled_participants <- function(df,
+                                          is_pilot = FALSE) {
 
   df %>%
     dplyr::filter(enrolled == 1) %>%
-    extract_pii()
+    extract_pii(is_pilot)
 
 }
 
@@ -431,15 +437,17 @@ extract_noneligible <- function(df) {
 #' Extract personally identifiable information (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a list of 2 dataframes: 1 dataframe with pii and 1 dataframe with deidentified demographic data
 #' @export
 #' @import dplyr magrittr
 
-extract_pii <- function(df) {
+extract_pii <- function(df,
+                        is_pilot = FALSE) {
 
   # Extract de-identified baseline data
   # Merge dictionaries
-  dictionary <- timci::read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, day0 == 1)
   demog <- df[sub$new]
 
@@ -455,13 +463,15 @@ extract_pii <- function(df) {
 #' Extract visits (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing data of all baseline and repeat visits
 #' @export
 #' @import dplyr magrittr
 
-extract_all_visits <- function(df) {
+extract_all_visits <- function(df,
+                               is_pilot = FALSE) {
 
-  dictionary <- timci::read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, visits == 1)
   df <- df[sub$new]
   df %>%
@@ -519,7 +529,7 @@ extract_referrals <- function(df) {
 
 extract_hypoxaemia <- function(df) {
 
-  df %>% dplyr::filter(spo2_meas1_day0 <= 90)
+  df %>% dplyr::filter(spo2_meas1 <= 90)
 
 }
 

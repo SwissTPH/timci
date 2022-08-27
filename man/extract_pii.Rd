@@ -4,10 +4,12 @@
 \alias{extract_pii}
 \title{Extract personally identifiable information (TIMCI-specific function)}
 \usage{
-extract_pii(df)
+extract_pii(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a list of 2 dataframes: 1 dataframe with pii and 1 dataframe with deidentified demographic data
