@@ -147,7 +147,8 @@ hospit_fu <- timci::generate_hospital_log(pii = raw_pii,
                                           fu7df = raw_day7fu_data,
                                           day0df = day0_data,
                                           hospitdf = raw_hospit_data,
-                                          deidentify = TRUE)
+                                          deidentify = TRUE,
+                                          is_pilot = is_pilot)
 ```
 
 ```{r, results = 'asis'}

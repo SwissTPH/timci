@@ -34,6 +34,7 @@ format_hospital_data <- function(df) {
 #' @param day0df dataframe containing day 0 data
 #' @param hospitdf dataframe containing hospital follow-up data
 #' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
 #' @export
 #' @import dplyr
@@ -42,12 +43,13 @@ generate_hospital_log <- function(pii,
                                   fu7df,
                                   day0df,
                                   hospitdf,
-                                  deidentify = FALSE) {
+                                  deidentify = FALSE,
+                                  is_pilot = FALSE) {
 
   hospit_log <- NULL
   hospit_log2 <- NULL
 
-  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+  if((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)){
     col_order <- c('child_id',
                    'sex',
                    'date_visit',
@@ -86,7 +88,7 @@ generate_hospital_log <- function(pii,
           dplyr::mutate(hosp_visit = ifelse(13 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
                                      1,
                                      0))
-      } else{
+      } else {
         day7fu_data <- day7fu_data %>%
           dplyr::rowwise() %>%
           dplyr::mutate(hosp_visit = ifelse(1 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
@@ -100,9 +102,9 @@ generate_hospital_log <- function(pii,
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
       if (!is.null(hospit_log)) {
         if (nrow(hospit_log) > 0) {
-          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania')
+          if((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
             hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
-          else{
+          } else {
             hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ms_name, hospit_log$ls_name)
           }
           hospit_log$label <- paste0(hospit_log$child_name, " - ", hospit_log$rhf_id, " ", hospit_log$rhf_name, " (", hospit_log$rhf_loc_name, ") - enrolled at ", hospit_log$fid, " ", hospit_log$facility)
@@ -138,7 +140,7 @@ generate_hospital_log <- function(pii,
                            'date_day0',
                            'date_call')
           } else{
-            if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+            if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
               col_order <- c('device_id',
                              'district',
                              'rhf_loc_id',
@@ -201,13 +203,13 @@ generate_hospital_log <- function(pii,
                                           raw = FALSE)
 
       hospit_log2 <- ltfu_df %>% dplyr::filter( referral_cg == 1 | referral_hf == 1 )
-      if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+      if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
         col_order <- c('child_id',
                        'fs_name',
                        'ls_name',
                        'dob',
                        'sex')
-      } else{
+      } else {
         col_order <- c('child_id',
                        'fs_name',
                        'ms_name',
@@ -221,9 +223,9 @@ generate_hospital_log <- function(pii,
 
       if (!is.null(hospit_log2)) {
         if (nrow(hospit_log2) > 0) {
-          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+          if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
             hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ls_name)
-          } else{
+          } else {
             hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ms_name, hospit_log2$ls_name)
           }
           hospit_log2$label <- paste0(hospit_log2$child_name)

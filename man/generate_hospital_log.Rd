@@ -4,7 +4,14 @@
 \alias{generate_hospital_log}
 \title{Generate hospital follow-up log (TIMCI-specific function)}
 \usage{
-generate_hospital_log(pii, fu7df, day0df, hospitdf, deidentify = FALSE)
+generate_hospital_log(
+  pii,
+  fu7df,
+  day0df,
+  hospitdf,
+  deidentify = FALSE,
+  is_pilot = FALSE
+)
 }
 \arguments{
 \item{pii}{dataframe containing personally identifiable data}
@@ -16,6 +23,8 @@ generate_hospital_log(pii, fu7df, day0df, hospitdf, deidentify = FALSE)
 \item{hospitdf}{dataframe containing hospital follow-up data}
 
 \item{deidentify}{boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a dataframe that contains the list of participants to be searched for at hospital level.

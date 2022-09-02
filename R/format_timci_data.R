@@ -35,13 +35,13 @@ match_from_day0_xls_dict <- function(df,
 
 read_day0_xls_dict <- function(is_pilot = FALSE) {
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
     xls_filename <- "main_dict_senegal.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
     xls_filename <- "main_dict_kenya.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
     xls_filename <- "main_dict_india.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
     if ( is_pilot ) {
       xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
     } else {
@@ -50,6 +50,7 @@ read_day0_xls_dict <- function(is_pilot = FALSE) {
   } else{
     xls_filename <- "main_dict_tanzania.xlsx"
   }
+
   xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
   dictionary <- readxl::read_excel(xls_pathname)
 
@@ -430,7 +431,8 @@ extract_enrolled_participants <- function(df,
 
 extract_noneligible <- function(df) {
 
-  df %>% dplyr::filter((is.na(enrolled) & is.na(repeat_consult)) | enrolled == 0)
+  df %>%
+    dplyr::filter((is.na(enrolled) & is.na(repeat_consult)) | enrolled == 0)
 
 }
 
@@ -445,15 +447,18 @@ extract_noneligible <- function(df) {
 extract_pii <- function(df,
                         is_pilot = FALSE) {
 
-  # Extract de-identified baseline data
   # Merge dictionaries
   dictionary <- timci::read_day0_xls_dict(is_pilot)
+
+  # Extract de-identified baseline data
   sub <- subset(dictionary, day0 == 1)
-  demog <- df[sub$new]
+  demog <- df %>%
+    dplyr::select(dplyr::any_of(sub$new))
 
   # Extract personally identifiable information
   sub <- subset(dictionary, contact == 1)
-  pii <- df[sub$new]
+  pii <- df %>%
+    dplyr::select(dplyr::any_of(sub$new))
 
   # Return a list
   list(demog, pii)
@@ -473,8 +478,8 @@ extract_all_visits <- function(df,
 
   dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, visits == 1)
-  df <- df[sub$new]
-  df %>%
+  df <- df %>%
+    dplyr::select(dplyr::any_of(sub$new)) %>%
     dplyr::filter((repeat_consult == 1) | (repeat_consult == 0 & enrolled == 1))
 
 }

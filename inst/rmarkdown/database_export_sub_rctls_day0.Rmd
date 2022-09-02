@@ -416,6 +416,10 @@ write(" o Clinical measurements", stderr())
 
 #### Temperature\n\n
 
+```{r}
+write("   o Temperature", stderr())
+```
+
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::visualize(day0_data$temp_meas)
 ```
@@ -427,6 +431,10 @@ dataMaid::identifyOutliers(day0_data$temp_meas,
 
 #### Pulse oximetry\n\n
 
+```{r}
+write("   o Pulse oximetry", stderr())
+```
+
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::visualize(day0_data$spo2_meas1)
 ```
@@ -437,6 +445,10 @@ dataMaid::identifyOutliers(day0_data$spo2_meas1,
 ```
 
 #### Respiratory rate\n\n
+
+```{r}
+write("   o Respiratory rate", stderr())
+```
 
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::visualize(day0_data$rr_meas)
@@ -450,8 +462,14 @@ dataMaid::identifyOutliers(day0_data$rr_meas,
 ### Data cleaning summary\n\n
 
 ```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
 allday0_data <- day0_data
-day0_data <- timci::extract_pii(day0_data)[[1]]
+out <- timci::extract_pii(day0_data,
+                          is_pilot)
+day0_data <- out[[1]]
 n_cleaned_day0_records <- nrow(day0_data)
 ```
 
@@ -497,7 +515,8 @@ zip(params$participant_zip,
 ```
 
 ```{r export-visit-data, results = 'asis', eval=!is.null(facility_data)}
-study_data <- timci::extract_all_visits(facility_data)
+study_data <- timci::extract_all_visits(facility_data,
+                                        is_pilot)
 ```
 
 ```{r, results = 'asis'}

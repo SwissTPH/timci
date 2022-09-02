@@ -86,21 +86,16 @@ generate_fu_logs <- function(rctls_pid,
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
-    write(nrow(facility_data), stderr())
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
     facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
-    write(nrow(facility_data), stderr())
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
-  } else{
+  } else {
     facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
-    write(nrow(facility_data), stderr())
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
   }
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  pii <- timci::extract_enrolled_participants(facility_data, is_pilot)[[2]]
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")

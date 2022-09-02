@@ -213,6 +213,8 @@ correct_day0_all <- function(df) {
     df <- out[[2]]
   }
 
+  df
+
 }
 
 #' Correct Day 7 duplicates (TIMCI-specific function)
