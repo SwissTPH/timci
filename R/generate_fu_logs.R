@@ -81,7 +81,7 @@ generate_fu_logs <- function(rctls_pid,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
                                                         end_date)
-  write("Generate follow-up logs 5", stderr())
+  write("Generate follow-up logs", stderr())
 
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {

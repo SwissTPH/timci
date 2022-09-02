@@ -159,7 +159,22 @@ detect_inconsistent_dates <- function(df,
 
   if ( !is.null(qc_df) & cleaning == "replace_by_end_date" ) {
     cleaned_df <- df
-    cleaned_df$start <- ifelse(cleaned_df$uuid %in% qc_df$uuid, cleaned_df[[col_date_end]], cleaned_df$start)
+    cleaned_df$start <- ifelse(cleaned_df$uuid %in% qc_df$uuid,
+                               cleaned_df[[col_date_end]],
+                               cleaned_df$start)
+  }
+
+  if ( !is.null(qc_df) & cleaning == "replace_by_start_date" ) {
+    cleaned_df <- df
+    cleaned_df$start <- ifelse(cleaned_df$uuid %in% qc_df$uuid,
+                               cleaned_df[[col_date_start]],
+                               cleaned_df$start)
+    cleaned_df$end <- ifelse(cleaned_df$uuid %in% qc_df$uuid,
+                             cleaned_df[[col_date_start]],
+                             cleaned_df$end)
+    cleaned_df$date_visit <- ifelse(cleaned_df$uuid %in% qc_df$uuid,
+                                    strftime(cleaned_df[[col_date_start]], "%Y-%m-%d"),
+                                    cleaned_df$date_visit)
   }
 
   list(qc_df, cleaned_df)

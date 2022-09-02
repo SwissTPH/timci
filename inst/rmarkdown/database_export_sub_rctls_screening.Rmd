@@ -143,6 +143,40 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Incorrect date and time setup on the device [context check `r qc_incorrect_date_setup`]\n\n
+
+```{r}
+write(" o Incorrect data and time setup on the device", stderr())
+```
+
+```{r}
+qc_df <- NULL
+n_incorrect_date_setup_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date. If the submission date is anterior to the creation date in the database."
+qc_rule <- "Incorrect creation date is replaced by the submission date"
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "submission_date"
+col_date2 <- "start"
+cleaning <- "replace_by_start_date"
+qc_text <- "an incorrect date setup on the tablet"
+qc_idx <- qc_incorrect_date_setup
+qc_export_label <- "incorrect_date_setup"
+qc_export_description <- "the date setup is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_date_setup_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
 ### Lock date [context check `r qc_screening_after_lockdate`]\n\n
 
 ```{r}
