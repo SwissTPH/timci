@@ -312,6 +312,7 @@ process_tanzania_facility_data <- function(df,
           'crfs-t06a-tt06a-d2_6',
           'crfs-t06a-d2_6b',
           'crfs-t06a-tt06a-d2_1',
+          'crfs-t06a-d2_1a',
           'crfs-t06a-tt06a-d2_4',
           'crfs-t06a-d2_4a',
           'crfs-t06a-tt06a-d2_5',
@@ -320,7 +321,6 @@ process_tanzania_facility_data <- function(df,
           'crfs-t06a-d2_2b',
           'crfs-t06a-tt06a-d2_3',
           'crfs-t06a-d2_3b',
-          'crfs-t06a-d2_1a',
           'crfs-t08a-f2_1',
           'crfs-t08a-f2_1o',
           'crfs-t08a-f2_2',
@@ -600,7 +600,6 @@ get_summary_by_fid <- function(df) {
 
   enrolled <- df %>%
     dplyr::filter(enrolled == 1)
-
   df2 <- enrolled %>%
     dplyr::count(fid_from_device)
 
@@ -617,14 +616,28 @@ get_summary_by_fid <- function(df) {
     dplyr::count(fid_from_device)
 
   # Merge and rename
-  res <- merge(x = df1, y = df2, by = 'fid_from_device', all.x = TRUE)
+  res <- merge(x = df1,
+               y = df2,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('screened' = 'n.x',
                                'children' = 'n.y')
-  res <- merge(x = res, y = df3, by = 'fid_from_device', all.x = TRUE)
+  res <- merge(x = res,
+               y = df3,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('female' = 'n')
-  res <- merge(x = res, y = df4, by = 'fid_from_device', all.x = TRUE)
+
+  res <- merge(x = res,
+               y = df4,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('yg_infant' = 'n')
-  res <- merge(x = res, y = df5, by = 'fid_from_device', all.x = TRUE)
+
+  res <- merge(x = res,
+               y = df5,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res %>% dplyr::rename('yg_female' = 'n')
 
 }
