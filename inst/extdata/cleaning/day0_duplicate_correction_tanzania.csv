@@ -175,8 +175,8 @@ T-F0082-P1404,uuid:a57c5c01-596c-40f5-950b-fb4fb711c5d2,T-F0082-P1419,,edit,,IHI
 "T-F0082-P1420,uuid:206a9b2e-38d2-4f14-a29e-aa6b73faf890,T-F0082-P1420,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. "",delete,,IHI,15-Aug-22"
 "T-F0082-P1403,uuid:5405f273-9c89-4f52-8e5e-b2f3db630225,T-F0082-P1420,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male"",edit,,IHI,15-Aug-22"
 T-F0028-P1417,uuid:c1a77ae5-8f81-4092-a081-54172e64f992,T-F0028-P1404,Wrongly scanning Qrcode,edit,,IHI,17-Aug-22
-T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,R-F0023-P0370,Repeat visit,move to repeat,,IHI,15-Aug-22
-T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,R-F0023-P0402,Repeat visit,move to repeat,,IHI,15-Aug-22
+T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,T-R0023-P0370,Repeat visit,move to repeat,,IHI,15-Aug-22
+T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,T-R0023-P0402,Repeat visit,move to repeat,,IHI,15-Aug-22
 T-F0082-P1394,uuid:3fbcbc3f-d5fd-4def-b773-fbcb3e5a53d9,T-F0082-P1494,Ra entered arleady used QR codes,edit,,IHI,24-Aug-22
 T-F0001-P0675,uuid:800683a8-40df-47ac-bed0-5ee640e2d414,T-F0001-P0676,,edit,,IHI,29-Aug-22
 T-F0024-P0353,uuid:33250280-7d68-4cce-b15d-a0601dd02eea,T-F0024-P0354,,edit,,IHI,29-Aug-22
