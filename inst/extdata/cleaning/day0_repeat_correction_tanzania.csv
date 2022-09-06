@@ -3,3 +3,5 @@ T-F0002-P0058,uuid:b51c99bf-2b06-4bcd-b8aa-a9fce6e0ae88,T-R0002-P0058,repeat,mov
 T-F0002-P0068,uuid:626b34a6-dd53-483c-be47-a2b6f05271f3,T-R0002-P0068,repeat,move to repeat
 T-F0093-P0505,uuid:3de3078f-b115-491d-9618-01797a28808c,T-R0093-P0505,repeat,move to repeat
 T-F0039-P0899,uuid:2fdb2774-0369-4391-926c-a93f56243490,T-R0039-P0899,RA wrongly entered it was a repeat visit,move to repeat,2022-07-10,IHI
+T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,R-F0023-P0370,Repeat visit,move to repeat,,IHI,15-Aug-22
+T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,R-F0023-P0402,Repeat visit,move to repeat,,IHI,15-Aug-22

@@ -167,16 +167,16 @@ T-F0010-P1803,uuid:827b0877-63a0-42a9-96ce-7032ad49d7e6,T-F0010-P1826,Ra entered
 T-F0010-P1804,uuid:232255f9-89d2-4d0e-ba85-b6b3a58488a8,T-F0010-P1827,Ra entered manually arleady used QR codes,edit,,IHI,15-Aug-22
 T-F0010-P1805,uuid:e4bda5c1-c96f-4fcf-a5a2-3d962ded3abf,T-F0010-P1828,Ra entered manually arleady used QR codes,edit,,IHI,15-Aug-22
 T-F0082-P1432,uuid:088e7954-5be0-4678-9bef-864b2a59738e,T-F0082-P1432,,delete,,IHI,16-Aug-22
-T-F0082-P1405,uuid:48b3f72f-6a74-461c-b87e-24948e149688,T-F0082-P1432,"Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male",edit,,IHI,15-Aug-22
+"T-F0082-P1405,uuid:48b3f72f-6a74-461c-b87e-24948e149688,T-F0082-P1432,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male"",edit,,IHI,15-Aug-22"
 T-F0082-P1015,uuid:c3540f77-0c3e-436b-bc00-609e9db16fa6,T-F0082-P1431,Ra entered former id instead of scanning new id,edit,,IHI,16-Aug-22
 T-F0082-P1402,uuid:52701e48-1734-4e9e-a6f1-f03f57122c8e,T-F0082-P1418,,edit,,IHI,15-Aug-22
 T-F0082-P1404,uuid:a57c5c01-596c-40f5-950b-fb4fb711c5d2,T-F0082-P1419,,edit,,IHI,15-Aug-22
-T-F0082-P1417,uuid:7a5fbe4b-7bb0-4f5b-9961-87de575fd8dc,T-F0082-P1417,"Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. ",delete,,IHI,15-Aug-22
-T-F0082-P1420,uuid:206a9b2e-38d2-4f14-a29e-aa6b73faf890,T-F0082-P1420,"Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. ",delete,,IHI,15-Aug-22
-T-F0082-P1403,uuid:5405f273-9c89-4f52-8e5e-b2f3db630225,T-F0082-P1420,"Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male",edit,,IHI,15-Aug-22
+"T-F0082-P1417,uuid:7a5fbe4b-7bb0-4f5b-9961-87de575fd8dc,T-F0082-P1417,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. "",delete,,IHI,15-Aug-22"
+"T-F0082-P1420,uuid:206a9b2e-38d2-4f14-a29e-aa6b73faf890,T-F0082-P1420,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. "",delete,,IHI,15-Aug-22"
+"T-F0082-P1403,uuid:5405f273-9c89-4f52-8e5e-b2f3db630225,T-F0082-P1420,""Ra re-entered data with the correct ID, there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male"",edit,,IHI,15-Aug-22"
 T-F0028-P1417,uuid:c1a77ae5-8f81-4092-a081-54172e64f992,T-F0028-P1404,Wrongly scanning Qrcode,edit,,IHI,17-Aug-22
-T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,T-F0023-P0370,Repeat visit,edit,,IHI,15-Aug-22
-T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,T-F0023-P0402,Repeat visit,edit,,IHI,15-Aug-22
+T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,R-F0023-P0370,Repeat visit,move to repeat,,IHI,15-Aug-22
+T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,R-F0023-P0402,Repeat visit,move to repeat,,IHI,15-Aug-22
 T-F0082-P1394,uuid:3fbcbc3f-d5fd-4def-b773-fbcb3e5a53d9,T-F0082-P1494,Ra entered arleady used QR codes,edit,,IHI,24-Aug-22
 T-F0001-P0675,uuid:800683a8-40df-47ac-bed0-5ee640e2d414,T-F0001-P0676,,edit,,IHI,29-Aug-22
 T-F0024-P0353,uuid:33250280-7d68-4cce-b15d-a0601dd02eea,T-F0024-P0354,,edit,,IHI,29-Aug-22
