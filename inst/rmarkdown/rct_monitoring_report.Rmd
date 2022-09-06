@@ -14,6 +14,7 @@ params:
   raw_day28fu_data: NULL
   raw_withdrawal_data: NULL
   wfa_data: NULL
+  is_pilot: FALSE
 output:
   pdf_document:
     keep_tex: true
@@ -112,6 +113,7 @@ if (!is.null(params$facility_data)) {
   raw_day28fu_data <- params$raw_day28fu_data
   raw_withdrawal_data <- params$raw_withdrawal_data
   wfa_data <- params$wfa_data
+  is_pilot <- params$is_pilot
   
 }
 ```

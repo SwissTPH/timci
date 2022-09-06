@@ -158,9 +158,15 @@ allocate_screening_facility2 <- function(facility_data,
           all.x = TRUE)
   out <- out %>%
     ungroup() %>%
-    dplyr::mutate(fid_from_device = ifelse(!is.na(fid_from_daily_device), fid_from_daily_device, fid_from_main_device)) %>%
-    dplyr::mutate(facility_name = ifelse(!is.na(fid_from_daily_device), facility_name_from_daily_device, facility_name_from_main_device)) %>%
-    dplyr::mutate(fid_discrepancy = ifelse(fid_from_device != fid_from_main_device, 1, 0))
+    dplyr::mutate(fid_from_device = ifelse(!is.na(fid_from_daily_device),
+                                           fid_from_daily_device,
+                                           fid_from_main_device)) %>%
+    dplyr::mutate(facility_name = ifelse(!is.na(fid_from_daily_device),
+                                         facility_name_from_daily_device,
+                                         facility_name_from_main_device)) %>%
+    dplyr::mutate(fid_discrepancy = ifelse(fid_from_device != fid_from_main_device,
+                                           1,
+                                           0))
 
   drop <- c("fid_from_daily_device",
             "facility_name_from_daily_device")

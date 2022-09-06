@@ -4,10 +4,12 @@
 \alias{match_from_day0_xls_dict}
 \title{Match facility data using the Day 0 dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)}
 \usage{
-match_from_day0_xls_dict(df)
+match_from_day0_xls_dict(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a dataframe with columns that match the specified country dictionary.

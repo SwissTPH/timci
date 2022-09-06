@@ -3,7 +3,7 @@
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr lubridate
+#' @import dplyr magrittr lubridate anytime
 
 format_day7_data <- function(df) {
 
@@ -21,10 +21,6 @@ format_day7_data <- function(df) {
                  "n1-o3_1a")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
-  # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
-  successful_day7_df <- df[df$proceed == 1,]
-  fail_day7_df <- df[df$proceed == 0,]
-
   # Match column names with names from dictionary
   dictionary <- readxl::read_excel(system.file(file.path('extdata', day7_dict), package = 'timci'))
   sub <- subset(dictionary, deidentified == 1)
@@ -32,30 +28,20 @@ format_day7_data <- function(df) {
   day7_df <- match_from_xls_dict(df, day7_dict)
   day7_df <- day7_df[sub$new]
 
-  # Change multiple date formats
-  if (Sys.getenv("TIMCI_COUNTRY") == 'India'){
-    day7_df$date_day0 <- ifelse(day7_df$date_day0 == "ENROLMENT DATE",
-                                NA,
-                                day7_df$date_day0)
-  }
-  dates <- lubridate::date(day7_df$date_day0)
-  mdyv <- lubridate::mdy(day7_df$date_day0)
-  dmyv <- lubridate::dmy(day7_df$date_day0)
-  mdyv[is.na(mdyv)] <- dmyv[is.na(mdyv)] # some dates are ambiguous, here we give mdy precedence over dmy
-  day7_df$date_day0 <- mdyv
+  # Format day 0 date
+  day7_df$date_day0 <- anytime::anydate(day7_df$date_day0)
+  day7_df$date_day0 <- strftime(day7_df$date_day0,"%Y-%m-%d")
 
-  # Format dates
-  day7_df$date_death_day7 <- strftime(day7_df$date_death_day7,"%Y-%m-%d")
-
+  # Calculate number of days between enrollment and follow-up
   day7_df <- day7_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 
-  successful_day7_df <- match_from_xls_dict(successful_day7_df, day7_dict)
-  successful_day7_df <- successful_day7_df[sub$new]
-  successful_day7_df <- successful_day7_df %>%
-    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
+  # Format death date
+  day7_df$date_death_day7 <- strftime(day7_df$date_death_day7,"%Y-%m-%d")
 
-  fail_day7_df <- match_from_xls_dict(fail_day7_df, day7_dict)
+  # Separate submissions that relate to complete Day 7 follow-up and unsuccessful attempts
+  successful_day7_df <- day7_df[day7_df$proceed_day7 == 1,]
+  fail_day7_df <- day7_df[day7_df$proceed_day7 == 0,]
 
   list(successful_day7_df, fail_day7_df, day7_df)
 
@@ -84,10 +70,6 @@ format_day28_data <- function(df) {
                  "n1-o3_1a")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
-  # Separate submissions that relate to complete Day 28 follow-up and unsuccessful attempts
-  successful_day28_df <- df[df$proceed == 1,]
-  fail_day28_df <- df[df$proceed == 0,]
-
   # Match column names with names from dictionary
   dictionary <- readxl::read_excel(system.file(file.path('extdata', day28_dict), package = 'timci'))
   sub <- subset(dictionary, deidentified == 1)
@@ -95,18 +77,18 @@ format_day28_data <- function(df) {
   day28_df <- match_from_xls_dict(df, day28_dict)
   day28_df <- day28_df[sub$new]
 
-  # Format dates
-  day28_df$date_death_day28 <- strftime(day28_df$date_death_day28,"%Y-%m-%d")
+  # Format death date
+  day28_df$date_death_day28 <- strftime(day28_df$date_death_day28, "%Y-%m-%d")
 
+  # Format day 0 date
+  day28_df$date_day0 <- anytime::anydate(day28_df$date_day0)
+  day28_df$date_day0 <- strftime(day28_df$date_day0,"%Y-%m-%d")
   day28_df <- day28_df %>%
     dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
 
-  successful_day28_df <- match_from_xls_dict(successful_day28_df, day28_dict)
-  successful_day28_df <- successful_day28_df[sub$new]
-  successful_day28_df <- successful_day28_df %>%
-    dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
-
-  fail_day28_df <- match_from_xls_dict(fail_day28_df, day28_dict)
+  # Separate submissions that relate to complete Day 28 follow-up and unsuccessful attempts
+  successful_day28_df <- day28_df[day28_df$proceed_day28 == 1,]
+  fail_day28_df <- day28_df[day28_df$proceed_day28 == 0,]
 
   list(successful_day28_df, fail_day28_df, day28_df)
 

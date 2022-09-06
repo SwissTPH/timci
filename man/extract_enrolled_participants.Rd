@@ -4,10 +4,12 @@
 \alias{extract_enrolled_participants}
 \title{Extract enrolled participants (TIMCI-specific function)}
 \usage{
-extract_enrolled_participants(df)
+extract_enrolled_participants(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the processed facility data}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 This function returns a dataframe containing data of enrolled participants only

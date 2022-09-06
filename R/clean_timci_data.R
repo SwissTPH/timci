@@ -205,6 +205,16 @@ correct_day0_all <- function(df) {
   # Correct duplicated child IDs
   df <- timci::edit_day0_child_ids(df)[[1]]
 
+  if (Sys.getenv("TIMCI_COUNTRY") == "Kenya") {
+    out <- timci::detect_inconsistent_dates(df,
+                                            "submission_date",
+                                            "start",
+                                            cleaning = "replace_by_start_date")
+    df <- out[[2]]
+  }
+
+  df
+
 }
 
 #' Correct Day 7 duplicates (TIMCI-specific function)

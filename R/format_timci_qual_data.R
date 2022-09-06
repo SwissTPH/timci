@@ -30,7 +30,8 @@ generate_cg_log <- function(main_data, day7fu) {
 
   # Extract data for caregiver IDIs
   sub <- subset(dictionary, qual == 1)
-  cg_subselection <- cg_selection[sub$new] %>%
+  cg_subselection <- cg_selection %>%
+    dplyr::select(dplyr::any_of(sub$new)) %>%
     dplyr::mutate(referral_comb = ifelse(referral_cg == 1 | referral_hf == 1, 1, 0)) %>%
     dplyr::mutate(month_category = ifelse(age_mo < 2, "0-1m", ifelse(age_mo < 12, "2-11m", ifelse(age_mo < 24, "12-23m", "24-59m"))))
 

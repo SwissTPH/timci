@@ -10,6 +10,7 @@
 #' @param end_date end date (optional parameter)
 #' @param for_today boolean that enables to generate the follow-up for today (defaut set to `FALSE`)
 #' @param hospitfu_ok boolean that enables to generate the hospital follow-up for today (defaut set to `TRUE`)
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @import rmarkdown ruODK
 #' @export
 
@@ -20,7 +21,8 @@ generate_fu_logs <- function(rctls_pid,
                              start_date = NULL,
                              end_date = NULL,
                              for_today = FALSE,
-                             hospitfu_ok = TRUE) {
+                             hospitfu_ok = TRUE,
+                             is_pilot = FALSE) {
 
   ###########################
   # Set up current language #
@@ -79,26 +81,21 @@ generate_fu_logs <- function(rctls_pid,
                                                         paste0(crf_facility_fid,".csv"),
                                                         start_date,
                                                         end_date)
-  write("Generate follow-up logs 5", stderr())
+  write("Generate follow-up logs", stderr())
 
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
-    write(nrow(facility_data), stderr())
+    facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
-    facility_data <- timci::process_facility_data(raw_facility_data)
-    write(nrow(facility_data), stderr())
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
-  } else{
-    facility_data <- timci::process_facility_data(raw_facility_data)
-    write(nrow(facility_data), stderr())
+  } else {
+    facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
     facility_data <- timci::correct_day0_all(facility_data)
-    write(nrow(facility_data), stderr())
   }
-  pii <- timci::extract_enrolled_participants(facility_data)[[2]]
+
+  pii <- timci::extract_enrolled_participants(facility_data, is_pilot)[[2]]
 
   # Load day 7 follow-up data
   print("Load day 7 follow-up data")

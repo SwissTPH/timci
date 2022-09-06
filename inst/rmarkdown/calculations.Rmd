@@ -58,7 +58,7 @@ n_total <- 0
 
 # Screening data
 n_screened <- nrow(facility_data)
-screening_data <- timci::extract_screening_data(facility_data)
+screening_data <- timci::extract_screening_data(facility_data, is_pilot)
 visit_names <- c(screening_str)
 submissions <- c(n_screened)
 n_total <- n_total + n_screened

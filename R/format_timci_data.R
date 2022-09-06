@@ -1,10 +1,12 @@
 #' Match facility data using the Day 0 dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)
 #'
 #' @param df dataframe
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe with columns that match the specified country dictionary.
 #' @export
 
-match_from_day0_xls_dict <- function(df) {
+match_from_day0_xls_dict <- function(df,
+                                     is_pilot = FALSE) {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     xls_filename <- "main_dict_senegal.xlsx"
@@ -13,7 +15,11 @@ match_from_day0_xls_dict <- function(df) {
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
     xls_filename <- "main_dict_india.xlsx"
   } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "main_dict_tanzania.xlsx"
+    if ( is_pilot ) {
+      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+    } else{
+      xls_filename <- "main_dict_tanzania.xlsx"
+    }
   } else{
     xls_filename <- "main_dict_tanzania.xlsx"
   }
@@ -23,22 +29,28 @@ match_from_day0_xls_dict <- function(df) {
 
 #' Load the Day 0 dictionary - adapted for each country to account for differences in the data collection (TIMCI-specific function)
 #'
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe that will be used as a dictionary to convert data exported from ODK Central to a statistician-friendly format.
 #' @export
 
-read_day0_xls_dict <- function() {
+read_day0_xls_dict <- function(is_pilot = FALSE) {
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
     xls_filename <- "main_dict_senegal.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
     xls_filename <- "main_dict_kenya.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
     xls_filename <- "main_dict_india.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "main_dict_tanzania.xlsx"
+  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
+    if ( is_pilot ) {
+      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+    } else {
+      xls_filename <- "main_dict_tanzania.xlsx"
+    }
   } else{
     xls_filename <- "main_dict_tanzania.xlsx"
   }
+
   xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
   dictionary <- readxl::read_excel(xls_pathname)
 
@@ -47,11 +59,13 @@ read_day0_xls_dict <- function() {
 #' Process facility data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr magrittr stringr
 
-process_facility_data <- function(df) {
+process_facility_data <- function(df,
+                                  is_pilot = FALSE) {
 
   cols <- colnames(df)
 
@@ -258,7 +272,7 @@ process_facility_data <- function(df) {
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
-  df <- match_from_day0_xls_dict(df)
+  df <- match_from_day0_xls_dict(df, is_pilot)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
@@ -273,11 +287,13 @@ process_facility_data <- function(df) {
 #' Process Tanzania facility data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the facility level
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr magrittr stringr
 
-process_tanzania_facility_data <- function(df) {
+process_tanzania_facility_data <- function(df,
+                                           is_pilot = FALSE) {
 
   cols <- colnames(df)
 
@@ -296,6 +312,7 @@ process_tanzania_facility_data <- function(df) {
           'crfs-t06a-tt06a-d2_6',
           'crfs-t06a-d2_6b',
           'crfs-t06a-tt06a-d2_1',
+          'crfs-t06a-d2_1a',
           'crfs-t06a-tt06a-d2_4',
           'crfs-t06a-d2_4a',
           'crfs-t06a-tt06a-d2_5',
@@ -304,7 +321,6 @@ process_tanzania_facility_data <- function(df) {
           'crfs-t06a-d2_2b',
           'crfs-t06a-tt06a-d2_3',
           'crfs-t06a-d2_3b',
-          'crfs-t06a-d2_1a',
           'crfs-t08a-f2_1',
           'crfs-t08a-f2_1o',
           'crfs-t08a-f2_2',
@@ -368,20 +384,22 @@ process_tanzania_facility_data <- function(df) {
           'crfs-t09a1-t05b-c3_6',
           'crfs-t09a1-t05b-c3_6o')
   df <- combine_columns(df, c1, c2)
-  process_facility_data(df)
+  process_facility_data(df, is_pilot)
 
 }
 
 #' Extract screening data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing screening data only
 #' @export
 #' @import dplyr magrittr
 
-extract_screening_data <- function(df) {
+extract_screening_data <- function(df,
+                                   is_pilot = FALSE) {
 
-  dictionary <- read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, screening == 1)
   df[sub$new]
 
@@ -390,15 +408,17 @@ extract_screening_data <- function(df) {
 #' Extract enrolled participants (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing data of enrolled participants only
 #' @export
 #' @import dplyr magrittr
 
-extract_enrolled_participants <- function(df) {
+extract_enrolled_participants <- function(df,
+                                          is_pilot = FALSE) {
 
   df %>%
     dplyr::filter(enrolled == 1) %>%
-    extract_pii()
+    extract_pii(is_pilot)
 
 }
 
@@ -411,28 +431,34 @@ extract_enrolled_participants <- function(df) {
 
 extract_noneligible <- function(df) {
 
-  df %>% dplyr::filter((is.na(enrolled) & is.na(repeat_consult)) | enrolled == 0)
+  df %>%
+    dplyr::filter((is.na(enrolled) & is.na(repeat_consult)) | enrolled == 0)
 
 }
 
 #' Extract personally identifiable information (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a list of 2 dataframes: 1 dataframe with pii and 1 dataframe with deidentified demographic data
 #' @export
 #' @import dplyr magrittr
 
-extract_pii <- function(df) {
+extract_pii <- function(df,
+                        is_pilot = FALSE) {
+
+  # Merge dictionaries
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
 
   # Extract de-identified baseline data
-  # Merge dictionaries
-  dictionary <- read_day0_xls_dict()
   sub <- subset(dictionary, day0 == 1)
-  demog <- df[sub$new]
+  demog <- df %>%
+    dplyr::select(dplyr::any_of(sub$new))
 
   # Extract personally identifiable information
   sub <- subset(dictionary, contact == 1)
-  pii <- df[sub$new]
+  pii <- df %>%
+    dplyr::select(dplyr::any_of(sub$new))
 
   # Return a list
   list(demog, pii)
@@ -442,16 +468,18 @@ extract_pii <- function(df) {
 #' Extract visits (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe containing data of all baseline and repeat visits
 #' @export
 #' @import dplyr magrittr
 
-extract_all_visits <- function(df) {
+extract_all_visits <- function(df,
+                               is_pilot = FALSE) {
 
-  dictionary <- read_day0_xls_dict()
+  dictionary <- timci::read_day0_xls_dict(is_pilot)
   sub <- subset(dictionary, visits == 1)
-  df <- df[sub$new]
-  df %>%
+  df <- df %>%
+    dplyr::select(dplyr::any_of(sub$new)) %>%
     dplyr::filter((repeat_consult == 1) | (repeat_consult == 0 & enrolled == 1))
 
 }
@@ -506,7 +534,7 @@ extract_referrals <- function(df) {
 
 extract_hypoxaemia <- function(df) {
 
-  df %>% dplyr::filter(spo2_meas1_day0 <= 90)
+  df %>% dplyr::filter(spo2_meas1 <= 90)
 
 }
 
@@ -572,7 +600,6 @@ get_summary_by_fid <- function(df) {
 
   enrolled <- df %>%
     dplyr::filter(enrolled == 1)
-
   df2 <- enrolled %>%
     dplyr::count(fid_from_device)
 
@@ -589,14 +616,28 @@ get_summary_by_fid <- function(df) {
     dplyr::count(fid_from_device)
 
   # Merge and rename
-  res <- merge(x = df1, y = df2, by = 'fid_from_device', all.x = TRUE)
+  res <- merge(x = df1,
+               y = df2,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('screened' = 'n.x',
                                'children' = 'n.y')
-  res <- merge(x = res, y = df3, by = 'fid_from_device', all.x = TRUE)
+  res <- merge(x = res,
+               y = df3,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('female' = 'n')
-  res <- merge(x = res, y = df4, by = 'fid_from_device', all.x = TRUE)
+
+  res <- merge(x = res,
+               y = df4,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res <- res %>% dplyr::rename('yg_infant' = 'n')
-  res <- merge(x = res, y = df5, by = 'fid_from_device', all.x = TRUE)
+
+  res <- merge(x = res,
+               y = df5,
+               by = 'fid_from_device',
+               all.x = TRUE)
   res %>% dplyr::rename('yg_female' = 'n')
 
 }

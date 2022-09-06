@@ -9,7 +9,8 @@ load_rctls_data(
   rctls_pid,
   rctls_pp,
   rctls_start_date,
-  rctls_end_date
+  rctls_end_date,
+  is_pilot
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ load_rctls_data(
 \item{rctls_start_date}{RCT/LS data collection start date}
 
 \item{rctls_end_date}{RCT/LS data collection end date}
+
+\item{is_pilot}{Boolean, default set to `FALSE`}
 }
 \value{
 list of ODK central project IDs

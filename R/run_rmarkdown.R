@@ -275,9 +275,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                           local_dir = t,
                                                           col_specs = col_specs)
     if (is_tanzania) {
-      facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
+      facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
     } else{
-      facility_data <- timci::process_facility_data(raw_facility_data)
+      facility_data <- timci::process_facility_data(raw_facility_data, is_pilot)
     }
 
     # Copy audit trail in folder: only enabled if MEDIA = TRUE when downloading the initial *.zip
@@ -515,10 +515,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
          hcpidi_interview_data,
          kii_interview_data,
          online_survey_data,
-         file = "C:\\Users\\langhe\\Documents\\Tanzania\\Interim analysis\\timci_save_interim_analysis.rda")
+         file = Sys.getenv("RDA_PATH"))
 
   } else {
-    load(file = "C:\\Users\\langhe\\Documents\\Tanzania\\Interim analysis\\timci_save_interim_analysis.rda")
+    load(file=Sys.getenv("RDA_PATH"))
   }
 
   ########################
@@ -559,7 +559,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  hcpidi_interview_data = hcpidi_interview_data,
                  kii_interview_data = kii_interview_data,
                  online_survey_data = online_survey_data,
-                 lock_date = lock_date)
+                 lock_date = lock_date,
+                 is_pilot = is_pilot)
   generate_word_report(lock_dir, "database_export.Rmd", "timci_data_lock_report", params)
 
   if (operational_reports) {
@@ -591,7 +592,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                    raw_hospit_data = raw_hospit_data,
                    raw_day28fu_data = raw_day28fu_data,
                    raw_withdrawal_data = raw_withdrawal_data,
-                   wfa_data = wfa_data)
+                   wfa_data = wfa_data,
+                   is_pilot = is_pilot)
     if (is_rct) {
       rname <- "timci_rct_monitoring_report"
     } else{
