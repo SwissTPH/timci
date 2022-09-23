@@ -1028,8 +1028,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 caregiver_statistics <- list(
   "Facility" = list(
-    "Mother < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg == 1, prec),
-    "Other < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg != 1, prec),
+    "Mother < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg == 1, prec, na_rm = TRUE),
+    "Other < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg != 1, prec, na_rm = TRUE),
     ">= 18" = ~qwraps2::n_perc(cg_eligibility == 1, prec)
     )
 )
