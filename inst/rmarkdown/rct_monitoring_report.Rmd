@@ -1055,8 +1055,8 @@ all <- sick %>% filter(main_cg != 1 & !is.na(underaged_mother))
 if (nrow(all) > 0) {
   mother_statistics <- list(
     "Summary" = list(
-      "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec),
-      ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec)
+      "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec, na_rm = TRUE),
+      ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec, na_rm = TRUE)
       )
   )
 

@@ -143,8 +143,8 @@ if (!is.null(day7fu_data)) {
     
     day7_call_stats <- list(
       "District" = list(
-        "Call attempted" = ~qwraps2::n_perc(fu_type == 1, prec),
-        "Physical attempted" = ~qwraps2::n_perc(fu_type == 2, prec),
+        "Call attempted" = ~qwraps2::n_perc(fu_type == 1, prec, na_rm = TRUE),
+        "Physical attempted" = ~qwraps2::n_perc(fu_type == 2, prec, na_rm = TRUE),
         "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
         )
     )
@@ -172,9 +172,9 @@ if (!is.null(day7fu_data)) {
     
     day7_call_stats <- list(
       "District" = list(
-        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
-        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec, na_rm = TRUE),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec, na_rm = TRUE)
         )
     )
     
@@ -200,9 +200,9 @@ if (!is.null(day7fu_data)) {
     
     day7_call_stats <- list(
       "District" = list(
-        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Caregiver OK" = ~qwraps2::n_perc(successful_phone_fu == 1, prec),
-        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Caregiver OK" = ~qwraps2::n_perc(successful_phone_fu == 1, prec, na_rm = TRUE),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec, na_rm = TRUE)
         )
     )
     
