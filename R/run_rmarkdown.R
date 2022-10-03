@@ -252,7 +252,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       'crfs-t05b-c3_4' = col_integer(),
       'crfs-t05b-c3_6a' = col_integer(),
       'crfs-t05b-c3_6' = col_integer(),
-      'crfs-t05b-c3_6o' = col_character()
+      'crfs-t05b-c3_6o' = col_character(),
+      'crfs-t09a1-i2_1a1_cg' = col_character(), # Type of referral (source:caregiver)
+      'crfs-t09a1-t09a2-i2_1a1' = col_character() # Type of referral (source:registry)
     )
 
     # SANITY CHECK: export raw LS/RCT data from ODK

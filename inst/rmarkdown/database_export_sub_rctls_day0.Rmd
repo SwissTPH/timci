@@ -529,6 +529,30 @@ timci::dataset_export(study_data,
 
 ### Data summary statistics\n\n
 
+```{r}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(fid,
+                         who_age_ctg,
+                         district,
+                         facility,
+                         dob_knwn,
+                         age_mo_knwn,
+                         enrolled,
+                         living_with_cg,
+                         mother_education),
+                       factor))
+```
+
+```{r, eval = (is_tanzania)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(district_ra,
+                         location_lvl1,
+                         location_lvl2,
+                         location_lvl3,
+                         location_lvl4),
+                       factor))
+```
+
 ```{r, results='asis'}
 skimr::skim(day0_data)
 ```
