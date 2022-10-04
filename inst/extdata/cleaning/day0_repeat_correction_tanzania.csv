@@ -1,5 +1,8 @@
 old_child_id,uuid,new_child_id,reason,action,date,author,date_ihi
-T-F0002-P0058,uuid:b51c99bf-2b06-4bcd-b8aa-a9fce6e0ae88,T-R0002-P0058,repeat,move to repeat
-T-F0002-P0068,uuid:626b34a6-dd53-483c-be47-a2b6f05271f3,T-R0002-P0068,repeat,move to repeat
-T-F0093-P0505,uuid:3de3078f-b115-491d-9618-01797a28808c,T-R0093-P0505,repeat,move to repeat
-T-F0039-P0899,uuid:2fdb2774-0369-4391-926c-a93f56243490,T-R0039-P0899,RA wrongly entered it was a repeat visit,move to repeat,2022-07-10,IHI
+T-F0002-P0058,uuid:b51c99bf-2b06-4bcd-b8aa-a9fce6e0ae88,T-R0002-P0058,repeat,move to repeat,,,
+T-F0002-P0068,uuid:626b34a6-dd53-483c-be47-a2b6f05271f3,T-R0002-P0068,repeat,move to repeat,,,
+T-F0093-P0505,uuid:3de3078f-b115-491d-9618-01797a28808c,T-R0093-P0505,repeat,move to repeat,,,
+T-F0039-P0899,uuid:2fdb2774-0369-4391-926c-a93f56243490,T-R0039-P0899,RA wrongly entered it was a repeat visit,move to repeat,07/10/2022,IHI,
+T-F0006-P0481,uuid:717f828c-2f3e-4e59-8426-3c6b0c16a0a8,T-R0006-P0481,,edit,,IHI,08-Sep-22
+T-F0029-P0952,uuid:6e5df60e-5ee4-4804-8714-ad90336f6cc2,T-R0029-P0952,,edit,,IHI,12-Sep-22
+T-F0021-P0596,uuid:2fd32643-7e70-49b4-ae96-c3d66b097de4,T-R0021-P0596,,edit,,IHI,29-Sep-22

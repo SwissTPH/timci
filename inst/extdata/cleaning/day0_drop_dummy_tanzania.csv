@@ -1,5 +1,6 @@
 old_child_id,uuid,new_child_id,reason,action,date,author,date_ihi
-T-F0004-P0687,uuid:b4c35b57-d63a-4d81-9680-284df4edba50,T-F9004-P0687,training,delete
-T-F0025-P0524,uuid:9a235ea1-0cd7-4e02-b673-1ca71f0a6f57,T-F0025-N0524,non eligible - dummy data,delete
-T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,T-F9021-P0376,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
-T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,T-F9021-P0377,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-08-02,IHI,2022-01-22
+T-F0004-P0687,uuid:b4c35b57-d63a-4d81-9680-284df4edba50,T-F9004-P0687,training,delete,,,
+T-F0025-P0524,uuid:9a235ea1-0cd7-4e02-b673-1ca71f0a6f57,T-F0025-N0524,non eligible - dummy data,delete,,,
+T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,T-F9021-P0376,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,08/02/2022,IHI,01/22/2022
+T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,T-F9021-P0377,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,08/02/2022,IHI,01/22/2022
+T-F0102-P1321,uuid:048460ca-69d7-4d3a-af60-a35dcdcb6eb1,T-F0102-P1321,,delete,,IHI,19-Sep-22
