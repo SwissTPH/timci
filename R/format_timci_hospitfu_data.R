@@ -3,26 +3,42 @@
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 format_hospital_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols = c("n4-n4_1")
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  df <- format_multiselect_asws(df,
+                                multi_cols, sep)
 
-  # Match column names with names from dictionary
+  # Import dictionary
+  dictionary_pathname <- system.file(file.path('extdata', "hospit_dict.xlsx"),
+                                     package = 'timci')
+  dictionary <- readxl::read_excel(dictionary_pathname)
+
+  # Filter dictionary to only keep deidentified variables that are relevant for the country of interest
+  dictionary <- dictionary %>%
+    dplyr::filter(deidentified == 1)
+
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "hospit_dict_tanzania.xlsx"
-  } else{
-    xls_filename <- "hospit_dict.xlsx"
+    dictionary <- dictionary %>%
+      dplyr::filter(is_tanzania == 1)
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_india == 1)
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_kenya == 1)
+  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_senegal == 1)
   }
 
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_filename), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-  df <- match_from_xls_dict(df, xls_filename)
-  df <- df[sub$new]
+  # Match column names with names from dictionary
+  df <- timci::match_from_dict(df, dictionary)
+  df
 
 }
 

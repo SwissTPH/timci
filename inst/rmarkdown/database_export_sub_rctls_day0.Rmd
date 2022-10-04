@@ -531,15 +531,26 @@ timci::dataset_export(study_data,
 
 ```{r}
 day0_data <- day0_data %>%
-  dplyr::mutate(across(c(fid,
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         form_version,
+                         fid,
                          who_age_ctg,
                          district,
                          facility,
                          dob_knwn,
                          age_mo_knwn,
                          enrolled,
-                         living_with_cg,
                          mother_education),
+                       factor)) %>%
+  dplyr::mutate(across(c(date_visit), ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
+```
+
+```{r, eval = (is_tanzania | is_kenya | is_senegal)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(living_with_cg),
                        factor))
 ```
 

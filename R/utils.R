@@ -131,6 +131,7 @@ match_from_xls_dict <- function(df, xls_dict) {
 
   dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
   df <- match_from_dict(df, dictionary)
+  df
 
 }
 

@@ -31,7 +31,7 @@
 #' @param is_test Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)
 #' @param operational_reports Boolean that enables to generate operational reports (optional, default set to TRUE)
 #' @param is_pilot Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)
-#' @import rmarkdown ruODK
+#' @import rmarkdown ruODK readr
 #' @export
 
 run_rmarkdown_reportonly <- function(rctls_pid,
@@ -310,6 +310,35 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
     # Load hospital visit follow-up data
     write(formats2h3("Load hospital visit data"), stderr())
+
+    dictionary_pathname <- system.file(file.path('extdata', "hospit_dict.xlsx"),
+                                       package = 'timci')
+    dictionary <- readxl::read_excel(dictionary_pathname)
+
+    col_specs <- list()
+    for ( i in 1:nrow(dictionary) ) {
+
+      label <- dictionary[[i, "old"]]
+      val <- dictionary[[i, "type"]]
+
+      write(paste0(label, " = ", val), stderr())
+
+      if (val == "date") {
+        col_specs[[label]] <- readr::col_date(format = "%Y-%m-%d")
+      } else if (val == "timestamp") {
+        col_specs[[label]] <- readr::col_datetime(format = "%Y-%m-%d %H:%M:%s")
+      } else if (val == "nominal") {
+        col_specs[[label]] <- readr::col_character()#readr::col_factor()
+      } else if (val == "integer") {
+        col_specs[[label]] <- readr::col_integer()
+      } else if (val == "double") {
+        col_specs[[label]] <- readr::col_double()
+      } else{
+        col_specs[[label]] <- readr::col_character()
+      }
+
+    }
+
     raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
                                                     cpp = rctls_pp,
@@ -317,6 +346,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     start_date = start_date,
                                                     end_date = hospitfu_end_date,
                                                     verbose = TRUE)
+
+    fn <- timci::export_df2xlsx(raw_hospit_data,
+                                mdb_dir,
+                                "05a_hospital_raw")
 
     # [Tanzania and India only] Load day 28 follow-up data
     raw_day28fu_data <- NULL
@@ -1073,12 +1106,14 @@ run_rmarkdown_rctls <- function(rctls_pid,
 
   # Load hospital visit follow-up data
   write(formats2h3("Load hospital visit data"), stderr())
+
   raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                   cpid_forms = rct_ls_form_list,
                                                   cpp = rctls_pp,
                                                   cfid = crf_hospit_fid,
                                                   start_date = start_date,
                                                   end_date = hospitfu_end_date,
+                                                  col_specs = col_specs,
                                                   verbose = TRUE)
 
   # [Tanzania and India only] Load day 28 follow-up data
