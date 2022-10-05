@@ -64,11 +64,10 @@ format_day28_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', day28_dict), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-
-  day28_df <- match_from_xls_dict(df, day28_dict)
-  day28_df <- day28_df[sub$new]
+  day28_df <- timci::match_from_filtered_xls_dict(df,
+                                                  "day28_dict.xlsx",
+                                                  is_deidentified = TRUE,
+                                                  country = Sys.getenv('TIMCI_COUNTRY'))
 
   # Format death date
   day28_df$date_death_day28 <- strftime(day28_df$date_death_day28, "%Y-%m-%d")

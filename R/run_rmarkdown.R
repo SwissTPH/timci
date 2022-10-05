@@ -332,15 +332,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (is_rct) {
       write(formats2h3("Load day 28 follow-up data"), stderr())
 
-      day28_col_specs <- list(
-        'a1-enroldate' = col_date(),
-        'o1-o1_2' = col_date(),
-        'o1-o1_2a' = col_character(),
-        'n1-o3_1a' = col_character()
-      )
-
-      # day28_col_specs <- timci::import_col_specifications(xls_dict = "day28_dict.xlsx",
-      #                                                    country = Sys.getenv('TIMCI_COUNTRY'))
+      day28_col_specs <- timci::import_col_specifications(xls_dict = "day28_dict.xlsx",
+                                                         country = Sys.getenv('TIMCI_COUNTRY'))
 
       if (crf_day28_fid %in% rct_ls_form_list) {
         raw_day28fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
