@@ -426,9 +426,13 @@ day0_data %>%
   ggplot2::geom_histogram(ggplot2::aes(y=..density..),
                           colour="black",
                           fill="white",
-                          binwidth = 0.5) + 
+                          binwidth = 0.5) +
   ggplot2::geom_density(alpha = 0.2,
-                        fill="#FF6666")
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 37.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1)
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}
@@ -444,7 +448,11 @@ day0_data %>%
                           fill="white",
                           binwidth = 0.2) + 
   ggplot2::geom_density(alpha = 0.2,
-                        fill="#FF6666")
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 99.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1)
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&is_india}
