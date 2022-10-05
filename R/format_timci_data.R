@@ -8,22 +8,30 @@
 match_from_day0_xls_dict <- function(df,
                                      is_pilot = FALSE) {
 
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    xls_filename <- "main_dict_senegal.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    xls_filename <- "main_dict_kenya.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    xls_filename <- "main_dict_india.xlsx"
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    if ( is_pilot ) {
-      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-    } else{
-      xls_filename <- "main_dict_tanzania.xlsx"
-    }
-  } else{
-    xls_filename <- "main_dict_tanzania.xlsx"
-  }
-  df <- match_from_xls_dict(df, xls_filename)
+  # if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  #   xls_filename <- "main_dict_senegal.xlsx"
+  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
+  #   xls_filename <- "main_dict_kenya.xlsx"
+  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  #   xls_filename <- "main_dict_india.xlsx"
+  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
+  #   if ( is_pilot ) {
+  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+  #   } else{
+  #     xls_filename <- "main_dict_tanzania.xlsx"
+  #   }
+  # } else{
+  #   xls_filename <- "main_dict_tanzania.xlsx"
+  # }
+  #df <- match_from_xls_dict(df, xls_filename)
+
+  # Import dictionary
+  dictionary <- timci::import_country_specific_xls_dict("main_dict.xlsx",
+                                                        Sys.getenv('TIMCI_COUNTRY'))
+
+  # Match column names with names from dictionary
+  df %>%
+    timci::match_from_dict(dictionary)
 
 }
 
@@ -35,24 +43,28 @@ match_from_day0_xls_dict <- function(df,
 
 read_day0_xls_dict <- function(is_pilot = FALSE) {
 
-  if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
-    xls_filename <- "main_dict_senegal.xlsx"
-  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
-    xls_filename <- "main_dict_kenya.xlsx"
-  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
-    xls_filename <- "main_dict_india.xlsx"
-  } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
-    if ( is_pilot ) {
-      xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-    } else {
-      xls_filename <- "main_dict_tanzania.xlsx"
-    }
-  } else{
-    xls_filename <- "main_dict_tanzania.xlsx"
-  }
+  # if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
+  #   xls_filename <- "main_dict_senegal.xlsx"
+  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
+  #   xls_filename <- "main_dict_kenya.xlsx"
+  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
+  #   xls_filename <- "main_dict_india.xlsx"
+  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
+  #   if ( is_pilot ) {
+  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
+  #   } else {
+  #     xls_filename <- "main_dict_tanzania.xlsx"
+  #   }
+  # } else{
+  #   xls_filename <- "main_dict_tanzania.xlsx"
+  # }
+  #
+  # xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
+  # dictionary <- readxl::read_excel(xls_pathname)
 
-  xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
-  dictionary <- readxl::read_excel(xls_pathname)
+  dictionary <- import_country_specific_xls_dict("main_dict.xlsx",
+                                                 country = Sys.getenv('TIMCI_COUNTRY'))
+  dictionary
 
 }
 
@@ -277,15 +289,12 @@ process_facility_data <- function(df,
   df <- format_text_fields(df, text_field_cols)
 
   # Match column names with names from dictionary
-  df <- match_from_day0_xls_dict(df, is_pilot)
+  df <- timci::match_from_day0_xls_dict(df, is_pilot)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
 
   df
-
-  # Malaria test done
-  #df <- df %>% dplyr::mutate(malaria = ("1" %in% df$'dx_tests'))
 
 }
 
@@ -405,8 +414,11 @@ extract_screening_data <- function(df,
                                    is_pilot = FALSE) {
 
   dictionary <- timci::read_day0_xls_dict(is_pilot)
-  sub <- subset(dictionary, screening == 1)
-  df[sub$new]
+  # Filter dictionary to only keep deidentified variables
+  dictionary <- dictionary %>%
+    dplyr::filter(screening == 1)
+
+  df[dictionary$new]
 
 }
 

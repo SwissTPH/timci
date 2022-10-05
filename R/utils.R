@@ -226,13 +226,14 @@ import_col_specifications <- function(xls_dict,
     val <- dictionary[[i, "type"]]
 
     if (val == "date") {
-      col_specs[[label]] <- readr::col_date(format = "%Y-%m-%d")
+      col_specs[[label]] <- readr::col_date()
     } else if (val == "timestamp") {
-      col_specs[[label]] <- readr::col_datetime(format = "%Y-%m-%d %H:%M:%s")
+      col_specs[[label]] <- readr::col_datetime()
     } else if (val == "nominal") {
-      col_specs[[label]] <- readr::col_factor(levels = NULL,
-                                              ordered = FALSE,
-                                              include_na = FALSE)
+      col_specs[[label]] <- readr::col_character()
+      # col_specs[[label]] <- readr::col_factor(levels = NULL,
+      #                                         ordered = FALSE,
+      #                                         include_na = FALSE)
     } else if (val == "ordinal") {
       col_specs[[label]] <- readr::col_factor(levels = NULL,
                                               ordered = TRUE,
