@@ -134,6 +134,42 @@ timci::dataset_export(hospit_data,
                       "Raw hospitalisation data")
 ```
 
+```{r}
+locked_hospit_data <- locked_hospit_data %>%
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         form_version,
+                         rhf_id,
+                         sex,
+                         sex_hf,
+                         dob_knwn_hf,
+                         found,
+                         time_visit_hf,
+                         rr,
+                         spo2,
+                         hospit,
+                         ward,
+                         o2,
+                         o2_type,
+                         dx_admission,
+                         adm_outcome,
+                         dx_discharge,
+                         death_cause,
+                         facility_trans),
+                       factor)) %>%
+  dplyr::mutate(across(c(spo2_meas,
+                         rr_meas),
+                       as.numeric)) %>% 
+  dplyr::mutate(across(c(date,
+                         date_death),
+                       ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end),
+                       ~format(as.Date(.), "%Y-%m-%d %H:%M:%S"))) %>%
+  dplyr::mutate(across(c(facility_trans_oth),
+                       as.character)) 
+```
+
 ```{r, results = 'asis'}
 timci::dataset_export(locked_hospit_data,
                       "05a",
@@ -160,31 +196,6 @@ timci::dataset_export(hospit_fu,
 ```
 
 ### Data summary statistics\n\n
-
-```{r}
-locked_hospit_data <- locked_hospit_data %>%
-  dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
-                         form_version,
-                         sex,
-                         sex_hf,
-                         dob_knwn_hf,
-                         found,
-                         time_visit_hf,
-                         rr,
-                         spo2,
-                         hospit,
-                         ward,
-                         o2,
-                         o2_type,
-                         dx_admission,
-                         death_cause,
-                         dx_discharge),
-                       factor)) %>%
-  dplyr::mutate(across(c(date), ~format(as.Date(.), "%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
-```
 
 ```{r, results='asis'}
 skimr::skim(locked_hospit_data)

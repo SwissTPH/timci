@@ -292,12 +292,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     # Load day 7 follow-up data
     write(formats2h3("Load day 7 follow-up data"), stderr())
 
-    day7_col_specs <- list(
-      'a1-enroldate' = col_date(),
-      'o1-o1_2' = col_date(),
-      'o1-o1_2a' = col_character(),
-      'n1-o3_1a' = col_character()
-    )
+    day7_col_specs <- timci::import_col_specifications(xls_dict = "day7_dict.xlsx",
+                                                       country = Sys.getenv('TIMCI_COUNTRY'))
 
     raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
@@ -308,36 +304,15 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     col_specs = day7_col_specs,
                                                     verbose = TRUE)
 
+    fn <- timci::export_df2xlsx(raw_day7fu_data,
+                                mdb_dir,
+                                "04a_followup_day7_raw")
+
     # Load hospital visit follow-up data
     write(formats2h3("Load hospital visit data"), stderr())
 
-    dictionary_pathname <- system.file(file.path('extdata', "hospit_dict.xlsx"),
-                                       package = 'timci')
-    dictionary <- readxl::read_excel(dictionary_pathname)
-
-    col_specs <- list()
-    for ( i in 1:nrow(dictionary) ) {
-
-      label <- dictionary[[i, "old"]]
-      val <- dictionary[[i, "type"]]
-
-      write(paste0(label, " = ", val), stderr())
-
-      if (val == "date") {
-        col_specs[[label]] <- readr::col_date(format = "%Y-%m-%d")
-      } else if (val == "timestamp") {
-        col_specs[[label]] <- readr::col_datetime(format = "%Y-%m-%d %H:%M:%s")
-      } else if (val == "nominal") {
-        col_specs[[label]] <- readr::col_character()#readr::col_factor()
-      } else if (val == "integer") {
-        col_specs[[label]] <- readr::col_integer()
-      } else if (val == "double") {
-        col_specs[[label]] <- readr::col_double()
-      } else{
-        col_specs[[label]] <- readr::col_character()
-      }
-
-    }
+    hosp_col_specs <- timci::import_col_specifications(xls_dict = "hospit_dict.xlsx",
+                                                       country = Sys.getenv('TIMCI_COUNTRY'))
 
     raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
@@ -345,6 +320,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     cfid = crf_hospit_fid,
                                                     start_date = start_date,
                                                     end_date = hospitfu_end_date,
+                                                    col_specs = hosp_col_specs,
                                                     verbose = TRUE)
 
     fn <- timci::export_df2xlsx(raw_hospit_data,
@@ -362,6 +338,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
         'o1-o1_2a' = col_character(),
         'n1-o3_1a' = col_character()
       )
+
+      # day28_col_specs <- timci::import_col_specifications(xls_dict = "day28_dict.xlsx",
+      #                                                    country = Sys.getenv('TIMCI_COUNTRY'))
 
       if (crf_day28_fid %in% rct_ls_form_list) {
         raw_day28fu_data <- extract_data_from_odk_server(cpid = rctls_pid,

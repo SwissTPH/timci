@@ -13,31 +13,10 @@ format_hospital_data <- function(df) {
   df <- format_multiselect_asws(df,
                                 multi_cols, sep)
 
-  # Import dictionary
-  dictionary_pathname <- system.file(file.path('extdata', "hospit_dict.xlsx"),
-                                     package = 'timci')
-  dictionary <- readxl::read_excel(dictionary_pathname)
-
-  # Filter dictionary to only keep deidentified variables that are relevant for the country of interest
-  dictionary <- dictionary %>%
-    dplyr::filter(deidentified == 1)
-
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    dictionary <- dictionary %>%
-      dplyr::filter(is_tanzania == 1)
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-    dictionary <- dictionary %>%
-      dplyr::filter(is_india == 1)
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    dictionary <- dictionary %>%
-      dplyr::filter(is_kenya == 1)
-  } else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-    dictionary <- dictionary %>%
-      dplyr::filter(is_senegal == 1)
-  }
-
-  # Match column names with names from dictionary
-  df <- timci::match_from_dict(df, dictionary)
+  df <- timci::match_from_filtered_xls_dict(df,
+                                            "hospit_dict.xlsx",
+                                            is_deidentified = TRUE,
+                                            country = Sys.getenv('TIMCI_COUNTRY'))
   df
 
 }
