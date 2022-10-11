@@ -432,7 +432,8 @@ day0_data %>%
   ggplot2::geom_vline(aes(xintercept = 37.5),
                       color="blue",
                       linetype="dashed",
-                      size=1)
+                      size=1) +
+  ggplot2::coord_cartesian(xlim =c(30, 43), ylim = c(0, 1))
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}
@@ -452,7 +453,8 @@ day0_data %>%
   ggplot2::geom_vline(aes(xintercept = 99.5),
                       color="blue",
                       linetype="dashed",
-                      size=1)
+                      size=1) +
+  ggplot2::coord_cartesian(xlim =c(86, 110), ylim = c(0, 1))
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&is_india}
@@ -474,7 +476,8 @@ day0_data %>%
                           fill="white",
                           binwidth = 1) + 
   ggplot2::geom_density(alpha = 0.2,
-                        fill="#FF6666")
+                        fill="#FF6666") +
+  ggplot2::coord_cartesian(xlim =c(75, 100), ylim = c(0, 0.6))
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
@@ -496,7 +499,8 @@ day0_data %>%
                           fill="white",
                           binwidth = 1) + 
   ggplot2::geom_density(alpha = 0.2,
-                        fill="#FF6666")
+                        fill="#FF6666") +
+  ggplot2::coord_cartesian(xlim =c(0, 150), ylim = c(0, 0.12))
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
