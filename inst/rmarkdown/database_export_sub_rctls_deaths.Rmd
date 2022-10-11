@@ -105,7 +105,6 @@ dropped_cols_hosp <- c(dropped_cols,
                        "date_visit_cg")
 ```
 
-
 ### Export death data reported at Day 7
 
 ```{r, eval=is_tanzania}
@@ -277,18 +276,24 @@ locked_all_deaths <- locked_all_deaths %>%
 
 ```{r, eval=is_rct}
 # Remove date columns used for day difference calculation
-dropped_cols <- c("date_visit",
-                  "dob",
-                  "date_call_day7",
-                  "date_hosp_day7",
-                  "date_death_day7",
-                  "date_call_day28",
-                  "date_hosp_day28",
-                  "date_death_day28",
-                  "date_visit_rhf",
-                  "date_death",
-                  "date_discharge")
+dropped_cols <- c("dob")
 locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
+```
+
+```{r, eval=is_rct}
+# Commented on 10 Oct 2022 to answer Vânia's request
+# Remove date columns used for day difference calculation
+# dropped_cols <- c("date_visit",
+#                   "date_call_day7",
+#                   "date_hosp_day7",
+#                   "date_death_day7",
+#                   "date_call_day28",
+#                   "date_hosp_day28",
+#                   "date_death_day28",
+#                   "date_visit_rhf",
+#                   "date_death",
+#                   "date_discharge")
+# locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
 ```
 
 ```{r, eval=is_rct, results = 'asis'}
