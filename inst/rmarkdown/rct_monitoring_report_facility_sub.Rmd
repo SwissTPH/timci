@@ -194,11 +194,28 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat("### Calendar heatmaps\n\n")
 }
+```
 
+```{r, results = "asis"}
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   timci::generate_calendar_heatmap2(baseline_data_tmp,
                                     date_visit,
                                     legendtitle = "Number of enrolments")
+}
+```
+
+```{r}
+yi_data_tmp <- NULL
+if (timci::is_not_empty(baseline_data_tmp)) {
+  yi_data_tmp <- baseline_data_tmp %>% filter(yg_infant == 1)
+}
+```
+
+```{r, results = "asis"}
+if (timci::is_not_empty(yi_data_tmp)) {
+  timci::generate_calendar_heatmap2(yi_data_tmp,
+                                    date_visit,
+                                    legendtitle = "Number of young infant enrolments")
 }
 ```
 
@@ -214,6 +231,29 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
   timci::heatmap_wday_hourofday(facility_data_tmp,
                                'start')
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Référence\n\n")
+} else {
+  cat("### Referral\n\n")
+}
+```
+
+```{r}
+referral_data_tmp <- NULL
+if (timci::is_not_empty(baseline_data_tmp)) {
+  referral_data_tmp <- baseline_data_tmp %>% filter(referral_cg == 1 | referral_hf == 1)
+}
+```
+
+```{r, results = "asis"}
+if (timci::is_not_empty(referral_data_tmp)) {
+  timci::generate_calendar_heatmap2(referral_data_tmp,
+                                    date_visit,
+                                    legendtitle = "Number of referrals")
 }
 ```
 

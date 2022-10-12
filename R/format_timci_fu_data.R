@@ -12,7 +12,8 @@ format_day7_data <- function(df) {
   multi_cols = c("n1_o3_1a",
                  "n1_o3_1b",
                  "n1_o3_2b",
-                 "n1-o3_1a")
+                 "n1-o3_1a",
+                 "n1-o3_3")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
