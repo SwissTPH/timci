@@ -14,7 +14,7 @@ correct_day0_non_valid_facilities <- function(df) {
   out <- list(df,NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    edits <- readr::read_csv(csv_pathname)
     df <- df %>%
       merge(edits[, c("old_child_id", "uuid", "new_child_id")],
             by.x = c("child_id", "uuid"),
@@ -56,7 +56,7 @@ edit_day0_child_ids <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    edits <- readr::read_csv(csv_pathname)
 
     found_edits <- edits[, c("old_child_id", "uuid", "new_child_id")] %>%
       merge(df[, c("child_id", "uuid")],
@@ -107,7 +107,7 @@ edit_day0_to_repeat <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    edits <- readr::read_csv(csv_pathname)
 
     found_edits <- edits[, c("old_child_id", "uuid")] %>%
       merge(df[, c("child_id", "uuid")],
@@ -173,7 +173,7 @@ delete_day0_records <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    records_to_drop <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    records_to_drop <- readr::read_csv(csv_pathname)
 
     found_records <- records_to_drop %>%
       merge(df[, c("child_id", "uuid")],
@@ -234,7 +234,7 @@ correct_day7_duplicates <- function(df) {
   out <- list(df,NULL)
   if (!is.null(csv_filename)) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    edits <- readr::read_csv(csv_pathname)
     if ("a1-pid" %in% colnames(df))
     {
       df <- df %>%
@@ -297,7 +297,7 @@ correct_spa_sco_hcp_ids <- function(df) {
   out <- list(df, NULL)
   if (!is.null(csv_filename)) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::with_edition(1, readr::read_csv(csv_pathname))
+    edits <- readr::read_csv(csv_pathname)
     df <- df %>%
       merge(edits[, c("old_hcp_id", "uuid", "new_hcp_id")],
             by.x = c("hcp_identification-hcpid", "meta-instanceID"),

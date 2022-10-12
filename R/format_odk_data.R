@@ -69,12 +69,12 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name,
   #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(local_dir)
   if (!is.null(col_specs)) {
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name),
-                                                           col_types = col_specs,
-                                                           guess_max = 2000))
+    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
+                                    col_types = col_specs,
+                                    guess_max = 2000)
   } else{
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name),
-                                                           guess_max = 2000))
+    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
+                                    guess_max = 2000)
   }
   timci::format_odk_metadata(raw_odk_data, start_date, end_date)
 
@@ -162,8 +162,8 @@ extract_additional_data_from_odk_zip <- function(odk_zip,
   fn <- file.path(local_dir, csv_name)
   df <- NULL
   if ( file.exists(fn) ) {
-    df <- raw_odk_data <- readr::with_edition(1, readr::read_csv(fn,
-                                                                 guess_max = 2000))
+    df <- raw_odk_data <- readr::read_csv(fn,
+                                          guess_max = 2000)
   }
   df
 

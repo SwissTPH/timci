@@ -226,9 +226,9 @@ import_col_specifications <- function(xls_dict,
     val <- dictionary[[i, "type"]]
 
     if (val == "date") {
-      col_specs[[label]] <- readr::col_date()
+      col_specs[[label]] <- readr::col_date(format = "%Y-%m-%d")
     } else if (val == "timestamp") {
-      col_specs[[label]] <- readr::col_datetime()
+      col_specs[[label]] <- readr::col_datetime(format = "")
     } else if (val == "nominal") {
       col_specs[[label]] <- readr::col_character()
       # col_specs[[label]] <- readr::col_factor(levels = NULL,
@@ -242,6 +242,8 @@ import_col_specifications <- function(xls_dict,
       col_specs[[label]] <- readr::col_integer()
     } else if (val == "double") {
       col_specs[[label]] <- readr::col_double()
+    } else if (val == "character") {
+      col_specs[[label]] <- readr::col_character()
     } else{
       col_specs[[label]] <- readr::col_character()
     }
