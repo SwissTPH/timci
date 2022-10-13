@@ -1531,45 +1531,51 @@ if (is_senegal) {
 }
 ```
 
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_ls}
+all <- data.frame(post_intervention_data)
+```
+
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_rct}
+all <- data.frame(baseline_data)
+```
+
 ```{r, results="asis", eval=(nrow(baseline_data) > 0)}
-if (is_kenya | is_senegal) {
-  all <- data.frame(post_intervention_data) %>%
+all <- all %>%
     dplyr::mutate(spo2_yg_infant = ifelse(yg_infant == 1, spo2, NA)) %>%
     dplyr::mutate(spo2_older_children = ifelse(yg_infant == 0, spo2, NA))
-} else {
-  all <- data.frame(baseline_data) %>%
-    dplyr::mutate(spo2_yg_infant = ifelse(yg_infant == 1, spo2, NA)) %>%
-    dplyr::mutate(spo2_older_children = ifelse(yg_infant == 0, spo2, NA))
-}
+```
 
-if (is_tanzania) {
-  all <- all %>%
-    merge(y = facilities[,c("facility_id", "intervention")],
-          by.x = 'fid',
-          by.y = 'facility_id',
-          all.x = TRUE) %>%
-    filter(intervention == 1 | intervention == 2)
-}
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_rct}
+all <- all %>%
+  merge(y = facilities[,c("facility_id", "intervention")],
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE) %>%
+  filter(intervention == 1 | intervention == 2)
+```
 
+```{r, results="asis", eval=(nrow(baseline_data) > 0)}
 pox_statistics <- list(
   "Facility" = list(
-    "1 - 59 days" = ~qwraps2::n_perc(spo2_yg_infant == 1,
+    "SpO2 (1-59 days)" = ~qwraps2::n_perc(spo2_yg_infant == 1,
                                      prec,
                                      na_rm = TRUE),
-    "2-59 months" = ~qwraps2::n_perc(spo2_older_children == 1,
+    "SpO2 (2-59 months)" = ~qwraps2::n_perc(spo2_older_children == 1,
+                                     prec,
+                                     na_rm = TRUE),
+    "Temperature" = ~qwraps2::n_perc(temp == 1,
                                      prec,
                                      na_rm = TRUE)
     )
 )
+
 out <- format_summary_table(all,
                             pox_statistics,
                             facility_name)
 
-pox_values <- split(all$spo2_meas1, all$facility_name)
-
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
-                  longtable = TRUE,
+                  longtable = TRUE, 
                   linesep = "",
                   caption = "Pulse oximetry uptake") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
@@ -1577,6 +1583,38 @@ out %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_tanzania}
+pox_statistics <- list(
+  "Facility" = list(
+    "Recorded" = ~qwraps2::n_perc(spo2 == 1,
+                                     prec,
+                                     na_rm = TRUE),
+    "Reported by caregiver" = ~qwraps2::n_perc(spo2_cg == 1,
+                                     prec,
+                                     na_rm = TRUE)
+    )
+)
+
+out <- format_summary_table(all,
+                            pox_statistics,
+                            facility_name)
+
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE, 
+                  linesep = "",
+                  caption = "Pulse oximetry uptake") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r}
+pox_values <- split(all$spo2_meas1, all$facility_name)
 ```
 
 \clearpage
