@@ -2,9 +2,11 @@
 #'
 #' @param n_raw_screening_records Initial number of screening records
 #' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID
+#' @param n_other_fid_records Number of screening records corresponding to facility involved in another TIMCI study (India-specific)
 #' @param n_after_lockdate_records Number of screening records with an entry date posterior to the lock date
 #' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
 #' @param n_edited_repeat_visit_records Number of screening records that were edited manually
+#' @param n_incorrect_date_setup_records Number of screening records with an incorrect date that had to be edited manually
 #' @param n_cleaned_screening_records Number of cleaned screening records
 #' @return This function returns a graph object
 #' @export
@@ -12,9 +14,11 @@
 
 create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_nonvalid_deviceid_records,
+                                          n_other_fid_records,
                                           n_after_lockdate_records,
                                           n_ineligible_cg_records,
                                           n_edited_repeat_visit_records,
+                                          n_incorrect_date_setup_records,
                                           n_cleaned_screening_records) {
 
   n_excluded <- n_nonvalid_deviceid_records + n_after_lockdate_records + n_ineligible_cg_records
@@ -25,7 +29,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw screening records\n(N = %s)']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) with ineligible caregiver\n%s record(s) posterior to the lock date\n\nManually edited (N = %s)\n%s record(s) modified from new enrolment to repeat visit']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) with ineligible caregiver\n%s record(s) posterior to the lock date\n\nManually edited (N = %s)\n%s record(s) modified from new enrolment to repeat visit\n%s record(s) corrected for the start date']
                   2 [label = 'Cleaned screening records\n(N = %s)']
 
                   node [shape=none, width=0, height=0, label='']
@@ -38,10 +42,12 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                 n_raw_screening_records,
                 n_excluded,
                 n_nonvalid_deviceid_records,
+                n_other_fid_records,
                 n_ineligible_cg_records,
                 n_after_lockdate_records,
                 n_edited,
                 n_edited_repeat_visit_records,
+                n_incorrect_date_setup_records,
                 n_cleaned_screening_records)
 
   DiagrammeR::grViz(gr)
