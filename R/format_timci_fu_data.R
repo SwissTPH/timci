@@ -3,15 +3,9 @@
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr lubridate anytime
+#' @import dplyr lubridate anytime
 
 format_day7_data <- function(df) {
-
-  # Set the dictionary to be used
-  day7_dict <- "day7_dict.xlsx"
-  if(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'){
-    day7_dict <- "day7_dict_tanzania.xlsx"
-  }
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
@@ -22,11 +16,10 @@ format_day7_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', day7_dict), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-
-  day7_df <- match_from_xls_dict(df, day7_dict)
-  day7_df <- day7_df[sub$new]
+  day7_df <- timci::match_from_filtered_xls_dict(df,
+                                                 "day7_dict.xlsx",
+                                                 is_deidentified = TRUE,
+                                                 country = Sys.getenv('TIMCI_COUNTRY'))
 
   # Format day 0 date
   day7_df$date_day0 <- anytime::anydate(day7_df$date_day0)
@@ -52,7 +45,7 @@ format_day7_data <- function(df) {
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 28 follow-up call
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 format_day28_data <- function(df) {
 
@@ -71,11 +64,10 @@ format_day28_data <- function(df) {
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', day28_dict), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-
-  day28_df <- match_from_xls_dict(df, day28_dict)
-  day28_df <- day28_df[sub$new]
+  day28_df <- timci::match_from_filtered_xls_dict(df,
+                                                  "day28_dict.xlsx",
+                                                  is_deidentified = TRUE,
+                                                  country = Sys.getenv('TIMCI_COUNTRY'))
 
   # Format death date
   day28_df$date_death_day28 <- strftime(day28_df$date_death_day28, "%Y-%m-%d")
@@ -99,7 +91,7 @@ format_day28_data <- function(df) {
 #' @param day0_df dataframe containing the non de-identified (raw) ODK data collected at Day 0
 #' @param fu_df dataframe containing follow-up data that correspond to successful (either Day 7 Day 28) calls
 #' @return out
-#' @import dplyr magrittr
+#' @import dplyr
 #' @export
 #'
 #' @examples

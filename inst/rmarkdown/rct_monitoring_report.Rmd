@@ -1028,8 +1028,8 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 
 caregiver_statistics <- list(
   "Facility" = list(
-    "Mother < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg == 1, prec),
-    "Other < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg != 1, prec),
+    "Mother < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg == 1, prec, na_rm = TRUE),
+    "Other < 18" = ~qwraps2::n_perc(cg_eligibility == 0 & main_cg != 1, prec, na_rm = TRUE),
     ">= 18" = ~qwraps2::n_perc(cg_eligibility == 1, prec)
     )
 )
@@ -1055,8 +1055,8 @@ all <- sick %>% filter(main_cg != 1 & !is.na(underaged_mother))
 if (nrow(all) > 0) {
   mother_statistics <- list(
     "Summary" = list(
-      "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec),
-      ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec)
+      "< 18" = ~qwraps2::n_perc(underaged_mother == 1, prec, na_rm = TRUE),
+      ">= 18" = ~qwraps2::n_perc(underaged_mother == 0, prec, na_rm = TRUE)
       )
   )
 
@@ -1160,26 +1160,6 @@ descriptive_statistics <- list(
     "MoB known" = ~qwraps2::n_perc(dob_knwn == 2, prec),
     "Only YoB known" = ~qwraps2::n_perc(dob_knwn == 3, prec),
     "DoB not known" = ~qwraps2::n_perc(dob_knwn == 98, prec)
-    )
-)
-out <- format_summary_table(all, descriptive_statistics, facility_name)
-out %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  longtable = TRUE,
-                  linesep = "",
-                  align = c("c", "c", "c"),
-                  caption = tcap_age_category) %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-```
-
-```{r, eval = nrow(baseline_data) > 0, results = "asis"}
-descriptive_statistics <- list(
-  "Summary" = list(
-    "0-59 days" = ~qwraps2::n_perc(yg_infant == 1, prec),
-    "2-59 months" = ~qwraps2::n_perc(yg_infant == 0, prec)
     )
 )
 out <- format_summary_table(all, descriptive_statistics, facility_name)
@@ -1359,6 +1339,30 @@ out %>%
                   linesep = "",
                   align = c("c", "c", "c"),
                   caption = tcap_missing_symptoms) %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+\clearpage
+
+## Population
+
+```{r, eval = nrow(baseline_data) > 0, results = "asis"}
+descriptive_statistics <- list(
+  "Summary" = list(
+    "0-59 days" = ~qwraps2::n_perc(yg_infant == 1, prec),
+    "2-59 months" = ~qwraps2::n_perc(yg_infant == 0, prec)
+    )
+)
+out <- format_summary_table(all, descriptive_statistics, facility_name)
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c"),
+                  caption = tcap_age_category) %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1709,6 +1713,86 @@ if (nrow(baseline_data) > 0) {
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
     kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 }
+```
+
+\clearpage
+
+## Young infants
+
+```{r, eval=(nrow(baseline_data)>0)}
+all <- data.frame(baseline_data) %>%
+  dplyr::filter(yg_infant == 1)
+all$referral_cg <- ifelse(!is.na(all$referral_cg),
+                          all$referral_cg,
+                          100)
+all$referral_hf <- ifelse(!is.na(all$referral_hf),
+                          all$referral_hf,
+                          100)
+```
+
+### Referral
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("#### Rapporté par l'accompagnant à la sortie de la consultation\n\n"))
+} else {
+  cat(paste0("#### Reported by the caregiver at the consultation exit\n\n"))
+}
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  summary_statistics <- list(
+    "Facility" = list(
+      "Yes" = ~qwraps2::n_perc(referral_cg == 1, prec),
+      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
+      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, prec),
+      "Declined" = ~qwraps2::n_perc(referral_cg == 97, prec),
+      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
+      )
+  )
+  out <- format_summary_table(all, summary_statistics, facility_name) 
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
+                    linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+  
+}
+```
+
+```{r, results = "asis"}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat(paste0("#### Rapporté dans le registre du poste\n\n"))
+} else {
+  cat(paste0("#### Reported in the facility registry\n\n"))
+}
+```
+
+```{r, results = "asis"}
+if (nrow(baseline_data) > 0) {
+  summary_statistics <- list(
+    "Facility" = list(
+      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec),
+      "No" = ~qwraps2::n_perc(referral_hf == 0, prec)
+      )
+  )
+  out <- format_summary_table(all, summary_statistics, facility_name) 
+  out %>% 
+    kableExtra::kbl(booktabs = TRUE,
+                    longtable = TRUE,
+                    linesep = "") %>% 
+    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+} 
 ```
 
 ```{r day7fu-subsection, child = if (!is.null(raw_day7fu_data) & nrow(raw_day7fu_data) > 0) 'rct_monitoring_report_sub_day7.Rmd'}

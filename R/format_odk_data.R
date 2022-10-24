@@ -57,7 +57,11 @@ format_odk_metadata <- function(df,
 #' @import readr utils fs
 #' @export
 
-extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL, local_dir = tempdir(), col_specs = NULL) {
+extract_data_from_odk_zip <- function(odk_zip, csv_name,
+                                      start_date = NULL,
+                                      end_date = NULL,
+                                      local_dir = tempdir(),
+                                      col_specs = NULL) {
 
   utils::unzip(odk_zip, exdir = local_dir)
   #fn <- fs::dir_ls(local_dir, glob=paste0("*", csv_name))
@@ -65,7 +69,8 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
   #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(local_dir)
   if (!is.null(col_specs)) {
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name), col_types = col_specs))
+    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name),
+                                                           col_types = col_specs))
   } else{
     raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name)))
   }
@@ -113,7 +118,7 @@ extract_data_from_odk_server <- function(cpid,
                                         media = FALSE)
 
     # Extract the XML representation of the form
-    fq_form_xml <- ruODK::form_xml(parse=FALSE,
+    fq_form_xml <- ruODK::form_xml(parse = FALSE,
                                    pid = cpid,
                                    fid = cfid)
 

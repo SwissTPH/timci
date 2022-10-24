@@ -31,7 +31,7 @@
 #' @param is_test Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)
 #' @param operational_reports Boolean that enables to generate operational reports (optional, default set to TRUE)
 #' @param is_pilot Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)
-#' @import rmarkdown ruODK
+#' @import rmarkdown ruODK readr
 #' @export
 
 run_rmarkdown_reportonly <- function(rctls_pid,
@@ -184,76 +184,81 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  media = FALSE)
 
     # Dirty fix - To be moved when time allows
-    col_specs <- list(
-      'a3-a3_a_5' = col_integer(),
-      'crfs-t09a1-t08a-f2_9' = col_integer(),
-      'crfs-t09a1-t08a-f2_8' = col_integer(),
-      'crfs-t09a1-t06a-d2_3b' = col_double(),
-      'crfs-t09a1-t06a-d2_2b' = col_double(),
-      'crfs-t09a1-t05b-c3_6' = col_integer(),
-      'a4_c_10a' = col_integer(),
-      'crfs-t04a-b2_3' = col_integer(),
-      'crfs-t03-m3_1b' = col_integer(),
-      'crfs-t03-m3_3' = col_integer(),
-      'crfs-t03-m3_3o' = col_character(),
-      'crfs-t03-m3_4' = col_integer(),
-      'crfs-t03-m3_6' = col_integer(),
-      'crfs-t03-m3_7' = col_integer(),
-      'crfs-t03-m3_8a' = col_integer(),
-      'crfs-t03-m3_9a' = col_integer(),
-      'crfs-t09a1-medication_injection' = col_integer(),
-      'crfs-t09a1-injection_types' = col_integer(),
-      'crfs-t09a1-injection_typeso' = col_character(),
-      'crfs-t09a2-g3_1' = col_character(),
-      'crfs-t09a2-g3_1o' = col_character(),
-      'crfs-t09a2-i2_1' = col_integer(),
-      'crfs-t09a2-i2_1a' = col_integer(),
-      'crfs-t09a2-i2_1b' = col_integer(),
-      'crfs-t09a2-i2_1o' = col_character(),
-      'crfs-t09a2-j2_1' = col_integer(),
-      'crfs-t09a2-j2_1c' = col_integer(),
-      'crfs-t09a2-h2_2a' = col_character(),
-      'crfs-t09a2-h2_2ao' = col_character(),
-      'crfs-t07a-tt07a-e2_1' = col_integer(),
-      'crfs-t07a-tt07a-e2_1a' = col_integer(),
-      'crfs-t07a-tt07a-e2_2' = col_integer(),
-      'crfs-t07a-tt07a-e2_2a' = col_integer(),
-      'crfs-t07a-tt07a-e2_3' = col_integer(),
-      'crfs-t07a-tt07a-e2_3a' = col_integer(),
-      'crfs-t07a-tt07a-e2_4' = col_integer(),
-      'crfs-t07a-tt07a-e2_4a' = col_integer(),
-      'crfs-t06a-tt06a-d2_6' = col_integer(),
-      'crfs-t06a-d2_6b' = col_integer(),
-      'crfs-t06a-tt06a-d2_1' = col_integer(),
-      'crfs-t06a-d2_1a' = col_integer(),
-      'crfs-t06a-tt06a-d2_4' = col_integer(),
-      'crfs-t06a-d2_4a' = col_integer(),
-      'crfs-t06a-tt06a-d2_5' = col_integer(),
-      'crfs-t06a-d2_5a' = col_integer(),
-      'crfs-t06a-tt06a-d2_2' = col_integer(),
-      'crfs-t06a-d2_2b' = col_integer(),
-      'crfs-t06a-tt06a-d2_3' = col_integer(),
-      'crfs-t06a-d2_3b' = col_integer(),
-      'crfs-t08a-f2_1' = col_character(),
-      'crfs-t08a-f2_1o' = col_character(),
-      'crfs-t08a-f2_2' = col_integer(),
-      'crfs-t08a-f2_3' = col_integer(),
-      'crfs-t08a-f2_4' = col_integer(),
-      'crfs-t08a-f2_5' = col_double(),
-      'crfs-t08a-f2_6' = col_integer(),
-      'crfs-t08a-f2_7' = col_integer(),
-      'crfs-t08a-f2_8' = col_integer(),
-      'crfs-t08a-f2_9' = col_integer(),
-      'crfs-t08a-f2_10a' = col_integer(),
-      'crfs-t05b-c3_1' = col_integer(),
-      'crfs-t05b-c3_2' = col_integer(),
-      'crfs-t05b-c3_3' = col_integer(),
-      'crfs-t05b-c3_3a' = col_integer(),
-      'crfs-t05b-c3_4' = col_integer(),
-      'crfs-t05b-c3_6a' = col_integer(),
-      'crfs-t05b-c3_6' = col_integer(),
-      'crfs-t05b-c3_6o' = col_character()
-    )
+    # col_specs <- list(
+    #   'a3-a3_a_5' = col_integer(),
+    #   'crfs-t09a1-t08a-f2_9' = col_integer(),
+    #   'crfs-t09a1-t08a-f2_8' = col_integer(),
+    #   'crfs-t09a1-t06a-d2_3b' = col_double(),
+    #   'crfs-t09a1-t06a-d2_2b' = col_double(),
+    #   'crfs-t09a1-t05b-c3_6' = col_integer(),
+    #   'a4_c_10a' = col_integer(),
+    #   'crfs-t04a-b2_3' = col_integer(),
+    #   'crfs-t03-m3_1b' = col_integer(),
+    #   'crfs-t03-m3_3' = col_integer(),
+    #   'crfs-t03-m3_3o' = col_character(),
+    #   'crfs-t03-m3_4' = col_integer(),
+    #   'crfs-t03-m3_6' = col_integer(),
+    #   'crfs-t03-m3_7' = col_integer(),
+    #   'crfs-t03-m3_8a' = col_integer(),
+    #   'crfs-t03-m3_9a' = col_integer(),
+    #   'crfs-t09a1-medication_injection' = col_integer(),
+    #   'crfs-t09a1-injection_types' = col_integer(),
+    #   'crfs-t09a1-injection_typeso' = col_character(),
+    #   'crfs-t09a2-g3_1' = col_character(),
+    #   'crfs-t09a2-g3_1o' = col_character(),
+    #   'crfs-t09a2-i2_1' = col_integer(),
+    #   'crfs-t09a2-i2_1a' = col_integer(),
+    #   'crfs-t09a2-i2_1b' = col_integer(),
+    #   'crfs-t09a2-i2_1o' = col_character(),
+    #   'crfs-t09a2-j2_1' = col_integer(),
+    #   'crfs-t09a2-j2_1c' = col_integer(),
+    #   'crfs-t09a2-h2_2a' = col_character(),
+    #   'crfs-t09a2-h2_2ao' = col_character(),
+    #   'crfs-t07a-tt07a-e2_1' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_1a' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_2' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_2a' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_3' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_3a' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_4' = col_integer(),
+    #   'crfs-t07a-tt07a-e2_4a' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_6' = col_integer(),
+    #   'crfs-t06a-d2_6b' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_1' = col_integer(),
+    #   'crfs-t06a-d2_1a' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_4' = col_integer(),
+    #   'crfs-t06a-d2_4a' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_5' = col_integer(),
+    #   'crfs-t06a-d2_5a' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_2' = col_integer(),
+    #   'crfs-t06a-d2_2b' = col_integer(),
+    #   'crfs-t06a-tt06a-d2_3' = col_integer(),
+    #   'crfs-t06a-d2_3b' = col_integer(),
+    #   'crfs-t08a-f2_1' = col_character(),
+    #   'crfs-t08a-f2_1o' = col_character(),
+    #   'crfs-t08a-f2_2' = col_integer(),
+    #   'crfs-t08a-f2_3' = col_integer(),
+    #   'crfs-t08a-f2_4' = col_integer(),
+    #   'crfs-t08a-f2_5' = col_double(),
+    #   'crfs-t08a-f2_6' = col_integer(),
+    #   'crfs-t08a-f2_7' = col_integer(),
+    #   'crfs-t08a-f2_8' = col_integer(),
+    #   'crfs-t08a-f2_9' = col_integer(),
+    #   'crfs-t08a-f2_10a' = col_integer(),
+    #   'crfs-t05b-c3_1' = col_integer(),
+    #   'crfs-t05b-c3_2' = col_integer(),
+    #   'crfs-t05b-c3_3' = col_integer(),
+    #   'crfs-t05b-c3_3a' = col_integer(),
+    #   'crfs-t05b-c3_4' = col_integer(),
+    #   'crfs-t05b-c3_6a' = col_integer(),
+    #   'crfs-t05b-c3_6' = col_integer(),
+    #   'crfs-t05b-c3_6o' = col_character(),
+    #   'crfs-t09a1-i2_1a1_cg' = col_character(), # Type of referral (source:caregiver)
+    #   'crfs-t09a1-t09a2-i2_1a1' = col_character() # Type of referral (source:registry)
+    # )
+
+    col_specs <- timci::import_col_specifications(xls_dict = "main_dict.xlsx",
+                                                  country = Sys.getenv('TIMCI_COUNTRY'))
 
     # SANITY CHECK: export raw LS/RCT data from ODK
     t <- tempdir()
@@ -290,12 +295,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     # Load day 7 follow-up data
     write(formats2h3("Load day 7 follow-up data"), stderr())
 
-    day7_col_specs <- list(
-      'a1-enroldate' = col_date(),
-      'o1-o1_2' = col_date(),
-      'o1-o1_2a' = col_character(),
-      'n1-o3_1a' = col_character()
-    )
+    day7_col_specs <- timci::import_col_specifications(xls_dict = "day7_dict.xlsx",
+                                                       country = Sys.getenv('TIMCI_COUNTRY'))
 
     raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
@@ -306,27 +307,36 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     col_specs = day7_col_specs,
                                                     verbose = TRUE)
 
+    fn <- timci::export_df2xlsx(raw_day7fu_data,
+                                mdb_dir,
+                                "04a_followup_day7_raw")
+
     # Load hospital visit follow-up data
     write(formats2h3("Load hospital visit data"), stderr())
+
+    hosp_col_specs <- timci::import_col_specifications(xls_dict = "hospit_dict.xlsx",
+                                                       country = Sys.getenv('TIMCI_COUNTRY'))
+
     raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
                                                     cpp = rctls_pp,
                                                     cfid = crf_hospit_fid,
                                                     start_date = start_date,
                                                     end_date = hospitfu_end_date,
+                                                    col_specs = hosp_col_specs,
                                                     verbose = TRUE)
+
+    fn <- timci::export_df2xlsx(raw_hospit_data,
+                                mdb_dir,
+                                "05a_hospital_raw")
 
     # [Tanzania and India only] Load day 28 follow-up data
     raw_day28fu_data <- NULL
     if (is_rct) {
       write(formats2h3("Load day 28 follow-up data"), stderr())
 
-      day28_col_specs <- list(
-        'a1-enroldate' = col_date(),
-        'o1-o1_2' = col_date(),
-        'o1-o1_2a' = col_character(),
-        'n1-o3_1a' = col_character()
-      )
+      day28_col_specs <- timci::import_col_specifications(xls_dict = "day28_dict.xlsx",
+                                                         country = Sys.getenv('TIMCI_COUNTRY'))
 
       if (crf_day28_fid %in% rct_ls_form_list) {
         raw_day28fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
@@ -1029,25 +1039,16 @@ run_rmarkdown_rctls <- function(rctls_pid,
     'crfs-t05b-c3_6o' = col_character()
   )
 
-  # SANITY CHECK: export raw LS/RCT data from ODK
-  t <- tempdir()
-  utils::unzip(raw_facility_zip, exdir = t)
-  fs::dir_ls(t)
-  if (!is.null(col_specs)) {
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")), col_types = col_specs))
-  } else{
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv"))))
-  }
-  fn <- timci::export_df2xlsx(raw_odk_data,
-                              mdb_dir,
-                              "01a_screening_raw")
-
   raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
                                                         csv_name = paste0(crf_facility_fid,".csv"),
                                                         start_date = start_date,
                                                         end_date = end_date,
-                                                        local_dir = t,
+                                                        local_dir = tempdir(),
                                                         col_specs = col_specs)
+  fn <- timci::export_df2xlsx(raw_facility_data,
+                              mdb_dir,
+                              "01a_screening_raw")
+
   if (is_tanzania) {
     facility_data <- timci::process_tanzania_facility_data(raw_facility_data)
   } else{
@@ -1071,12 +1072,14 @@ run_rmarkdown_rctls <- function(rctls_pid,
 
   # Load hospital visit follow-up data
   write(formats2h3("Load hospital visit data"), stderr())
+
   raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                   cpid_forms = rct_ls_form_list,
                                                   cpp = rctls_pp,
                                                   cfid = crf_hospit_fid,
                                                   start_date = start_date,
                                                   end_date = hospitfu_end_date,
+                                                  col_specs = col_specs,
                                                   verbose = TRUE)
 
   # [Tanzania and India only] Load day 28 follow-up data

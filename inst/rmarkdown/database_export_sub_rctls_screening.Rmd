@@ -210,7 +210,6 @@ write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
-write(is_pilot, stderr())
 screening_data <- timci::extract_screening_data(facility_data,
                                                 is_pilot)
 n_cleaned_screening_records <- nrow(screening_data)

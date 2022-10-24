@@ -48,16 +48,29 @@ all <- spa_sco_data %>%
          hcp_id = "hcp_identification_hcpid")
 ```
 
-```{r, eval=is_ls}
+```{r, eval=is_senegal}
 all <- all %>% 
-  dplyr::mutate(Q1 = as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")))
+  dplyr::mutate(quarter = dplyr::case_when(
+    as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) ~ "Q1",
+    as.Date(date) > as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) ~ "Q2")
+  )
+```
+
+```{r, eval=is_kenya}
+all <- all %>% 
+  dplyr::mutate(quarter = dplyr::case_when(
+    as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) ~ "Q1",
+    as.Date(date) > as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) & as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q2",
+    as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q3")
+  )
 ```
 
 ```{r, eval=is_rct}
 all <- all %>% 
-  dplyr::mutate(quarter = ifelse(as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")),
-                                 "Q2",
-                                 "Q3"))
+  dplyr::mutate(quarter = dplyr::case_when(
+    as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q2",
+    as.Date(date) > as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q3")
+  )
 ```
 
 ```{r, eval=cond, results="asis"}
@@ -93,12 +106,12 @@ The number of consultation observations to be done depends on the numbers of pro
 
 ```{r, results="asis", eval=cond & is_ls}
 q1_count <- all %>%
-  dplyr::filter(Q1 == 1) %>%
+  dplyr::filter(quarter == "Q1") %>%
   dplyr::group_by(facility_name, hcp_id) %>%
   dplyr::summarise("N obs. children (Q1)" = n_distinct(child_id))
 
 q2_count <- all %>%
-  dplyr::filter(Q1 == 0) %>%
+  dplyr::filter(quarter == "Q2") %>%
   dplyr::group_by(facility_name, hcp_id) %>%
   dplyr::summarise("N obs. children (Q2)" = n_distinct(child_id))
 
@@ -106,13 +119,37 @@ obs_count <- merge(x = q1_count,
                    y = q2_count,
                    by = c("facility_name", "hcp_id"),
                    all = TRUE)
+```
 
+```{r, results="asis", eval=cond & is_senegal}
 obs_count %>% 
   kableExtra::kbl(booktabs = TRUE,
                   longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c"),
-                  caption = "Number of consultation observations by providers in Q1") %>% 
+                  caption = "Number of consultation observations by providers in Q1 and Q2") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::collapse_rows(columns = 1, valign = "top") 
+```
+
+```{r, results="asis", eval=cond & is_kenya}
+q3_count <- all %>%
+  dplyr::filter(quarter == "Q3") %>%
+  dplyr::group_by(facility_name, hcp_id) %>%
+  dplyr::summarise("N obs. children (Q3)" = n_distinct(child_id))
+
+obs_count <- merge(x = obs_count,
+                   y = q3_count,
+                   by = c("facility_name", "hcp_id"),
+                   all = TRUE)
+
+obs_count %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "",
+                  align = c("c", "c", "c", "c"),
+                  caption = "Number of consultation observations by providers in Q1, Q2 and Q3") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::collapse_rows(columns = 1, valign = "top") 
@@ -254,6 +291,8 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
+## Observation times
+
 ```{r, eval=cond & is_india, results='asis', fig.cap=heatmap2_cap, fig.height=figsize}
 timci::heatmap_wday_hourofday(all, 'start')
 ```
@@ -276,21 +315,32 @@ if (!is.null(all_q3)) {
 }
 ```
 
-```{r, results="asis", eval=cond & is_ls, fig.cap=heatmap2_cap, fig.height=figsize}
-all_q1 <- all %>% dplyr::filter(Q1 == 1)
+```{r, results="asis", eval=cond & is_ls, fig.height=figsize}
+all_q1 <- all %>% dplyr::filter(quarter == "Q1")
 if (!is.null(all_q1)) {
   timci::heatmap_wday_hourofday(all_q1, 'start')
 }
 ```
 
 ```{r, results="asis", eval=cond & is_ls, fig.height=figsize}
-all_q2 <- all %>% dplyr::filter(Q1 == 0)
+all_q2 <- all %>% dplyr::filter(quarter == "Q2")
 if (!is.null(all_q2)) {
   if (nrow(all_q2)>0) {
     timci::heatmap_wday_hourofday(all_q2, 'start')
   }
 }
 ```
+
+```{r, results="asis", eval=cond & is_ls, fig.height=figsize}
+all_q3 <- all %>% dplyr::filter(quarter == "Q3")
+if (!is.null(all_q3)) {
+  if (nrow(all_q3)>0) {
+    timci::heatmap_wday_hourofday(all_q3, 'start')
+  }
+}
+```
+
+## Young infants
 
 ```{r, eval=cond, results="asis"}
 summary <- list(
@@ -313,6 +363,8 @@ out %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
+
+## Clinical presentation
 
 ```{r, eval=cond, results="asis"}
 all$symptoms_lethargic[is.na(all$symptoms_lethargic)] <- 0

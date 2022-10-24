@@ -63,6 +63,7 @@ library(dplyr)
 library(knitr)
 library(skimr)
 library(dataMaid)
+library(ggplot2)
 ```
 
 ```{r setup-options, include=FALSE}

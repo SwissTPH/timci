@@ -3,26 +3,21 @@
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 format_hospital_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols = c("n4-n4_1")
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  df <- format_multiselect_asws(df,
+                                multi_cols, sep)
 
-  # Match column names with names from dictionary
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-    xls_filename <- "hospit_dict_tanzania.xlsx"
-  } else{
-    xls_filename <- "hospit_dict.xlsx"
-  }
-
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_filename), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-  df <- match_from_xls_dict(df, xls_filename)
-  df <- df[sub$new]
+  df <- timci::match_from_filtered_xls_dict(df,
+                                            "hospit_dict.xlsx",
+                                            is_deidentified = TRUE,
+                                            country = Sys.getenv('TIMCI_COUNTRY'))
+  df
 
 }
 

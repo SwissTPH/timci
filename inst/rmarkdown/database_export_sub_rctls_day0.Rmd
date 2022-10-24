@@ -420,12 +420,43 @@ write(" o Clinical measurements", stderr())
 write("   o Temperature", stderr())
 ```
 
-```{r, results='asis', eval=day0_is_not_null}
-dataMaid::visualize(day0_data$temp_meas)
+```{r, results='asis', eval=day0_is_not_null&!is_india}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = temp_meas)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 0.2) +
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 37.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1)
 ```
 
-```{r, results='asis', eval=day0_is_not_null}
+```{r, results='asis', eval=day0_is_not_null&!is_india}
 dataMaid::identifyOutliers(day0_data$temp_meas,
+                           nMax = 50)
+```
+
+```{r, results='asis', eval=day0_is_not_null&is_india}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = temp_meas_farenheit)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 0.2) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 99.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1)
+```
+
+```{r, results='asis', eval=day0_is_not_null&is_india}
+dataMaid::identifyOutliers(day0_data$temp_meas_farenheit,
                            nMax = 50)
 ```
 
@@ -436,12 +467,19 @@ write("   o Pulse oximetry", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
-dataMaid::visualize(day0_data$spo2_meas1)
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = spo2_meas1)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 1) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666")
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::identifyOutliers(day0_data$spo2_meas1,
-                           nMax = 50)
+                           nMax = 100)
 ```
 
 #### Respiratory rate\n\n
@@ -451,12 +489,19 @@ write("   o Respiratory rate", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
-dataMaid::visualize(day0_data$rr_meas)
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = rr_meas)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 1) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666")
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::identifyOutliers(day0_data$rr_meas,
-                           nMax = 50)
+                           nMax = 150)
 ```
 
 ### Data cleaning summary\n\n
@@ -528,6 +573,41 @@ timci::dataset_export(study_data,
 ```
 
 ### Data summary statistics\n\n
+
+```{r}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         form_version,
+                         fid,
+                         who_age_ctg,
+                         district,
+                         facility,
+                         dob_knwn,
+                         age_mo_knwn,
+                         enrolled,
+                         mother_education),
+                       factor)) %>%
+  dplyr::mutate(across(c(date_visit), ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
+```
+
+```{r, eval = (is_tanzania | is_kenya | is_senegal)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(living_with_cg),
+                       factor))
+```
+
+```{r, eval = (is_tanzania)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(district_ra,
+                         location_lvl1,
+                         location_lvl2,
+                         location_lvl3,
+                         location_lvl4),
+                       factor))
+```
 
 ```{r, results='asis'}
 skimr::skim(day0_data)
