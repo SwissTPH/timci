@@ -140,6 +140,7 @@ locked_hospit_data <- locked_hospit_data %>%
                          sys_submit_id,
                          form_version,
                          rhf_id,
+                         rhf_name,
                          sex,
                          sex_hf,
                          dob_knwn_hf,
@@ -154,6 +155,7 @@ locked_hospit_data <- locked_hospit_data %>%
                          dx_admission,
                          adm_outcome,
                          dx_discharge,
+                         o2_duration,
                          death_cause,
                          facility_trans),
                        factor)) %>%
@@ -161,12 +163,17 @@ locked_hospit_data <- locked_hospit_data %>%
                          rr_meas),
                        as.numeric)) %>% 
   dplyr::mutate(across(c(date,
+                         date_visit_rhf,
+                         date_discharge,
                          date_death),
                        ~format(as.Date(.), "%Y-%m-%d"))) %>% 
   dplyr::mutate(across(c(start,
                          end),
                        ~format(as.Date(.), "%Y-%m-%d %H:%M:%S"))) %>%
-  dplyr::mutate(across(c(facility_trans_oth),
+  dplyr::mutate(across(c(dx_admission_oth,
+                         dx_discharge_oth,
+                         facility_trans_oth,
+                         ward_oth),
                        as.character)) 
 ```
 

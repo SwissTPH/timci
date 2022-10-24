@@ -265,9 +265,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     utils::unzip(raw_facility_zip, exdir = t)
     fs::dir_ls(t)
     if (!is.null(col_specs)) {
-      raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")), col_types = col_specs))
+      raw_odk_data <- readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")),
+                                      col_types = col_specs)
     } else{
-      raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv"))))
+      raw_odk_data <- readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")))
     }
     fn <- timci::export_df2xlsx(raw_odk_data,
                                 mdb_dir,

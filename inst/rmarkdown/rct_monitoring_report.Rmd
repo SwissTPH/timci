@@ -64,6 +64,7 @@ is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
 is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
 is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
 is_rct <- is_tanzania | is_india
+is_ls <- is_kenya | is_senegal
 ```
 
 ```{r}
@@ -1249,6 +1250,39 @@ if (!is.null(pii)) {
 }
 ```
 
+```{r, results="asis"}
+if (!is.null(pii)) {
+  if (nrow(pii) > 0) {
+    
+    phone_data <- data.frame(pii) %>%
+      filter(!is.na(phone_nb)) %>% 
+      dplyr::group_by(facility_name)
+    
+    out1 <- phone_data %>%
+      dplyr::summarise(All = dplyr::n())
+    
+    out2 <- phone_data %>% 
+      dplyr::summarise(Unique = dplyr::n_distinct(phone_nb))
+      
+    out <- merge (out1,
+                  out2,
+                  by = 0,
+                  all.x = TRUE) %>% 
+      dplyr::mutate(Perc = round(100*Unique/All, digits = 1))
+    
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "",
+                      caption = "Number of unique phone numbers by facility") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+    
+  }
+}
+```
+
 ```{r, eval=is_tanzania, results="asis"}
 if (!is.null(pii)) {
   if (nrow(pii) > 0) {
@@ -1395,7 +1429,7 @@ out %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, eval = (nrow(baseline_data)>0), results = "asis"}
+```{r, eval = (nrow(baseline_data)>0)&!is_india, results = "asis"}
 summary_statistics <- list(
   "Summary" = list(
     "From caregiver" = ~qwraps2::n_perc(danger_signs == 1, prec),
@@ -1431,7 +1465,8 @@ out %>%
   kableExtra::kbl(booktabs = TRUE,
                   longtable = TRUE,
                   align = c("c", "c", "c", "c"),
-                  linesep = "") %>% 
+                  linesep = "",
+                  caption = "Respiratory symptoms") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1454,7 +1489,7 @@ out %>%
                   longtable = TRUE,
                   linesep = "",
                   align = c("c", "c", "c", "c", "c"),
-                  caption = "Other symptoms") %>% 
+                  caption = "Non-respiratory major symptoms") %>% 
   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -1496,89 +1531,90 @@ if (is_senegal) {
 }
 ```
 
-```{r, results="asis"}
-if (is_senegal) {
-  cat(paste0("### 1 - 59 jours\n\n"))
-} else {
-  cat(paste0("### 1 - 59 days\n\n"))
-}
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_ls}
+all <- data.frame(post_intervention_data)
+```
+
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_rct}
+all <- data.frame(baseline_data)
 ```
 
 ```{r, results="asis", eval=(nrow(baseline_data) > 0)}
-if (is_kenya | is_senegal) {
-  all <- data.frame(post_intervention_data) %>%
-    filter(yg_infant == 1)
-} else {
-  all <- data.frame(baseline_data) %>%
-    filter(yg_infant == 1)
-}
-if (is_tanzania) {
-  all <- all %>%
-    merge(y = facilities[,c("facility_id", "intervention")],
-          by.x = 'fid',
-          by.y = 'facility_id',
-          all.x = TRUE) %>%
-    filter(intervention == 1 | intervention == 2)
-}
+all <- all %>%
+    dplyr::mutate(spo2_yg_infant = ifelse(yg_infant == 1, spo2, NA)) %>%
+    dplyr::mutate(spo2_older_children = ifelse(yg_infant == 0, spo2, NA))
+```
 
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_rct}
+all <- all %>%
+  merge(y = facilities[,c("facility_id", "intervention")],
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE) %>%
+  filter(intervention == 1 | intervention == 2)
+```
+
+```{r, results="asis", eval=(nrow(baseline_data) > 0)}
 pox_statistics <- list(
   "Facility" = list(
-    "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
+    "SpO2 (1-59 days)" = ~qwraps2::n_perc(spo2_yg_infant == 1,
+                                     prec,
+                                     na_rm = TRUE),
+    "SpO2 (2-59 months)" = ~qwraps2::n_perc(spo2_older_children == 1,
+                                     prec,
+                                     na_rm = TRUE),
+    "Temperature" = ~qwraps2::n_perc(temp == 1,
+                                     prec,
+                                     na_rm = TRUE)
     )
 )
-out <- format_summary_table(all, pox_statistics, facility_name)
+
+out <- format_summary_table(all,
+                            pox_statistics,
+                            facility_name)
+
 out %>% 
   kableExtra::kbl(booktabs = TRUE,
-                  longtable = TRUE,
-                  linesep = "") %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+                  longtable = TRUE, 
+                  linesep = "",
+                  caption = "Pulse oximetry uptake") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE) %>%
   kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
-```{r, results="asis"}
-if (is_senegal) {
-  cat(paste0("### 2-59 months\n\n"))
-} else {
-  cat(paste0("### 2-59 months\n\n"))
-}
-```
-
-Kenya and Senegal: intervention phase only
-
-```{r, results="asis", eval=(nrow(baseline_data) > 0)}
-if (is_kenya | is_senegal) {
-  all <- data.frame(post_intervention_data) %>%
-    filter(yg_infant == 0)
-} else {
-  all <- data.frame(baseline_data) %>%
-    filter(yg_infant == 0)
-}
-if (is_tanzania) {
-  all <- all %>%
-    merge(y = facilities[,c("facility_id", "intervention")],
-          by.x = 'fid',
-          by.y = 'facility_id',
-          all.x = TRUE) %>%
-    filter(intervention == 1 | intervention == 2)
-}
-
+```{r, results="asis", eval=(nrow(baseline_data) > 0)&is_tanzania}
 pox_statistics <- list(
   "Facility" = list(
-    "Reported" = ~qwraps2::n_perc(spo2 == 1, prec)
+    "Recorded" = ~qwraps2::n_perc(spo2 == 1,
+                                     prec,
+                                     na_rm = TRUE),
+    "Reported by caregiver" = ~qwraps2::n_perc(spo2_cg == 1,
+                                     prec,
+                                     na_rm = TRUE)
     )
 )
+
+out <- format_summary_table(all,
+                            pox_statistics,
+                            facility_name)
+
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE, 
+                  linesep = "",
+                  caption = "Pulse oximetry uptake") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"),
+                            font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
+```
+
+```{r}
 pox_values <- split(all$spo2_meas1, all$facility_name)
-out <- format_summary_table(all, pox_statistics, facility_name) 
-out %>% 
-  kableExtra::kbl(booktabs = TRUE,
-                  longtable = TRUE,
-                  linesep = "") %>% 
-  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-  kableExtra::row_spec(0, bold = TRUE) %>%
-  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```
 
 \clearpage
@@ -1592,23 +1628,15 @@ all$referral_cg <- ifelse(!is.na(all$referral_cg), all$referral_cg, 100)
 all$referral_hf <- ifelse(!is.na(all$referral_hf), all$referral_hf, 100)
 ```
 
-```{r header-referrals-cg, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Rapporté par l'accompagnant à la sortie de la consultation\n\n"))
-} else {
-  cat(paste0("### Reported by the caregiver at the consultation exit\n\n"))
-}
-```
-
 ```{r, results = "asis"}
 if (nrow(baseline_data) > 0) {
   summary_statistics <- list(
     "Facility" = list(
-      "Yes" = ~qwraps2::n_perc(referral_cg == 1, prec),
-      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
-      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, prec),
-      "Declined" = ~qwraps2::n_perc(referral_cg == 97, prec),
-      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
+      "Caregiver" = ~qwraps2::n_perc(referral_cg == 1, prec),
+      "Registry" = ~qwraps2::n_perc(referral_hf == 1, prec),
+      "Either" = ~qwraps2::n_perc((referral_cg == 1) | (referral_hf == 1), prec),
+      "Both" = ~qwraps2::n_perc((referral_cg == 1) & (referral_hf == 1), prec),
+      "Unknown (caregiver)" = ~qwraps2::n_perc(referral_cg == 98 | referral_cg == 97 | referral_cg == 100, prec)
       )
   )
   out <- format_summary_table(all, summary_statistics, facility_name) 
@@ -1621,38 +1649,18 @@ if (nrow(baseline_data) > 0) {
     kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
                                               "red",
                                               "black")) %>%
+    kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
+    kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
+    kableExtra::column_spec(5, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
     kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-  
 }
-```
-
-```{r header-referrals-hf, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("### Rapporté dans le registre du poste\n\n"))
-} else {
-  cat(paste0("### Reported in the facility registry\n\n"))
-}
-```
-
-```{r, results = "asis"}
-if (nrow(baseline_data) > 0) {
-  summary_statistics <- list(
-    "Facility" = list(
-      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec),
-      "No" = ~qwraps2::n_perc(referral_hf == 0, prec)
-      )
-  )
-  out <- format_summary_table(all, summary_statistics, facility_name) 
-  out %>% 
-    kableExtra::kbl(booktabs = TRUE,
-                    longtable = TRUE,
-                    linesep = "") %>% 
-    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-    kableExtra::row_spec(0, bold = TRUE) %>%
-    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-} 
 ```
 
 ```{r, fig.height = figsize}
@@ -1733,22 +1741,14 @@ all$referral_hf <- ifelse(!is.na(all$referral_hf),
 ### Referral
 
 ```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("#### Rapporté par l'accompagnant à la sortie de la consultation\n\n"))
-} else {
-  cat(paste0("#### Reported by the caregiver at the consultation exit\n\n"))
-}
-```
-
-```{r, results = "asis"}
 if (nrow(baseline_data) > 0) {
   summary_statistics <- list(
     "Facility" = list(
-      "Yes" = ~qwraps2::n_perc(referral_cg == 1, prec),
-      "No" = ~qwraps2::n_perc(referral_cg == 0, prec),
-      "Unknown" = ~qwraps2::n_perc(referral_cg == 98, prec),
-      "Declined" = ~qwraps2::n_perc(referral_cg == 97, prec),
-      "Lost at exit" = ~qwraps2::n_perc(referral_cg == 100, prec)
+      "Caregiver" = ~qwraps2::n_perc(referral_cg == 1, prec),
+      "Registry" = ~qwraps2::n_perc(referral_hf == 1, prec),
+      "Either" = ~qwraps2::n_perc((referral_cg == 1) | (referral_hf == 1), prec),
+      "Both" = ~qwraps2::n_perc((referral_cg == 1) & (referral_hf == 1), prec),
+      "Unknown (caregiver)" = ~qwraps2::n_perc(referral_cg == 98 | referral_cg == 97 | referral_cg == 100, prec)
       )
   )
   out <- format_summary_table(all, summary_statistics, facility_name) 
@@ -1761,38 +1761,18 @@ if (nrow(baseline_data) > 0) {
     kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
                                               "red",
                                               "black")) %>%
+    kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
+    kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
+    kableExtra::column_spec(5, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) >= 10,
+                                              "red",
+                                              "black")) %>%
     kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
     kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-  
 }
-```
-
-```{r, results = "asis"}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  cat(paste0("#### Rapporté dans le registre du poste\n\n"))
-} else {
-  cat(paste0("#### Reported in the facility registry\n\n"))
-}
-```
-
-```{r, results = "asis"}
-if (nrow(baseline_data) > 0) {
-  summary_statistics <- list(
-    "Facility" = list(
-      "Yes" = ~qwraps2::n_perc(referral_hf == 1, prec),
-      "No" = ~qwraps2::n_perc(referral_hf == 0, prec)
-      )
-  )
-  out <- format_summary_table(all, summary_statistics, facility_name) 
-  out %>% 
-    kableExtra::kbl(booktabs = TRUE,
-                    longtable = TRUE,
-                    linesep = "") %>% 
-    kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
-    kableExtra::row_spec(0, bold = TRUE) %>%
-    kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
-    kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
-} 
 ```
 
 ```{r day7fu-subsection, child = if (!is.null(raw_day7fu_data) & nrow(raw_day7fu_data) > 0) 'rct_monitoring_report_sub_day7.Rmd'}

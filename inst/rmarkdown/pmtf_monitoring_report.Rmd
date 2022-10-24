@@ -48,6 +48,15 @@ striped_row_bg <- "gray!10"
 total_row_bg2 <- "gray"
 ```
 
+```{r}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
+is_ls <- is_kenya | is_senegal
+```
+
 \fancypagestyle{plain}{\pagestyle{fancy}}
 \pagestyle{fancy}
 \fancyhf{}

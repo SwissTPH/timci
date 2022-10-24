@@ -32,7 +32,9 @@ if (!is.null(raw_day28fu_data)) {
     )
     out <- format_summary_table(all, day28_call_ss, district)
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -119,7 +121,9 @@ if (!is.null(day28fu_data)) {
       )
     out <- format_summary_table(all, day28_outcome_ss, facility_name) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
@@ -129,6 +133,42 @@ if (!is.null(day28fu_data)) {
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
       kableExtra::footnote(general = "Mean and inner quartile range (IQR) are represented by the format \\\\textit{median (Q1, Q3)}.",
                            escape = FALSE)
+  }
+}
+```
+
+```{r, results = "asis"}
+if (!is.null(day28fu_data)) {
+  if (nrow(day28fu_data) > 0) {
+    
+    all <- data.frame(succ_day28fu_data)
+    all$cure_day28[is.na(all$cure_day28)] <- 0
+    all$all_hf_visit_day28 <- ifelse(all$status_day28 == 2 | (all$status_day28 != 2 & all$hf_visit_day28 == 1 & all$hf_visit_type == hospit_value), 1, 0)
+    all$admission[is.na(all$admission)] <- 0
+    
+    day28_outcome_ss <- list(
+      "summary" = list(
+        "Cure" = ~qwraps2::n_perc(cure_day28 == 1 | cure_day28 == 2, prec, na_rm = TRUE),
+        "Death" = ~qwraps2::n_perc(status_day28 == 3, prec, na_rm = TRUE),
+        "Higher level visit" = ~qwraps2::n_perc(all_hf_visit_day28 == 1, prec, na_rm = TRUE),
+        "Admission" = ~qwraps2::n_perc(admission == 1, prec, na_rm = TRUE)
+        )
+      )
+    out <- format_summary_table(all, day28_outcome_ss, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      # kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
+      #                                           "red",
+      #                                           "black")) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
   }
 }
 ```

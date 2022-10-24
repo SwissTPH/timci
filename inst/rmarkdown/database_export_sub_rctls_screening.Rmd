@@ -44,6 +44,39 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
+### Facility IDs from other TIMCI studies [context check]
+
+```{r}
+write(" o Facility IDs from other facilities (India only)", stderr())
+```
+
+`r if ( !is_india ) { paste0('This check is only implemented for India.\n\n') }`
+
+```{r}
+qc_df <- NULL
+n_other_fid_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, eval=facility_data_is_not_null&is_india, results='asis'}
+qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
+qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
+qc_type <- "other_study_fids"
+df <- facility_data
+qc_text <- "facility IDs corresponding to another TIMCI study"
+qc_idx <- qc_screening_other_fids
+qc_export_label <- "screening_other_fids"
+qc_export_description <- "the facility ID correspond to another TIMCI study"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_other_fid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
 ### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
 
 ```{r}
@@ -69,7 +102,7 @@ n_ineligible_cg_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Repeat visits incorrectly recorded as new enrolments [compliance checks]
+### Repeat visits incorrectly recorded as new enrolments [compliance check]
 
 ```{r}
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
@@ -77,7 +110,7 @@ write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 
 `r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']\n\n') }`
 
-```{r, eval=facility_data_is_not_null&(is_tanzania), results='asis'}
+```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who come back within 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with their participant ID, this creates duplicates in the database."
 qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
 qc_type <- "duplicates_check_pii"
@@ -156,8 +189,8 @@ cleaned_df <- NULL
 ```
 
 ```{r, results='asis'}
-qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date. If the submission date is anterior to the creation date in the database."
-qc_rule <- "Incorrect creation date is replaced by the submission date"
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
+qc_rule <- "If the submission date is anterior to the creation date in the database, the (incorrect) creation date is replaced by the submission date"
 qc_type <- "date_discrepancy"
 df <- facility_data
 col_date1 <- "submission_date"
@@ -218,9 +251,11 @@ n_cleaned_screening_records <- nrow(screening_data)
 ```{r}
 timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
+                                     n_other_fid_records,
                                      n_after_lockdate_records,
                                      n_ineligible_cg_records,
                                      n_repeat_edit_records,
+                                     n_incorrect_date_setup_records,
                                      n_cleaned_screening_records)
 ```
 

@@ -61,7 +61,7 @@ all <- all %>%
   dplyr::mutate(quarter = dplyr::case_when(
     as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) ~ "Q1",
     as.Date(date) > as.Date(Sys.getenv("TIMCI_SPA_Q1_END_DATE")) & as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q2",
-    as.Date(date) <= as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q3")
+    as.Date(date) > as.Date(Sys.getenv("TIMCI_SPA_Q2_END_DATE")) ~ "Q3")
   )
 ```
 

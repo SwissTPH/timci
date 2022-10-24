@@ -176,3 +176,39 @@ allocate_screening_facility2 <- function(facility_data,
   list(qc_df, out)
 
 }
+
+#' Remove facilities in which data collection is conducted for another study that the current study (India-specific)
+#'
+#' @param facility_data dataframe containing the processed facility data
+#' @param all_facilities dataframe containing the list of research facilities and their characteristics
+#' @param excluded_facilities dataframe containing the list of research facilities to be excluded and their characteristics
+#'
+#' @export
+#' @import dplyr
+
+remove_facilities_for_other_studies <- function(facility_data,
+                                                all_facilities,
+                                                excluded_facilities) {
+
+  # Extract the main device ID used in a facility at a given date
+  ddf <- extract_daily_facility_for_deviceid(facility_data,
+                                             all_facilities) %>%
+    dplyr::rename(fid_from_daily_device = fid,
+                  facility_name_from_daily_device = facility_name)
+
+  out <- facility_data %>%
+    merge(y = ddf[, c("date_visit", "device_id", "fid_from_daily_device")],
+          by = c('date_visit', 'device_id'),
+          all.x = TRUE)
+
+  # Remove all data that originates from facilities used in other TIMCI studies but not in the current study
+  qc_df <- out[out$fid_from_daily_device %in% excluded_facilities$facility_id,]
+  out <- out[!out$fid_from_daily_device %in% excluded_facilities$facility_id,]
+
+  drop <- c("fid_from_daily_device")
+
+  out <- out[,!(names(out) %in% drop)]
+
+  list(qc_df, out)
+
+}

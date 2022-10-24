@@ -1,0 +1,92 @@
+```{r}
+facilities <- params$research_facilities
+```
+
+```{r, eval=is_senegal}
+facilities <- facilities[, c("lvl2",
+                             "facility_id",
+                             "facility_name",
+                             "training_date",
+                             "rollout_date")]
+```
+
+```{r, eval=is_kenya}
+facilities <- facilities[, c("lvl2",
+                             "facility_id",
+                             "facility_name",
+                             "type",
+                             "training_date",
+                             "rollout_date")]
+```
+
+```{r, eval=is_tanzania}
+facilities <- facilities[, c("lvl2",
+                             "facility_id",
+                             "facility_name",
+                             "type",
+                             "intervention")]
+```
+
+```{r, eval=is_india}
+facilities <- facilities[, c("lvl2",
+                             "facility_id",
+                             "facility_name",
+                             "type",
+                             "intervention",
+                             "include")]
+all_facilities <- facilities
+excluded_facilities <- facilities %>%
+  dplyr::filter(include == 0) %>% 
+  dplyr::select(-include)
+facilities <- facilities %>%
+  dplyr::filter(include == 1) %>% 
+  dplyr::select(-include)
+```
+
+```{r}
+facilities <- facilities[!duplicated(facilities$facility_id), ]
+facility_nb <- nrow(facilities)
+```
+
+```{r, eval=is_senegal}
+facility_disp <- facilities %>%
+    dplyr::arrange(lvl2) %>%
+    dplyr::rename('District sanitaire' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Poste de santé' = 'facility_name',
+                  "Fin pré-intervention" = 'training_date',
+                  "Début post-intervention" = 'rollout_date')
+```
+
+```{r, eval=is_kenya}
+facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('County' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type',
+                  "Baseline end" = 'training_date',
+                  "Roll-out date" = 'rollout_date')
+```
+
+```{r, eval=is_rct}
+facility_disp <- facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('District' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+```
+
+```{r, eval=is_india}
+excluded_facility_disp <- excluded_facilities %>%
+    dplyr::arrange(lvl2, type) %>%
+    dplyr::rename('District' = 'lvl2',
+                  'ID' = 'facility_id',
+                  'Facility' = 'facility_name',
+                  'Type' = 'type')
+```
+
+```{r}
+research_facilities <- facilities
+```

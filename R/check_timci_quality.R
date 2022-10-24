@@ -282,8 +282,17 @@ identify_repeat_duplicate <- function(df,
 
     qc_df <- df %>%
       dplyr::filter(enrolled == 1) %>%
-      dplyr::arrange(desc(date_visit)) %>%
-      dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+      dplyr::arrange(desc(date_visit))
+
+    if (Sys.getenv("TIMCI_COUNTRY") == "Tanzania") {
+      qc_df <- qc_df %>%
+        dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' ')))
+    } else{
+      qc_df <- qc_df %>%
+        dplyr::mutate(name = tolower(paste(fs_name, ls_name, sep = ' ')))
+    }
+
+    qc_df <- qc_df %>%
       dplyr::rename(id = !!dplyr::enquo(col_id),
                     date = date_visit) %>%
       dplyr::group_by(id) %>%
@@ -307,7 +316,6 @@ identify_repeat_duplicate <- function(df,
       } else {
         qc_df <- NULL
       }
-
 
   }
 

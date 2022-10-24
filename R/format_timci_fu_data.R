@@ -9,11 +9,11 @@ format_day7_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("n1_o3_1a",
-                 "n1_o3_1b",
-                 "n1_o3_2b",
-                 "n1-o3_1a")
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  multi_cols = c("n1-o3_1a",
+                 "n1-o3_1b",
+                 "n1-o3_2b",
+                 "n1-o3_3")
+  df <- timci::format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary
   day7_df <- timci::match_from_filtered_xls_dict(df,
@@ -57,10 +57,7 @@ format_day28_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("n1_o3_1a",
-                 "n1_o3_1b",
-                 "n1_o3_2b",
-                 "n1-o3_1a")
+  multi_cols = c("n1-o3_1a")
   df <- format_multiselect_asws(df, multi_cols, sep)
 
   # Match column names with names from dictionary

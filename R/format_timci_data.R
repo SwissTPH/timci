@@ -261,7 +261,9 @@ process_facility_data <- function(df,
                   "crfs-t09a1-i2_1cga1", # Kenya
                   "crfs-t09a2-i2_1a1", #Kenya
                   "crfs-t09a1-i2_1a1_cg", # Tanzania
-                  "crfs-t09a1-t09a2-i2_1a1" #Tanzania
+                  "crfs-t09a1-t09a2-i2_1a1", #Tanzania
+                  "crfs-t09a1-imcirx",
+                  "crfs-t09a2-imcirx_hf"
                   )
 
   df <- format_multiselect_asws(df, multi_cols, sep)
