@@ -36,7 +36,14 @@ For Windows users, it is smoother to install 1) Rtools, 2) R and 3) RStudio in t
 ### Prerequisites 
 
 #### ruODK
-To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
+To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please use the following forked branch and not the official package (some functions needed by the `timci`package are only available in this branch and not in the official package)
+
+```r
+library(devtools)
+devtools::install_github("thaliehln/ruODK", ref="test")
+```
+
+Otherwise, in general you would have to follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install) to install `ruODK`.
 
 ##### ruODK installation difficulties
 When trying to upgrade RuODK, if you encounter difficulties to upgrade some of the dependencies (e.g., `sf` package), you can switch `dependencies` and `build_vignettes` from `TRUE` to `FALSE`.
@@ -91,6 +98,14 @@ remotes::install_github("datawookie/emayili")
 From 30 May 2022 Google no longer supports signing in to Google Accounts using only usernames and passwords. Guidance on how to create and use an application password that can be used in `emayili` is available in the following post:
 [{emayili} Updated Gmail Authentication](https://datawookie.dev/blog/2022/03/updated-gmail-authentication/).
 
+#### webshot
+
+To be able to render HTML widgets (e.g., diagrams generated using the package DiagrammeR) as screenshots in a Word or a PDF documents generated using Rmarkdown, you need to install the webshot package and download and install PhantomJS. More explanation available [here](https://bookdown.org/yihui/bookdown/html-widgets.html).
+```r
+install.packages("webshot")
+webshot::install_phantomjs()
+```
+
 #### Other R dependencies
 
 You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`, `finalfit`, `webshot`, `DiagrammeR`.
@@ -116,12 +131,6 @@ install.packages("rmarkdown")
 install.packages("kableExtra")
 install.packages("finalfit")
 install.packages("DiagrammeR")
-```
-
-To be able to render HTML widgets (e.g., diagrams generated using the package DiagrammeR) as screenshots in a Word or a PDF documents generated using Rmarkdown, you need to install the webshot package and download and install PhantomJS. More explanation available [here](https://bookdown.org/yihui/bookdown/html-widgets.html).
-```r
-install.packages("webshot")
-webshot::install_phantomjs()
 ```
 
 ### Installation of timci from GitHub
