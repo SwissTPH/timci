@@ -33,10 +33,17 @@ timci::dataset_export(tf_data[[1]],
                       "Time-flow step data")
 ```
 
+```{r, results='asis'}
+timci::dataset_export(tf_data[[1]],
+                      "05b",
+                      "timci_timeflow_steps",
+                      locked_db_dir,
+                      "Time-flow step data")
+```
+
 ```{r}
 i <- length(tf_data)
 ```
-
 
 ```{r time-flow-export-audit, results = 'asis', eval=!is.null(tf_data[[i]])}
 timci::dataset_export(tf_data[[i]],
