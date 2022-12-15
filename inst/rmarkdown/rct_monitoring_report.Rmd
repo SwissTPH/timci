@@ -1255,13 +1255,14 @@ if (!is.null(pii)) {
   if (nrow(pii) > 0) {
     
     phone_data <- data.frame(pii) %>%
-      filter(!is.na(phone_nb)) %>% 
+      filter(!is.na(phone_nb)) %>%
+      dplyr::filter(prev_enrl == 3) %>%
       dplyr::group_by(facility_name)
     
     out1 <- phone_data %>%
       dplyr::summarise(All = dplyr::n())
-    
-    out2 <- phone_data %>% 
+  
+    out2 <- phone_data %>%
       dplyr::summarise(Unique = dplyr::n_distinct(phone_nb))
       
     out <- merge (out1,
@@ -1274,7 +1275,7 @@ if (!is.null(pii)) {
       kableExtra::kbl(booktabs = TRUE,
                       longtable = TRUE,
                       linesep = "",
-                      caption = "Number of unique phone numbers by facility") %>% 
+                      caption = "Unique phone numbers by facility") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
