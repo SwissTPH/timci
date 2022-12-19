@@ -1275,7 +1275,7 @@ if (!is.null(pii)) {
       kableExtra::kbl(booktabs = TRUE,
                       longtable = TRUE,
                       linesep = "",
-                      caption = "Unique phone numbers by facility") %>% 
+                      caption = "Number and percentage of unique phone numbers in first enrolments by facility") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
