@@ -137,7 +137,7 @@ generate_fu_logs <- function(rctls_pid,
   # Load day 28 follow-up data
   raw_day28fu_data <- NULL
   if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania" || Sys.getenv('TIMCI_COUNTRY') == "India") {
-    print("Load day 28 follow-up data")
+    write("Load day 28 follow-up data", stderr())
     if (crf_day28_fid %in% rct_ls_form_list) {
       raw_day28fu_zip <- ruODK::submission_export(local_dir = tempdir(),
                                                   pid = rctls_pid,
@@ -156,7 +156,7 @@ generate_fu_logs <- function(rctls_pid,
   }
 
   # Load widthdrawal data
-  print("Load withdrawal data")
+  write("Load withdrawal data", stderr())
   raw_withdrawal_data <- NULL
   if (wd_fid %in% rct_ls_form_list) {
     raw_withdrawal_zip <- ruODK::submission_export(local_dir = tempdir(),
@@ -176,6 +176,8 @@ generate_fu_logs <- function(rctls_pid,
   #######################
   # Day 7 follow-up log #
   #######################
+
+  write("Generate the Day 7 follow-up log", stderr())
 
   day7fu_dir <- file.path(fu_dir, "day7_log")
   dir.create(day7fu_dir, showWarnings = FALSE)
@@ -411,7 +413,9 @@ generate_fu_log <- function(pii,
     dplyr::arrange(fid, date_visit = as.Date(date_visit, "%Y-%m-%d"))
 
   # Add valid window in export
-  fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on ", fu_log$date_visit, "]")
+  if ( is_not_empty(fu_log) ) {
+    fu_log$date_visit <- paste0("From ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmin, " to ", as.Date(fu_log$'date_visit', "%Y-%m-%d") + vwmax, " [enrolled on ", fu_log$date_visit, "]")
+  }
 
   # Add a first generic row
 

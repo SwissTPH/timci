@@ -45,7 +45,7 @@ output_dir <- params$output_dir
 dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
 ```
 
-```{r}
+```{r setup-parameters}
 is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
 is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
 is_day7fu <- fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')
