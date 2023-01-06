@@ -661,15 +661,16 @@ generate_physical_fu_log_csv <- function(pii,
   # Combine both selections of children in one single log #
   #########################################################
 
-  if (!is.null(fu_log_nophone)) {
-    if (nrow(fu_log_nophone) > 0) {
-      if (!is.null(fu_log_phone)) {
-        fu_log <- dplyr::bind_rows(fu_log_nophone, fu_log_phone)
-      } else{
-        fu_log <- fu_log_nophone
-      }
-    }
-  }
+  #if (!is.null(fu_log_nophone)) {
+   # if (nrow(fu_log_nophone) > 0) {
+    #  if (!is.null(fu_log_phone)) {
+    #    fu_log <- dplyr::bind_rows(fu_log_nophone, fu_log_phone)
+    #  } else{
+     #   fu_log <- fu_log_nophone
+     # }
+   # }
+  #}
+  fu_log <- dplyr::bind_rows(fu_log_nophone,fu_log_phone)
 
   # Order columns
   col_order <- c('fid',
