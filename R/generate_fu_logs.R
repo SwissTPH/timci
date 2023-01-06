@@ -630,8 +630,8 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log_nophone <- fu_log %>%
     dplyr::filter(phone_nb_avail == 0) %>% # Include only children for whom the caregiver did not provide a phone number
     dplyr::filter(min_nophone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
-    fu_log_nophone$population <- if_else(fu_log_nophone >0, "no phone number available", character())
-    fu_log_nophone$type <- if_else(fu_log_nophone >0, "2", character())
+    fu_log_nophone$population <- if_else(nrow(fu_log_nophone) >0, "no phone number available", character())
+    fu_log_nophone$type <- if_else(nrow(fu_log_nophone) >0, "2", character())
 
 
 
@@ -644,8 +644,8 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log_phone <- fu_log %>%
     dplyr::filter(phone_nb_avail == 1 & physical_fu == 1) %>% # Include only children for whom the caregiver provided a phone number and agreed with physical follow-up
     dplyr::filter(min_phone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
-  fu_log_phone$population <- if_else(fu_log_phone >0, "phone number available", character())
-  fu_log_phone$type <- if_else(fu_log_phone >0, "2", character())
+  fu_log_phone$population <- if_else(nrow(fu_log_phone) >0, "phone number available", character())
+  fu_log_phone$type <- if_else(nrow(fu_log_phone) >0, "2", character())
 
   #########################################################
   # Combine both selections of children in one single log #
