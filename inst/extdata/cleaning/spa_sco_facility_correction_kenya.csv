@@ -1,3 +1,11 @@
-old_fid,uuid,new_fid,reason,action
-F0214,uuid:6976fc74-509d-456a-9644-ea8cf251823e,F0204,"RA erroneously entered the wrong Facility code"
-F0214,uuid:a4bb6a35-5610-4e87-90b8-e582eebf189d,F0204,"RA erroneously entered the wrong Facility code"
+old_fid,uuid,new_fid,reason,quarter
+F0214,uuid:6976fc74-509d-456a-9644-ea8cf251823e,F0204,,Q1
+F0214,uuid:a4bb6a35-5610-4e87-90b8-e582eebf189d,F0204,,Q1
+F0192,uuid:09834225-a449-41cc-abab-b651b933a36d,F0197,Q2
+F0192,uuid:97eb59f0-c823-41d1-b623-ece328302bac,F0197,Q2
+F0192,uuid:e243bb43-ea5a-412a-ae56-509215c95ce1,F0197,Q2
+F0192,uuid:f8d19eb5-2399-4561-9b71-014cdef2e9d2,F0197,Q2
+F0192,uuid:8340c6c4-a81d-456f-8307-c743d7e25d65,F0197,Q2
+F0192,uuid:42a1df3a-1b84-44ee-9f2c-4607cf981b0b,F0197,Q2
+F0192,uuid:4bab3a1a-728b-48a0-a12d-b2612600cab8,F0197,Q2
+F0192,uuid:028404c8-ebb5-4846-9d11-7181e5b9047e,F0197,Q2
