@@ -280,7 +280,7 @@ correct_day7_all <- function(df) {
 }
 
 #' Edit incorrect healthcare provider (HCP) IDs in SPA sick child observation entries (TIMCI-specific function)
-#' This function can be used to correct documented HCP ID duplicates, incorrect facility codes or typos
+#' This function can be used to correct documented HCP IDs
 #'
 #' @param df dataframe
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
@@ -289,13 +289,11 @@ correct_day7_all <- function(df) {
 
 correct_spa_sco_hcp_ids <- function(df) {
 
-  csv_filename <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "spa_sco_hcp_correction_kenya.csv"
-  }
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_hcp_correction_kenya.csv",
+                            TRUE ~ "")
 
   out <- list(df, NULL)
-  if (!is.null(csv_filename)) {
+  if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname)
     df <- df %>%
@@ -307,6 +305,42 @@ correct_spa_sco_hcp_ids <- function(df) {
 
     # Remove the column new_child_id from the dataframe
     drop <- c("new_hcp_id")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, edits)
+  }
+  out
+
+}
+
+#' Edit incorrect facility IDs in SPA sick child observation entries (TIMCI-specific function)
+#' This function can be used to correct documented HCP IDs
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_spa_sco_fids <- function(df) {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_facility_correction_kenya.csv",
+                            TRUE ~ "")
+
+  out <- list(df, NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::read_csv(csv_pathname)
+    df <- df %>%
+      merge(edits[, c("old_fid", "uuid", "new_fid")],
+            by.x = c("facility_identification-fcode", "meta-instanceID"),
+            by.y = c("old_fid", "uuid"),
+            all.x = TRUE)
+    df$"facility_identification-fcode" <- ifelse(is.na(df$new_fid),
+                                            df$"facility_identification-fcode",
+                                            df$new_fid)
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_fid")
     df <- df[,!(names(df) %in% drop)]
 
     out <- list(df, edits)
