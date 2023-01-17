@@ -19,6 +19,70 @@ raw_pii <- out[[2]]
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
+### Inconsistent dates
+
+#### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_submission_id`]\n\n
+
+```{r}
+write(" o Non-timely submission", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_submission_id
+qc_export_label <- "nontimely_day0_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission finalisation and transfer" ,
+     ylab="Occurences",
+     main="")
+```
+
+#### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
+
+```{r}
+write(" o Non-timely completion", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_completion_id
+qc_export_label <- "nontimely_day0_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and finalisation" ,
+     ylab="Occurences",
+     main="")
+```
+
 ### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
 
 ```{r}

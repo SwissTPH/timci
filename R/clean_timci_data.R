@@ -336,8 +336,8 @@ correct_spa_sco_fids <- function(df) {
             by.y = c("old_fid", "uuid"),
             all.x = TRUE)
     df$"facility_identification-fcode" <- ifelse(is.na(df$new_fid),
-                                            df$"facility_identification-fcode",
-                                            df$new_fid)
+                                                 df$"facility_identification-fcode",
+                                                 df$new_fid)
 
     # Remove the column new_child_id from the dataframe
     drop <- c("new_fid")
@@ -346,5 +346,24 @@ correct_spa_sco_fids <- function(df) {
     out <- list(df, edits)
   }
   out
+
+}
+
+#' Edit SPA sick child observation data for all errors that were detected by quality checks (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns an edited dataframe with corrections
+#' @import dplyr
+#' @export
+
+correct_spa_sco_all <- function(df) {
+
+  # Edit incorrect HCP IDs
+  df <- timci::correct_spa_sco_hcp_ids(df)[[1]]
+
+  # Edit incorrect facility IDs
+  df <- timci::correct_spa_sco_fids(df)[[1]]
+
+  df
 
 }
