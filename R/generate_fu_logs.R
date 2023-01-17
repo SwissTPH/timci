@@ -630,8 +630,15 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log_nophone <- fu_log %>%
     dplyr::filter(phone_nb_avail == 0) %>% # Include only children for whom the caregiver did not provide a phone number
     dplyr::filter(min_nophone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
-  fu_log_nophone$population <- "no phone number available"
-  fu_log_nophone$type <- "2"
+    if (nrow(fu_log_nophone)){
+      fu_log_nophone$population <- "no phone number available"
+      fu_log_nophone$type <- "2"
+    } else {
+      fu_log_nophone$population <- character()
+      fu_log_nophone$type <- character()
+    }
+
+
 
   #######################################################################################################
   # Select children for whom the caregiver provided a phone number and agreed with a physical follow-up #
@@ -642,22 +649,28 @@ generate_physical_fu_log_csv <- function(pii,
   fu_log_phone <- fu_log %>%
     dplyr::filter(phone_nb_avail == 1 & physical_fu == 1) %>% # Include only children for whom the caregiver provided a phone number and agreed with physical follow-up
     dplyr::filter(min_phone_date <= Sys.Date() & max_date >= Sys.Date()) # Exclude children who are outside of the physical follow-up window period
-  fu_log_phone$population <- "phone number available"
-  fu_log_phone$type <- "2"
+  if (nrow(fu_log_phone)) {
+    fu_log_phone$population <- "phone number available"
+    fu_log_phone$type <- "2"
+  } else {
+    fu_log_phone$population <- character()
+    fu_log_phone$type <- character()
+  }
 
   #########################################################
   # Combine both selections of children in one single log #
   #########################################################
 
-  if (!is.null(fu_log_nophone)) {
-    if (nrow(fu_log_nophone) > 0) {
-      if (!is.null(fu_log_phone)) {
-        fu_log <- dplyr::bind_rows(fu_log_nophone, fu_log_phone)
-      } else{
-        fu_log <- fu_log_nophone
-      }
-    }
-  }
+  #if (!is.null(fu_log_nophone)) {
+   # if (nrow(fu_log_nophone) > 0) {
+    #  if (!is.null(fu_log_phone)) {
+    #    fu_log <- dplyr::bind_rows(fu_log_nophone, fu_log_phone)
+    #  } else{
+     #   fu_log <- fu_log_nophone
+     # }
+   # }
+  #}
+  fu_log <- dplyr::bind_rows(fu_log_nophone,fu_log_phone)
 
   # Order columns
   col_order <- c('fid',
