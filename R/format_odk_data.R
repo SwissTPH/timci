@@ -91,6 +91,8 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name,
 #' @param end_date date, data collection end date (optional, by default set to `NULL`)
 #' @param filter OData filter (optional, by default set to `NULL`)
 #' @param col_specs column specifications (optional, by default set to `NULL`)
+#' @param group keep group names (optional, by default set to `TRUE`)
+#' @param split split “select multiple” choices into columns (optional, by default set to `FALSE`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import ruODK
@@ -103,6 +105,8 @@ extract_data_from_odk_server <- function(cpid,
                                          end_date = NULL,
                                          filter = NULL,
                                          col_specs = NULL,
+                                         group = TRUE,
+                                         split = FALSE,
                                          verbose = FALSE) {
 
   df <- NULL
@@ -115,8 +119,8 @@ extract_data_from_odk_server <- function(cpid,
                                         pp = cpp,
                                         filter = filter,
                                         delfields = FALSE,
-                                        group = TRUE,
-                                        split = FALSE,
+                                        group = group,
+                                        split = split,
                                         media = FALSE)
 
     # Extract the XML representation of the form
@@ -180,6 +184,8 @@ extract_additional_data_from_odk_zip <- function(odk_zip,
 #' @param end_date date, data collection end date (optional, by default set to `NULL`)
 #' @param filter OData filter (optional, by default set to `NULL`)
 #' @param col_specs column specifications (optional, by default set to `NULL`)
+#' @param group keep group names (optional, by default set to `TRUE`)
+#' @param split split “select multiple” choices into columns (optional, by default set to `FALSE`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a list of dataframes.
 #' @import ruODK
@@ -187,11 +193,14 @@ extract_additional_data_from_odk_zip <- function(odk_zip,
 
 extract_complex_data_from_odk_server <- function(cpid,
                                                  cpid_forms,
-                                                 cfid, cpp="",
+                                                 cfid,
+                                                 cpp="",
                                                  start_date = NULL,
                                                  end_date = NULL,
                                                  filter = NULL,
                                                  col_specs = NULL,
+                                                 group = TRUE,
+                                                 split = FALSE,
                                                  verbose = FALSE) {
 
   out <- NULL
@@ -204,8 +213,8 @@ extract_complex_data_from_odk_server <- function(cpid,
                                         pp = cpp,
                                         filter = filter,
                                         delfields = FALSE,
-                                        group = TRUE,
-                                        split = FALSE,
+                                        group = group,
+                                        split = split,
                                         media = TRUE)
     # Extract ODK submissions
     df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,

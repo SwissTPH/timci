@@ -259,7 +259,7 @@ load_rctls_data <- function(odkc_project_list,
 
   # Return RCT/LS datasets ---------------------------
   list(facility_data,
-       wfa_data,)
+       wfa_data)
 
 }
 
@@ -467,12 +467,14 @@ load_qual_data <- function(odkc_project_list,
 
     # Load online survey data
     write(formats2h3("Load online survey data"), stderr())
-    kii_interview_data <- extract_data_from_odk_server(cpid = qpid,
+    online_survey_data <- extract_data_from_odk_server(cpid = qpid,
                                                        cpid_forms = qual_form_list,
                                                        cfid = os_fid,
                                                        cpp = qual_pp,
                                                        start_date = qual_start_date,
                                                        end_date = qual_end_date,
+                                                       group = FALSE,
+                                                       split = TRUE,
                                                        verbose = TRUE)
 
   }
@@ -481,7 +483,7 @@ load_qual_data <- function(odkc_project_list,
   list(cgidi_interview_data,
        hcpidi_interview_data,
        kii_interview_data,
-       kii_interview_data,
+       online_survey_data,
        cgidi_invitation_data,
        cgidi_encryption_data)
 

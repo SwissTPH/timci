@@ -10,9 +10,74 @@ out <- timci::format_day7_data(raw_day7fu_data)
 raw_allday7fu_data <- out[[3]]
 n_raw_allday7fu_data_records <- nrow(raw_allday7fu_data)
 raw_successday7fu_data <- out[[1]]
+raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
 ```
 
 There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` database.
+
+### Inconsistent dates
+
+#### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_day7_submission_id`]\n\n
+
+```{r}
+write(" o Inconsistent finalisation and submission", stderr())
+```
+
+```{r, eval=raw_allday7fu_is_not_empty, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_allday7fu_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_day7_submission_id
+qc_export_label <- "nontimely_day7_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission finalisation and transfer" ,
+     ylab="Occurences",
+     main="")
+```
+
+#### Non-timely completion [compliance check `r qc_nontimely_day7_completion_id`]\n\n
+
+```{r}
+write(" o Non-timely completion", stderr())
+```
+
+```{r, eval=raw_allday7fu_is_not_empty, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_allday7fu_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_day7_completion_id
+qc_export_label <- "nontimely_day7_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and finalisation" ,
+     ylab="Occurences",
+     main="")
+```
 
 ### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
 

@@ -132,6 +132,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
     }
     crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+    if (is_ls) {
+      crf_drug_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+    }
 
     # Cost environment variables ---------------------------
     medical_cost_fid <- Sys.getenv("TIMCI_COST_MEDICAL_FID")
@@ -465,21 +468,25 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
         # Load medical cost data
         write(formats2h3("Load medical cost data"), stderr())
-        medical_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
-                                                                  cpid_forms = cost_form_list,
-                                                                  cfid = medical_cost_fid,
-                                                                  start_date = start_date,
-                                                                  end_date = end_date,
-                                                                  verbose = TRUE)
+        medical_cost_data <- timci::extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                         cpid_forms = cost_form_list,
+                                                                         cfid = medical_cost_fid,
+                                                                         start_date = start_date,
+                                                                         end_date = end_date,
+                                                                         group = FALSE,
+                                                                         split = TRUE,
+                                                                         verbose = TRUE)
 
         # Load hospital cost data
         write(formats2h3("Load hospital cost data"), stderr())
-        hospital_cost_data <- extract_complex_data_from_odk_server(cpid = cost_pid,
-                                                                   cpid_forms = cost_form_list,
-                                                                   cfid = hospital_cost_fid,
-                                                                   start_date = start_date,
-                                                                   end_date = end_date,
-                                                                   verbose = TRUE)
+        hospital_cost_data <- timci::extract_complex_data_from_odk_server(cpid = cost_pid,
+                                                                          cpid_forms = cost_form_list,
+                                                                          cfid = hospital_cost_fid,
+                                                                          start_date = start_date,
+                                                                          end_date = end_date,
+                                                                          group = FALSE,
+                                                                          split = TRUE,
+                                                                          verbose = TRUE)
 
       }
     }

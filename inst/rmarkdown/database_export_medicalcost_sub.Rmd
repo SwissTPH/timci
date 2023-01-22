@@ -17,24 +17,95 @@ knitr::opts_chunk$set(echo = FALSE,
 write("Export medical cost data", stderr())
 ```
 
-```{r medical-cost-export, results = 'asis'}
-medical_cost_export_name <- "01a_timci_medical_cost_data"
-if (!is.null(medical_cost_data[[1]])) {
-  fn <- timci::export_df2csvxlsx(medical_cost_data[[1]],
-                                 cost_dir,
-                                 medical_cost_export_name)
-  cat(paste0("* Raw medical cost data are exported in files ", medical_cost_export_name, ".csv/xslx in the ", cost_dir, " folder"))
+```{r}
+kenya_cond <- is_kenya&!is.null(medical_cost_data[[1]])
+
+# Initialise the list with all records
+medical_cost_by_facility_data <- list('All' = medical_cost_data[[1]])
+```
+
+```{r, eval=kenya_cond}
+# Extract list of (unique) facilities from column `facility_code
+facility_id_vector <- medical_cost_data[[1]]$facility_code
+facility_ids <- unique(facility_id_vector[!is.na(facility_id_vector)])
+# Generate a list of data sets filtered by facility
+for ( fid in facility_ids ) {
+  medical_cost_by_facility_data[[fid]] <- medical_cost_data[[1]] %>%
+    dplyr::filter(facility_code == fid)
 }
 ```
 
-```{r medical-cost-export-1, results = 'asis'}
+```{r medical-cost-export, results = 'asis'}
+medical_cost_export_name <- "01a_timci_medical_cost_data"
+if ( !is.null(medical_cost_data[[1]]) ) {
+  fn <- timci::export_df2xlsx(medical_cost_by_facility_data,
+                              cost_dir,
+                              medical_cost_export_name)
+  cat(paste0("* Raw medical cost data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
+}
+```
+
+```{r medical-cost-export-1a, eval=!is_kenya, results = 'asis'}
 medical_cost_export_name <- "01b_timci_medical_cost_repeat1"
 
 if (!is.null(medical_cost_data[[2]])) {
-  fn <- timci::export_df2csvxlsx(medical_cost_data[[2]],
-                                 cost_dir,
-                                 medical_cost_export_name)
-  cat(paste0("* Medical cost repeat 1 data are exported in files ", medical_cost_export_name, ".csv/xslx in the ", cost_dir, " folder"))
+  fn <- timci::export_df2xlsx(medical_cost_data[[2]],
+                              cost_dir,
+                              medical_cost_export_name)
+  cat(paste0("* Medical cost repeat data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
+}
+```
+
+```{r medical-cost-export-1b, eval=is_kenya&!is.null(medical_cost_data[[2]]), results = 'asis'}
+medical_cost_export_name <- "01b_timci_medical_cost_lab_and_imaging_staff"
+
+# Retrieve the facility code from the main cost dataset
+lab_imaging_staff_df <- medical_cost_data[[2]] %>%
+  merge(medical_cost_data[[1]] %>%
+          select(KEY, facility_code),
+        by.x = "PARENT_KEY",
+        by.y = "KEY",
+        all.x = TRUE)
+# Initialise the list with all records
+lab_imaging_staff_by_facility_data <- list('All' = lab_imaging_staff_df)
+# Extract list of (unique) facilities from column `facility_code
+facility_id_vector <- lab_imaging_staff_df$facility_code
+facility_ids <- unique(facility_id_vector[!is.na(facility_id_vector)])
+# Generate a list of data sets filtered by facility
+for ( fid in facility_ids ) {
+  lab_imaging_staff_by_facility_data[[fid]] <- lab_imaging_staff_df %>%
+    dplyr::filter(facility_code == fid)
+}
+fn <- timci::export_df2xlsx(lab_imaging_staff_by_facility_data,
+                            cost_dir,
+                            medical_cost_export_name)
+
+cat(paste0("* Medical cost lab and imaging staff data are exported in file ",
+           medical_cost_export_name,
+           ".xslx in the ",
+           cost_dir,
+           " folder"))
+```
+
+```{r medical-cost-export-2, eval=is_kenya, results = 'asis'}
+medical_cost_export_name <- "01c_timci_medical_cost_health_staff"
+
+if (!is.null(medical_cost_data[[3]])) {
+  fn <- timci::export_df2xlsx(medical_cost_data[[3]],
+                              cost_dir,
+                              medical_cost_export_name)
+  cat(paste0("* Medical cost health staff data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
+}
+```
+
+```{r medical-cost-export-3, eval=is_kenya, results = 'asis'}
+medical_cost_export_name <- "01d_timci_medical_cost_non_health_staff"
+
+if (!is.null(medical_cost_data[[4]])) {
+  fn <- timci::export_df2xlsx(medical_cost_data[[4]],
+                              cost_dir,
+                              medical_cost_export_name)
+  cat(paste0("* Medical cost non-health staff data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 }
 ```
 
@@ -43,9 +114,9 @@ medical_cost_export_name <- "01z_timci_medical_cost_audit"
 i <- length(medical_cost_data)
 
 if (!is.null(medical_cost_data[[i]])) {
-  fn <- timci::export_df2csvxlsx(medical_cost_data[[i]],
-                                 cost_dir,
-                                 medical_cost_export_name)
-  cat(paste0("* Medical cost audit log is exported in files ", medical_cost_export_name, ".csv/xslx in the ", cost_dir, " folder"))
+  fn <- timci::export_df2xlsx(medical_cost_data[[i]],
+                              cost_dir,
+                              medical_cost_export_name)
+  cat(paste0("* Medical cost audit log is exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 }
 ```

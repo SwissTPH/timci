@@ -14,6 +14,8 @@ extract_complex_data_from_odk_server(
   end_date = NULL,
   filter = NULL,
   col_specs = NULL,
+  group = TRUE,
+  split = FALSE,
   verbose = FALSE
 )
 }
@@ -33,6 +35,10 @@ extract_complex_data_from_odk_server(
 \item{filter}{OData filter (optional, by default set to `NULL`)}
 
 \item{col_specs}{column specifications (optional, by default set to `NULL`)}
+
+\item{group}{keep group names (optional, by default set to `TRUE`)}
+
+\item{split}{split “select multiple” choices into columns (optional, by default set to `FALSE`)}
 
 \item{verbose}{boolean, displays more information about the function output}
 }
