@@ -118,27 +118,31 @@ fn <- timci::export_df2xlsx(health_staff_by_facility_data,
 cat(paste0("* Medical cost health staff data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 ```
 
-```{r medical-cost-export-3, eval=is_kenya&!is.null(medical_cost_data[[4]]), results = 'asis'}
+```{r medical-cost-export-3, eval=is_kenya, results = 'asis'}
 medical_cost_export_name <- "01d_timci_medical_cost_non_health_staff"
 
-# Retrieve the facility code from the main cost dataset
-medical_staff_df <- medical_cost_data[[4]] %>%
-  merge(medical_cost_data[[1]] %>%
-          select(KEY,
-                 date,
-                 facility_code),
-        by.x = "PARENT_KEY",
-        by.y = "KEY",
-        all.x = TRUE)
-# Initialise the list with all records
-medical_staff_by_facility_data <- list('All' = medical_staff_df)
-# Extract list of (unique) facilities from column `facility_code
-facility_id_vector <- medical_staff_df$facility_code
-facility_ids <- unique(facility_id_vector[!is.na(facility_id_vector)])
-# Generate a list of data sets filtered by facility
-for ( fid in facility_ids ) {
-  medical_staff_by_facility_data[[fid]] <- medical_staff_df %>%
-    dplyr::filter(facility_code == fid)
+if ( !is.null(medical_cost_data[[4]]) ) {
+  
+  # Retrieve the facility code from the main cost dataset
+  medical_staff_df <- medical_cost_data[[4]] %>%
+    merge(medical_cost_data[[1]] %>%
+            select(KEY,
+                   date,
+                   facility_code),
+          by.x = "PARENT_KEY",
+          by.y = "KEY",
+          all.x = TRUE)
+  # Initialise the list with all records
+  medical_staff_by_facility_data <- list('All' = medical_staff_df)
+  # Extract list of (unique) facilities from column `facility_code
+  facility_id_vector <- medical_staff_df$facility_code
+  facility_ids <- unique(facility_id_vector[!is.na(facility_id_vector)])
+  # Generate a list of data sets filtered by facility
+  for ( fid in facility_ids ) {
+    medical_staff_by_facility_data[[fid]] <- medical_staff_df %>%
+      dplyr::filter(facility_code == fid)
+  }
+  
 }
 
 if (!is.null(medical_cost_data[[4]])) {
@@ -147,6 +151,7 @@ if (!is.null(medical_cost_data[[4]])) {
                               medical_cost_export_name)
   cat(paste0("* Medical cost non-health staff data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 }
+
 ```
 
 ```{r medical-cost-export-audit, results = 'asis'}
