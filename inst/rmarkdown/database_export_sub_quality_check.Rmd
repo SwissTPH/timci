@@ -49,7 +49,9 @@ cleaned_df <- df %>%
 ```{r, eval=(qc_type=="underaged_cg")}
 qc_df <- df[!is.na(df$enrolled), ]
 qc_df <- qc_df[qc_df$enrolled == 1 & qc_df$cg_eligibility == 0, ]
-cleaned_df <- df[!df$uuid %in% qc_df$uuid, ]
+cleaned_df <- df
+cleaned_df$consent[cleaned_df$uuid %in% qc_df$uuid] <- 0
+cleaned_df$enrolled[cleaned_df$uuid %in% qc_df$uuid] <- 0
 ```
 
 ```{r, eval=(qc_type=="ids_outside_lock_range")}
