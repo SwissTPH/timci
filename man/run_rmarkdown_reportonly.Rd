@@ -15,6 +15,8 @@ run_rmarkdown_reportonly(
   participant_zip,
   mdb_dir,
   fu_dir,
+  qc_dir,
+  lock_dir,
   qualcg_dir,
   qualhcp_dir,
   spa_db_dir,
@@ -29,7 +31,9 @@ run_rmarkdown_reportonly(
   qualkii_dir = NULL,
   qualos_dir = NULL,
   sample_size = 1e+05,
-  short = FALSE
+  is_test = FALSE,
+  operational_reports = TRUE,
+  is_pilot = FALSE
 )
 }
 \arguments{
@@ -52,6 +56,10 @@ run_rmarkdown_reportonly(
 \item{mdb_dir}{Path to the output folder for the RCT / LS database exports}
 
 \item{fu_dir}{Path to the output folder for the follow-up exports}
+
+\item{qc_dir}{Path to the output folder that contains the quality check findings}
+
+\item{lock_dir}{Path to the output folder that contains the cleaned datasets}
 
 \item{qualcg_dir}{Path to the output folder for the caregiver in-depth interview exports}
 
@@ -81,7 +89,11 @@ run_rmarkdown_reportonly(
 
 \item{sample_size}{Numeric value, sample size for RCT/LS enrolment}
 
-\item{short}{Short version of the export}
+\item{is_test}{Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)}
+
+\item{operational_reports}{Boolean that enables to generate operational reports (optional, default set to TRUE)}
+
+\item{is_pilot}{Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

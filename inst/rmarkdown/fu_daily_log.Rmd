@@ -15,8 +15,8 @@ params:
   fu_end: 12
   fu_vstart: 7
   fu_vend: 10
-  physicalday7fu_start: 9
-  physicalday7fu_end: 35
+  physicalfu_start: 8
+  physicalfu_end: 14
 output:
   html_document: default
   word_document:
@@ -35,15 +35,27 @@ fu_start <- params$fu_start
 fu_end <- params$fu_end
 fu_vstart <- params$fu_vstart
 fu_vend <- params$fu_vend
-physicalday7fu_start <- params$physicalday7fu_start
-physicalday7fu_end <- params$physicalday7fu_end
+physicalfu_start <- params$physicalfu_start
+physicalfu_end <- params$physicalfu_end
 rctls_pid <- params$rctls_pid
 fu_fid <- params$fu_fid
 output_dir <- params$output_dir
 
 # Create `odk_external_files` folder if it does not exist
 dir.create(file.path(output_dir, "odk_external_files"), showWarnings = FALSE)
+```
 
+```{r setup-parameters}
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_day7fu <- fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')
+is_day7fu_tz <- is_tanzania & is_day7fu
+is_day28fu <- fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')
+is_day28fu_tz <- is_tanzania & is_day28fu
+is_day28fu_up <- is_india & is_day28fu
+```
+
+```{r}
 if (!is.null(params$facility_data)) {
   facility_data <- params$facility_data
   res <- timci::extract_enrolled_participants(facility_data)
@@ -65,16 +77,7 @@ fu <- timci::generate_fu_log_csv(pii,
                                  fu_vend)
 ```
 
-```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
-physicalday7fu <- timci::generate_physical_fu_log_csv(pii,
-                                                      raw_fu_data,
-                                                      physicalday7fu_start,
-                                                      physicalday7fu_end,
-                                                      fu_vstart,
-                                                      fu_vend)
-```
-
-```{r, eval=(fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID'))}
+```{r, eval=is_day28fu_up}
 if (!is.null(raw_oth_fu_data)) {
   if (nrow(raw_oth_fu_data) > 0) {
     # Remove duplicate child ID entries in raw_oth_fu_data based while keeping the most recent date
@@ -82,25 +85,77 @@ if (!is.null(raw_oth_fu_data)) {
     raw_oth_fu_data <- aggregate(date ~ child_id, raw_oth_fu_data, max)
     raw_oth_fu_data <- raw_oth_fu_data %>% rename('a1-pid' = 'child_id')
     # Add date of the day 7 follow-up in the day 28 log, if available
-    fu <- merge(fu,
-                raw_oth_fu_data[, c('a1-pid', 'date')],
-                by.x = 'name',
-                by.y = 'a1-pid',
-                all.x = TRUE) %>%
+    if (nrow(fu) > 0){
+      fu <- merge(fu,
+                  raw_oth_fu_data[, c('a1-pid', 'date')],
+                  by.x = 'name',
+                  by.y = 'a1-pid',
+                  all.x = TRUE) %>%
           dplyr::rename(day7fu = date)
+    }
   }
 }
 ```
 
-```{r}
-if (!is.null(raw_fu_data)) {
-  if (nrow(raw_fu_data) > 0) {
-    failed_fu_data <- timci::format_day7_data(raw_fu_data)[[2]]
-    if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
-      tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day7_unsuccessful_calls")
-    } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
-      tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day28_unsuccessful_calls")
+```{r, eval=is_tanzania}
+physicalfu <- timci::generate_physical_fu_log_csv(pii = pii,
+                                                  fudf = raw_fu_data,
+                                                  wmin_nophone = physicalfu_start,
+                                                  wmin_phone = physicalfu_start,
+                                                  wmax = physicalfu_end,
+                                                  vwmin = fu_vstart,
+                                                  vwmax = fu_vend)
+```
+
+```{r, eval=is_day28fu_tz}
+if (!is.null(raw_oth_fu_data)) {
+  if (nrow(raw_oth_fu_data) > 0) {
+    
+    # Remove duplicate child ID entries in raw_oth_fu_data based while keeping the most recent date
+    raw_oth_fu_data <- raw_oth_fu_data %>%
+      dplyr::rename(child_id = 'a1-pid',
+                    day7_phonenb = 'a1-phonenb_manual') %>%
+      dplyr::group_by(child_id) %>%
+      filter(date == max(date)) %>%
+      dplyr::ungroup() %>%
+      arrange(child_id, is.na(day7_phonenb)) %>% 
+      distinct(child_id, .keep_all = TRUE)  %>% 
+      dplyr::rename('a1-pid' = 'child_id')
+    
+    # Add data from the day 7 follow-up (date, new phone number) in the day 28 log, if available
+    selected_columns <- c('a1-pid', 'date', 'day7_phonenb')
+    if (nrow(fu) > 0){
+      fu <- merge(fu,
+                  raw_oth_fu_data[, selected_columns],
+                  by.x = 'name',
+                  by.y = 'a1-pid',
+                  all.x = TRUE) %>%
+        dplyr::rename(day7fu = date) %>%
+        dplyr::arrange(fid, submitter, enroldate = as.Date(enroldate, "%Y-%m-%d"))
     }
+    
+    # Add data from the day 7 follow-up (date, new phone number) in the day 28 log, if available
+    if (nrow(physicalfu) > 0){
+      physicalfu <- merge(physicalfu,
+                    raw_oth_fu_data[, selected_columns],
+                    by.x = 'name',
+                    by.y = 'a1-pid',
+                    all.x = TRUE) %>%
+        dplyr::rename(day7fu = date) %>%
+        dplyr::arrange(fid, !is.na(day7fu), enroldate = as.Date(enroldate, "%Y-%m-%d"))
+    }
+    
+  }
+}
+```
+
+```{r, eval=!is.null(raw_fu_data)}
+if (nrow(raw_fu_data) > 0) {
+  failed_fu_data <- timci::format_day7_data(raw_fu_data)[[2]]
+  if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
+    tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day7_unsuccessful_calls")
+  } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
+    tmp <- timci::export_df2xlsx(failed_fu_data, output_dir, "day28_unsuccessful_calls")
   }
 }
 ```
@@ -113,11 +168,14 @@ ltfu <- NULL
 ltfu <- timci::generate_ltfu_log(day0_data,
                                  raw_fu_data,
                                  fu_end)
-if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
-  tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
-} else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
-  tmp <- timci::export_df2xlsx(ltfu, output_dir, "day28_lost_to_followup")
-}
+```
+
+```{r, eval=!is.null(raw_fu_data) & is_day7fu}
+tmp <- timci::export_df2xlsx(ltfu, output_dir, "day7_lost_to_followup")
+```
+
+```{r, eval=!is.null(raw_fu_data) & is_day28fu}
+tmp <- timci::export_df2xlsx(ltfu, output_dir, "day28_lost_to_followup")
 ```
 
 ```{r, eval=!is.null(ltfu)}
@@ -135,24 +193,32 @@ pii_cols <- c("child_id",
 ext_ltfu <- merge(ltfu, pii[, pii_cols], by = c("child_id"))
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   tmp <- timci::export_df2xlsx(ext_ltfu, output_dir, "day7_lost_to_followup_incl_pii")
+  tmp <- timci::export_df2xlsx(ext_ltfu %>% filter(is.na(fu_attempts)),
+                               output_dir,
+                               "day7_lost_to_followup_no_attempt_incl_pii")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {
   tmp <- timci::export_df2xlsx(ext_ltfu, output_dir, "day28_lost_to_followup_incl_pii")
 }
 ```
 
-```{r, eval=(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
+```{r, eval=is_day7fu}
 csv_filename <- file.path(output_dir, "odk_external_files", "day7fu.csv")
 write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
 ```
 
-```{r, eval=(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
+```{r, eval=is_day7fu_tz}
 physicalfu_csv_filename <- file.path(output_dir, "odk_external_files", "day7physicalfu.csv")
-write.csv(physicalday7fu, physicalfu_csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
+write.csv(physicalfu, physicalfu_csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
 ```
 
-```{r, eval=(params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID'))}
+```{r, eval=is_day28fu}
 csv_filename <- file.path(output_dir, "odk_external_files", "day28fu.csv")
 write.csv(fu, csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
+```
+
+```{r, eval=is_day28fu_tz}
+physicalfu_csv_filename <- file.path(output_dir, "odk_external_files", "day28physicalfu.csv")
+write.csv(physicalfu, physicalfu_csv_filename, row.names = FALSE, quote = FALSE, fileEncoding = "UTF-8")
 ```
 
 # Upload list of participants on the ODK Central server
@@ -183,9 +249,14 @@ if (fu_fid %in% rct_ls_form_list) {
 ```{r, eval=(fu_fid %in% rct_ls_form_list)}
 form_url <- paste0(ruODK::get_default_url(), "/v1/projects/", rctls_pid, "/forms/", fu_fid)
 # Create a new draft of the form
-draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url)
+draft_response  <- timci::create_odkc_draft_form(ruODK::get_default_un(),
+                                                 ruODK::get_default_pw(),
+                                                 form_url)
 # Upload the new CSV created as a form attachment
-csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, csv_filename)
+csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(),
+                                                         ruODK::get_default_pw(),
+                                                         form_url,
+                                                         csv_filename)
 ```
 
 **`r form_url`**
@@ -196,9 +267,12 @@ csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un()
 
 * Upload the CSV containing the current follow-up log as an attachment to the draft: **`r csv_upload_response$success`**
 
-```{r, eval=(fu_fid %in% rct_ls_form_list)&(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania')&(fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID'))}
+```{r, eval=(fu_fid %in% rct_ls_form_list) & is_tanzania}
 # Upload the new CSV for physical follow-up created as a form attachment
-physicalfu_csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, physicalfu_csv_filename)
+physicalfu_csv_upload_response <- timci::upload_odkc_csv_attachment(ruODK::get_default_un(),
+                                                                    ruODK::get_default_pw(),
+                                                                    form_url,
+                                                                    physicalfu_csv_filename)
 cat(paste0("* Upload the CSV containing the current physical follow-up log as an attachment to the draft: **", physicalfu_csv_upload_response$success, "**"))
 ```
 
@@ -209,7 +283,10 @@ new_version <- as.character(current_version + 0.000000001)
 if (!is.na(encryption_version)) {
   new_version <- paste0(new_version, "[", encryption_version)
 }
-publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(), ruODK::get_default_pw(), form_url, new_version)
+publication_response <- timci::publish_odkc_draft_form(ruODK::get_default_un(),
+                                                       ruODK::get_default_pw(),
+                                                       form_url,
+                                                       new_version)
 ```
 
 * Publish the updated form with version number **`r new_version`**: **`r publication_response$success`**

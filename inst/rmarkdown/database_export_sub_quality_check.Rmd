@@ -1,0 +1,228 @@
+---
+title: "Database export - quality check "
+author: "H. LANGET"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+**Check description:** `r qc_description`
+
+**Action:** `r qc_rule`
+
+```{r}
+qc_df <- NULL
+qc_df2 <- NULL
+cleaned_df <- NULL
+n_detected <- 0
+cleaned_df_status_update <- ""
+```
+
+```{r, eval=(qc_type=="other_study_fids")}
+out <- timci::remove_facilities_for_other_studies(df,
+                                                  all_facilities,
+                                                  excluded_facilities)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="nonvalid_deviceids")}
+out <- timci::allocate_screening_facility2(df,
+                                           research_facilities)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="posterior_to_lockdate")}
+qc_df <- df %>%
+  dplyr::filter(date_visit > as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+cleaned_df <- df %>%
+  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+```
+
+```{r, eval=(qc_type=="underaged_cg")}
+qc_df <- df[!is.na(df$enrolled), ]
+qc_df <- qc_df[qc_df$enrolled == 1 & qc_df$cg_eligibility == 0, ]
+cleaned_df <- df
+cleaned_df$consent[cleaned_df$uuid %in% qc_df$uuid] <- 0
+cleaned_df$enrolled[cleaned_df$uuid %in% qc_df$uuid] <- 0
+```
+
+```{r, eval=(qc_type=="ids_outside_lock_range")}
+out <- timci::identify_ids_outside_lock_range(df = df,
+                                              col_id = idcol,
+                                              day0_df = day0_data,
+                                              start_date = start_date,
+                                              end_date = lock_date)
+qc_df <- out[[1]]
+```
+
+```{r, eval=(qc_type=="nonvalid_ids_no_cleaning")}
+out <- timci::identify_nonvalid_ids(df,
+                                    idcol1,
+                                    refdf,
+                                    idcol2)
+qc_df <- out[[1]]
+```
+
+```{r, eval=(qc_type=="nonvalid_ids")}
+out <- timci::identify_nonvalid_ids(df,
+                                    idcol1,
+                                    refdf,
+                                    idcol2)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="nonvalid_ids2")}
+out <- timci::identify_nonvalid_ids2(df,
+                                     idcol1,
+                                     refdf,
+                                     idcol2,
+                                     col_date,
+                                     lock_date = lock_date)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="date_discrepancy")}
+out <- timci::detect_inconsistent_dates(df,
+                                        col_date_start = col_date1,
+                                        col_date_end = col_date2,
+                                        cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="duplicates")}
+out <- timci::identify_duplicates_by_dates(df,
+                                           col_id,
+                                           col_date,
+                                           cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
+```
+
+```{r, eval=(qc_type=="duplicates_check_pii")}
+out <- timci::identify_repeat_duplicate(df,
+                                        col_id,
+                                        col_date,
+                                        cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="missing_clinical_presentation")}
+qc_df <- timci::detect_missing_clinical_presentation(df)
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="missing_diagnosis")}
+qc_df <- timci::detect_missing_diagnosis(df)
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="missing_referral")}
+qc_df <- timci::detect_missing_referral(df)
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="incomplete_spa_observation")}
+df <- df %>% 
+  rename(child_id = "child_identification-pid",
+         back_from_lab = "child_identification-back_from_lab")
+df1 <- df %>% 
+  dplyr::filter(back_from_lab == 0)
+df2 <- df %>%
+  dplyr::filter(back_from_lab == 1)
+qc_df <- df2[!df2$child_id %in% df1$child_id, ]
+```
+
+```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}
+n_detected <- nrow(qc_df)
+```
+
+```{r, eval=(qc_type=="duplicates")&!is.null(qc_df2)}
+n_detected <- nrow(qc_df2)
+```
+
+**Check output:** The check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
+
+```{r}
+partial_disp <- FALSE
+full_disp <- FALSE
+qc_df_is_not_empty <- timci::is_not_empty(qc_df)
+```
+
+```{r, eval=qc_df_is_not_empty}
+partial_disp <- qc_df_is_not_empty & ( nrow(qc_df) > 10 )
+full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
+cols <- colnames(qc_df)
+if ( length(qc_df) > 5 ) {
+  if ( 'date_visit' %in% cols ) {
+    if ( 'fid' %in% cols ) {
+      kcols <- c("fid", "date_visit", "child_id", "uuid")
+    } else {
+      kcols <- c("date_visit", "child_id", "uuid")
+    }
+    qc_df <- qc_df[kcols]
+  }
+}
+n_cols <- length(qc_df)
+```
+
+```{r, eval=partial_disp, results='asis'}
+qc_df %>%
+  select(1:min(n_cols, 5)) %>%
+  head(5) %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Five first rows")
+```
+
+```{r, eval=partial_disp, results='asis'}
+cat("...")
+```
+
+```{r, eval=partial_disp, results='asis'}
+qc_df %>%
+  select(1:min(n_cols, 5)) %>%
+  tail(5) %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Five last rows")
+```
+
+```{r, eval=full_disp, results='asis'}
+qc_df %>%
+  select(1:min(n_cols, 5)) %>%
+  knitr::kable(row.names = FALSE)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_idx,
+                            label = qc_export_label,
+                            cdir = qc_dir,
+                            description = qc_export_description)
+```
+
+```{r, eval=!is.null(cleaned_df)}
+cleaned_df_status_update <- paste0('After deletion of all the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the ', db_name, ' database.')
+```
+
+`r cleaned_df_status_update`

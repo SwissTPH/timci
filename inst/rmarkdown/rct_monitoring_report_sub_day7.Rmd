@@ -45,7 +45,9 @@ raw_day7fu_data %>%
   dplyr::group_by(week) %>%
   dplyr::tally() %>%
   dplyr::rename('N' = 'n') %>%
-  kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "") %>% 
   kableExtra::kable_styling(latex_options = c("striped", "HOLD_position", "repeat_header"), font_size = table_fs) %>%
   kableExtra::row_spec(0, bold = TRUE)
 ```
@@ -94,7 +96,7 @@ if (!is.null(raw_day7fu_data)) {
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat("## Tentatives d'appel enregistrées")
 } else {
-  cat("## Recorded call attempts")
+  cat("## Recorded attempts")
 }
 ```
 
@@ -107,23 +109,25 @@ day7fu_data <- merge(x = day7fu_data,
                      all = FALSE)
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", eval=!is_tanzania}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all <- data.frame(day7fu_data)
-    all$cg_reached[is.na(all$cg_reached)] <- 0
+    all$cg_ok[is.na(all$cg_ok)] <- 0
     
     day7_call_stats <- list(
       "District" = list(
-        "Successful call" = ~qwraps2::n_perc(call_ok == 1, prec),
-        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec)
+        "Successful phone attempt" = ~qwraps2::n_perc(call_ok == 1, prec, na_rm = TRUE),
+        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
         )
     )
     
     out <- format_summary_table(all, day7_call_stats, facility_name) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -134,24 +138,113 @@ if (!is.null(day7fu_data)) {
 }
 ```
 
-```{r, results = "asis"}
+```{r, results = "asis", eval=is_tanzania}
 if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
-    all$respondent_ok[is.na(all$respondent_ok)] <- 0
-    all$cg_ok[is.na(all$cg_ok)] <- 0
+    all <- data.frame(day7fu_data)
     
     day7_call_stats <- list(
       "District" = list(
-        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec),
-        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec)
+        "Call attempted" = ~qwraps2::n_perc(fu_type == 1, prec, na_rm = TRUE),
+        "Physical attempted" = ~qwraps2::n_perc(fu_type == 2, prec, na_rm = TRUE),
+        "Completed follow-up" = ~qwraps2::n_perc(proceed_day7 == 1, prec, na_rm = TRUE)
         )
     )
     
     out <- format_summary_table(all, day7_call_stats, facility_name) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis", eval=is_india}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+  
+    all$cg_reached[is.na(all$cg_reached)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec, na_rm = TRUE)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis", eval=is_ls}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all$respondent_ok[is.na(all$respondent_ok)] <- 0
+    all$cg_reached[is.na(all$cg_reached)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Caregiver OK" = ~qwraps2::n_perc(cg_ok == 1, prec, na_rm = TRUE),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec, na_rm = TRUE)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
+      kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+      kableExtra::row_spec(0, bold = TRUE) %>%
+      kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+      kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+      kableExtra::footnote(general = "denominator = all Day 7 call attempts that have been recorded.")
+    
+  }
+}
+```
+
+```{r, results = "asis", eval=is_tanzania}
+if (!is.null(day7fu_data)) {
+  if (nrow(day7fu_data) > 0) {
+    
+    all$respondent_ok[is.na(all$respondent_ok)] <- 0
+    all$cg_reached[is.na(all$cg_reached)] <- 0
+    
+    day7_call_stats <- list(
+      "District" = list(
+        "Caregiver reached" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Caregiver OK" = ~qwraps2::n_perc(successful_phone_fu == 1, prec, na_rm = TRUE),
+        "Other OK" = ~qwraps2::n_perc(respondent_ok == 1, prec, na_rm = TRUE)
+        )
+    )
+    
+    out <- format_summary_table(all, day7_call_stats, facility_name) 
+    out %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -190,16 +283,17 @@ if (!is.null(day7fu_data)) {
     
     day7_outcome_ss <- list(
       "summary" = list(
-        "Before day 7" = ~qwraps2::n_perc(days == 6, prec),
-        "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec),
-        "Day 11-12" = ~qwraps2::n_perc(days >= 11 & days <= 12, prec),
-        "Above day 12" = ~qwraps2::n_perc(days > 12, prec),
-        "Average" = ~qwraps2::mean_sd(days, denote_sd = "paren", na_rm = TRUE)
+        "Before day 7" = ~qwraps2::n_perc(days <= 6, prec, na_rm = TRUE),
+        "Day 7-10" = ~qwraps2::n_perc(days >= 7 & days <= 10, prec, na_rm = TRUE),
+        "Above day 10" = ~qwraps2::n_perc(days > 10, prec, na_rm = TRUE),
+        "Median" = ~qwraps2::median_iqr(days, na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, day7_outcome_ss, facility_name) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
@@ -207,7 +301,7 @@ if (!is.null(day7fu_data)) {
       #                                           "black")) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
       kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
-      kableExtra::footnote(general = "Mean and standard deviation (SD) are represented by the format \\\\textit{mean (SD)}.",
+      kableExtra::footnote(general = "Mean and inner quartile range (IQR) are represented by the format \\\\textit{median (Q1, Q3)}.",
                            escape = FALSE)
   }
 }
@@ -218,19 +312,23 @@ if (!is.null(day7fu_data)) {
   if (nrow(day7fu_data) > 0) {
     
     all <- data.frame(succ_day7fu_data)
-    
     all$cure_day7[is.na(all$cure_day7)] <- 0
+    all$all_hf_visit_day7 <- ifelse(all$status_day7 == 2 | (all$status_day7 != 2 & all$hf_visit_day7 == 1 & all$hf_visit_type == hospit_value), 1, 0)
+    all$admission[is.na(all$admission)] <- 0
     
     day7_outcome_ss <- list(
       "summary" = list(
-        "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec),
-        "Death" = ~qwraps2::n_perc(status_day7 == 3, prec),
-        "Higher level visit" = ~qwraps2::n_perc(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value), prec)
+        "Cure" = ~qwraps2::n_perc(cure_day7 == 1 | cure_day7 == 2, prec, na_rm = TRUE),
+        "Death" = ~qwraps2::n_perc(status_day7 == 3, prec, na_rm = TRUE),
+        "Higher level visit" = ~qwraps2::n_perc(all_hf_visit_day7 == 1, prec, na_rm = TRUE),
+        "Admission" = ~qwraps2::n_perc(admission == 1, prec, na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, day7_outcome_ss, facility_name) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,

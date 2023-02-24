@@ -1,0 +1,562 @@
+## Day 0 data quality checks\n\n
+
+```{r}
+write("Export Day 0 data and run corresponding quality checks", stderr())
+```
+
+```{r}
+db_name <- "Day 0"
+day0_data <- facility_data %>%
+    dplyr::filter(enrolled == 1)
+n_raw_day0_records <- nrow(day0_data)
+repeat_data <- facility_data %>%
+    dplyr::filter(repeat_consult == 1)
+day0_is_not_null <- !is.null(day0_data)
+day0_is_not_empty <- timci::is_not_empty(day0_data)
+```
+
+Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
+
+### Non-valid enrolling facility IDs [compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
+
+```{r}
+write(" o Non-valid enrolling facility IDs", stderr())
+```
+
+`r if ( is_kenya | is_tanzania ) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
+
+```{r, eval=(day0_is_not_null & (is_kenya | is_tanzania)), results='asis'}
+qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
+qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are detected and manually corrected before Day 7 follow-up is conducted where possible."
+qc_type <- "nonvalid_ids_no_cleaning"
+df <- day0_data
+idcol1 <- "fid"
+refdf <- research_facilities
+idcol2 <- "facility_id"
+qc_text <- "facility ID not valid"
+qc_idx <- qc_nonvalid_fid1
+qc_export_label <- "nonvalid_fids"
+qc_export_description <- "the facility ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+`r if ( is_kenya | is_tanzania ) {'#### Facility ID manual edits\n\n'}`
+
+```{r}
+edited_records <- NULL
+edited_df_status_update <- ""
+```
+
+```{r, eval=is_kenya | is_tanzania}
+out <- timci::correct_day0_non_valid_facilities(day0_data)
+day0_data <- out[[1]]
+edited_records <- out[[2]]
+```
+
+```{r, eval=(is_kenya | is_tanzania)&!is.null(edited_records)}
+edited_df_status_update <- paste0('**', nrow(edited_records), '** record(s) were manually edited in the ', db_name, ' database.')
+```
+
+`r edited_df_status_update`
+
+```{r, eval=(is_kenya | is_tanzania)&!is.null(edited_records), results='asis'}
+edited_records %>%
+  dplyr::select(old_child_id, uuid, new_child_id) %>%
+  knitr::kable()
+```
+
+`r if (is_kenya | is_tanzania) { paste0('#### Final check after manual edits [compliance check', qc_nonvalid_fid2, ']\n\n') }`
+
+```{r, eval=day0_is_not_null, results='asis'}
+qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
+qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are deleted."
+qc_type <- "nonvalid_ids"
+df <- day0_data
+idcol1 <- "fid"
+refdf <- research_facilities
+idcol2 <- "facility_id"
+qc_text <- "facility ID not valid"
+qc_idx <- qc_nonvalid_fid2
+qc_export_label <- "nonvalid_fids"
+qc_export_description <- "the facility ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_nonvalid_fid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+day0_data <- cleaned_df
+```
+
+`r if (is_india) {'### Inconsistent facility information [Context check]\n\n'}`
+
+`r if (is_india) {'**Rule**: records with inconsistent facility information are kept in the locked database, but will need to be checked more carefully (e.g: GPS data).\n\n'}`
+
+```{r}
+qc_inconsistent_facility <- NULL
+if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
+  if (day0_is_not_null) {
+    if (nrow(day0_data) > 0) {
+      qc_inconsistent_facility <- day0_data[day0_data$fid != day0_data$fid_ra, ]
+      qc_inconsistent_facility <- qc_inconsistent_facility[c("child_id", "fid", "fid_ra", "uuid")]
+    }
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    cat(paste0("**", nrow(qc_inconsistent_facility), "** record(s) with inconsistent facility information detected."))
+  }
+}
+```
+
+```{r, results='asis'}
+if (!is.null(qc_inconsistent_facility)) {
+  if (nrow(qc_inconsistent_facility) > 0) {
+    qc_inconsistent_facility %>%
+      knitr::kable(row.names = FALSE)
+  }
+}
+```
+
+### Duplicate management\n\n
+
+`r if ( (is_tanzania | is_kenya | is_senegal) & !is_pilot ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
+
+```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
+qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
+qc_type <- "duplicates"
+df <- day0_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicate_id1
+qc_export_label <- "timci_day0_data_id_duplicates"
+qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+`r if ( is_tanzania & !is_pilot ) { '#### Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
+
+```{r}
+deleted_records_status_update <- ""
+out <- timci::delete_day0_records(day0_data)
+day0_data <- out[[1]]
+dropped_records <- out[[2]]
+dropped_records_is_not_empty <- timci::is_not_empty(dropped_records)
+```
+
+```{r, eval=dropped_records_is_not_empty}
+deleted_records_status_update <- paste0('After the manual deletion of the **', nrow(dropped_records), '** record(s) listed below, there are **', nrow(day0_data), '** record(s) in the ', db_name, ' database.')
+```
+
+`r deleted_records_status_update`
+
+```{r, eval=dropped_records_is_not_empty, results='asis'}
+dropped_records %>%
+  select(old_child_id, uuid) %>%
+  knitr::kable()
+```
+
+`r if ( (is_tanzania | is_kenya | is_senegal) & !is_pilot ) { '#### Manual correction of duplicated IDs\n\n' }`
+
+```{r}
+edited_records_status_update <- ""
+out <- timci::edit_day0_child_ids(day0_data)
+day0_data <- out[[1]]
+duplicate_edits <- out[[2]]
+duplicate_edits_is_not_empty <- timci::is_not_empty(duplicate_edits)
+```
+
+```{r, eval=duplicate_edits_is_not_empty}
+edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+```
+
+`r edited_records_status_update`
+
+```{r, eval=duplicate_edits_is_not_empty, results='asis'}
+duplicate_edits %>%
+  select(old_child_id, uuid, new_child_id) %>%
+  knitr::kable()
+```
+
+`r if ( (is_tanzania | is_kenya | is_senegal) & !is_pilot ) { paste0('#### Final check after manual edits [compliance check ', qc_duplicate_id2, ']\n\n') }`
+
+```{r, eval=(day0_is_not_null & !is_pilot), results='asis'}
+qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_rule <- "Remaining duplicated child IDs are deleted from the database."
+qc_type <- "duplicates"
+df <- day0_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "drop_all"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicate_id2
+qc_export_label <- "timci_day0_data_id_duplicates"
+qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+day0_data <- cleaned_df
+```
+
+### Incorrect enrolment date [context check `r qc_incorrect_enrolment_date`]\n\n
+
+```{r}
+write(" o Incorrect enrolment date", stderr())
+```
+
+```{r}
+qc_df <- NULL
+n_incorrect_enroldate_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "start"
+col_date2 <- "start_contact"
+cleaning <- "replace_by_end_date"
+qc_text <- "an incorrect date of enrolment"
+qc_idx <- qc_incorrect_enrolment_date
+qc_export_label <- "incorrect_enrolment_date"
+qc_export_description <- "the enrolment date is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_enroldate_records <- n_detected
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and entry of participant contact details" ,
+     ylab="Occurences",
+     main="")
+```
+
+### Detection of multiple 28-disease episodes for the same children\n\n
+
+```{r}
+write(" o Detection of multiple 28-disease episodes for the same children", stderr())
+```
+
+```{r}
+multiple <- FALSE
+```
+
+`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the interim analysis'}`
+
+```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
+```
+
+### Missing clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
+
+```{r}
+write(" o Missing clinical presentation", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have complete information about their clinical presentation, i.e. a participant cannot have simultaneously:
+
+* No convulsions (*sx_convulsions* $\\neq$ 1)
+* No lethargy (*sx_lethargy* $\\neq$ 1)
+* No vomiting (*sx_vomit* = 0 or *sx_vomit* = 98)
+* No feeding less than usual (*sx_less_feed* = 0 or *sx_less_feed* = 98)
+* No cough (*sx_cough* = 0 or *sx_cough* = 98)
+* No difficulty breathing (*sx_difficulty_breath* = 0 or *sx_difficulty_breath* = 98)
+* No diarrhoea (*sx_diarrhoea* = 0 or *sx_diarrhoea* = 98)
+* No fever (*sx_fever* = 0 or *sx_fever* = 98)
+* No other complaint (*sx_var* = 96)"
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_clinical_presentation"
+df <- day0_data
+qc_text <- "missing clinical presentation"
+qc_idx <- qc_missing_cp_id
+qc_export_label <- "missing_clinical_presentation"
+qc_export_description <- "the clinical presentation is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_cp <- n_detected
+```
+
+### Missing diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
+
+```{r}
+write(" o Missing diagnosis", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null&!is_india}
+qc_description <- "All participants should have complete information about their diagnosis for their Day 0 visit, i.e. a participant cannot have simultaneously:
+
+* No danger signs (*dx_severe* = 0)
+* No pneumonia (*dx_pneumonia* = 0)
+* No diarrhoea (*dx_diarrhoea* = 0)
+* No dehydration (*dx_dehydration* = 0)
+* No malaria (*dx_malaria* = 0)
+* No ear infection (*dx_ear_infection* = 0)
+* No malnutrition (*dx_malnutrition* = 0)
+* No anaemia (*dx_anaemia == 0*)
+* No other diagnoses (*sx_var* = 96 and *dx_oth_yn* = 1)"
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_diagnosis"
+df <- day0_data
+qc_text <- "missing diagnosis"
+qc_idx <- qc_missing_diagnosis_id
+qc_export_label <- "missing_diagnosis"
+qc_export_description <- "the diagnosis is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_diagnosis <- n_detected
+```
+
+### Missing referral [Mandatory check `r qc_missing_referral_id`]\n\n
+
+```{r}
+write(" o Missing referral", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have complete information about the management at the facility for their Day 0 visit. This information is collected from 2 soures: the caregiver at the exit of the consultation and the facility registries/consultation notes. However, caregivers may be lost at the exit of the consultation, so that the referral information from this source would be missing (*referral_cg* = 'NA')."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_referral"
+df <- day0_data
+qc_text <- "missing referral information (source: caregiver at the exit of the consultation)"
+qc_idx <- qc_missing_referral_id
+qc_export_label <- "missing_referral_cg"
+qc_export_description <- "the referral information that should have been obtained from the caregiver at the exit of the consultation is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_referral_cg <- n_detected
+```
+
+### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]\n\n
+
+Check for spurious values/outliers
+
+### Clinical measurements\n\n
+
+```{r}
+write(" o Clinical measurements", stderr())
+```
+
+#### Temperature\n\n
+
+```{r}
+write("   o Temperature", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null&!is_india}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = temp_meas)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 0.2) +
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 37.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1) +
+  ggplot2::coord_cartesian(xlim =c(30, 43), ylim = c(0, 1))
+```
+
+```{r, results='asis', eval=day0_is_not_null&!is_india}
+dataMaid::identifyOutliers(day0_data$temp_meas,
+                           nMax = 50)
+```
+
+```{r, results='asis', eval=day0_is_not_null&is_india}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = temp_meas_farenheit)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 0.2) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::geom_vline(aes(xintercept = 99.5),
+                      color="blue",
+                      linetype="dashed",
+                      size=1) +
+  ggplot2::coord_cartesian(xlim =c(86, 110), ylim = c(0, 1))
+```
+
+```{r, results='asis', eval=day0_is_not_null&is_india}
+dataMaid::identifyOutliers(day0_data$temp_meas_farenheit,
+                           nMax = 50)
+```
+
+#### Pulse oximetry\n\n
+
+```{r}
+write("   o Pulse oximetry", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = spo2_meas1)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 1) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::coord_cartesian(xlim =c(75, 100), ylim = c(0, 0.6))
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::identifyOutliers(day0_data$spo2_meas1,
+                           nMax = 100)
+```
+
+#### Respiratory rate\n\n
+
+```{r}
+write("   o Respiratory rate", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+day0_data %>%
+  ggplot2::ggplot(ggplot2::aes(x = rr_meas)) +
+  ggplot2::geom_histogram(ggplot2::aes(y=..density..),
+                          colour="black",
+                          fill="white",
+                          binwidth = 1) + 
+  ggplot2::geom_density(alpha = 0.2,
+                        fill="#FF6666") +
+  ggplot2::coord_cartesian(xlim =c(0, 150), ylim = c(0, 0.12))
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+dataMaid::identifyOutliers(day0_data$rr_meas,
+                           nMax = 150)
+```
+
+### Data cleaning summary\n\n
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+allday0_data <- day0_data
+out <- timci::extract_pii(day0_data,
+                          is_pilot)
+day0_data <- out[[1]]
+n_cleaned_day0_records <- nrow(day0_data)
+```
+
+```{r}
+timci::create_day0_qc_flowchart(n_raw_day0_records,
+                                n_nonvalid_fid_records,
+                                n_incorrect_enroldate_records,
+                                nrow(dropped_records),
+                                nrow(duplicate_edits),
+                                n_cleaned_day0_records)
+```
+
+### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, eval=!deidentification_on, results = 'asis'}
+timci::dataset_export(raw_day0_data,
+                      "02",
+                      "timci_day0_data",
+                      rctls_dir,
+                      "Raw Day 0 data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(day0_data,
+                      "02",
+                      "timci_day0_data",
+                      locked_db_dir,
+                      "Cleaned Day 0 data")
+```
+
+```{r split-pii-from-research-data, eval=!is.null(facility_data)}
+ts <- timci::export_df2xlsx(raw_pii,
+                            tempdir(),
+                            "timci_contact_data")
+pii_pwd <- Sys.getenv("TIMCI_PII_PW")
+zip(params$participant_zip, 
+    files = file.path(tempdir(), "timci_contact_data.xlsx"), 
+    flags = paste("-r9Xj --password", pii_pwd))
+```
+
+```{r export-visit-data, results = 'asis', eval=!is.null(facility_data)}
+study_data <- timci::extract_all_visits(facility_data,
+                                        is_pilot)
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(study_data,
+                      "03",
+                      "timci_facility_visits_data",
+                      rctls_dir,
+                      "Facility visit data")
+```
+
+### Data summary statistics\n\n
+
+```{r}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         form_version,
+                         fid,
+                         who_age_ctg,
+                         district,
+                         facility,
+                         dob_knwn,
+                         age_mo_knwn,
+                         enrolled,
+                         mother_education),
+                       factor)) %>%
+  dplyr::mutate(across(c(date_visit), ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
+```
+
+```{r, eval = (is_tanzania | is_kenya | is_senegal)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(living_with_cg),
+                       factor))
+```
+
+```{r, eval = (is_tanzania)}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(district_ra,
+                         location_lvl1,
+                         location_lvl2,
+                         location_lvl3,
+                         location_lvl4),
+                       factor))
+```
+
+```{r, results='asis'}
+skimr::skim(day0_data)
+```

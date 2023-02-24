@@ -12,7 +12,10 @@ extract_data_from_odk_server(
   cpp = "",
   start_date = NULL,
   end_date = NULL,
+  filter = NULL,
   col_specs = NULL,
+  group = TRUE,
+  split = FALSE,
   verbose = FALSE
 )
 }
@@ -25,11 +28,17 @@ extract_data_from_odk_server(
 
 \item{cpp}{string, ODK project passphrase (optional, only required if the ODK project is encrypted)}
 
-\item{start_date}{date, data collection start date (optional)}
+\item{start_date}{date, data collection start date (optional, by default set to `NULL`)}
 
-\item{end_date}{date, data collection end date (optional)}
+\item{end_date}{date, data collection end date (optional, by default set to `NULL`)}
 
-\item{col_specs}{column specifications (optional)}
+\item{filter}{OData filter (optional, by default set to `NULL`)}
+
+\item{col_specs}{column specifications (optional, by default set to `NULL`)}
+
+\item{group}{keep group names (optional, by default set to `TRUE`)}
+
+\item{split}{split “select multiple” choices into columns (optional, by default set to `FALSE`)}
 
 \item{verbose}{boolean, displays more information about the function output}
 }

@@ -1,0 +1,170 @@
+---
+title: "TIMCI `r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'India') {'Pragmatic cluster RCT - Monitoring Report'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Étude Longitudinale Observationnelle - Rapport de suivi'} else {'Longitudinal Observational Study (LS) - Maps'}`"
+author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
+params:
+  research_facilities: !r data.frame(deviceid = character(0), district = character(0), facility = character(0))
+  start_date: NULL
+  end_date: NULL
+  day7fu_end_date: NULL
+  facility_data: NULL
+  raw_day7fu_data: NULL
+  raw_hospit_data: NULL
+  raw_day28fu_data: NULL<
+  raw_withdrawal_data: NULL
+  wfa_data: NULL
+output:
+  pdf_document:
+    keep_tex: true
+    number_sections: true
+    extra_dependencies:
+      float: null
+      flafter: null
+      bm: null
+      tocbibind: ["nottoc"]
+      babel: ["french","english"]
+      graphicx: null
+      fancyhdr: null
+      lastpage: null
+classoption: table
+---
+
+```{r setup-rmd, include=FALSE}
+library(magrittr)
+library(readxl)
+library(ggplot2)
+library(lubridate)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.pos='!H')
+options(qwraps2_markup = 'rmarkdown')
+options(knitr.table.format = "latex")
+
+# Qwraps2 parameters
+prec <- 1
+
+#kableExtra table parameters
+table_fs <- 7
+figsize <- 3
+total_row_ft <- "gray"
+total_row_ft2 <- "white"
+striped_row_bg <- "gray!10"
+total_row_bg2 <- "gray"
+```
+
+```{r}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
+```
+
+```{r}
+if (is_india) {
+  hospit_value <- 13
+} else{
+  hospit_value <- 1
+}
+
+day7_wmin <- 7
+day7_wmax <- 10
+day28_wmin <- 28
+day28_wmax <- 32
+```
+
+\fancypagestyle{plain}{\pagestyle{fancy}}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{32pt}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[C]{\includegraphics[width=10cm]{banner.png}}
+\fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[L]{TIMCI Data Monitoring Report v1.0}
+
+```{r translations-subsection, child = 'translations.Rmd'}
+```
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\clearpage
+
+`r notice_str`
+
+`r intro_str`
+
+```{r setup-variables}
+start_date <- params$start_date
+end_date <- params$end_date
+sample_target <- params$sample_target
+
+if (!is.null(params$facility_data)) {
+  
+  facility_data <- params$facility_data
+  raw_day7fu_data <- params$raw_day7fu_data
+  raw_hospit_data <- params$raw_hospit_data
+  raw_day28fu_data <- params$raw_day28fu_data
+  raw_withdrawal_data <- params$raw_withdrawal_data
+  wfa_data <- params$wfa_data
+  
+}
+```
+
+```{r}
+facility_data <- timci::correct_day0_all(facility_data)
+```
+
+```{r calculation-subsection, child = 'calculations.Rmd'}
+```
+
+```{r process-facility-data, results='asis'}
+if (nrow(facility_data) > 0) {
+  week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1, units = "weeks"))
+  days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
+  
+  if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+    date_boundary_str <- paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** (semaine **", week_nb, "** de l'étude) pour le **Sénégal**.")
+  } else {
+    date_boundary_str <- paste0("This report covers the period from **", start_date, "** (study start) to **", end_date, "** (week **", week_nb,"** of the study) for **", Sys.getenv('TIMCI_COUNTRY'), "**.")
+  }
+  cat(date_boundary_str)
+}
+```
+
+```{r context-subsection, child = 'context.Rmd'}
+```
+
+```{r maps-message}
+write(timci::formats2h2("Generate context maps"), stderr())
+```
+
+```{r maps-load-libraries}
+library(sf)     # classes and functions for vector data
+library(raster) # classes and functions for raster data
+library(spData)        # load geographic data
+library(ggplot2)
+library(gridExtra)
+library(graphics)
+```
+
+```{r maps-subsection, results="asis", eval = is_india | is_kenya | is_senegal}
+out <- lapply(1:nrow(facilities),
+              function(i) {
+                knitr::knit_child('maps.Rmd',
+                    envir = environment(),
+                    quiet = TRUE)
+                })
+cat(unlist(out), sep = '\n')
+```
+
+```{r}
+detach("package:raster", unload=TRUE)
+detach("package:spData", unload=TRUE)
+detach("package:sf", unload=TRUE)
+tmp <- gc() # garbage collection
+```

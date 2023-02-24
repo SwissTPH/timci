@@ -1,0 +1,35 @@
+```{r}
+write(formats2h2("Export process mapping & time-flow data"), stderr())
+```
+
+```{r}
+tf_cond <- !is.null(tf_data)
+if (tf_cond) {
+  tf_cond <- length(tf_data) > 0
+}
+```
+
+```{r timeflow-subsection, eval=tf_cond, results="asis"}
+if (!is.null(tf_data)){
+  out <- knitr::knit_child('database_export_timeflow_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
+```
+
+```{r}
+pm_cond <- !is.null(pm_data)
+if (pm_cond) {
+  pm_cond <- length(pm_data) > 0
+}
+```
+
+```{r process-mapping-subsection, eval=pm_cond, results="asis"}
+if (!is.null(pm_data)){
+  out <- knitr::knit_child('database_export_processmap_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
+```

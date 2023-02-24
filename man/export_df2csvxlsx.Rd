@@ -13,6 +13,9 @@ export_df2csvxlsx(df, dirname, prefix)
 
 \item{prefix}{filename prefix}
 }
+\value{
+This function return a list that contains the creation timestamps of the Excel and the CSV files
+}
 \description{
 Write dataframe to both CSV and Excel file formats, with a filename consisting of a prefix and a date stamp
 }

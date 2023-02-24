@@ -4,11 +4,12 @@
 #' @param dirname directory where the Excel file will be created.
 #' @param prefix filename prefix
 #' @param rnames Row names
+#' @return This function returns the creation timestamp of the Excel file
 #' @export
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
-  out <- "Dataframe cannot be written to Excel."
+  t <- NULL
   if (!is.null(dirname)){
     fname <- file.path(dirname, paste0(prefix, ".xlsx"))
     openxlsx::write.xlsx(df,
@@ -16,22 +17,23 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
                          row.names = rnames,
                          overwrite = TRUE,
                          encoding = "UTF-8")
-    out <- fname
+    t <- format(file.info(fname)$ctime, usetz = TRUE)
   }
-  out
+  t
 
 }
 
 #' Write dataframe to a CSV file format, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.
-#' @param dirname directory where the RDS file will be created.
+#' @param dirname directory where the CSV file will be created.
 #' @param prefix filename prefix
+#' @return This function returns the creation timestamp of the CSV file
 #' @export
 
 export_df2csv <- function(df, dirname, prefix) {
 
-  out <- "Dataframe cannot be written to CSV."
+  t <- NULL
   if (!is.null(dirname)){
     fname <- file.path(dirname, paste0(prefix, ".csv"))
     write.csv(df,
@@ -39,9 +41,9 @@ export_df2csv <- function(df, dirname, prefix) {
               row.names = FALSE,
               quote = FALSE,
               fileEncoding = "UTF-8")
-    out <- fname
+    t <- format(file.info(fname)$ctime, usetz = TRUE)
   }
-  out
+  t
 
 }
 
@@ -50,17 +52,18 @@ export_df2csv <- function(df, dirname, prefix) {
 #' @param df dataframe.
 #' @param dirname directory where the RDS file will be created.
 #' @param prefix filename prefix
+#' @return This function return a list that contains the creation timestamps of the Excel and the CSV files
 #' @export
 
 export_df2csvxlsx <- function(df, dirname, prefix) {
 
-  out1 <- timci::export_df2xlsx(df,
-                                dirname,
-                                prefix)
-  out2 <- timci::export_df2csv(df,
-                               dirname,
-                               prefix)
-  out <- paste0(out1,'\n',out2)
+  t1 <- timci::export_df2xlsx(df,
+                              dirname,
+                              prefix)
+  t2 <- timci::export_df2csv(df,
+                             dirname,
+                             prefix)
+  t <- list(t1, t2)
 
 }
 
@@ -90,8 +93,10 @@ export_df2rds <- function(df, dirname, prefix) {
 #' @import digest
 
 anonymise_dataframe <- function(df, cols_to_anon, algo = "sha256") {
+
   to_anon <- subset(df, select = cols_to_anon)
   unname(apply(to_anon, 1, digest::digest, algo = algo))
+
 }
 
 #' Extract and match variable names using a dictionary
@@ -100,12 +105,12 @@ anonymise_dataframe <- function(df, cols_to_anon, algo = "sha256") {
 #' @param dictionary Dataframe containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @return This function returns a dataframe.
 #' @export
-#' @import magrittr dplyr
+#' @import dplyr
 
 match_from_dict <- function(df, dictionary) {
 
   # Add column if it does not exit
-  df[setdiff(dictionary$old,names(df))] <- NA
+  df[setdiff(dictionary$old, names(df))] <- NA
 
   # Rename column names based on the dictionary
   names(df)[match(dictionary$old, names(df))] <- dictionary$new
@@ -120,13 +125,133 @@ match_from_dict <- function(df, dictionary) {
 #' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @return This function returns a dataframe.
 #' @export
-#' @import magrittr dplyr
+#' @import dplyr
 
-match_from_xls_dict <- function(df, xls_dict) {
+match_from_xls_dict <- function(df,
+                                xls_dict) {
 
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', xls_dict), package = 'timci'))
-  df <- match_from_dict(df, dictionary)
+  # Import dictionary
+  dictionary_pathname <- system.file(file.path('extdata', xls_dict),
+                                     package = 'timci')
+  dictionary <- readxl::read_excel(dictionary_pathname)
 
+  df %>%
+    timci::match_from_dict(dictionary)
+
+}
+
+#' Import country-specific Excel dictionary
+#'
+#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param country Character that contains the name of the TIMCI country to select (default set to "none")
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr
+
+import_country_specific_xls_dict <- function(xls_dict,
+                                             country = "none") {
+
+  # Import dictionary
+  dictionary_pathname <- system.file(file.path('extdata', xls_dict),
+                                     package = 'timci')
+  dictionary <- readxl::read_excel(dictionary_pathname)
+
+  # Filter dictionary to only keep variables that are relevant for the country of interest
+  if (country == 'Tanzania') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_tanzania == 1)
+  } else if (country == 'India') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_india == 1)
+  } else if (country == 'Kenya') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_kenya == 1)
+  } else if (country == 'Senegal') {
+    dictionary <- dictionary %>%
+      dplyr::filter(is_senegal == 1)
+  }
+
+  dictionary
+
+}
+
+#' Extract and match variable names using an external Excel dictionary
+#'
+#' @param df Input dataframe
+#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param is_deidentified Boolean, flag to not export personally identifiable variable (default set to FALSE)
+#' @param country Character that contains the name of the TIMCI country to select (default set to "none")
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr
+
+match_from_filtered_xls_dict <- function(df,
+                                         xls_dict,
+                                         is_deidentified = FALSE,
+                                         country = "none") {
+
+  # Import dictionary
+  dictionary <- timci::import_country_specific_xls_dict(xls_dict, country)
+
+  # Filter dictionary to only keep deidentified variables
+  if (is_deidentified) {
+    dictionary <- dictionary %>%
+      dplyr::filter(deidentified == 1)
+  }
+
+  # Match column names with names from dictionary
+  df %>%
+    timci::match_from_dict(dictionary)
+
+}
+
+#' Import column-specifications from country-specific Excel dictionary
+#'
+#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param country Character that contains the name of the TIMCI country to select (default set to "none")
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr
+
+import_col_specifications <- function(xls_dict,
+                                      country){
+
+  # Import dictionary
+  dictionary <- timci::import_country_specific_xls_dict(xls_dict, country)
+
+  col_specs <- list()
+  for ( i in 1:nrow(dictionary) ) {
+
+    label <- dictionary[[i, "old"]]
+    val <- dictionary[[i, "type"]]
+
+    if (val == "date") {
+      col_specs[[label]] <- readr::col_date(format = "%Y-%m-%d")
+    } else if (val == "timestamp") {
+      col_specs[[label]] <- readr::col_datetime(format = "")
+    } else if (val == "nominal") {
+      col_specs[[label]] <- readr::col_character()
+      # col_specs[[label]] <- readr::col_factor(levels = NULL,
+      #                                         ordered = FALSE,
+      #                                         include_na = FALSE)
+    } else if (val == "ordinal") {
+      col_specs[[label]] <- readr::col_factor(levels = NULL,
+                                              ordered = TRUE,
+                                              include_na = FALSE)
+    } else if (val == "integer") {
+      col_specs[[label]] <- readr::col_integer()
+    } else if (val == "double") {
+      col_specs[[label]] <- readr::col_double()
+    } else if (val == "character") {
+      col_specs[[label]] <- readr::col_character()
+    } else{
+      col_specs[[label]] <- readr::col_character()
+    }
+
+  }
+
+  n <- length(col_specs)
+  col_specs[c(1, n-1)]
 }
 
 #' Combine two dataframes in one
@@ -168,3 +293,57 @@ combine_dataframes <- function(df1,
   out
 
 }
+
+#' Pivot values of duplicated rows into new columns
+#'
+#' @param df Input dataframe
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr tidyr
+
+pivot_duplicates_to_columns <- function(df) {
+
+  cols <- colnames(df)
+  cols <- cols[!(cols %in% c("child_id"))]
+
+  df %>%
+    dplyr::group_by(child_id) %>%
+    dplyr::mutate(row_n = row_number()) %>%
+    tidyr::pivot_wider(child_id,
+                       names_from = row_n,
+                       values_from = cols)
+
+}
+
+#' Check that a dataframe is not empty
+#'
+#' @param df dataframe.
+#' @return This function returns a boolean that is equal to TRUE if the dataframe contains at least 1 row and 1 column.
+#' @export
+
+is_not_empty <- function(df) {
+
+  df_is_not_empty <- FALSE
+  if(!is.null(df)) {
+    df_is_not_empty <- (nrow(df) > 0) & (length(df) > 0)
+  }
+  df_is_not_empty
+
+}
+
+#' Calculate a normalised Levenshtein ratio between two strings
+#'
+#' @param s1 string
+#' @param s2 string
+#' @return This function returns a normalised levenshtein ratio.
+#' @export
+#' @import stringdist
+
+normalised_levenshtein_ratio <- function(s1, s2) {
+
+  n <- max(nchar(s1),nchar(s2))
+  d <- stringdist(s1, s2, method = 'lv')
+  out <- 100 * (1-d/n)
+
+}
+

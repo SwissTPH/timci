@@ -1,0 +1,16 @@
+old_child_id,uuid,new_child_id,reason,action,date,author,date_ihi
+T-F0002-P0058,uuid:b51c99bf-2b06-4bcd-b8aa-a9fce6e0ae88,T-R0002-P0058,repeat,move to repeat,,,
+T-F0002-P0068,uuid:626b34a6-dd53-483c-be47-a2b6f05271f3,T-R0002-P0068,repeat,move to repeat,,,
+T-F0093-P0505,uuid:3de3078f-b115-491d-9618-01797a28808c,T-R0093-P0505,repeat,move to repeat,,,
+T-F0039-P0899,uuid:2fdb2774-0369-4391-926c-a93f56243490,T-R0039-P0899,RA wrongly entered it was a repeat visit,move to repeat,7/10/2022,IHI,
+T-F0023-P0370,uuid:c6c4f938-3d39-4937-a725-3eea3bbef605,T-R0023-P0370,Repeat visit,move to repeat,,IHI,15/08/2022
+T-F0023-P0402,uuid:2709f073-1191-49d8-9c1a-a31e375bd35c,T-R0023-P0402,Repeat visit,move to repeat,,IHI,15/08/2022
+T-F0006-P0481,uuid:717f828c-2f3e-4e59-8426-3c6b0c16a0a8,T-R0006-P0481,,edit,,IHI,8/9/2022
+T-F0029-P0952,uuid:6e5df60e-5ee4-4804-8714-ad90336f6cc2,T-R0029-P0952,,edit,,IHI,12/9/2022
+T-F0021-P0596,uuid:2fd32643-7e70-49b4-ae96-c3d66b097de4,T-R0021-P0596,,edit,,IHI,29/09/2022
+T-F0029-P1009,uuid:e0815e0c-ca88-4505-9db7-bb6a9f4c21f4,T-R0029-P1009,,edit,,IHI,4/10/2022
+T-F0013-P1716,uuid:f91f948c-e4f4-4666-9fb3-234bab14f57f,T-R0013-P1716,,edit,,IHI,11/1/2022
+T-F0018-P1014,uuid:805402fe-ad17-40ec-89c4-ee4f2d0d3545,T-R0018-P1014,,edit,,IHI,10/26/2022
+T-F0013-P1905,uuid:157eb065-e05a-4444-8188-e835e230ec4a,T-R0013-P1905,,edit,,IHI,11/12/2022
+T-F0013-P1898,uuid:4ee4c79b-9ae5-4cf8-a4e0-3646c99c35bf,T-R0013-P1898,,edit,,IHI,11/22/2022
+T-F0020-P0715,uuid:c6d3732c-d9e9-43f2-ad92-ae2cd3a5d2db,T-R0020-P0715,,edit,,IHI,2/1/2022

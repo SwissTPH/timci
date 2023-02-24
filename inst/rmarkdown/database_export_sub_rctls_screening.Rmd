@@ -1,0 +1,354 @@
+## Screening data quality checks\n\n
+
+```{r}
+write("Export screening data and run corresponding quality checks", stderr())
+```
+
+```{r}
+db_name <- "screening"
+
+facility_data_is_not_null <- !is.null(facility_data)
+
+raw_screening_data <- timci::extract_screening_data(facility_data, is_pilot)
+n_raw_screening_records <- nrow(raw_screening_data)
+
+out <- timci::extract_enrolled_participants(facility_data, is_pilot)
+raw_day0_data <- out[[1]]
+raw_pii <- out[[2]]
+```
+
+Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
+
+### Inconsistent dates
+
+#### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_submission_id`]\n\n
+
+```{r}
+write(" o Non-timely submission", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_submission_id
+qc_export_label <- "nontimely_day0_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission finalisation and transfer" ,
+     ylab="Occurences",
+     main="")
+```
+
+#### Non-timely completion [compliance check `r qc_nontimely_completion_id`]\n\n
+
+```{r}
+write(" o Non-timely completion", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_completion_id
+qc_export_label <- "nontimely_day0_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df)}
+hist(as.numeric(qc_df$diff),
+     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
+     xlab="Number of days between submission start and finalisation" ,
+     ylab="Occurences",
+     main="")
+```
+
+### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
+
+```{r}
+write(" o Non-valid device IDs", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Devices different from the ones whose IDs are listed in Section 2.3 of this report are considered as *non-valid* and may have been used for instance for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
+qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted."
+qc_type <- "nonvalid_deviceids"
+df <- facility_data
+qc_text <- "non-valid device IDs"
+qc_idx <- qc_screening_w_nonvalid_deviceid
+qc_export_label <- "nonvalid_deviceids"
+qc_export_description <- "the device ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_nonvalid_deviceid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Facility IDs from other TIMCI studies [context check]
+
+```{r}
+write(" o Facility IDs from other facilities (India only)", stderr())
+```
+
+`r if ( !is_india ) { paste0('This check is only implemented for India.\n\n') }`
+
+```{r}
+qc_df <- NULL
+n_other_fid_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, eval=facility_data_is_not_null&is_india, results='asis'}
+qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
+qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
+qc_type <- "other_study_fids"
+df <- facility_data
+qc_text <- "facility IDs corresponding to another TIMCI study"
+qc_idx <- qc_screening_other_fids
+qc_export_label <- "screening_other_fids"
+qc_export_description <- "the facility ID correspond to another TIMCI study"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_other_fid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
+
+```{r}
+write(" o Caregiver eligibility", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Caregivers must be above 18 years old to be able provide consent for the child to be part in the study."
+qc_rule <- "Children with a caregiver below 18 years old are kept in the screening database but excluded from the study."
+qc_type <- "underaged_cg"
+df <- facility_data
+qc_text <- "a consenting caregiver below 18 years old"
+qc_idx <- qc_underaged_cg_id
+qc_export_label <- "underaged_cg"
+qc_export_description <- "the consenting caregiver is below 18 years old"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_ineligible_cg_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Repeat visits incorrectly recorded as new enrolments [compliance check]
+
+```{r}
+write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
+```
+
+`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']\n\n') }`
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Participants who come back within 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with their participant ID, this creates duplicates in the database."
+qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
+qc_type <- "duplicates_check_pii"
+df <- facility_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_dup_repeats_id1
+qc_export_label <- "timci_repeat_visit_duplicates"
+qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+`r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs\n\n' }`
+
+`r if ( is_tanzania ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:\n\n* variable *repeat_consult* set to 1\n\n* variable *consent* set to NA\n\n* variable *enrolled* set to NA') }`
+
+```{r}
+repeat_visit_edits_is_not_empty <- FALSE
+edited_records_status_update <- ""
+n_repeat_edit_records <- 0
+```
+
+```{r, eval=is_tanzania}
+out <- timci::edit_day0_to_repeat(facility_data)
+facility_data <- out[[1]]
+repeat_visit_edits <- out[[2]]
+repeat_visit_edits_is_not_empty <- timci::is_not_empty(repeat_visit_edits)
+n_repeat_edit_records <- nrow(repeat_visit_edits)
+```
+
+```{r, eval=repeat_visit_edits_is_not_empty}
+edited_records_status_update <- paste0('After correction of the **', n_repeat_edit_records, '**  record(s) detected by this check, there are still **', nrow(facility_data), '** record(s) in the ', db_name, ' database.')
+```
+
+`r edited_records_status_update`
+
+```{r, eval=repeat_visit_edits_is_not_empty, results='asis'}
+repeat_visit_edits %>%
+  select(old_child_id, uuid) %>%
+  knitr::kable()
+```
+
+`r if ( is_tanzania ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']\n\n') }`
+
+```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
+qc_description <- "Remaining repeat visits incorrectly recorded as new enrolments are deleted from the database." 
+qc_rule <- action_alert_no_modification
+qc_type <- "duplicates_check_pii"
+df <- facility_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_dup_repeats_id2
+qc_export_label <- "timci_repeat_visit_duplicates"
+qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the databse"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Incorrect date and time setup on the device [context check `r qc_incorrect_date_setup`]\n\n
+
+```{r}
+write(" o Incorrect data and time setup on the device", stderr())
+```
+
+```{r}
+qc_df <- NULL
+n_incorrect_date_setup_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
+qc_rule <- "If the submission date is anterior to the creation date in the database, the (incorrect) creation date is replaced by the submission date."
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "submission_date"
+col_date2 <- "start"
+cleaning <- "replace_by_start_date"
+qc_text <- "an incorrect date setup on the tablet"
+qc_idx <- qc_incorrect_date_setup
+qc_export_label <- "incorrect_date_setup"
+qc_export_description <- "the date setup is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_date_setup_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Lock date [context check `r qc_screening_after_lockdate`]\n\n
+
+```{r}
+write(" o Lock date context", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
+qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
+qc_type <- "posterior_to_lockdate"
+df <- facility_data
+qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
+qc_idx <- qc_screening_after_lockdate
+qc_export_label <- "posterior_to_lockdate"
+qc_export_description <- "the device ID is not valid"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+facility_data_after_lock <- qc_df
+n_after_lockdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Data cleaning summary\n\n
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+screening_data <- timci::extract_screening_data(facility_data,
+                                                is_pilot)
+n_cleaned_screening_records <- nrow(screening_data)
+```
+
+```{r}
+timci::create_screening_qc_flowchart(n_raw_screening_records,
+                                     n_nonvalid_deviceid_records,
+                                     n_other_fid_records,
+                                     n_after_lockdate_records,
+                                     n_ineligible_cg_records,
+                                     n_repeat_edit_records,
+                                     n_incorrect_date_setup_records,
+                                     n_cleaned_screening_records)
+```
+
+### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r export-screening-data, results = 'asis'}
+timci::dataset_export(raw_screening_data,
+                      "01",
+                      "timci_screening_data",
+                      rctls_dir,
+                      "Raw screening data")
+```
+
+```{r export-locked-screening-data, results = 'asis'}
+timci::dataset_export(screening_data,
+                      "01",
+                      "timci_screening_data",
+                      locked_db_dir,
+                      "Cleaned screening data")
+```
+
+```{r export-facility-audit, results = 'asis'}
+timci::dataset_export(facility_data_audit,
+                      "00",
+                      "timci_facility_audit_data",
+                      rctls_dir,
+                      "Screening audit data")
+```

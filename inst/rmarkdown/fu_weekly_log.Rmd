@@ -117,7 +117,7 @@ if (!is.null(fu)) {
     pid <- toString(fu[i,'name'])
     png_file <- file.path(tempdir(), paste0(pid,".png"))
     png(png_file)
-    qrcode::qrcode_gen(pid)
+    qrcode::qr_code(pid)
     dev.off()
   }
   

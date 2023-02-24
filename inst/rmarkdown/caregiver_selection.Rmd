@@ -128,7 +128,7 @@ if (!is.null(cg_selection)) {
     pid <- toString(cg_selection[i,'child_id'])
     png_file <- file.path(tempdir(), paste0(pid,".png"))
     png(png_file)
-    qrcode::qrcode_gen(pid)
+    qrcode::qr_code(pid)
     dev.off()
   }
   

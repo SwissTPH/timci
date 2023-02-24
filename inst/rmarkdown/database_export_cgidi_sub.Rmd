@@ -22,6 +22,28 @@ No data cleaning for the lock.
 ```{r cg-idi-potential-participants}
 if (!is.null(day0_data) && !is.null(day7fu_data)) {
   cg_qual_export_data <- timci::generate_cg_log(day0_data, day7fu_data)
+}
+```
+
+```{r}
+if (is_tanzania) {
+  uq_facilities <- params$research_facilities[, c("facility_id", "intervention")] %>%
+  distinct()
+  
+  if (!is.null(cg_qual_export_data)) {
+    cg_qual_export_data <- merge(x = cg_qual_export_data,
+                                 y = uq_facilities,
+                                 by.x = 'fid',
+                                 by.y = 'facility_id',
+                                 all = FALSE)
+    cg_qual_export_data <- cg_qual_export_data %>% filter(intervention == 1 | intervention == 2)
+  }
+  
+}
+```
+
+```{r cg-idi-potential-participants-export}
+if (!is.null(cg_qual_export_data)) {
   fn <- timci::export_df2csvxlsx(cg_qual_export_data,
                                  qualcg_dir,
                                  "01_cg_idi_participants")

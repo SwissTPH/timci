@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_timci_data.R
 \name{count_screening}
 \alias{count_screening}
-\title{Count the occurrence of a specific value in a column (TIMCI-specific function)}
+\title{Count the occurrence of non-enrolment causes during screening (TIMCI-specific function)}
 \usage{
 count_screening(df)
 }
@@ -13,5 +13,5 @@ count_screening(df)
 This function returns de-identified data.
 }
 \description{
-Count the occurrence of a specific value in a column (TIMCI-specific function)
+Count the occurrence of non-enrolment causes during screening (TIMCI-specific function)
 }

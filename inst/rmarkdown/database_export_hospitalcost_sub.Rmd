@@ -20,10 +20,21 @@ write("Export hospital cost data", stderr())
 ```{r hospital-cost-export, results = 'asis'}
 hospital_cost_export_name <- "02a_timci_hospital_cost_data"
 if (!is.null(hospital_cost_data[[1]])) {
-  fn <- timci::export_df2csvxlsx(hospital_cost_data[[1]],
-                                 cost_dir,
-                                 hospital_cost_export_name)
-  cat(paste0("* Raw hospital cost data are exported in files ", hospital_cost_export_name, ".csv/xslx in the ", cost_dir, " folder"))
+  fn <- timci::export_df2xlsx(hospital_cost_data[[1]],
+                              cost_dir,
+                              hospital_cost_export_name)
+  cat(paste0("* Raw hospital cost data are exported in file ", hospital_cost_export_name, ".xslx in the ", cost_dir, " folder"))
+}
+```
+
+```{r hospital-cost-export-1, eval=is_kenya, results = 'asis'}
+hospital_cost_export_name <- "02b_timci_hospital_cost_exemption_data"
+
+if (!is.null(hospital_cost_data[[2]])) {
+  fn <- timci::export_df2xlsx(hospital_cost_data[[2]],
+                              cost_dir,
+                              hospital_cost_export_name)
+  cat(paste0("* Hospital cost exemption data are exported in file ", medical_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 }
 ```
 
@@ -32,9 +43,9 @@ hospital_cost_export_name <- "02z_timci_hospital_cost_audit"
 i <- length(hospital_cost_data)
 
 if (!is.null(hospital_cost_data[[i]])) {
-  fn <- timci::export_df2csvxlsx(hospital_cost_data[[i]],
-                                 cost_dir,
-                                 hospital_cost_export_name)
-  cat(paste0("* Medical cost audit log is exported in files ", hospital_cost_export_name, ".csv/xslx in the ", cost_dir, " folder"))
+  fn <- timci::export_df2xlsx(hospital_cost_data[[i]],
+                              cost_dir,
+                              hospital_cost_export_name)
+  cat(paste0("* Hospital cost audit log is exported in file ", hospital_cost_export_name, ".xslx in the ", cost_dir, " folder"))
 }
 ```

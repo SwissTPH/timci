@@ -1,0 +1,252 @@
+## Day 7 follow-up outcome data quality checks\n\n
+
+```{r}
+write("Export Day 7 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
+```
+
+This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
+
+```{r}
+day7fu_data <- allday7fu_data %>%
+  dplyr::filter ( proceed_day7 == 1 )
+n_raw_successday7fu_records <- nrow(day7fu_data)
+day7fu_is_not_null <- !is.null(day7fu_data)
+day7fu_is_not_empty <- timci::is_not_empty(day7fu_data)
+```
+
+Among the **`r n_cleaned_allday7fu_records`** cleaned **`r db_name`** record(s), there are **`r n_raw_successday7fu_records`** record(s) corresponding to successful Day 7 follow-up(s).
+
+```{r, eval=day7fu_is_not_empty}
+day7fu_data <- day7fu_data %>%
+  dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
+```
+
+### Duplicate management\n\n
+
+#### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]\n\n
+
+```{r}
+write(" o Successful follow-up duplicates", stderr())
+```
+
+`r if (is_kenya) {'##### Initial check'}`
+
+```{r, eval=!is.null(day7fu_data)&is_kenya, results='asis'}
+qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
+qc_rule <- "Identify duplicated records that correspond to different participants (participants for whom duplicates were created at enrolment) and reallocate these records to the appropriate participant."
+qc_type <- "duplicates"
+df <- day7fu_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicated_day7fu
+qc_export_label <- "duplicated_successful_day7fu"
+qc_export_description <- "Day 7 follow-ups are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+`r if (is_kenya) {'##### Child ID duplicate manual edits'}`
+
+```{r, results='asis', eval=is_kenya}
+out <- timci::correct_day7_duplicates(day7fu_data)
+day7fu_data <- out[[1]]
+duplicate_edits <- out[[2]]
+if (!is.null(duplicate_edits)) {
+  duplicate_edits %>%
+    select(old_child_id, uuid, new_child_id) %>%
+    knitr::kable()
+}
+```
+
+`r if (is_kenya) {'##### Final check after manual edits'}`
+
+```{r, eval=!is.null(day7fu_data), results='asis'}
+qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, Only the most recent successful Day 7 follow-up is kept."
+qc_rule <- "Delete all older records and keep only the most recent when more than one successful follow-up is available for the same participant."
+qc_type <- "duplicates"
+df <- day7fu_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "keep_latest"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_duplicated_day7fu
+qc_export_label <- "duplicated_successful_day7fu"
+qc_export_description <- "Day 7 follow-ups are duplicated"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
+day7fu_data <- cleaned_df
+```
+
+### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day7fu`]\n\n
+
+```{r, eval=!is.null(day7fu_data), results='asis'}
+qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day7fu_data %>% 
+  merge(day0_data,
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_hosp_day7"
+col_date2 <- "date_visit"
+qc_text <- "a date of hospitalisation before the enrolment date"
+qc_idx <- qc_hospit_before_enrolment_day7fu
+qc_export_label <- "hospit_before_enrolment"
+qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Invalid date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
+
+```{r, eval=!is.null(day7fu_data), results='asis'}
+qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 7 follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day7fu_data %>% 
+  merge(day0_data,
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_death_day7"
+col_date2 <- "date_visit"
+qc_text <- "a date of death before the enrolment date"
+qc_idx <- qc_death_before_enrolment_day7fu
+qc_export_label <- "death_before_enrolment"
+qc_export_description <- "the reported date of death was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Data cleaning summary\n\n
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+n_cleaned_day7fu_records <- nrow(day7fu_data)
+```
+
+```{r}
+timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
+                                          n_dropped_duplicate_day7fu_records,
+                                          n_cleaned_day7fu_records)
+```
+
+### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(raw_successday7fu_data,
+                      "04b",
+                      "timci_followup_successful_day7_data",
+                      rctls_dir,
+                      "Raw successful Day 7 follow-up only)")
+```
+
+```{r}
+day7fu_data <- day7fu_data %>%
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         cg_reached,
+                         cg_ok,
+                         status_day7,
+                         cure_day7,
+                         admission),
+                       factor)) %>%
+  dplyr::mutate(across(c(date_call,
+                         date_hosp_day7),
+                       ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end),
+                       ~format(as.Date(.), "%Y-%m-%d %H:%M:%S"))) %>%
+  dplyr::mutate(across(c(location_death_day7),
+                       as.character)) 
+```
+
+```{r, eval=!is_tanzania}
+day7fu_data <- day7fu_data %>%
+  dplyr::mutate(across(c(call_ok),
+                       factor))
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(day7fu_data,
+                      "04b",
+                      "timci_followup_successful_day7_data",
+                      locked_db_dir,
+                      "Cleaned successful Day 7 follow-up data")
+```
+
+```{r day7-lost-to-followup}
+ltfu <- NULL
+if (!is.null(day7fu_data)) {
+  ltfu <- timci::generate_ltfu_log(df = day0_data,
+                                   fudf = allday7fu_data,
+                                   end_date = 12,
+                                   raw = FALSE)
+}
+```
+
+```{r locked-day7-lost-to-followup}
+locked_ltfu <- NULL
+if (!is.null(allday7fu_data)) {
+  if (nrow(allday7fu_data)>0) {
+    locked_ltfu <- timci::generate_ltfu_log(df = day0_data,
+                                            fudf = allday7fu_data,
+                                            end_date = 12,
+                                            raw = FALSE)
+  }
+}
+```
+
+```{r}
+if (!is.null(ltfu)) {
+  fn <- timci::export_df2xlsx(ltfu,
+                              rctls_dir,
+                              "04c_day7_lost_to_followup")
+}
+```
+
+```{r}
+if (!is.null(locked_ltfu)) {
+  fn <- timci::export_df2xlsx(locked_ltfu,
+                              locked_db_dir,
+                              "04c_day7_lost_to_followup")
+}
+```
+
+```{r}
+# if (!is.null(pii) & !is.null(raw_day7fu_data)) {
+#   fu7all <- timci::generate_fu_log(pii,
+#                                    raw_day7fu_data,
+#                                    0,
+#                                    12,
+#                                    7,
+#                                    10,
+#                                    ext = TRUE,
+#                                    deidentify = TRUE)
+#   fn <- timci::export_df2xlsx(fu7all,
+#                               params$rctls_dir,
+#                               "04d_timci_deidentified_day7_fu_weekly_log_all")
+# }
+```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(day7fu_data)
+```

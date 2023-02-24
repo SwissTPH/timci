@@ -8,10 +8,15 @@
 #' @import magrittr dplyr
 #' @export
 
-format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
+format_odk_metadata <- function(df,
+                                start_date = NULL,
+                                end_date = NULL) {
 
   if (dim(df)[1] > 0) {
-    df$today <- strftime(df$start,"%Y-%m-%d")
+    df$SubmissionDate <- strftime(x = df$SubmissionDate,
+                                  format = "%Y-%m-%d %T")
+    df$today <- strftime(df$start,
+                         "%Y-%m-%d")
     df$duration <- as.integer(round(df$end - df$start, digits = 0))
     df$start_time <- strftime(df$start,"%T")
     df$start <- strftime(df$start,"%Y-%m-%d %T")
@@ -52,7 +57,11 @@ format_odk_metadata <- function(df, start_date = NULL, end_date = NULL) {
 #' @import readr utils fs
 #' @export
 
-extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_date = NULL, local_dir = tempdir(), col_specs = NULL) {
+extract_data_from_odk_zip <- function(odk_zip, csv_name,
+                                      start_date = NULL,
+                                      end_date = NULL,
+                                      local_dir = tempdir(),
+                                      col_specs = NULL) {
 
   utils::unzip(odk_zip, exdir = local_dir)
   #fn <- fs::dir_ls(local_dir, glob=paste0("*", csv_name))
@@ -60,9 +69,12 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
   #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(local_dir)
   if (!is.null(col_specs)) {
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name), col_types = col_specs))
+    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
+                                    col_types = col_specs,
+                                    guess_max = 2000)
   } else{
-    raw_odk_data <- readr::with_edition(1, readr::read_csv(file.path(local_dir, csv_name)))
+    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
+                                    guess_max = 2000)
   }
   timci::format_odk_metadata(raw_odk_data, start_date, end_date)
 
@@ -75,15 +87,27 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name, start_date = NULL, end_
 #' @param cpid_forms list of form IDs in `cpid`
 #' @param cfid string, ODK form ID
 #' @param cpp string, ODK project passphrase (optional, only required if the ODK project is encrypted)
-#' @param start_date date, data collection start date (optional)
-#' @param end_date date, data collection end date (optional)
-#' @param col_specs column specifications (optional)
+#' @param start_date date, data collection start date (optional, by default set to `NULL`)
+#' @param end_date date, data collection end date (optional, by default set to `NULL`)
+#' @param filter OData filter (optional, by default set to `NULL`)
+#' @param col_specs column specifications (optional, by default set to `NULL`)
+#' @param group keep group names (optional, by default set to `TRUE`)
+#' @param split split “select multiple” choices into columns (optional, by default set to `FALSE`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @import ruODK
 #' @export
 
-extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
+extract_data_from_odk_server <- function(cpid,
+                                         cpid_forms,
+                                         cfid, cpp="",
+                                         start_date = NULL,
+                                         end_date = NULL,
+                                         filter = NULL,
+                                         col_specs = NULL,
+                                         group = TRUE,
+                                         split = FALSE,
+                                         verbose = FALSE) {
 
   df <- NULL
   cdir <- tempdir()
@@ -93,7 +117,16 @@ extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_d
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
+                                        filter = filter,
+                                        delfields = FALSE,
+                                        group = group,
+                                        split = split,
                                         media = FALSE)
+
+    # Extract the XML representation of the form
+    fq_form_xml <- ruODK::form_xml(parse = FALSE,
+                                   pid = cpid,
+                                   fid = cfid)
 
     df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
                                            csv_name = paste0(cfid,".csv"),
@@ -124,14 +157,17 @@ extract_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_d
 #' @import readr utils fs
 #' @export
 
-extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, local_dir = tempdir()) {
+extract_additional_data_from_odk_zip <- function(odk_zip,
+                                                 csv_name,
+                                                 local_dir = tempdir()) {
 
   utils::unzip(odk_zip, exdir = local_dir)
   fs::dir_ls(local_dir)
   fn <- file.path(local_dir, csv_name)
   df <- NULL
   if ( file.exists(fn) ) {
-    df <- raw_odk_data <- readr::with_edition(1, readr::read_csv(fn))
+    df <- raw_odk_data <- readr::read_csv(fn,
+                                          guess_max = 2000)
   }
   df
 
@@ -144,15 +180,28 @@ extract_additional_data_from_odk_zip <- function(odk_zip, csv_name, local_dir = 
 #' @param cpid_forms list of form IDs in `cpid`
 #' @param cfid string, ODK form ID
 #' @param cpp string, ODK project passphrase (optional, only required if the ODK project is encrypted)
-#' @param start_date date, data collection start date (optional)
-#' @param end_date date, data collection end date (optional)
-#' @param col_specs column specifications (optional)
+#' @param start_date date, data collection start date (optional, by default set to `NULL`)
+#' @param end_date date, data collection end date (optional, by default set to `NULL`)
+#' @param filter OData filter (optional, by default set to `NULL`)
+#' @param col_specs column specifications (optional, by default set to `NULL`)
+#' @param group keep group names (optional, by default set to `TRUE`)
+#' @param split split “select multiple” choices into columns (optional, by default set to `FALSE`)
 #' @param verbose boolean, displays more information about the function output
 #' @return This function returns a list of dataframes.
 #' @import ruODK
 #' @export
 
-extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="", start_date = NULL, end_date = NULL, col_specs = NULL, verbose = FALSE) {
+extract_complex_data_from_odk_server <- function(cpid,
+                                                 cpid_forms,
+                                                 cfid,
+                                                 cpp="",
+                                                 start_date = NULL,
+                                                 end_date = NULL,
+                                                 filter = NULL,
+                                                 col_specs = NULL,
+                                                 group = TRUE,
+                                                 split = FALSE,
+                                                 verbose = FALSE) {
 
   out <- NULL
   cdir <- tempdir()
@@ -162,6 +211,10 @@ extract_complex_data_from_odk_server <- function(cpid, cpid_forms, cfid, cpp="",
                                         pid = cpid,
                                         fid = cfid,
                                         pp = cpp,
+                                        filter = filter,
+                                        delfields = FALSE,
+                                        group = group,
+                                        split = split,
                                         media = TRUE)
     # Extract ODK submissions
     df <- timci::extract_data_from_odk_zip(odk_zip = odk_zip,
@@ -240,8 +293,10 @@ format_text_fields <- function(df, cols) {
   # Replace the space between different answers by `sep` in multiple select questions
   for (c in cols) {
     if (c %in% dfcols) {
-      df[[c]] <- stringr::str_replace_all(df[[c]], ",", ";")
+      df[[c]] <- stringr::str_replace_all(df[[c]], ",", "-")
+      df[[c]] <- stringr::str_replace_all(df[[c]], ";", "-")
       df[[c]] <- stringr::str_replace_all(df[[c]], "\n", " ")
+      df[[c]] <- stringr::str_replace_all(df[[c]], '"', "")
     }
   }
   df

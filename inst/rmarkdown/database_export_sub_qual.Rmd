@@ -1,0 +1,37 @@
+```{r}
+write(formats2h2("Export qualitative data"), stderr())
+```
+
+```{r caregiver-idi-subsection, results="asis"}
+out <- knitr::knit_child('database_export_cgidi_sub.Rmd',
+                         envir = environment(),
+                         quiet = TRUE)
+cat(out, sep = '\n')
+```
+
+```{r hcp-idi-subsection, results="asis"}
+out <- knitr::knit_child('database_export_hcpidi_sub.Rmd',
+                         envir = environment(),
+                         quiet = TRUE)
+cat(out, sep = '\n')
+```
+
+## Key informant interview
+
+No data cleaning for the lock.
+
+```{r kii-export, eval=!is.null(kii_interview_data)}
+fn <- timci::export_df2csvxlsx(kii_interview_data,
+                               qualkii_dir,
+                               "01_timci_kii_interview_data")
+```
+
+## Online survey
+
+No data cleaning for the lock.
+
+```{r online-survey-export, eval=!is.null(online_survey_data)}
+fn <- timci::export_df2csvxlsx(online_survey_data,
+                               qualos_dir,
+                               "01_timci_online_survey_data")
+```

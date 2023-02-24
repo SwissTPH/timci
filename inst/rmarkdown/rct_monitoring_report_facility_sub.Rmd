@@ -1,8 +1,7 @@
 ---
-title: "Untitled"
+title: "Monitoring report - subsection with focus on individual facilities"
 author: "H. LANGET"
-date: "14 9 2021"
-output: html_document
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 ---
 
 ```{r, include=FALSE}
@@ -125,17 +124,15 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
-```{r, results = "asis", fig.height = figsize}
+```{r, results = "asis", fig.height = figsize, eval=!is_india}
 if (!is.null(wfa_data_tmp)) {
   if (length(wfa_data_tmp) > 0 & nrow(wfa_data_tmp) > 0) {
-    if (Sys.getenv('TIMCI_COUNTRY') != 'India') {
-      p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date,
-                                          values = wfa_data_tmp$u5_attendance_last_week,
-                                          date_min = as.Date(start_date),
-                                          date_max = as.Date(as.Date(end_date) + 7),
-                                          ylbl = "Under 5 attendance")
-      plot(p)
-    }
+    p <- timci::generate_week_bar_plot2(date_vec = wfa_data_tmp$date_week,
+                                        values = wfa_data_tmp$u5_attendance_last_week,
+                                        date_min = as.Date(start_date),
+                                        date_max = as.Date(as.Date(end_date) + 7),
+                                        ylbl = "Under 5 attendance")
+    plot(p)
   }
 }
 ```
@@ -197,11 +194,28 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 } else {
   cat("### Calendar heatmaps\n\n")
 }
+```
 
+```{r, results = "asis"}
 if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_data_tmp) > 0) {
   timci::generate_calendar_heatmap2(baseline_data_tmp,
                                     date_visit,
                                     legendtitle = "Number of enrolments")
+}
+```
+
+```{r}
+yi_data_tmp <- NULL
+if (timci::is_not_empty(baseline_data_tmp)) {
+  yi_data_tmp <- baseline_data_tmp %>% filter(yg_infant == 1)
+}
+```
+
+```{r, results = "asis"}
+if (timci::is_not_empty(yi_data_tmp)) {
+  timci::generate_calendar_heatmap2(yi_data_tmp,
+                                    date_visit,
+                                    legendtitle = "Number of young infant enrolments")
 }
 ```
 
@@ -217,6 +231,29 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 if (!is.null(facility_data_tmp) & length(facility_data_tmp) > 0 & nrow(facility_data_tmp) > 0) {
   timci::heatmap_wday_hourofday(facility_data_tmp,
                                'start')
+}
+```
+
+```{r, results='asis'}
+if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
+  cat("### Référence\n\n")
+} else {
+  cat("### Referral\n\n")
+}
+```
+
+```{r}
+referral_data_tmp <- NULL
+if (timci::is_not_empty(baseline_data_tmp)) {
+  referral_data_tmp <- baseline_data_tmp %>% filter(referral_cg == 1 | referral_hf == 1)
+}
+```
+
+```{r, results = "asis"}
+if (timci::is_not_empty(referral_data_tmp)) {
+  timci::generate_calendar_heatmap2(referral_data_tmp,
+                                    date_visit,
+                                    legendtitle = "Number of referrals")
 }
 ```
 

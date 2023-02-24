@@ -5,6 +5,7 @@
 .Renviron
 nul
 .R1environ
+.ipynb_checkpoints
 inst/rmarkdown/test.html
 inst/rmarkdown/test.pdf
 inst/rmarkdown/test.Rmd
@@ -20,3 +21,20 @@ inst/rmarkdown/india_qual_selection_nonreferred.xlsx
 inst/rmarkdown/india_qual_selection_nonreferred_bkp.xlsx
 inst/rmarkdown/india_qual_selection_nonreferred_bkp2.xlsx
 inst/rmarkdown/qual_selection_nonreferred.xlsx
+inst/rmarkdown/kenya_qual_nonreferred_post_intervention.xlsx
+inst/rmarkdown/kenya_qual_post_intervention.xlsx
+inst/rmarkdown/kenya_qual_referred_post_intervention.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_bkp.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kakamega_21.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kakamega_21_bkp.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kakamega_21_bkp2.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_21.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_21_bkp.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_21_bkp2.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_21_bkp3.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_kitui_bkp2.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_ug_21.xlsx
+inst/rmarkdown/kenya_qual_selection_nonreferred_ug_21_bkp.xlsx
+inst/extdata/cleaning/day0_duplicate_correction_tanzania_waitinglist.csv
+inst/extdata/cleaning/Kenya data cleaning notes.md

@@ -76,7 +76,7 @@ if (!is.null(hospit_fu)) {
       pid <- toString(hospit_fu[i,'name'])
       png_file <- file.path(tempdir(), paste0(pid,".png"))
       png(png_file)
-      qrcode::qrcode_gen(pid)
+      qrcode::qr_code(pid)
       dev.off()
       }
     

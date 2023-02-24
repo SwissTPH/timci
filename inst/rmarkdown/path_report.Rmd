@@ -27,40 +27,48 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r}
-
-path_dir <- params$path_dir
-
-if (!is.null(params$facility_data)) {
-  
-  facility_data <- params$facility_data
-  wfa_data <- params$wfa_data
-  
-}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
 ```
 
 ```{r}
-stats <- timci::get_summary_by_deviceid(facility_data)
-stats <- merge(x = stats,
-               y = params$research_facilities,
-               by.x = 'device_id',
-               by.y = 'deviceid',
-               all.x = TRUE)
+path_dir <- params$path_dir
+facility_data <- NULL
+wfa_data <- NULL
+research_facilities <- NULL
+```
 
-stats <- stats %>%
-  dplyr::group_by(facility_id) %>%
-  dplyr::summarise(recruitment_start = min(recruitment_start),
-                   recruitment_last = max(recruitment_last),
-                   screened = sum(screened),
-                   children = sum(children),
-                   female = sum(female),
-                   yg_infant = sum(yg_infant),
-                   yg_female = sum(yg_female))
+```{r, eval=!is.null(params$facility_data)}
+facility_data <- params$facility_data
+wfa_data <- params$wfa_data
+research_facilities <- params$research_facilities
+```
+
+```{r data-cleaning-subsection, child = 'data_cleaning_day0.Rmd'}
+```
+
+```{r, eval=!is_rct}
+facility_data <- facility_data %>%
+  merge(y = research_facilities[,c("facility_id", "rollout_date")] %>% distinct(),
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE) %>%
+  dplyr::filter(!is.na(rollout_date) & as.Date(date_visit) >= as.Date(rollout_date))
+```
+
+```{r}
+stats <- timci::get_summary_by_fid(facility_data)
+```
+
+```{r}
 stats <- merge(x = stats,
-               y = params$research_facilities %>% select(facility_id, facility_name, lvl2),
-               by.x = 'facility_id',
+               y = research_facilities[, c("facility_id", "facility_name", "lvl2")] %>% distinct(),
+               by.x = 'fid_from_device',
                by.y = 'facility_id',
                all = FALSE)
-stats <- stats[!duplicated(stats$facility_id), ]
 tmp <- timci::export_df2xlsx(stats,
                              path_dir,
                              paste0("facility_stats_", Sys.Date()))
@@ -75,7 +83,8 @@ if (!is.null(wfa_data)) {
                                  path_dir,
                                  paste0("weekly_facility_assessment_", Sys.Date()))
     
-    last_data <- timci::extract_last_fa_data(wfa_data, stats)
+    last_data <- timci::extract_last_fa_data(wfa_data,
+                                             stats)
     soc_data <- last_data[last_data$arm == 0,]
     pox_data <- last_data[last_data$arm == 1,]
     cdsa_data <- last_data[last_data$arm == 2,]
@@ -96,7 +105,7 @@ if (!is.null(wfa_data)) {
     last_data2 <- timci::extract_last_fa_data(wfa_data,
                                               stats)
     out <- format_weekly_fa_data_for_export(last_data2)
-    out <- out[out$facility_id %in% params$research_facilities$facility_id, ]
+    out <- out[out$facility_id %in% research_facilities$facility_id, ]
     tmp <- timci::export_df2xlsx(out,
                                  path_dir,
                                  paste0("TIMCI_M&E_RA_data_for_PATH_", Sys.Date()))

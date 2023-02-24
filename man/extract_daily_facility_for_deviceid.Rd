@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_screening_facility.R
 \name{extract_daily_facility_for_deviceid}
 \alias{extract_daily_facility_for_deviceid}
-\title{Extract device IDs}
+\title{Extract main device ID used in a facility at a given date}
 \usage{
 extract_daily_facility_for_deviceid(facility_data, research_facilities)
 }
@@ -12,5 +12,5 @@ extract_daily_facility_for_deviceid(facility_data, research_facilities)
 \item{research_facilities}{dataframe containing the list of research facilities and their characteristics}
 }
 \description{
-Extract device IDs
+Extract main device ID used in a facility at a given date
 }

@@ -13,26 +13,24 @@ if (n_due_day28fu > 0) {
 
 ```{r, results = "asis"}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     day28fu_data <- timci::format_day28_data(raw_day28fu_data)[[1]]
     day28fu_data <- day28fu_data %>%
       dplyr::mutate(days = as.Date(date_call) - as.Date(date_day0), na.rm = TRUE)
     
     all <- data.frame(day28fu_data)
-    all$a1_contact_a4_d_1b[is.na(all$cg_ok)] <- 0
-    all$o1_o1_1a[is.na(all$status_day28)] <- 0
-    all$o1_o1_1[is.na(all$cure_day28)] <- 0
-    all$n1_o3_1[is.na(all$hf_visit_day28)] <- 0
     
     day28_call_ss <- list(
       "District" = list(
-        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec),
-        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec)
+        "Successful call" = ~qwraps2::n_perc(cg_reached == 1, prec, na_rm = TRUE),
+        "Valid time window" = ~qwraps2::n_perc(cg_reached == 1 & (days >= day28_wmin) & (days <= day28_wmax), prec, na_rm = TRUE)
         )
     )
     out <- format_summary_table(all, day28_call_ss, district)
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE) %>%
       kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
@@ -43,14 +41,10 @@ if (!is.null(raw_day28fu_data)) {
 
 ## Weekly calls
 
-```{r, results='asis', fig.height = figsize}
+```{r, results='asis', fig.height = figsize, eval=timci::is_not_empty(day28fu_data)}
 if (!is.null(raw_day28fu_data)) {
-  if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 0){
-    p <- timci::generate_week_bar_plot(date_vec = raw_day28fu_data$date,
-                                       date_min = as.Date(start_date),
-                                       date_max = as.Date(Sys.Date() + 7),
-                                       ylbl = paste0(enrolment_str))
-    plot(p)
+  if(length(raw_day28fu_data) > 0 & nrow(raw_day28fu_data) > 1){
+    
   }
 }
 ```
@@ -59,7 +53,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results='asis', fig.height = figsize}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     plot(timci::generate_day_bar_plot(raw_day28fu_data$date,
                                       as.Date(Sys.Date() - w),
                                       as.Date(Sys.Date() + 1),
@@ -77,7 +71,7 @@ if (!is.null(raw_day28fu_data)) {
 
 ```{r, results='asis'}
 if (!is.null(raw_day28fu_data)) {
-  if (nrow(raw_day28fu_data) > 0) {
+  if (nrow(raw_day28fu_data) > 1) {
     timci::generate_calendar_heatmap2(raw_day28fu_data,
                                       date,
                                       legendtitle = "Number of day 28 follow-up phone calls")
@@ -87,4 +81,74 @@ if (!is.null(raw_day28fu_data)) {
 } else{
   cat('N/A\n\n')
 }
+```
+
+## Completed follow-ups
+
+```{r, eval=timci::is_not_empty(succ_day28fu_data)}
+succ_day28fu_data <- merge(x = succ_day28fu_data,
+                           y = params$research_facilities[, c("facility_id", "facility_name")],
+                           by.x = 'hf_id',
+                           by.y = 'facility_id',
+                           all = FALSE)
+```
+
+```{r, results = "asis", eval=timci::is_not_empty(succ_day28fu_data)}
+all <- data.frame(succ_day28fu_data)
+day28_outcome_ss <- list(
+  "summary" = list(
+    "Before day 28" = ~qwraps2::n_perc(days <= 27, prec, na_rm = TRUE),
+    "Day 28-32" = ~qwraps2::n_perc(days >= 28 & days <= 32, prec, na_rm = TRUE),
+    "Above day 32" = ~qwraps2::n_perc(days > 32, prec, na_rm = TRUE),
+    "Median" = ~qwraps2::median_iqr(days, na_rm = TRUE)
+    )
+  )
+out <- format_summary_table(all, day28_outcome_ss, facility_name) 
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  # kableExtra::column_spec(2, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 1], perl = TRUE)) > 0,
+  #                                           "red",
+  #                                           "black")) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg) %>%
+  kableExtra::footnote(general = "Mean and inner quartile range (IQR) are represented by the format \\\\textit{median (Q1, Q3)}.",
+                       escape = FALSE)
+```
+
+```{r, results = "asis", eval=timci::is_not_empty(succ_day28fu_data)}
+all <- data.frame(succ_day28fu_data) %>% 
+  mutate(hf_visit_day28 = 1 * ((hf_visit_day28_no_day7 == 1) | (hf_visit_day28_after_day7 == 1)))
+all$cure_day28[is.na(all$cure_day28)] <- 0
+all$all_hf_visit_day28 <- ifelse(all$status_day28 == 2 | (all$status_day28 != 2 & all$hf_visit_day28 == 1 & all$hf_visit_type == hospit_value), 1, 0)
+all$admission[is.na(all$admission)] <- 0
+```
+
+```{r, results = "asis", eval=timci::is_not_empty(succ_day28fu_data)}
+day28_outcome_ss <- list(
+  "summary" = list(
+    "Cure" = ~qwraps2::n_perc(cure_day28 == 1 | cure_day28 == 2, prec, na_rm = TRUE),
+    "Death" = ~qwraps2::n_perc(status_day28 == 3, prec, na_rm = TRUE),
+    "Higher level visit" = ~qwraps2::n_perc(all_hf_visit_day28 == 1, prec, na_rm = TRUE),
+    "Admission" = ~qwraps2::n_perc(admission == 1, prec, na_rm = TRUE)
+    )
+  )
+out <- format_summary_table(all, day28_outcome_ss, facility_name) 
+out %>% 
+  kableExtra::kbl(booktabs = TRUE,
+                  longtable = TRUE,
+                  linesep = "") %>% 
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  # kableExtra::column_spec(3, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 2], perl = TRUE)) > 0,
+  #                                           "red",
+  #                                           "black")) %>%
+  # kableExtra::column_spec(4, color = ifelse(as.numeric(gsub("\\(([^()]*)%\\)|.", "\\1", x = out[, 3], perl = TRUE)) > 0,
+  #                                           "red",
+  #                                           "black")) %>%
+  kableExtra::row_spec(1, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
+  kableExtra::row_spec(1:(nrow(out)/2) * 2, background = striped_row_bg)
 ```

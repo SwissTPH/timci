@@ -4,10 +4,12 @@
 \alias{process_weekly_fa_data}
 \title{Process weekly facility assessment data (TIMCI-specific function)}
 \usage{
-process_weekly_fa_data(df)
+process_weekly_fa_data(df, is_pilot = FALSE)
 }
 \arguments{
 \item{df}{dataframe containing the (raw) ODK data collected in the weekly facility assessment}
+
+\item{is_pilot}{Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

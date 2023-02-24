@@ -3,20 +3,21 @@
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr
 
 format_hospital_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("n4_n4_1")
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  multi_cols = c("n4-n4_1")
+  df <- format_multiselect_asws(df,
+                                multi_cols, sep)
 
-  # Match column names with names from dictionary
-  dictionary <- readxl::read_excel(system.file(file.path('extdata', "hospit_dict.xlsx"), package = 'timci'))
-  sub <- subset(dictionary, deidentified == 1)
-  df <- match_from_xls_dict(df, "hospit_dict.xlsx")
-  df <- df[sub$new]
+  df <- timci::match_from_filtered_xls_dict(df,
+                                            "hospit_dict.xlsx",
+                                            is_deidentified = TRUE,
+                                            country = Sys.getenv('TIMCI_COUNTRY'))
+  df
 
 }
 
@@ -28,6 +29,7 @@ format_hospital_data <- function(df) {
 #' @param day0df dataframe containing day 0 data
 #' @param hospitdf dataframe containing hospital follow-up data
 #' @param deidentify boolean, enable the generation of a format with personally identifiable information (PII) for upload on ODK Central (if set to FALSE) or of a deidentified dataframe (if set to TRUE)
+#' @param is_pilot Boolean, default set to `FALSE`
 #' @return This function returns a dataframe that contains the list of participants to be searched for at hospital level.
 #' @export
 #' @import dplyr
@@ -36,12 +38,13 @@ generate_hospital_log <- function(pii,
                                   fu7df,
                                   day0df,
                                   hospitdf,
-                                  deidentify = FALSE) {
+                                  deidentify = FALSE,
+                                  is_pilot = FALSE) {
 
   hospit_log <- NULL
   hospit_log2 <- NULL
 
-  if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+  if((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)){
     col_order <- c('child_id',
                    'sex',
                    'date_visit',
@@ -75,25 +78,35 @@ generate_hospital_log <- function(pii,
       day7fu_data <- timci::format_day7_data(fu7df)[[3]]
 
       if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-        hospit_log <- day7fu_data %>%
-          dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hf_visit_type == 13) )
-      } else{
-        hospit_log <- day7fu_data %>%
-          dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hf_visit_type == 1) )
+        day7fu_data <- day7fu_data %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(hosp_visit = ifelse(13 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
+                                     1,
+                                     0))
+      } else {
+        day7fu_data <- day7fu_data %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(hosp_visit = ifelse(1 %in% as.integer(unlist(strsplit(hf_visit_type, split = ";"))),
+                                            1,
+                                            0))
       }
+
+      hospit_log <- day7fu_data %>%
+        dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hosp_visit == 1) )
 
       hospit_log <- merge(hospit_log, rpii, by = "child_id")
       if (!is.null(hospit_log)) {
         if (nrow(hospit_log) > 0) {
-          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania')
+          if((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
             hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ls_name)
-          else{
+          } else {
             hospit_log$child_name <- paste(hospit_log$fs_name, hospit_log$ms_name, hospit_log$ls_name)
           }
           hospit_log$label <- paste0(hospit_log$child_name, " - ", hospit_log$rhf_id, " ", hospit_log$rhf_name, " (", hospit_log$rhf_loc_name, ") - enrolled at ", hospit_log$fid, " ", hospit_log$facility)
           hospit_log$sex <- ifelse(hospit_log$sex == 1, "male", ifelse(hospit_log$sex == 2, "female", "other"))
           hospit_log$date_day0 <- as.Date(hospit_log$date_day0, format = "%Y-%m-%d")
           hospit_log$rhf_id <- as.character(hospit_log$rhf_id)
+          hospit_log$rhf_oth <- as.character(hospit_log$rhf_oth)
 
           # Exclude true duplicates (children with the same participant ID, the same name, the same sex and the same age)
           # Participants may appear several times in the hospital follow-up log because their Day 7 follow-up has been done several times.
@@ -122,25 +135,48 @@ generate_hospital_log <- function(pii,
                            'date_day0',
                            'date_call')
           } else{
-            col_order <- c('device_id',
-                           'district',
-                           'rhf_loc_id',
-                           'rhf_loc_oth',
-                           'rhf_loc_name',
-                           'rhf_id',
-                           'rhf_oth',
-                           'rhf_name',
-                           'date_hosp_day7',
-                           'child_id',
-                           'label',
-                           'child_name',
-                           'sex',
-                           'dob',
-                           'age_mo',
-                           'fid',
-                           'facility',
-                           'date_day0',
-                           'date_call')
+            if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
+              col_order <- c('device_id',
+                             'district',
+                             'rhf_loc_id',
+                             'rhf_loc_oth',
+                             'rhf_loc_name',
+                             'rhf_id',
+                             'rhf_oth',
+                             'rhf_name',
+                             'date_hosp_day7',
+                             'child_id',
+                             'label',
+                             'child_name',
+                             'sex',
+                             'dob',
+                             'age_mo',
+                             'fid',
+                             'facility',
+                             'date_day0',
+                             'date_call')
+            } else {
+              col_order <- c('device_id',
+                             'district',
+                             'rhf_loc_id',
+                             'rhf_loc_oth',
+                             'rhf_loc_name',
+                             'rhf_id',
+                             'rhf_oth',
+                             'rhf_name',
+                             'date_hosp_day7',
+                             'child_id',
+                             'label',
+                             'child_name',
+                             'sex',
+                             'dob',
+                             'age_mo',
+                             'fid',
+                             'facility',
+                             'date_day0',
+                             'date_call',
+                             'child_hf_id')
+            }
           }
           hospit_log <- hospit_log[, col_order]
 
@@ -151,9 +187,9 @@ generate_hospital_log <- function(pii,
         }
       }
 
-      #############################################################################
-      # Select children who were referred at Day 0 and lost to follow-up at Day 7 #
-      #############################################################################
+      ###############################################################################################################################
+      # Select children who were admitted in the facility of enrolment at Day 0 or referred at Day 0 and lost to follow-up at Day 7 #
+      ###############################################################################################################################
 
       # Lost to follow-up at Day 7
       ltfu_df <- timci::generate_ltfu_log(df = day0df,
@@ -162,13 +198,13 @@ generate_hospital_log <- function(pii,
                                           raw = FALSE)
 
       hospit_log2 <- ltfu_df %>% dplyr::filter( referral_cg == 1 | referral_hf == 1 )
-      if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+      if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
         col_order <- c('child_id',
                        'fs_name',
                        'ls_name',
                        'dob',
                        'sex')
-      } else{
+      } else {
         col_order <- c('child_id',
                        'fs_name',
                        'ms_name',
@@ -182,9 +218,9 @@ generate_hospital_log <- function(pii,
 
       if (!is.null(hospit_log2)) {
         if (nrow(hospit_log2) > 0) {
-          if(Sys.getenv('TIMCI_COUNTRY') != 'Tanzania'){
+          if ((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
             hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ls_name)
-          } else{
+          } else {
             hospit_log2$child_name <- paste(hospit_log2$fs_name, hospit_log2$ms_name, hospit_log2$ls_name)
           }
           hospit_log2$label <- paste0(hospit_log2$child_name)

@@ -9,9 +9,12 @@ export_df2csv(df, dirname, prefix)
 \arguments{
 \item{df}{dataframe.}
 
-\item{dirname}{directory where the RDS file will be created.}
+\item{dirname}{directory where the CSV file will be created.}
 
 \item{prefix}{filename prefix}
+}
+\value{
+This function returns the creation timestamp of the CSV file
 }
 \description{
 Write dataframe to a CSV file format, with a filename consisting of a prefix and a date stamp

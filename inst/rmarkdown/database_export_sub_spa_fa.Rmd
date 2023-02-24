@@ -1,0 +1,19 @@
+```{r}
+write("Export SPA facility assessment data and run corresponding quality checks", stderr())
+```
+
+### Data export
+
+```{r facility-assessment-export, results='asis'}
+timci::dataset_export(spa_fa_data,
+                      "01",
+                      "timci_spa_facility_assessment_data",
+                      params$spa_dir,
+                      "Raw SPA facility assessment data")
+```
+
+### Data summary statistics\n\n
+
+```{r, results='asis'}
+skimr::skim(spa_fa_data)
+```

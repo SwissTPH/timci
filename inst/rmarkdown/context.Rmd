@@ -4,47 +4,7 @@ write(formats2h2("Generate the context subsection"), stderr())
 
 `r h1_context`
 
-```{r context-load-facilities, results='asis'}
-facilities <- params$research_facilities
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  facilities <- facilities[, c("lvl2", "facility_id", "facility_name")]
-  facilities <- facilities[!duplicated(facilities$facility_id), ]
-} else{
-  facilities <- facilities[, c("lvl2", "facility_id", "facility_name", "type")]
-  facilities <- facilities[!duplicated(facilities$facility_id), ]
-}
-```
-
-```{r context-format-facility-info, results='asis'}
-if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  # Sort by district and rename columns
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2) %>%
-    dplyr::rename('District sanitaire' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Poste de santé' = 'facility_name')
-} else if(Sys.getenv('TIMCI_COUNTRY') == 'Kenya'){
-  # Sort by County then type of facility
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2, type) %>%
-    dplyr::rename('County' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Facility' = 'facility_name',
-                  'Type' = 'type')
-  
-} else{
-  # Sort by district then type of facility
-  facility_disp <- facilities %>%
-    dplyr::arrange(lvl2, type) %>%
-    dplyr::rename('District' = 'lvl2',
-                  'ID' = 'facility_id',
-                  'Facility' = 'facility_name',
-                  'Type' = 'type')
-}
-```
-
-```{r}
-facility_nb <- nrow(facilities)
+```{r context-facility-subsection, child = 'context_facility_list.Rmd'}
 ```
 
 ```{r context-facility-type, results='asis'}
@@ -75,4 +35,27 @@ facility_disp  %>%
                             font_size = table_fs) %>%
   kableExtra::row_spec(0, color = total_row_ft2, background = total_row_bg2, bold = TRUE) %>%
   kableExtra::collapse_rows(columns = 1, valign = "top") 
+```
+
+```{r}
+if (Sys.getenv('TIMCI_COUNTRY') == "Kenya") {
+  hc_enrolment_target <- 8
+  dispensary_enrolment_target <- 4
+  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
+  enrolment_target <- round(day_target / facility_nb, 0)
+} else if (Sys.getenv('TIMCI_COUNTRY') == "Senegal") {
+  enrolment_target <- 4
+} else if (Sys.getenv('TIMCI_COUNTRY') == "Tanzania") {
+  hc_enrolment_target <- 16
+  dispensary_enrolment_target <- 4
+  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
+  enrolment_target <- round(day_target / facility_nb, 0)
+} else if (Sys.getenv('TIMCI_COUNTRY') == "India") {
+  hc_enrolment_target <- 22/6
+  dispensary_enrolment_target <- 4/6
+  day_target <- dispensary_enrolment_target * dispensary_nb + hc_enrolment_target * hc_nb
+  enrolment_target <- ceiling(day_target / facility_nb)
+} else{
+  enrolment_target <- 8
+}
 ```

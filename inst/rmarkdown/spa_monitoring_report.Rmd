@@ -71,6 +71,15 @@ total_row_bg2 <- "gray"
 
 `r intro_str`
 
+```{r}
+is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
+is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
+is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
+is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_rct <- is_tanzania | is_india
+is_ls <- is_kenya | is_senegal
+```
+
 ```{r setup-variables}
 spa_sco_data <- params$spa_sco_data
 spa_cgei_data <- params$spa_cgei_data
@@ -80,20 +89,35 @@ spa_hcpi_data <- params$spa_hcpi_data
 
 ```{r conditions}
 spa_sco_is_not_null <- !is.null(spa_sco_data)
+if(spa_sco_is_not_null) {
+  spa_sco_is_not_null <- (nrow(spa_sco_data) > 0) & (length(spa_sco_data) > 0)
+}
 spa_cgei_is_not_null <- !is.null(spa_cgei_data)
+if(spa_cgei_is_not_null) {
+  spa_cgei_is_not_null <- (nrow(spa_cgei_data) > 0) & (length(spa_cgei_data) > 0)
+}
 spa_fa_is_not_null <- !is.null(spa_fa_data)
+if(spa_fa_is_not_null) {
+  spa_fa_is_not_null <- (nrow(spa_fa_data) > 0) & (length(spa_fa_data) > 0)
+}
 spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
+if(spa_hcpi_is_not_null) {
+  spa_hcpi_is_not_null <- (nrow(spa_hcpi_data) > 0) & (length(spa_hcpi_data) > 0)
+}
 spa_is_not_null <- spa_sco_is_not_null | spa_cgei_is_not_null | spa_fa_is_not_null | spa_hcpi_is_not_null
+```
+
+```{r}
+start_date <- NULL
+end_date <- NULL
 ```
 
 ```{r dates, results='asis', eval=spa_is_not_null}
 sco_start_date <- NULL
 sco_end_date <- NULL
 if (spa_sco_is_not_null) {
-  if (nrow(spa_sco_data) > 0) {
-    sco_start_date <- min(spa_sco_data$date)
-    sco_end_date <- max(spa_sco_data$date)
-  }
+  sco_start_date <- min(spa_sco_data$date)
+  sco_end_date <- max(spa_sco_data$date)
 }
 
 cgei_start_date <- NULL
@@ -128,8 +152,6 @@ end_date <- max(sco_end_date, cgei_end_date, fa_end_date, hcpi_end_date)
 ```
 
 ```{r start-end-dates, results='asis'}
-week_nb <- ceiling(difftime(as.Date(end_date), as.Date(start_date) - 1,units = "weeks"))
-days_nb <- sum(!lubridate::wday(seq(as.Date(start_date), as.Date(end_date), "days")) %in% c("7", "1"))
 if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
   cat(paste0("Ce rapport couvre la période du **", start_date, "** (début de l'étude) au **", end_date, "** pour le **Sénégal**."))
 } else {
@@ -137,7 +159,31 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 }
 ```
 
+```{r, eval = spa_is_not_null, results = "asis"}
+# obs_count <- all %>%                       
+#   dplyr::group_by(facility_name) %>%
+#   dplyr::summarise("Observed children" = n_distinct(child_id),
+#                    "Observed providers" = n_distinct(hcp_id)) %>%
+#   bind_rows(dplyr::summarise(.,
+#                              across(where(is.numeric), sum),
+#                              across(where(is.character), ~"Total"))) %>%
+#   rowwise() %>% 
+#   dplyr::mutate(Total = sum(c_across(where(is.numeric)), na.rm = TRUE))
+# 
+# obs_count %>% 
+#   kableExtra::kbl(booktabs = TRUE,
+#                   linesep = "",
+#                   align = c("c", "c", "c"),
+#                   caption = "Number of consultation observations") %>% 
+#   kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
+#   kableExtra::row_spec(0, bold = TRUE) %>%
+#   kableExtra::row_spec(1:(nrow(obs_count)/2) * 2, background = striped_row_bg)
+```
+
 ```{r context-subsection, child = 'context.Rmd'}
+```
+
+```{r spa-cleaning, child = if (spa_is_not_null) 'data_cleaning_spa.Rmd'}
 ```
 
 ```{r sco-subsection, child = if (spa_sco_is_not_null) 'spa_monitoring_report_sub_sco.Rmd'}

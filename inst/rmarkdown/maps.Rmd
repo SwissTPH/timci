@@ -1,22 +1,39 @@
-```{r maps-message}
-write(timci::formats2h2("Generate context maps"), stderr())
+---
+title: "Untitled"
+author: "H. LANGET"
+date: "14 9 2021"
+output: html_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
 ```
 
-```{r maps-load-libraries}
-library(sf)     # classes and functions for vector data
-library(raster) # classes and functions for raster data
-library(spData)        # load geographic data
-library(ggplot2)
-library(gridExtra)
-library(graphics)
+```{r, results = "asis", fig.height = figsize}
+cfid <- facilities[[i, 'facility_id']]
+fname <- facilities[[i, 'facility_name']]
+ftype <- tolower(facilities[[i, 'type']])
+
+facility_data_tmp <- facility_data %>% 
+  dplyr::filter(fid == cfid)
 ```
 
-```{r maps-loads-GPS-points}
+```{r}
+ write(paste0("Map: ", fname), stderr())
+```
+
+```{r}
+gps_coordinates <- timci::process_gps_coordinates(facility_data_tmp)
+```
+
+```{r}
 # Convert GPS coordinates to an sf object
 screening_points <- sf::st_as_sf(gps_coordinates, coords = c("longitude", "latitude"), crs = 4326)
 ```
 
-```{r maps-loads-india-data, eval=is_india}
+```{r, eval=is_india}
 shape_pathname <- system.file(file.path('extdata', "maps", "India", "gadm36_IND_2.shp"), package = 'timci')
 indian_districts <- sf::st_read(shape_pathname,
                                 stringsAsFactors=FALSE,
@@ -28,7 +45,7 @@ sitapur_dc <- up_districts[up_districts$NAME_2 == "Sitapur", ]
 unnao_dc <- up_districts[up_districts$NAME_2 == "Unnao", ]
 ```
 
-```{r maps-plots-india-maps, eval=is_india, fig.cap=fcap_up_maps}
+```{r, eval=is_india, fig.cap=paste0(fcap_up_maps, "-", fname)}
 # Set plot layout
 layout(mat = matrix(c(1, 1, 1,
                       1, 1, 1,
@@ -95,7 +112,7 @@ points(sf::st_coordinates(screening_points),
 title("Unnao", line = -1)
 ```
 
-```{r maps-clear-india-memory, eval=is_india}
+```{r, eval=is_india}
 rm(up_districts)
 rm(deoria_dc)
 rm(sitapur_dc)
@@ -103,7 +120,7 @@ rm(unnao_dc)
 tmp <- gc() # garbage collection
 ```
 
-```{r maps-loads-kenya-data, eval=is_kenya}
+```{r, eval=is_kenya}
 shape_pathname <- system.file(file.path('extdata', "maps", "Kenya", "gadm36_KEN_1.shp"), package = 'timci')
 kenyan_counties <- sf::st_read(shape_pathname,
                                stringsAsFactors=FALSE,
@@ -113,7 +130,7 @@ uasingishu <- kenyan_counties[kenyan_counties$NAME_1 == "Uasin Gishu", ]
 kitui <- kenyan_counties[kenyan_counties$NAME_1 == "Kitui", ]
 ```
 
-```{r maps-plots-kenya-maps, eval=is_kenya, fig.cap="Kenya maps"}
+```{r, eval=is_kenya, fig.cap=paste0("Kenya maps for", fname)}
 # Set plot layout
 layout(mat = matrix(c(1, 1, 1,
                       1, 1, 1,
@@ -180,7 +197,7 @@ points(sf::st_coordinates(screening_points),
 title("Kitui", line = -1)
 ```
 
-```{r maps-clear-kenya-memory, eval=is_kenya}
+```{r, eval=is_kenya}
 rm(kenyan_counties)
 rm(kakamega)
 rm(uasingishu)
@@ -188,7 +205,7 @@ rm(kitui)
 tmp <- gc() # garbage collection
 ```
 
-```{r maps-loads-senegal-data, eval=is_senegal}
+```{r, eval=is_senegal}
 shape_pathname <- system.file(file.path('extdata', "maps", "Senegal", "gadm36_SEN_1.shp"), package = 'timci')
 senegal_regions <- sf::st_read(shape_pathname,
                                stringsAsFactors=FALSE,
@@ -196,7 +213,7 @@ senegal_regions <- sf::st_read(shape_pathname,
 thies <- senegal_regions[senegal_regions$NAME_1 == "Thiès", ]
 ```
 
-```{r maps-plots-senegal-map, eval=is_senegal, fig.cap="Région de Thiès et coordonnées GPS des screenings"}
+```{r, eval=is_senegal, fig.cap=paste0("Coordonnées GPS des screenings pour ", fname)}
 # Plot: Senegal map
 graphics::par(mar = c(0, 0, 0, 0))
 plot(sf::st_geometry(thies),
@@ -207,15 +224,8 @@ points(sf::st_coordinates(screening_points),
        bg = "#000000")
 ```
 
-```{r maps-clear-senegal-memory, eval=is_senegal}
+```{r, eval=is_senegal}
 rm(senegal_regions)
 rm(thies)
-tmp <- gc() # garbage collection
-```
-
-```{r maps-clear-memory}
-detach("package:raster", unload=TRUE)
-detach("package:spData", unload=TRUE)
-detach("package:sf", unload=TRUE)
 tmp <- gc() # garbage collection
 ```

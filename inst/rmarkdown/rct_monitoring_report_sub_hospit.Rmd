@@ -55,13 +55,15 @@ if (!is.null(raw_hospit_data)) {
     
     hospit_summary <- list(
       "summary" = list(
-        "Found" = ~qwraps2::n_perc(found == 1, prec),
-        "Hospitalisation" = ~qwraps2::n_perc(hospit == 1, prec)
+        "Found" = ~qwraps2::n_perc(found == 1, prec, na_rm = TRUE),
+        "Hospitalisation" = ~qwraps2::n_perc(hospit == 1, prec, na_rm = TRUE)
         )
       )
     out <- format_summary_table(all, hospit_summary) 
     out %>% 
-      kableExtra::kbl(booktabs = TRUE, linesep = "") %>% 
+      kableExtra::kbl(booktabs = TRUE,
+                      longtable = TRUE,
+                      linesep = "") %>% 
       kableExtra::kable_styling(latex_options = c("HOLD_position", "repeat_header"), font_size = table_fs) %>%
       kableExtra::row_spec(0, bold = TRUE)
   }

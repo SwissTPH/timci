@@ -1,0 +1,217 @@
+---
+title: "TIMCI caregiver random selection"
+author: "H. LANGET"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readxl)
+cdate <- "2022-04-07"
+cdate <- "2022-04-21"#Sys.Date()
+cdate <- "2022-05-05"#Uasin Gishu only
+myxlsx <- paste0("C:/Users/langhe/Documents/Kenya/timci_exports/export_", cdate, "/02_Kenya_main_study/03_Kenya_qualitative/01_Kenya_caregiver_idis/01_cg_idi_participants.xlsx")
+set.seed(2021)
+```
+
+## Loading data
+```{r, echo=TRUE, message=FALSE}
+df <- readxl::read_excel(myxlsx)
+df <- df %>%
+  mutate(month_category = ifelse(age_mo < 2, 1, ifelse(age_mo < 12, 2, ifelse(age_mo < 24, 3, 4))))
+print(nrow(df))
+```
+
+## Filter data
+
+```{r, echo=TRUE, message=FALSE}
+facilities <- read_excel("C:/Users/langhe/Documents/Kenya/timci_research_facilities.xlsx") %>% dplyr::distinct(facility_id, .keep_all = TRUE)
+df <- df %>%
+  merge(y = facilities[,c("facility_id", "training_date", "rollout_date")],
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+post_intervention_df <- df %>%
+  dplyr::filter(!is.na(rollout_date) & as.Date(date_visit) >= as.Date(rollout_date)) %>%
+  dplyr::mutate(days_since_intervention = as.Date(date_visit) - as.Date(rollout_date))
+print(post_intervention_df)
+```
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(post_intervention_df, "kenya_qual_post_intervention.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+### Referred children
+
+```{r, echo=TRUE, message=FALSE}
+referred_df <- post_intervention_df %>% dplyr::filter(referral_cg == 1 | referral_hf == 1)
+print(referred_df)
+```
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(referred_df, "kenya_qual_referred_post_intervention.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+### Non-referred children
+
+```{r, echo=TRUE, message=FALSE}
+nonreferred_df <- post_intervention_df %>% dplyr::filter((referral_cg == 0 | is.nan(referral_cg)) & referral_hf == 0)
+print(nrow(nonreferred_df))
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(nonreferred_df, "kenya_qual_nonreferred_post_intervention.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+#### Split by regions
+
+```{r, echo=TRUE, message=FALSE}
+referred_kitui_df <- referred_df %>% dplyr::filter(district == "Kitui")
+referred_kitui_df
+```
+
+```{r, echo=TRUE, message=FALSE}
+referred_ug_df <- referred_df %>% dplyr::filter(district == "Uasin Gishu")
+referred_ug_df
+```
+
+```{r, echo=TRUE, message=FALSE}
+referred_kakamega_df <- referred_df %>% dplyr::filter(district == "Kakamega")
+referred_kakamega_df
+```
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kitui_df <- nonreferred_df %>% dplyr::filter(district == "Kitui")
+nonreferred_kitui_df
+```
+
+```{r, echo=TRUE, message=FALSE}
+nonreferred_ug_df <- nonreferred_df %>%
+  dplyr::filter(district == "Uasin Gishu") %>%
+  dplyr::filter(days_since_intervention >= 10)
+nonreferred_ug_df
+```
+
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kakamega_df <- nonreferred_df %>% dplyr::filter(district == "Kakamega")
+nonreferred_kakamega_df
+```
+
+## Random selection for non-referred children
+```{r, echo=TRUE, message=FALSE}
+random_selection_kitui <- nonreferred_kitui_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+print(random_selection_kitui)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kitui, "kenya_qual_selection_nonreferred_kitui_21.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+random_selection_kakamega <- nonreferred_kakamega_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+print(random_selection_kakamega)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kakamega, "kenya_qual_selection_nonreferred_kakamega_21.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+random_selection_ug <- nonreferred_ug_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+print(random_selection_ug)
+```
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_ug, "kenya_qual_selection_nonreferred_ug_21.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+## Random selection for non-referred children (backup)
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kitui_df <- nonreferred_kitui_df[!nonreferred_kitui_df$child_id %in% random_selection_kitui$child_id, ]
+
+random_selection_kitui_bkp <- nonreferred_kitui_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_kitui_bkp)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kitui_bkp, "kenya_qual_selection_nonreferred_kitui_21_bkp.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kakamega_df <- nonreferred_kakamega_df[!nonreferred_kakamega_df$child_id %in% random_selection_kakamega$child_id, ]
+
+random_selection_kakamega_bkp <- nonreferred_kakamega_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_kakamega_bkp)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kakamega_bkp, "kenya_qual_selection_nonreferred_kakamega_21_bkp.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+nonreferred_ug_df <- nonreferred_ug_df[!nonreferred_ug_df$child_id %in% random_selection_ug$child_id, ]
+
+random_selection_ug_bkp <- nonreferred_ug_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_ug_bkp)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_ug_bkp, "kenya_qual_selection_nonreferred_ug_21_bkp.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+## Random selection for non-referred children (backup)
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kitui_df <- nonreferred_kitui_df[!nonreferred_kitui_df$child_id %in% random_selection_kitui_bkp$child_id, ]
+
+random_selection_kitui_bkp2 <- nonreferred_kitui_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_kitui_bkp2)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kitui_bkp2, "kenya_qual_selection_nonreferred_kitui_21_bkp2.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kakamega_df <- nonreferred_kakamega_df[!nonreferred_kakamega_df$child_id %in% random_selection_kakamega_bkp$child_id, ]
+
+random_selection_kakamega_bkp2 <- nonreferred_kakamega_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_kakamega_bkp2)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kakamega_bkp2, "kenya_qual_selection_nonreferred_kakamega_21_bkp2.xlsx", row.names = FALSE, overwrite = TRUE)
+```
+
+## Random selection for non-referred children (backup)
+```{r, echo=TRUE, message=FALSE}
+nonreferred_kitui_df <- nonreferred_kitui_df[!nonreferred_kitui_df$child_id %in% random_selection_kitui_bkp2$child_id, ]
+
+random_selection_kitui_bkp3 <- nonreferred_kitui_df %>%
+  group_by(month_category) %>%
+  sample_n(1)
+
+print(random_selection_kitui_bkp3)
+```
+
+```{r, echo=TRUE, message=FALSE}
+openxlsx::write.xlsx(random_selection_kitui_bkp3,
+                     "kenya_qual_selection_nonreferred_kitui_21_bkp3.xlsx",
+                     row.names = FALSE,
+                     overwrite = TRUE)
+```

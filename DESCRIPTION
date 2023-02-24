@@ -11,7 +11,9 @@ Description: The package provides all tools and functions necessary for
     studies such as SPA.
 License: GPL-3 + file LICENSE
 Imports: 
+    anytime,
     data.table,
+    DiagrammeR,
     digest,
     dplyr,
     DT,
@@ -21,6 +23,7 @@ Imports:
     grDevices,
     hash,
     httr,
+    knitr,
     lubridate,
     magrittr,
     openxlsx,
@@ -35,6 +38,7 @@ Imports:
     scales,
     shiny,
     stats,
+    stringdist,
     stringr,
     tidyr,
     utils,
@@ -44,4 +48,4 @@ Suggests:
     flexdashboard
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1

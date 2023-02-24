@@ -1,0 +1,89 @@
+**Rule:** possible participant duplicates are detected based on their name, sex and date of birth. No specific action at the moment.
+
+```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    day0_qc1 <- timci::detect_participant_duplicates(locked_pii)
+    day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
+    duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
+  }
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-002-disp, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
+      cat(paste0("", nrow(duplicates), " possible participant duplicates detected based on their name, sex and date of birth. No specific action was taken."))
+    } else {
+      cat("No duplicated names detected")
+    }
+  } else {
+    cat("N/A")
+  }
+}
+  
+# Approximate String Matching (Fuzzy Matching)
+#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+#df3 <- df[c("child_id", "full_name")]
+#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+#print(qc3)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(duplicates,
+                            qc_multiple_enrolment_id,
+                            "possible_multiple_enrolments",
+                            qc_dir,
+                            "possible multiple enrolment of the same child")
+```
+
+#### Possible participant duplicates with sex discrepancy
+
+**Rule:** possible participant duplicates detected based on their name and date of birth, but with a sex discrepancy. No specific action at the moment.
+
+```{r, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    day0_qc2 <- timci::detect_namedob_duplicates(locked_pii)
+    day0_qc <- merge(day0_qc, day0_qc2, by = 'child_id')
+    duplicates2 <- day0_qc[(day0_qc$ex_name2_fq > 1 & day0_qc$ex_name2_fq > day0_qc$ex_name_fq) | (day0_qc$sw_name2_fq > 1 & day0_qc$sw_name2_fq > day0_qc$sw_name_fq),]
+  }
+}
+```
+
+```{r check-RCT-LS-ODK-facility-data-003-disp, results='asis'}
+if (!is.null(facility_data)) {
+  if (nrow(locked_pii) > 0) {
+    if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
+      cat(paste0("", nrow(duplicates2), " possible participant duplicates detected based on their name and date of birth, but with sex discrepancy. No specific action was taken."))
+    } else {
+      cat("No possible participant duplicates detected based on their name and date of birth, but with sex discrepancy detected")
+    }
+  } else {
+    cat("N/A")
+  }
+}
+  
+# Approximate String Matching (Fuzzy Matching)
+#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
+#df3 <- df[c("child_id", "full_name")]
+#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
+#print(qc3)
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(duplicates2,
+                            qc_multiple_enrolment_sex_discrepancy_id,
+                            "possible_multiple_enrolments_with_sex_discrepancy",
+                            qc_dir,
+                            "possible multiple enrolment of the same child with sex discrepancy")
+```
+
+```{r export-duplicates, results='asis'}
+timci::quality_check_export(day0_qc,
+                            qc_summary_id,
+                            "data_quality_check_summary",
+                            qc_dir,
+                            "quality checks were raised")
+```

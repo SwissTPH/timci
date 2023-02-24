@@ -36,7 +36,14 @@ For Windows users, it is smoother to install 1) Rtools, 2) R and 3) RStudio in t
 ### Prerequisites 
 
 #### ruODK
-To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install).
+To install `RuODK`, which is the R client that the `timci` package uses to simply interact with the Application Programming Interface (API) of ODK Central, please use the following forked branch and not the official package (some functions needed by the `timci`package are only available in this branch and not in the official package)
+
+```r
+library(devtools)
+devtools::install_github("thaliehln/ruODK", ref="test")
+```
+
+Otherwise, in general you would have to follow the instructions provided [here](https://docs.ropensci.org/ruODK/#install) to install `ruODK`.
 
 ##### ruODK installation difficulties
 When trying to upgrade RuODK, if you encounter difficulties to upgrade some of the dependencies (e.g., `sf` package), you can switch `dependencies` and `build_vignettes` from `TRUE` to `FALSE`.
@@ -87,9 +94,21 @@ If the version number is below `0.6.5`, please install the package from the mast
 ```r
 remotes::install_github("datawookie/emayili")
 ```
+
+From 30 May 2022 Google no longer supports signing in to Google Accounts using only usernames and passwords. Guidance on how to create and use an application password that can be used in `emayili` is available in the following post:
+[{emayili} Updated Gmail Authentication](https://datawookie.dev/blog/2022/03/updated-gmail-authentication/).
+
+#### webshot
+
+To be able to render HTML widgets (e.g., diagrams generated using the package DiagrammeR) as screenshots in a Word or a PDF documents generated using Rmarkdown, you need to install the webshot package and download and install PhantomJS. More explanation available [here](https://bookdown.org/yihui/bookdown/html-widgets.html).
+```r
+install.packages("webshot")
+webshot::install_phantomjs()
+```
+
 #### Other R dependencies
 
-You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`.
+You need to have the following R packages installed: `hash`, `shiny`, `qrcode`, `readxl`, `ggplot2`, `dplyr`, `viridis`, `pryr`, `flexdashboard`, `magrittr`, `scales`, `tidyr`, `DT`, `data.table`, `openxlsx`, `rmarkdown`, `stringr`, `qwraps2`, `digest`, `readr`, `fs`, `kableExtra`, `dataMaid`, `skimr`, `DataExplorer`, `sf`, `spData`, `finalfit`, `webshot`, `DiagrammeR`.
 
 All these packages can be installed using the function `install.packages`:
 ```r
@@ -110,6 +129,8 @@ install.packages("data.table")
 install.packages("openxslx")
 install.packages("rmarkdown")
 install.packages("kableExtra")
+install.packages("finalfit")
+install.packages("DiagrammeR")
 ```
 
 ### Installation of timci from GitHub
@@ -265,6 +286,73 @@ You should now have the following three files in your working directory: `timci_
 
 ![image](https://user-images.githubusercontent.com/71643277/113839903-69bcd580-9790-11eb-9620-2607634b2217.png)
 
+```R
+gc() # Garbage collection
+
+library(timci)
+library(readxl)
+
+stack_size <- getOption("pandoc.stack.size", default = "2048m")
+email <- 0
+
+# Set key dates
+start_date <- as.Date(Sys.getenv("TIMCI_START_DATE"))
+write(start_date, stderr())
+spa_start_date <- as.Date(Sys.getenv('TIMCI_SPA_START_DATE'))
+lock_date <- as.Date(Sys.getenv('TIMCI_CLEANING_END_DATE'))
+
+# Set the root directory for storing results
+output_dir <- file.path(getwd(),"timci_exports")
+# Import the mapping between the ODK Collect device identifiers and the health facilities where the research assistants are posted
+research_facilities <- read_excel(file.path(getwd(),"timci_research_facilities.xlsx"))
+
+###############################
+# RANDOMISED CONTROLLED TRIAL #
+###############################
+
+write(timci::formats2h1("RANDOMISED CONTROLLED TRIAL"), stderr())
+
+# Create the structure of the folder and subfolders that are created everyday to store the reports and exports
+study_dirname <- paste0("02_", Sys.getenv('TIMCI_COUNTRY'), "_main_study")
+dirs <- timci::generate_folder_structure(output_dir, study_dirname)
+
+rctls_pid <- Sys.getenv("TIMCI_RCTLS_PID")
+rctls_pp <- Sys.getenv("TIMCI_RCTLS_PP")
+spa_pid <- Sys.getenv("TIMCI_SPA_PID")
+qual_pid <- Sys.getenv("TIMCI_QUAL_PID")
+qual_pp <- Sys.getenv("TIMCI_QUAL_PP")
+cost_pid <- Sys.getenv("TIMCI_COST_PID")
+
+# Run several Rmarkdown files to generate standardised automated reports for the main study
+timci::run_rmarkdown_reportonly(rctls_pid = rctls_pid,
+                                rctls_pp = rctls_pp,
+                                spa_pid = spa_pid,
+                                cost_pid = cost_pid,
+                                qpid = qual_pid,
+                                qual_pp = qual_pp,
+                                research_facilities = research_facilities,
+                                report_dir = dirs[[5]],
+                                participant_zip = file.path(dirs[[2]], "participants.zip"),
+                                mdb_dir = dirs[[2]],
+                                fu_dir = dirs[[3]],
+                                spa_db_dir = dirs[[4]],
+                                qc_dir = dirs[[6]],
+                                lock_dir = dirs[[7]],
+                                cost_dir = dirs[[9]],
+                                qualcg_dir = dirs[[10]],
+                                qualhcp_dir = dirs[[11]],
+                                qualkii_dir = dirs[[12]],
+                                qualos_dir = dirs[[13]],
+                                path_dir = dirs[[8]],
+                                start_date = start_date,
+                                end_date = NULL,
+                                spa_start_date = spa_start_date,
+                                lock_date = Sys.Date(),
+                                sample_size = 110880)
+
+gc(verbose = TRUE) # Garbage collection and prints memory usage statistics
+```
+
 ## Generate R Markdown reports for TIMCI (automated pipeline)
 ### Setup of the Windows task scheduler
 
@@ -335,3 +423,5 @@ Please make sure to update tests as appropriate.
 
 ## License
 [GPL-3]
+
+## Demo purpose
