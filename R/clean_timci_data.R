@@ -50,6 +50,7 @@ edit_day0_child_ids <- function(df) {
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_duplicate_correction_tanzania.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_duplicate_correction_kenya.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_duplicate_correction_senegal.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ "day0_duplicate_correction_india.csv",
                             TRUE ~ "")
 
   out <- list(df, NULL)
