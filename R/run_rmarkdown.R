@@ -2,7 +2,7 @@
 #'
 #' This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.
 #'
-#' @param rctls_pid Numeric value that refers ID of the RCT/LS ODK Central project
+#' @param rctls_pid Numeric value that refers to the ID of the RCT/LS ODK Central project
 #' @param rctls_pp Encryption passphrase associated with the RCT/LS ODK ODK Central project
 #' @param spa_pid Numeric value that refers to the ID of the SPA / time-flow / process mapping project on the ODK Central server
 #' @param spa_pid2 Numeric value (optional) that refers to another ID of the SPA / time-flow / process mapping project on the ODK Central server if data have been split between 2 projects
@@ -31,6 +31,7 @@
 #' @param is_test Boolean that enables to export and process a small subset of data for running technical tests (optional, default set to FALSE)
 #' @param operational_reports Boolean that enables to generate operational reports (optional, default set to TRUE)
 #' @param is_pilot Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)
+#' @param dm_pid Numeric value that refers to the ID of the Data Management (DM) ODK Central project
 #' @import rmarkdown ruODK readr
 #' @export
 
@@ -62,7 +63,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                      sample_size = 100000,
                                      is_test = FALSE,
                                      operational_reports = TRUE,
-                                     is_pilot = FALSE) {
+                                     is_pilot = FALSE,
+                                     dm_pid = NULL) {
 
   #####################
   # Set TIMCI country #
@@ -95,6 +97,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   hospitfu_end_date <- min(as.Date(end_date + 42), Sys.Date())
   day28fu_end_date <- min(as.Date(end_date + 42), Sys.Date())
   withdrawal_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  drug_end_date <- min(as.Date(end_date + 42), Sys.Date())
   wfa_end_date <- min(as.Date(end_date + 6), Sys.Date())
 
   if (is.null(spa_start_date)) {
@@ -132,8 +135,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
     }
     crf_wfa_fid <- Sys.getenv("TIMCI_WEEKLY_FA_FID")
+    # Drug re-entry for Kenya and Senegal
     if (is_ls) {
-      crf_drug_fid <- Sys.getenv("TIMCI_CRF_FACILITY_FID")
+      crf_drug_fid <- Sys.getenv("TIMCI_DRUG_FID")
     }
 
     # Cost environment variables ---------------------------
@@ -156,6 +160,14 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
     # List RCT/LS forms ---------------------------
     rct_ls_form_list <- ruODK::form_list(pid = rctls_pid)$fid
+
+    # List DM forms ---------------------------
+    dm_form_list <- NULL
+    if (!is.null(dm_pid)) {
+      if (dm_pid %in% odkc_project_list) {
+        dm_form_list <- ruODK::form_list(pid = dm_pid)$fid
+      }
+    }
 
     # List cost forms ---------------------------
     cost_form_list <- NULL
@@ -185,80 +197,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  group = TRUE,
                                                  split = FALSE,
                                                  media = FALSE)
-
-    # Dirty fix - To be moved when time allows
-    # col_specs <- list(
-    #   'a3-a3_a_5' = col_integer(),
-    #   'crfs-t09a1-t08a-f2_9' = col_integer(),
-    #   'crfs-t09a1-t08a-f2_8' = col_integer(),
-    #   'crfs-t09a1-t06a-d2_3b' = col_double(),
-    #   'crfs-t09a1-t06a-d2_2b' = col_double(),
-    #   'crfs-t09a1-t05b-c3_6' = col_integer(),
-    #   'a4_c_10a' = col_integer(),
-    #   'crfs-t04a-b2_3' = col_integer(),
-    #   'crfs-t03-m3_1b' = col_integer(),
-    #   'crfs-t03-m3_3' = col_integer(),
-    #   'crfs-t03-m3_3o' = col_character(),
-    #   'crfs-t03-m3_4' = col_integer(),
-    #   'crfs-t03-m3_6' = col_integer(),
-    #   'crfs-t03-m3_7' = col_integer(),
-    #   'crfs-t03-m3_8a' = col_integer(),
-    #   'crfs-t03-m3_9a' = col_integer(),
-    #   'crfs-t09a1-medication_injection' = col_integer(),
-    #   'crfs-t09a1-injection_types' = col_integer(),
-    #   'crfs-t09a1-injection_typeso' = col_character(),
-    #   'crfs-t09a2-g3_1' = col_character(),
-    #   'crfs-t09a2-g3_1o' = col_character(),
-    #   'crfs-t09a2-i2_1' = col_integer(),
-    #   'crfs-t09a2-i2_1a' = col_integer(),
-    #   'crfs-t09a2-i2_1b' = col_integer(),
-    #   'crfs-t09a2-i2_1o' = col_character(),
-    #   'crfs-t09a2-j2_1' = col_integer(),
-    #   'crfs-t09a2-j2_1c' = col_integer(),
-    #   'crfs-t09a2-h2_2a' = col_character(),
-    #   'crfs-t09a2-h2_2ao' = col_character(),
-    #   'crfs-t07a-tt07a-e2_1' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_1a' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_2' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_2a' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_3' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_3a' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_4' = col_integer(),
-    #   'crfs-t07a-tt07a-e2_4a' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_6' = col_integer(),
-    #   'crfs-t06a-d2_6b' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_1' = col_integer(),
-    #   'crfs-t06a-d2_1a' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_4' = col_integer(),
-    #   'crfs-t06a-d2_4a' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_5' = col_integer(),
-    #   'crfs-t06a-d2_5a' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_2' = col_integer(),
-    #   'crfs-t06a-d2_2b' = col_integer(),
-    #   'crfs-t06a-tt06a-d2_3' = col_integer(),
-    #   'crfs-t06a-d2_3b' = col_integer(),
-    #   'crfs-t08a-f2_1' = col_character(),
-    #   'crfs-t08a-f2_1o' = col_character(),
-    #   'crfs-t08a-f2_2' = col_integer(),
-    #   'crfs-t08a-f2_3' = col_integer(),
-    #   'crfs-t08a-f2_4' = col_integer(),
-    #   'crfs-t08a-f2_5' = col_double(),
-    #   'crfs-t08a-f2_6' = col_integer(),
-    #   'crfs-t08a-f2_7' = col_integer(),
-    #   'crfs-t08a-f2_8' = col_integer(),
-    #   'crfs-t08a-f2_9' = col_integer(),
-    #   'crfs-t08a-f2_10a' = col_integer(),
-    #   'crfs-t05b-c3_1' = col_integer(),
-    #   'crfs-t05b-c3_2' = col_integer(),
-    #   'crfs-t05b-c3_3' = col_integer(),
-    #   'crfs-t05b-c3_3a' = col_integer(),
-    #   'crfs-t05b-c3_4' = col_integer(),
-    #   'crfs-t05b-c3_6a' = col_integer(),
-    #   'crfs-t05b-c3_6' = col_integer(),
-    #   'crfs-t05b-c3_6o' = col_character(),
-    #   'crfs-t09a1-i2_1a1_cg' = col_character(), # Type of referral (source:caregiver)
-    #   'crfs-t09a1-t09a2-i2_1a1' = col_character() # Type of referral (source:registry)
-    # )
 
     col_specs <- timci::import_col_specifications(xls_dict = "main_dict.xlsx",
                                                   country = Sys.getenv('TIMCI_COUNTRY'))
@@ -295,6 +233,18 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                                        local_dir = t)
 
     rm(raw_facility_data)
+
+    # Load drug re-entry data
+    raw_drug_data <- NULL
+    if (is_ls) {
+      write(formats2h3("Load drug re-entry data"), stderr())
+      raw_drug_data <- extract_data_from_odk_server(cpid = dm_pid,
+                                                    cpid_forms = dm_form_list,
+                                                    cfid = crf_drug_fid,
+                                                    start_date = start_date,
+                                                    end_date = drug_end_date,
+                                                    verbose = TRUE)
+    }
 
     # Load day 7 follow-up data
     write(formats2h3("Load day 7 follow-up data"), stderr())
@@ -517,6 +467,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
          raw_day7fu_data,
          raw_hospit_data,
          raw_day28fu_data,
+         raw_drug_data,
          raw_withdrawal_data,
          raw_problem_data,
          wfa_data,
@@ -559,6 +510,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  locked_db_dir = lock_dir,
                  facility_data = facility_data,
                  facility_data_audit = facility_data_audit,
+                 raw_drug_data = raw_drug_data,
                  raw_day7fu_data = raw_day7fu_data,
                  raw_hospit_data = raw_hospit_data,
                  raw_day28fu_data = raw_day28fu_data,

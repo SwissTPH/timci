@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = FALSE,
 qc_df <- NULL
 qc_df2 <- NULL
 cleaned_df <- NULL
+n_df <- nrow(df)
 n_detected <- 0
 cleaned_df_status_update <- ""
 ```
@@ -222,7 +223,13 @@ timci::quality_check_export(df = qc_df,
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-cleaned_df_status_update <- paste0('After deletion of all the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the ', db_name, ' database.')
+n_cleaned_df <- nrow(cleaned_df)
+```
+
+```{r, eval=!is.null(cleaned_df)}
+cleaned_df_status_update <- ifelse(n_cleaned_df < n_df,
+                                   paste0('After deletion of all the records detected by this check, there are now **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'),
+                                   paste0('After correction of the **', n_detected, '**  record(s) detected by this check, there are still **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'))
 ```
 
 `r cleaned_df_status_update`

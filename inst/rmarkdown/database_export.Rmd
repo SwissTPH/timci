@@ -36,6 +36,7 @@ params:
   facility_data: NULL
   lock_date: NULL
   facility_data_audit: NULL
+  raw_drug_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
   raw_day28fu_data: NULL
@@ -79,6 +80,7 @@ is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
 is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
 is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
 is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_ls <- is_kenya | is_senegal
 is_rct <- is_tanzania | is_india
 ```
 
@@ -116,6 +118,7 @@ if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
   facility_data_audit <- params$facility_data_audit
+  raw_drug_data <- params$raw_drug_data
   raw_day7fu_data <- params$raw_day7fu_data
   raw_hospit_data <- params$raw_hospit_data
   raw_day28fu_data <- params$raw_day28fu_data

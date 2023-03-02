@@ -21,6 +21,7 @@ Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there
 
 ```{r}
 write(" o Non-valid enrolling facility IDs", stderr())
+n_nonvalid_fid_records <- 0
 ```
 
 `r if ( is_kenya | is_tanzania ) { paste0('#### Initial check [compliance check', qc_nonvalid_fid1, ']\n\n') }`
@@ -128,6 +129,11 @@ if (!is.null(qc_inconsistent_facility)) {
 
 `r if ( (is_tanzania | is_kenya | is_senegal) & !is_pilot ) { paste0('#### Initial check [compliance check ', qc_duplicate_id1, ']\n\n') }`
 
+```{r}
+n_dropped_records <- 0
+n_duplicate_edits <- 0
+```
+
 ```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
@@ -161,6 +167,10 @@ deleted_records_status_update <- paste0('After the manual deletion of the **', n
 
 `r deleted_records_status_update`
 
+```{r, eval=dropped_records_is_not_empty}
+n_dropped_records <- nrow(dropped_records)
+```
+
 ```{r, eval=dropped_records_is_not_empty, results='asis'}
 dropped_records %>%
   select(old_child_id, uuid) %>%
@@ -182,6 +192,10 @@ edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s
 ```
 
 `r edited_records_status_update`
+
+```{r, eval=duplicate_edits_is_not_empty}
+n_duplicate_edits <- nrow(duplicate_edits)
+```
 
 ```{r, eval=duplicate_edits_is_not_empty, results='asis'}
 duplicate_edits %>%
@@ -224,7 +238,7 @@ n_incorrect_enroldate_records <- 0
 cleaned_df <- NULL
 ```
 
-```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
+```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -470,8 +484,8 @@ n_cleaned_day0_records <- nrow(day0_data)
 timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fid_records,
                                 n_incorrect_enroldate_records,
-                                nrow(dropped_records),
-                                nrow(duplicate_edits),
+                                n_dropped_records,
+                                n_duplicate_edits,
                                 n_cleaned_day0_records)
 ```
 
@@ -487,6 +501,14 @@ timci::dataset_export(raw_day0_data,
                       "timci_day0_data",
                       rctls_dir,
                       "Raw Day 0 data")
+```
+
+```{r, eval=is_ls, results = 'asis'}
+timci::dataset_export(raw_drug_data,
+                      "02z",
+                      "timci_day0_drug_data",
+                      rctls_dir,
+                      "Raw Day 0 drug re-entry data")
 ```
 
 ```{r, results = 'asis'}
