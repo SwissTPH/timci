@@ -423,7 +423,6 @@ locked_allday7fu_data <- allday7fu_data
 ```
 
 ```{r, eval=is_rct}
-
 locked_allday28fu_data <- allday28fu_data
 
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
