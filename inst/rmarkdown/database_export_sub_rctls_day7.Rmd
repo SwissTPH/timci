@@ -137,6 +137,10 @@ n_nonvalid_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
+### Non-consistent participant IDs and names [compliance check]\n\n
+
+To be implemented
+
 ### Data cleaning summary\n\n
 
 ```{r}

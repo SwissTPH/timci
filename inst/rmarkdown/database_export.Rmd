@@ -164,8 +164,10 @@ qc_missing_cp_id <- "DQC_00_12"
 qc_missing_diagnosis_id <- "DQC_00_13"
 qc_missing_referral_id <- "DQC_00_14"
 qc_negative_nb_days_id <- "DQC_00_15"
-qc_pox_ <- "DQC_00_15"
-qc_summary_id <- "DQC_00_16"
+qc_free_text_rx_id <- "DQC_00_16"
+qc_drug_duplicate_id <- "DQC_00_17"
+qc_pox_ <- "DQC_00_18"
+qc_summary_id <- "DQC_00_19"
 qc_pids_out_lock_range_day7fu <- "DQC_07_01"
 qc_nonvalid_day7fu <- "DQC_07_02"
 qc_duplicated_day7fu <- "DQC_07_03"
@@ -440,7 +442,7 @@ save(locked_day0_data,
      file = "timci_locked_data.rda")
 ```
 
-```{r, eval=!is_rct}
+```{r, eval=is_ls}
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
 save(locked_day0_data,
      locked_allday7fu_data,

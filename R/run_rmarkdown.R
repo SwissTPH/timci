@@ -243,6 +243,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     cfid = crf_drug_fid,
                                                     start_date = start_date,
                                                     end_date = drug_end_date,
+                                                    group = FALSE,
                                                     verbose = TRUE)
     }
 

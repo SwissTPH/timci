@@ -1,0 +1,43 @@
+#### Re-entry of drug free text data quality checks\n\n
+
+```{r}
+write("o Export drug re-entry data and run corresponding quality checks", stderr())
+```
+
+```{r}
+db_name <- "Drug"
+drug_is_not_null <- !is.null(raw_drug_data)
+```
+
+##### Duplicated entries\n\n
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_rule <- "Remaining duplicated record IDs are deleted from the database."
+qc_type <- "duplicates"
+df <- raw_drug_data
+col_id <- "record_id"
+col_date <- "start"
+cleaning <- "drop_all"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_drug_duplicate_id
+qc_export_label <- "timci_drug_data_id_duplicates"
+qc_export_description <- "the submission was done twice for the same record ID"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+##### Data export\n\n
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, eval=is_ls&drug_is_not_null, results = 'asis'}
+timci::dataset_export(raw_drug_data,
+                      "02z",
+                      "timci_day0_drug_data",
+                      rctls_dir,
+                      "Raw Day 0 drug re-entry data")
+```

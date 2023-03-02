@@ -279,6 +279,12 @@ multiple <- FALSE
 ```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
+### Child age [Consistency check]
+
+Age group consistent with young infants flag and categories as specified in the codebook
+
+To be implemented
+
 ### Missing clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
 
 ```{r}
@@ -364,7 +370,39 @@ n_missing_referral_cg <- n_detected
 
 ### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]\n\n
 
+```{r}
+write(" o Negative illness onset", stderr())
+```
+
 Check for spurious values/outliers
+
+sickness_duration
+
+### Treatments\n\n
+
+```{r}
+write(" o Treatment free text entries", stderr())
+```
+
+#### Free text entries\n\n
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have antibiotics entered in a structured way and not in free text."
+qc_rule <- action_alert_no_modification
+qc_type <- "free_text"
+df <- day0_data
+qc_text <- "free text drug"
+qc_idx <- qc_free_text_rx_id
+qc_export_label <- "free_text_drug"
+qc_export_description <- "the treatments should have been entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_free_text_rx_cg <- n_detected
+```
+
+```{r db-export-day0-drug-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug.Rmd'}
+```
 
 ### Clinical measurements\n\n
 
@@ -438,6 +476,8 @@ day0_data %>%
   ggplot2::coord_cartesian(xlim =c(75, 100), ylim = c(0, 0.6))
 ```
 
+spo2_meas
+
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::identifyOutliers(day0_data$spo2_meas1,
                            nMax = 100)
@@ -501,14 +541,6 @@ timci::dataset_export(raw_day0_data,
                       "timci_day0_data",
                       rctls_dir,
                       "Raw Day 0 data")
-```
-
-```{r, eval=is_ls, results = 'asis'}
-timci::dataset_export(raw_drug_data,
-                      "02z",
-                      "timci_day0_drug_data",
-                      rctls_dir,
-                      "Raw Day 0 drug re-entry data")
 ```
 
 ```{r, results = 'asis'}

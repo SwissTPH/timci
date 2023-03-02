@@ -85,6 +85,27 @@ n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
 day7fu_data <- cleaned_df
 ```
 
+### Missing date of hospitalisation [mandatory check `r qc_hospit_before_enrolment_day7fu`]\n\n
+
+```{r, eval=!is.null(day7fu_data), results='asis'}
+qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day7fu_data %>% 
+  merge(day0_data,
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_hosp_day7"
+col_date2 <- "date_visit"
+qc_text <- "a date of hospitalisation before the enrolment date"
+qc_idx <- qc_hospit_before_enrolment_day7fu
+qc_export_label <- "hospit_before_enrolment"
+qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
 ### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day7fu`]\n\n
 
 ```{r, eval=!is.null(day7fu_data), results='asis'}
@@ -105,6 +126,8 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
+
+### Missing date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
 
 ### Invalid date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
 
