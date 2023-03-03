@@ -276,7 +276,12 @@ generate_hospital_log <- function(pii,
   if (!is.null(hospit_log2)) {
     if (nrow(hospit_log2) > 0) {
       if (!is.null(hospit_log)) {
-        hospit_log <- dplyr::bind_rows(hospit_log, hospit_log2)
+        if (nrow(hospit_log) > 0) {
+          hospit_log <- dplyr::bind_rows(hospit_log, hospit_log2)
+        } else {
+          hospit_log <- hospit_log2
+          hospit_log$day7fudate <- NA
+        }
       } else{
         hospit_log <- hospit_log2
       }
