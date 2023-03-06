@@ -15,9 +15,7 @@ raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
 
 There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` database.
 
-### Inconsistent dates
-
-#### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_day7_submission_id`]\n\n
+### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_day7_submission_id`]\n\n
 
 ```{r}
 write(" o Inconsistent finalisation and submission", stderr())
@@ -48,7 +46,7 @@ hist(as.numeric(qc_df$diff),
      main="")
 ```
 
-#### Non-timely completion [compliance check `r qc_nontimely_day7_completion_id`]\n\n
+### Non-timely completion [compliance check `r qc_nontimely_day7_completion_id`]\n\n
 
 ```{r}
 write(" o Non-timely completion", stderr())
@@ -140,6 +138,8 @@ allday7fu_data <- cleaned_df
 ### Non-consistent participant IDs and names [compliance check]\n\n
 
 To be implemented
+
+### Missing date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
 
 ### Data cleaning summary\n\n
 

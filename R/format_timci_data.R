@@ -424,7 +424,15 @@ extract_screening_data <- function(df,
   dictionary <- dictionary %>%
     dplyr::filter(screening == 1)
 
-  df[dictionary$new]
+  if ("fid_from_device" %in% colnames(df)){
+    cols <- c(dictionary$new,
+              "fid_from_device")
+  } else{
+    cols <- dictionary$new
+  }
+
+
+  df[cols]
 
 }
 

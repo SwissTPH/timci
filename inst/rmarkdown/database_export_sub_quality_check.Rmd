@@ -177,7 +177,9 @@ full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
 cols <- colnames(qc_df)
 if ( length(qc_df) > 5 ) {
   if ( 'date_visit' %in% cols ) {
-    if ( 'fid' %in% cols ) {
+    if ( 'fid_from_device' %in% cols ) {
+      kcols <- c("fid_from_device", "fid", "date_visit", "child_id", "uuid")
+    } else if ( 'fid' %in% cols ) {
       kcols <- c("fid", "date_visit", "child_id", "uuid")
     } else {
       kcols <- c("date_visit", "child_id", "uuid")

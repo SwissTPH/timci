@@ -1,15 +1,17 @@
-#### Re-entry of drug free text data quality checks\n\n
-
 ```{r}
 write("o Export drug re-entry data and run corresponding quality checks", stderr())
 ```
+
+\newpage
+
+## Day 0 drug free text re-entry data quality checks\n\n
 
 ```{r}
 db_name <- "Drug"
 drug_is_not_null <- !is.null(raw_drug_data)
 ```
 
-##### Duplicated entries\n\n
+### Duplicated entries\n\n
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
@@ -28,7 +30,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-##### Data export\n\n
+### Data export\n\n
 
 ```{r}
 write(" o Data export", stderr())

@@ -4,7 +4,7 @@ write("Export death data for monitoring", stderr())
 
 \newpage
 
-## Death data
+## Death data quality checks
 
 ```{r}
 dropped_cols <- c("start",
@@ -295,6 +295,10 @@ locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_
 #                   "date_discharge")
 # locked_all_deaths <- locked_all_deaths[,!(names(locked_all_deaths) %in% dropped_cols)]
 ```
+
+### Inconsistent date of death
+
+### Data export
 
 ```{r, eval=is_rct, results = 'asis'}
 timci::dataset_export(locked_all_deaths,

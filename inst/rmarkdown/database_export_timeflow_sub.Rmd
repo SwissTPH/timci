@@ -26,7 +26,7 @@ timci::dataset_export(tf_data[[1]],
 ```
 
 ```{r time-flow-export-steps, results = 'asis', eval=!is.null(tf_data[[2]])}
-timci::dataset_export(tf_data[[1]],
+timci::dataset_export(tf_data[[2]],
                       "05b",
                       "timci_timeflow_steps",
                       params$spa_dir,

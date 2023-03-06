@@ -138,9 +138,14 @@ detect_inconsistent_dates <- function(df,
 
   qc_df <- NULL
   cleaned_df <- NULL
+  cols <- colnames(df)
 
   df$diff <- as.Date(as.character(df[[col_date_end]]), format="%Y-%m-%d %T") - as.Date(as.character(df[[col_date_start]]), format="%Y-%m-%d %T")
-  kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  if ( 'fid_from_device' %in% cols ) {
+    kcols <- c("fid_from_device", "fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  } else{
+    kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  }
   if ( !"start" %in% kcols ) {
     kcols <- c(kcols, "start")
   }

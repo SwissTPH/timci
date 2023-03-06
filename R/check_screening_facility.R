@@ -85,10 +85,6 @@ allocate_screening_facility <- function(facility_data,
     dplyr::rename(fid_from_daily_device = fid,
                   facility_name_from_daily_device = facility_name)
 
-  fn <- timci::export_df2xlsx(ddf1,
-                              getwd(),
-                              "devices")
-
   # Remove all data that originates from non-valid device IDs
   out <- facility_data[facility_data$device_id %in% ddf2$device_id,]
 
@@ -127,7 +123,7 @@ allocate_screening_facility <- function(facility_data,
 #' @import dplyr
 
 allocate_screening_facility2 <- function(facility_data,
-                                        research_facilities) {
+                                         research_facilities) {
 
   # Extract the main device ID used in a facility
   ddf1 <- extract_main_facility_for_deviceid(facility_data,
@@ -140,10 +136,6 @@ allocate_screening_facility2 <- function(facility_data,
                                               research_facilities) %>%
     dplyr::rename(fid_from_daily_device = fid,
                   facility_name_from_daily_device = facility_name)
-
-  fn <- timci::export_df2xlsx(ddf1,
-                              getwd(),
-                              "devices")
 
   # Remove all data that originates from non-valid device IDs
   out <- facility_data[facility_data$device_id %in% ddf2$device_id,]

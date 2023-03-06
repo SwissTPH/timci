@@ -1,0 +1,105 @@
+```{r}
+write(formats2h2("Context"),stderr())
+write("Write contextual information including dates, study facilities, facility and device correspondence", stderr())
+```
+
+## Context\nn
+
+```{r}
+start_date <- NULL
+end_date <- NULL
+facility_data_is_not_null <- !is.null(facility_data)
+facility_data_is_not_empty <- timci::is_not_empty(facility_data)
+```
+
+```{r load-RCT-LS-ODK-facility-data, results='asis', eval=facility_data_is_not_empty}
+start_date <- min(facility_data$date_visit)
+end_date <- max(facility_data$date_visit)
+if (is.null(lock_date)) {
+  lock_date <- end_date
+}
+week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
+if (is_senegal) {
+  cat(paste0("* Début de la collecte de données : **", start_date, "**"))
+} else {
+  cat(paste0("* Data collection start: **", start_date, "**"))
+}
+```
+
+```{r, results='asis', eval=facility_data_is_not_empty}
+if (is_senegal) {
+  cat(paste0("* Clôture de la base de données : **", lock_date, "** (semaine **", week_nb,"** de la collecte)"))
+} else {
+  cat(paste0("* Database lock: **", lock_date, "** (week **", week_nb,"** of the data collection)"))
+}
+```
+
+```{r, results = "asis", eval=facility_data_is_not_empty, fig.asp=1}
+timci::generate_calendar_heatmap2(facility_data,
+                                  date_visit,
+                                  legendtitle = "Calendar heatmap of facility screenings")
+```
+
+### Study facilities
+
+```{r context-facility-subsection, child = 'context_facility_list.Rmd'}
+```
+
+```{r, results='asis', eval=is_india}
+cat("### Included facilities")
+```
+
+```{r, results='asis'}
+cat(paste0("Data collection was planned in **", facility_nb, "** facilities."))
+```
+
+```{r, results='asis'}
+facility_disp %>%
+  knitr::kable()
+```
+
+```{r, results='asis', eval=is_india}
+cat("### Excluded facilities")
+```
+
+```{r, results='asis', eval=is_india}
+cat("Data from the facilities listed in the table hereafter are present in the database despite the fact that these facilities are not part of the current study. The data from these facilities will therefore be deleted in subsequent data cleaning stages.")
+```
+
+```{r, results='asis', eval=is_india}
+excluded_facility_disp %>%
+  knitr::kable()
+```
+
+### Facility / device correspondence
+
+```{r, results='asis'}
+facility_device <- facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
+  dplyr::select(c('device_id',
+                  'fid')) %>%
+  unique()
+facility_device <- facility_device %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE) %>%
+  dplyr::select(c('device_id',
+                  'fid',
+                  'facility_name'))
+```
+
+```{r, results='asis'}
+if (is_senegal){
+  # Remove device identification row for Senegal (RA used wrong QR codes)
+  facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
+}
+```
+
+```{r, results='asis'}
+cat(paste0("Data collection has been done using **", nrow(facility_device), "** tablets."))
+```
+
+```{r, results='asis'}
+facility_device %>%
+  knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
+```

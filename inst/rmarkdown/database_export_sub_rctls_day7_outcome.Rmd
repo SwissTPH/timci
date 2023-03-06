@@ -127,8 +127,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Missing date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
-
 ### Invalid date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
 
 ```{r, eval=!is.null(day7fu_data), results='asis'}
