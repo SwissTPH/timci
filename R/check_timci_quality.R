@@ -14,7 +14,7 @@ quality_check_export <- function(df,
                                  cdir,
                                  description) {
 
-  msg <- paste0("The table of participants for whom ",
+  msg <- paste0("The table of record(s) for which ",
                 description,
                 " is empty and therefore has not been exported.")
 
@@ -22,7 +22,7 @@ quality_check_export <- function(df,
 
     filename <- paste(idx, label, sep = "_")
     timestamp <- timci::export_df2xlsx(df, cdir, filename)
-    msg <- paste0("The table of participants for whom ",
+    msg <- paste0("The table of record(s) for which ",
                   description,
                   " has been exported to **",
                   filename,

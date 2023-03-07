@@ -65,6 +65,10 @@ library(knitr)
 library(skimr)
 library(dataMaid)
 library(ggplot2)
+library(extrafont)
+library(lubridate)
+library(hms)
+loadfonts()
 ```
 
 ```{r setup-options, include=FALSE}
@@ -206,7 +210,8 @@ qc_spa_hcpi_duplicates <- "DQC_SP_05"
 
 action_alert_no_modification <- "Alert to the study team. No modification of the database."
 
-tsize <- 0.7
+tsize <- 9
+tfont <- "Cambria"
 ```
 
 \newpage
@@ -216,10 +221,11 @@ tsize <- 0.7
 ## Abbreviations
 
 | Abbreviation | Meaning                                                    |
-|-----------------|-------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | .CSV         | Comma-Separated Value                                      |
 | DB           | DataBase                                                   |
 | LS           | Longitudinal Observational Study                           |
+| ODK          | Open Data Toolkit                                          |
 | RCT          | Randomised Controlled Trial                                |
 | SPA          | Service Provision Assessment                               |
 | TIMCI        | Tools for the Integrated Management of Childhood Illnesses |
@@ -262,6 +268,7 @@ At critical junctures of the pragmatic cluster RCT, the research database will b
 Consistency between the data cleaning procedures in each country will be regularly reviewed.
 
 ## Distribution
+
 Each updated version is to be circulated to by the data management team to the research team in each TIMCI country.
 
 \newpage
@@ -455,3 +462,4 @@ save(locked_day0_data,
      spa_fa_data,
      file = "timci_locked_data.rda")
 ```
+

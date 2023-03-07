@@ -20,7 +20,7 @@ raw_pii <- out[[2]]
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
-### Non-valid device IDs [context check `r qc_screening_w_nonvalid_deviceid`]\n\n
+### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]\n\n
 
 ```{r}
 write(" o Non-valid device IDs", stderr())
@@ -59,7 +59,7 @@ df <- facility_data
 col_date1 <- "end"
 col_date2 <- "submission_date"
 cleaning <- "none"
-qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_text <- "an actual transfer date later than the finalisation date"
 qc_idx <- qc_nontimely_submission_id
 qc_export_label <- "nontimely_day0_submission"
 qc_export_description <- "the submission was not transferred on the same day it was finalised"
@@ -69,15 +69,33 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot(qc_df, aes(x = diff)) +
-  ggplot2::geom_histogram() +
-  ggplot2::labs(x = "Number of days between submission finalisation and transfer",
-                y = "Occurences") +
-  ggplot2::facet_wrap(~fid_from_device)
-# hist(as.numeric(qc_df$diff),
-#      breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-#      main = "",
-#      cex.axis = tsize, cex.lab = tsize)
+ggplot2::ggplot(qc_df %>% 
+                  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, fill = Status)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of submissions not transferred on the same day they were finalised") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont),
+                 axis.ticks.x=element_blank())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
+ggplot2::ggplot(qc_df %>% 
+                  dplyr::mutate(Status = ifelse(diff < 3, "< 3 days", ">= 3 days")) %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, fill = Status)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of submissions not transferred on the same day they were finalised") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont),
+                 axis.ticks.x=element_blank())
 ```
 
 ### Non-timely completion [Context check `r qc_nontimely_completion_id`]\n\n
@@ -94,7 +112,7 @@ df <- facility_data
 col_date1 <- "start"
 col_date2 <- "end"
 cleaning <- "none"
-qc_text <- "the submission was not finalised on the same day it was started"
+qc_text <- "an actual finalisation date later than the start date"
 qc_idx <- qc_nontimely_completion_id
 qc_export_label <- "nontimely_day0_completion"
 qc_export_description <- "the submission was not finalised on the same day it was started"
@@ -104,17 +122,33 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot(qc_df, aes(x = diff)) +
-  ggplot2::geom_histogram() +
-  ggplot2::labs(x = "Number of days between submission start and finalisation",
-                y = "Occurences") +
-  ggplot2::facet_wrap(~fid_from_device)
-# hist(as.numeric(qc_df$diff),
-#      breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-#      xlab = "Number of days between submission start and finalisation" ,
-#      ylab = "Occurences",
-#      main = "",
-#      cex.axis = tsize, cex.lab = tsize)
+ggplot2::ggplot(qc_df %>% 
+                  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, fill = Status)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of submissions not finalised on the same day they were started") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont),
+                 axis.ticks.x=element_blank())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
+ggplot2::ggplot(qc_df %>% 
+                  dplyr::mutate(Status = ifelse(diff < 3, "< 3 days", ">= 3 days")) %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, fill = Status)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of submissions not finalised on the same day they were started") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont),
+                 axis.ticks.x=element_blank())
 ```
 
 ### Facility IDs from other TIMCI studies [context check `r qc_screening_other_fids`]\n\n
@@ -309,6 +343,24 @@ n_after_lockdate_records <- n_detected
 facility_data <- cleaned_df
 ```
 
+### Hour and time of entry\n\n
+
+Add a faceted graph of screening times by facility overtime
+
+```{r, results='asis', fig.asp=1}
+ggplot2::ggplot(facility_data %>%
+                  dplyr::mutate(start_time1 = lubridate::hm(start_time)) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, y = start_time1)) +
+  ggplot2::geom_point() +
+  ggplot2::lims(y = c(lubridate::hm('00:00'),lubridate::hm('23:59'))) +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont),
+                 axis.ticks.x=element_blank())
+```
+
 ### Data cleaning summary\n\n
 
 ```{r}
@@ -352,6 +404,24 @@ timci::dataset_export(screening_data,
                       "timci_screening_data",
                       locked_db_dir,
                       "Cleaned screening data")
+```
+
+```{r, results='asis', fig.asp=1}
+ggplot2::ggplot(screening_data %>% 
+                  dplyr::mutate(Status = ifelse(!is.na(repeat_consult) & repeat_consult == 1,
+                                                "Previously enrolled",
+                                                ifelse(!is.na(consent) & consent == 1,
+                                                       "Newly enrolled",
+                                                       "Not enrolled"))) %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(submission_date),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                aes(x = week, fill = Status)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of screening submissions") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
+  ggplot2::theme(text = element_text(size = tsize, family = tfont)) 
 ```
 
 ```{r export-facility-audit, results = 'asis'}
