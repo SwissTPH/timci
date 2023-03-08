@@ -210,8 +210,10 @@ qc_spa_hcpi_duplicates <- "DQC_SP_05"
 
 action_alert_no_modification <- "Alert to the study team. No modification of the database."
 
-tsize <- 9
+tsize <- 7
 tfont <- "Cambria"
+dbreak_duration <- "4 months"
+nfacetperrow <- 5
 ```
 
 \newpage
@@ -221,7 +223,7 @@ tfont <- "Cambria"
 ## Abbreviations
 
 | Abbreviation | Meaning                                                    |
-|------------------|------------------------------------------------------|
+|-------------------|-----------------------------------------------------|
 | .CSV         | Comma-Separated Value                                      |
 | DB           | DataBase                                                   |
 | LS           | Longitudinal Observational Study                           |
@@ -462,4 +464,3 @@ save(locked_day0_data,
      spa_fa_data,
      file = "timci_locked_data.rda")
 ```
-

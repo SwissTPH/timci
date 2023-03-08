@@ -3,7 +3,7 @@ write(formats2h2("Context"),stderr())
 write("Write contextual information including dates, study facilities, facility and device correspondence", stderr())
 ```
 
-## Context\nn
+## Context
 
 ```{r}
 start_date <- NULL

@@ -1,4 +1,4 @@
-## Screening data quality checks\n\n
+## Screening data quality checks
 
 ```{r}
 write("Export screening data and run corresponding quality checks", stderr())
@@ -20,7 +20,7 @@ raw_pii <- out[[2]]
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
-### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]\n\n
+### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
 
 ```{r}
 write(" o Non-valid device IDs", stderr())
@@ -45,7 +45,7 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Inconsistent finalisation and submission dates [Context check `r qc_nontimely_submission_id`]\n\n
+### Inconsistent finalisation and submission dates [Context check `r qc_nontimely_submission_id`]
 
 ```{r}
 write(" o Non-timely submission", stderr())
@@ -68,37 +68,43 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot2::ggplot(qc_df %>% 
-                  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, fill = Status)) +
-  ggplot2::geom_bar() +
-  ggplot2::labs(x = "Weeks",
-                y = "Number of submissions not transferred on the same day they were finalised") +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont),
-                 axis.ticks.x=element_blank())
+```{r}
+qc_df <- qc_df %>% 
+  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = ifelse(diff < 3,
+                                    "Less than 3 days", ifelse(diff < 7,
+                                                       "3-7 days",
+                                                       "Above 7 days")))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot2::ggplot(qc_df %>% 
-                  dplyr::mutate(Status = ifelse(diff < 3, "< 3 days", ">= 3 days")) %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, fill = Status)) +
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1, fig.cap="Submissions not transferred on the same day they were finalised"}
+ggplot2::ggplot(qc_df, ggplot2::aes(x = week, fill = Status)) +
   ggplot2::geom_bar() +
   ggplot2::labs(x = "Weeks",
-                y = "Number of submissions not transferred on the same day they were finalised") +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont),
-                 axis.ticks.x=element_blank())
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
 ```
 
-### Non-timely completion [Context check `r qc_nontimely_completion_id`]\n\n
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1, fig.cap="Submissions not transferred on the same day they were finalised"}
+ggplot2::ggplot(qc_df, ggplot2::aes(x = week, fill = Difference)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+### Non-timely completion [Context check `r qc_nontimely_completion_id`]
 
 ```{r}
 write(" o Non-timely completion", stderr())
@@ -121,43 +127,49 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot2::ggplot(qc_df %>% 
-                  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, fill = Status)) +
-  ggplot2::geom_bar() +
-  ggplot2::labs(x = "Weeks",
-                y = "Number of submissions not finalised on the same day they were started") +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont),
-                 axis.ticks.x=element_blank())
+```{r}
+qc_df <- qc_df %>% 
+  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = ifelse(diff < 1,
+                                    "Less than 1 day", ifelse(diff < 3,
+                                                       "1-3 days",
+                                                       "Above 3 days")))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
-ggplot2::ggplot(qc_df %>% 
-                  dplyr::mutate(Status = ifelse(diff < 3, "< 3 days", ">= 3 days")) %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, fill = Status)) +
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1, fig.cap="Number of submissions not finalised on the same day they were started"}
+ggplot2::ggplot(qc_df, ggplot2::aes(x = week, fill = Status)) +
   ggplot2::geom_bar() +
   ggplot2::labs(x = "Weeks",
-                y = "Number of submissions not finalised on the same day they were started") +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont),
-                 axis.ticks.x=element_blank())
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
 ```
 
-### Facility IDs from other TIMCI studies [context check `r qc_screening_other_fids`]\n\n
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1, fig.cap="Number of submissions not finalised on the same day they were started"}
+ggplot2::ggplot(qc_df, ggplot2::aes(x = week, fill = Difference)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+### Facility IDs from other TIMCI studies [context check `r qc_screening_other_fids`]
 
 ```{r}
 write(" o Facility IDs from other facilities (India only)", stderr())
 ```
 
-`r if ( !is_india ) { paste0('This check is only implemented for India.\n\n') }`
+`r if ( !is_india ) { paste0('This check is only implemented for India.') }`
 
 ```{r}
 qc_df <- NULL
@@ -184,7 +196,7 @@ n_other_fid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]\n\n
+### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]
 
 ```{r}
 write(" o Caregiver eligibility", stderr())
@@ -215,7 +227,7 @@ facility_data <- cleaned_df
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']\n\n') }`
+`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']') }`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who come back within 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with their participant ID, this creates duplicates in the database."
@@ -234,9 +246,9 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs\n\n' }`
+`r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs' }`
 
-`r if ( is_tanzania ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:\n\n* variable *repeat_consult* set to 1\n\n* variable *consent* set to NA\n\n* variable *enrolled* set to NA') }`
+`r if ( is_tanzania ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:* variable *repeat_consult* set to 1* variable *consent* set to NA* variable *enrolled* set to NA') }`
 
 ```{r}
 repeat_visit_edits_is_not_empty <- FALSE
@@ -264,7 +276,7 @@ repeat_visit_edits %>%
   knitr::kable()
 ```
 
-`r if ( is_tanzania ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']\n\n') }`
+`r if ( is_tanzania ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']') }`
 
 ```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
 qc_description <- "Remaining repeat visits incorrectly recorded as new enrolments are deleted from the database." 
@@ -283,7 +295,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Incorrect date and time setup on the device [context check `r qc_incorrect_date_setup`]\n\n
+### Incorrect date and time setup on the device [context check `r qc_incorrect_date_setup`]
 
 ```{r}
 write(" o Incorrect data and time setup on the device", stderr())
@@ -317,7 +329,27 @@ n_incorrect_date_setup_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Lock date [context check `r qc_screening_after_lockdate`]\n\n
+```{r}
+qc_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
+ggplot2::ggplot(qc_df, ggplot2::aes(x = week)) +
+  ggplot2::geom_bar() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device,
+                      ncol = nfacetperrow,
+                      drop = FALSE) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+### Lock date [context check `r qc_screening_after_lockdate`]
 
 ```{r}
 write(" o Lock date context", stderr())
@@ -343,25 +375,30 @@ n_after_lockdate_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Hour and time of entry\n\n
-
-Add a faceted graph of screening times by facility overtime
+### Hour and time of entry
 
 ```{r, results='asis', fig.asp=1}
 ggplot2::ggplot(facility_data %>%
-                  dplyr::mutate(start_time1 = lubridate::hm(start_time)) %>% 
+                  dplyr::mutate(start_time1 = as.POSIXct(paste0("2022-09-23 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
                   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                                              "week",
                                                              week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, y = start_time1)) +
+                ggplot2::aes(x = week, y = start_time1)) +
   ggplot2::geom_point() +
-  ggplot2::lims(y = c(lubridate::hm('00:00'),lubridate::hm('23:59'))) +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont),
-                 axis.ticks.x=element_blank())
+  ggplot2::labs(x = "Weeks",
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::scale_y_datetime(date_labels = "%H:%M",
+                            date_breaks = "4 hours") +
+  ggplot2::facet_wrap(~ fid_from_device,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
@@ -384,7 +421,7 @@ timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_cleaned_screening_records)
 ```
 
-### Data export\n\n
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -416,12 +453,16 @@ ggplot2::ggplot(screening_data %>%
                   dplyr::mutate(week = lubridate::floor_date(as.Date(submission_date),
                                                              "week",
                                                              week_start = getOption("lubridate.week.start", 1))),
-                aes(x = week, fill = Status)) +
+                ggplot2::aes(x = week, fill = Status)) +
   ggplot2::geom_bar() +
   ggplot2::labs(x = "Weeks",
-                y = "Number of screening submissions") +
-  ggplot2::facet_wrap(~ fid_from_device, ncol = 5) +
-  ggplot2::theme(text = element_text(size = tsize, family = tfont)) 
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid_from_device, ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank()) 
 ```
 
 ```{r export-facility-audit, results = 'asis'}
