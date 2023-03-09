@@ -1,6 +1,35 @@
-```{r, results='asis', eval=is_kenya, fig.asp=1, fig.cap=paste0(fig_caption, " - Dispensaries")}
-timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
-                                             dplyr::filter(type == "Dispensary"),
+```{r}
+type_comparison <- comparison=="type"
+area_comparison <- comparison=="area"
+
+df1 <- NULL
+df2 <- NULL
+df3 <- NULL
+```
+
+```{r, eval=is_kenya&type_comparison}
+df1 <- fig_df %>% dplyr::filter(type == "Dispensary")
+df2 <- fig_df %>% dplyr::filter(type == "Health Center")
+```
+
+```{r, eval=is_kenya&area_comparison}
+df1 <- fig_df %>% dplyr::filter(lvl2 == "Kakamega County")
+df2 <- fig_df %>% dplyr::filter(lvl2 == "Kitui County")
+df3 <- fig_df %>% dplyr::filter(lvl2 == "Uasin Gishu County")
+
+lbl1 <- "Kakamega County"
+lbl2 <- "Kitui County"
+lbl3 <- "Uasin Gishu County"
+```
+
+```{r, eval=is_tanzania}
+df1 <- fig_df %>% dplyr::filter(type == "Kaliua")
+df2 <- fig_df %>% dplyr::filter(type == "Sengerema ")
+df3 <- fig_df %>% dplyr::filter(type == "Tanga ")
+```
+
+```{r, results='asis', eval=is_kenya&timci::is_not_empty(df1)&type_comparison, fig.asp=1, fig.cap=paste0(fig_caption, " - Dispensaries")}
+timci::plot_geom_bar_by_facility_over_time(df = df1,
                                            facility_col = facility_col,
                                            date_col = date_col,
                                            date_lbl = date_lbl,
@@ -11,9 +40,8 @@ timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
                                            text_size = tsize)
 ```
 
-```{r, results='asis', eval=is_kenya, fig.asp=0.67, fig.cap=paste0(fig_caption, " - Health centres")}
-timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
-                                             dplyr::filter(type == "Health Center"),
+```{r, results='asis', eval=is_kenya&timci::is_not_empty(df2)&type_comparison, fig.asp=0.67, fig.cap=paste0(fig_caption, " - Health centres")}
+timci::plot_geom_bar_by_facility_over_time(df = df2,
                                            facility_col = facility_col,
                                            date_col = date_col,
                                            date_lbl = date_lbl,
@@ -24,9 +52,44 @@ timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
                                            text_size = tsize)
 ```
 
-```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Kaliua")}
-timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
-                                             dplyr::filter(lvl2 == "Kaliua"),
+```{r, results='asis', eval=is_kenya&timci::is_not_empty(df1)&area_comparison, fig.asp=1, fig.cap=paste0(fig_caption, " - Kakamega County")}
+timci::plot_geom_bar_by_facility_over_time(df = df1,
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 3,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_kenya&timci::is_not_empty(df2)&area_comparison, fig.asp=0.67, fig.cap=paste0(fig_caption, " - Kitui County")}
+timci::plot_geom_bar_by_facility_over_time(df = df2,
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 3,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_kenya&timci::is_not_empty(df3), fig.asp=1, fig.cap=paste0(fig_caption, " - Uasin Gishu County")}
+timci::plot_geom_bar_by_facility_over_time(df = df3,
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 3,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_tanzania&timci::is_not_empty(df1), fig.asp=1, fig.cap=paste0(fig_caption, " - Kaliua")}
+timci::plot_geom_bar_by_facility_over_time(df = df1,
                                            facility_col = facility_col,
                                            date_col = date_col,
                                            date_lbl = date_lbl,
@@ -37,9 +100,8 @@ timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
                                            text_size = tsize)
 ```
 
-```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Sengerema")}
-timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
-                                             dplyr::filter(lvl2 == "Sengerema"),
+```{r, results='asis', eval=is_tanzania&timci::is_not_empty(df2), fig.asp=1, fig.cap=paste0(fig_caption, " - Sengerema")}
+timci::plot_geom_bar_by_facility_over_time(df = df2,
                                            facility_col = facility_col,
                                            date_col = date_col,
                                            date_lbl = date_lbl,
@@ -50,9 +112,8 @@ timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
                                            text_size = tsize)
 ```
 
-```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Tanga")}
-timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
-                                             dplyr::filter(lvl2 == "Tanga"),
+```{r, results='asis', eval=is_tanzania&timci::is_not_empty(df3), fig.asp=1, fig.cap=paste0(fig_caption, " - Tanga")}
+timci::plot_geom_bar_by_facility_over_time(df = df3,
                                            facility_col = facility_col,
                                            date_col = date_col,
                                            date_lbl = date_lbl,

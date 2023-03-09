@@ -545,7 +545,7 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 #' @param date_lbl String that contains the x-axis label for the plot.
 #' @param date_break_str A string giving the distance between date breaks like "2 weeks", or "10 years".
 #' @param date_format A string giving the date formatting specification for the date labels (for instance `\%b\%y`).
-#' @param fill_col Column name in data frame `df`(optional, default `NULL`).
+#' @param fill_col Column name in data frame `df`(optional, default empty string "").
 #' @param n_facet_per_row Numeric value (optional, default 5) to set the number of facets per rows.
 #' @param text_size Numeric value (optional, default 7) to scale the text size.
 #' @return This function returns a ggplot2 object.
@@ -558,7 +558,7 @@ plot_geom_bar_by_facility_over_time <- function(df,
                                                 date_lbl,
                                                 date_break_str,
                                                 date_format,
-                                                fill_col = NULL,
+                                                fill_col = "",
                                                 n_facet_per_row = 5,
                                                 text_size = 7){
 
@@ -566,8 +566,7 @@ plot_geom_bar_by_facility_over_time <- function(df,
   date_col <- rlang::sym(date_col)
   facility_col <- rlang::sym(facility_col)
 
-  # handling NULL fill_col
-  if ( !missing(fill_col) ) {
+  if ( fill_col != "" ) {
     fill_col <- rlang::sym(fill_col)
     p <- ggplot2::ggplot(df,
                          ggplot2::aes(x = !!date_col, fill = !!fill_col))

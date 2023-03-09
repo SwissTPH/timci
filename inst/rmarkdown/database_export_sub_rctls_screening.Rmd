@@ -86,6 +86,7 @@ facility_col <- "fid_from_device"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
+comparison <- "area"
 ```
 
 ```{r, eval=timci::is_not_empty(fig_df), results='asis'}
@@ -132,12 +133,17 @@ qc_df <- qc_df %>%
   dplyr::mutate(Difference = ifelse(diff <= 1,
                                     "1 day", ifelse(diff < 3,
                                                        "2-3 days",
-                                                       "Above 3 days")))
+                                                       "Above 3 days"))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
 fig_caption <- "Number of submissions not finalised on the same day they were started"
 facility_col <- "fid_from_device"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
+comparison <- "type"
 ```
 
 ```{r, eval=timci::is_not_empty(fig_df), results='asis'}
@@ -321,20 +327,24 @@ facility_data <- cleaned_df
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df)}
-qc_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-# timci::plot_geom_bar_by_facility_over_time(df = qc_df,
-#                                            facility_col = fid_from_device,
-#                                            date_col = week,
-#                                            date_lbl = "Weeks",
-#                                            date_break_str = dbreak_duration,
-#                                            date_format = "%b%y",
-#                                            fill_col = NULL,
-#                                            n_facet_per_row = nfacetperrow,
-#                                            text_size = tsize)
+```{r, eval=timci::is_not_empty(fig_df), results='asis'}
+fig_caption <- "Incorrect date and time setup on the device"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Lock date [context check `r qc_screening_after_lockdate`]
@@ -432,24 +442,31 @@ timci::dataset_export(screening_data,
 ```
 
 ```{r, results='asis', fig.asp=1}
-# fig_df <- screening_data %>% 
-#   dplyr::mutate(Status = ifelse(!is.na(repeat_consult) & repeat_consult == 1,
-#                                 "Previously enrolled",
-#                                 ifelse(!is.na(consent) & consent == 1,
-#                                        "Newly enrolled",
-#                                        "Not enrolled"))) %>%
-#   dplyr::mutate(week = lubridate::floor_date(as.Date(submission_date),
-#                                              "week",
-#                                              week_start = getOption("lubridate.week.start", 1)))
-# timci::plot_geom_bar_by_facility_over_time(df = fig_df,
-#                                            facility_col = fid_from_device,
-#                                            date_col = week,
-#                                            date_lbl = "Weeks",
-#                                            date_break_str = dbreak_duration,
-#                                            date_format = "%b%y",
-#                                            fill_col = Status,
-#                                            n_facet_per_row = nfacetperrow,
-#                                            text_size = tsize)
+fig_df <- screening_data %>%
+  dplyr::mutate(Status = ifelse(!is.na(repeat_consult) & repeat_consult == 1,
+                                "Previously enrolled",
+                                ifelse(!is.na(consent) & consent == 1,
+                                       "Newly enrolled",
+                                       "Not enrolled"))) %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(submission_date),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r, eval=timci::is_not_empty(fig_df), results='asis'}
+fig_caption <- "Screening data overview"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ```{r export-facility-audit, results = 'asis'}

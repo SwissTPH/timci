@@ -14,7 +14,7 @@ correct_day0_non_valid_facilities <- function(df) {
   out <- list(df,NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname)
+    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
     df <- df %>%
       merge(edits[, c("old_child_id", "uuid", "new_child_id")],
             by.x = c("child_id", "uuid"),
@@ -57,7 +57,7 @@ edit_day0_child_ids <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname)
+    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
     found_edits <- edits[, c("old_child_id", "uuid", "new_child_id")] %>%
       merge(df[, c("child_id", "uuid")],
@@ -108,7 +108,7 @@ edit_day0_to_repeat <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname)
+    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
     found_edits <- edits[, c("old_child_id", "uuid")] %>%
       merge(df[, c("child_id", "uuid")],
@@ -174,7 +174,7 @@ delete_day0_records <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    records_to_drop <- readr::read_csv(csv_pathname)
+    records_to_drop <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
     found_records <- records_to_drop %>%
       merge(df[, c("child_id", "uuid")],
