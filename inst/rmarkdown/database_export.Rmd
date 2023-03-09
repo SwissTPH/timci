@@ -213,7 +213,7 @@ action_alert_no_modification <- "Alert to the study team. No modification of the
 tsize <- 7
 tfont <- "Cambria"
 dbreak_duration <- "4 months"
-nfacetperrow <- 5
+nfacetperrow <- 4
 ```
 
 \newpage

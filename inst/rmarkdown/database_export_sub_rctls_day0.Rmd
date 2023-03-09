@@ -134,7 +134,7 @@ n_dropped_records <- 0
 n_duplicate_edits <- 0
 ```
 
-```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
+```{r, eval=day0_is_not_null&(is_tanzania|is_kenya|is_india), results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
 qc_type <- "duplicates"
@@ -318,6 +318,22 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_cp <- n_detected
 ```
 
+```{r, eval=timci::is_not_empty(qc_df)}
+qc_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1))))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
+# timci::plot_geom_bar_by_facility_over_time(df = qc_df,
+#                                            facility_col = fid,
+#                                            date_col = week,
+#                                            date_lbl = "Weeks",
+#                                            date_break_str = dbreak_duration,
+#                                            date_format = "%b%y",
+#                                            n_facet_per_row = nfacetperrow,
+#                                            text_size = tsize)
+```
+
 ### Missing diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
 ```{r}
@@ -347,6 +363,22 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_missing_diagnosis <- n_detected
+```
+
+```{r, eval=timci::is_not_empty(qc_df)}
+qc_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1))))
+```
+
+```{r, results='asis', eval=timci::is_not_empty(qc_df), fig.asp=1}
+# timci::plot_geom_bar_by_facility_over_time(df = qc_df,
+#                                            facility_col = fid,
+#                                            date_col = week,
+#                                            date_lbl = "Weeks",
+#                                            date_break_str = dbreak_duration,
+#                                            date_format = "%b%y",
+#                                            n_facet_per_row = nfacetperrow,
+#                                            text_size = tsize)
 ```
 
 ### Missing referral [Mandatory check `r qc_missing_referral_id`]\n\n
@@ -413,6 +445,23 @@ write(" o Clinical measurements", stderr())
 
 ```{r}
 write("   o Temperature", stderr())
+```
+
+```{r, eval=day0_is_not_null&!is_india}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::filter(!is.na(temp_meas))
+```
+
+```{r, results='asis', eval=day0_is_not_null&!is_india, fig.asp=1}
+# timci::plot_geom_bar_by_facility_over_time(df = fig_df,
+#                                            facility_col = fid,
+#                                            date_col = week,
+#                                            date_lbl = "Weeks",
+#                                            date_break_str = dbreak_duration,
+#                                            date_format = "%b%y",
+#                                            n_facet_per_row = nfacetperrow,
+#                                            text_size = tsize)
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}

@@ -16,24 +16,24 @@ generate_week_bar_plot(
 )
 }
 \arguments{
-\item{date_vec}{Vector containing dates}
+\item{date_vec}{Vector containing dates.}
 
-\item{date_min}{Start date of the plot}
+\item{date_min}{Start date of the plot.}
 
-\item{date_max}{End date of the plot}
+\item{date_max}{End date of the plot.}
 
-\item{ylim}{Numeric vector of length 2 that contains the min and max values of the y-axis}
+\item{ylim}{Numeric vector of length 2 that contains the min and max values of the y-axis (optional, default = NULL).}
 
-\item{ylbl}{String of the y-axis}
+\item{ylbl}{String of the y-axis.}
 
-\item{rref}{reference value}
+\item{rref}{reference value (optional, default = NULL).}
 
-\item{relative}{Boolean for plotting relative/absolute plots}
+\item{relative}{Boolean for plotting relative/absolute plots.}
 
-\item{date_vec_ref}{Vector containing reference dates (optional, default = NULL)}
+\item{date_vec_ref}{Vector containing reference dates (optional, default = NULL).}
 }
 \value{
-This function returns a ggplot object which contains a bar plot of frequencies by week
+This function returns a ggplot object which contains a bar plot of frequencies by week.
 }
 \description{
 generate_week_bar_plot() creates an absolute or a relative bar plot.

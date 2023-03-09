@@ -15,7 +15,13 @@
 #' @export
 #' @import ggplot2
 
-generate_enrolment_hist <- function(df, col1, col2, lthres, uthres, lblx, lbly){
+generate_enrolment_hist <- function(df,
+                                    col1,
+                                    col2,
+                                    lthres,
+                                    uthres,
+                                    lblx,
+                                    lbly){
 
   # Quote the arguments that refer to data frame columns
   col1 <- dplyr::enquo(col1)
@@ -218,15 +224,15 @@ generate_day_bar_plot <- function(date_vec,
 #'
 #' generate_week_bar_plot() creates an absolute or a relative bar plot.
 #'
-#' @param date_vec Vector containing dates
-#' @param date_min Start date of the plot
-#' @param date_max End date of the plot
-#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis
-#' @param ylbl String of the y-axis
-#' @param rref reference value
-#' @param relative Boolean for plotting relative/absolute plots
-#' @param date_vec_ref Vector containing reference dates (optional, default = NULL)
-#' @return This function returns a ggplot object which contains a bar plot of frequencies by week
+#' @param date_vec Vector containing dates.
+#' @param date_min Start date of the plot.
+#' @param date_max End date of the plot.
+#' @param ylim Numeric vector of length 2 that contains the min and max values of the y-axis (optional, default = NULL).
+#' @param ylbl String of the y-axis.
+#' @param rref reference value (optional, default = NULL).
+#' @param relative Boolean for plotting relative/absolute plots.
+#' @param date_vec_ref Vector containing reference dates (optional, default = NULL).
+#' @return This function returns a ggplot object which contains a bar plot of frequencies by week.
 #' @export
 #' @import ggplot2 scales
 
@@ -526,5 +532,59 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
                       size = 2.7 * scale,
                       label = lbl) +
     ggplot2::theme_void()
+
+}
+
+#' Create facets with bar plots over time
+#'
+#' plot_geom_bar_by_facility_over_time() creates an image that contains facets with bar plots over time.
+#'
+#' @param df Data frame to use for the plot.
+#' @param facility_col Column name in data frame `df`.
+#' @param date_col Column name in data frame `df`, should contain dates.
+#' @param date_lbl String that contains the x-axis label for the plot.
+#' @param date_break_str A string giving the distance between date breaks like "2 weeks", or "10 years".
+#' @param date_format A string giving the date formatting specification for the date labels (for instance `\%b\%y`).
+#' @param fill_col Column name in data frame `df`(optional, default `NULL`).
+#' @param n_facet_per_row Numeric value (optional, default 5) to set the number of facets per rows.
+#' @param text_size Numeric value (optional, default 7) to scale the text size.
+#' @return This function returns a ggplot2 object.
+#' @import ggplot2 dplyr
+#' @export
+
+plot_geom_bar_by_facility_over_time <- function(df,
+                                                facility_col,
+                                                date_col,
+                                                date_lbl,
+                                                date_break_str,
+                                                date_format,
+                                                fill_col = NULL,
+                                                n_facet_per_row = 5,
+                                                text_size = 7){
+
+  # Quote the arguments that refer to data frame columns
+  date_col <- rlang::sym(date_col)
+  facility_col <- rlang::sym(facility_col)
+
+  # handling NULL fill_col
+  if ( !missing(fill_col) ) {
+    fill_col <- rlang::sym(fill_col)
+    p <- ggplot2::ggplot(df,
+                         ggplot2::aes(x = !!date_col, fill = !!fill_col))
+  } else{
+    p <- ggplot2::ggplot(df,
+                         ggplot2::aes(x = !!date_col))
+  }
+
+  p <- p + ggplot2::geom_bar() +
+    ggplot2::labs(x = date_lbl,
+                  y = "Number of records") +
+    ggplot2::scale_x_date(date_breaks = date_break_str,
+                          date_labels = date_format) +
+    ggplot2::facet_wrap(ggplot2::vars(!!facility_col), ncol = n_facet_per_row) +
+    ggplot2::theme(text = element_text(size = text_size),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.x = element_blank())
+  p
 
 }

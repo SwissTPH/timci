@@ -1849,8 +1849,8 @@ facility_details <- TRUE
 out <- lapply(1:nrow(facilities),
               function(i) {
                 knitr::knit_child('rct_monitoring_report_facility_sub.Rmd',
-                    envir = environment(),
-                    quiet = TRUE)
+                                  envir = environment(),
+                                  quiet = TRUE)
                 })
 cat(unlist(out), sep = '\n')
 ```

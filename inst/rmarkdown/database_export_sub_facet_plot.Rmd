@@ -1,0 +1,76 @@
+```{r, results='asis', eval=is_kenya, fig.asp=1, fig.cap=paste0(fig_caption, " - Dispensaries")}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
+                                             dplyr::filter(type == "Dispensary"),
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 4,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_kenya, fig.asp=0.67, fig.cap=paste0(fig_caption, " - Health centres")}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
+                                             dplyr::filter(type == "Health Center"),
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 4,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Kaliua")}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
+                                             dplyr::filter(lvl2 == "Kaliua"),
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 5,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Sengerema")}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
+                                             dplyr::filter(lvl2 == "Sengerema"),
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 5,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_tanzania, fig.asp=1, fig.cap=paste0(fig_caption, " - Tanga")}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df %>%
+                                             dplyr::filter(lvl2 == "Tanga"),
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 5,
+                                           text_size = tsize)
+```
+
+```{r, results='asis', eval=is_senegal, fig.asp=1, fig.cap=fig_caption}
+timci::plot_geom_bar_by_facility_over_time(df = fig_df,
+                                           facility_col = facility_col,
+                                           date_col = date_col,
+                                           date_lbl = date_lbl,
+                                           date_break_str = dbreak_duration,
+                                           date_format = date_format,
+                                           fill_col = fill_col,
+                                           n_facet_per_row = 5,
+                                           text_size = tsize)
+```
