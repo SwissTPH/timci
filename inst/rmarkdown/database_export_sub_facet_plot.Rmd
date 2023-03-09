@@ -23,9 +23,9 @@ lbl3 <- "Uasin Gishu County"
 ```
 
 ```{r, eval=is_tanzania}
-df1 <- fig_df %>% dplyr::filter(type == "Kaliua")
-df2 <- fig_df %>% dplyr::filter(type == "Sengerema ")
-df3 <- fig_df %>% dplyr::filter(type == "Tanga ")
+df1 <- fig_df %>% dplyr::filter(lvl2 == "Kaliua")
+df2 <- fig_df %>% dplyr::filter(lvl2 == "Sengerema ")
+df3 <- fig_df %>% dplyr::filter(lvl2 == "Tanga ")
 ```
 
 ```{r, results='asis', eval=is_kenya&timci::is_not_empty(df1)&type_comparison, fig.asp=1, fig.cap=paste0(fig_caption, " - Dispensaries")}
