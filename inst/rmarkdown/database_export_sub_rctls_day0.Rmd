@@ -158,7 +158,17 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
+```{r}
+fig_caption <- "Duplicated IDs"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
   dplyr::mutate(fid = substr(id, 3, 7)) %>%
@@ -166,15 +176,6 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fig_caption <- "Duplicated IDs"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- ""
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -285,7 +286,17 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_incorrect_enroldate_records <- n_detected
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
+```{r}
+fig_caption <- "Number of days between submission start and entry of participant contact details"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Difference"
+comparison <- "type"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Difference = ifelse(diff <= 1,
@@ -296,16 +307,6 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-fig_caption <- "Number of days between submission start and entry of participant contact details"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- "Difference"
-comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -365,12 +366,17 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_cp <- n_detected
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
-qc_df <- qc_df %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1))))
+```{r}
+fig_caption <- "Missing clinical presentation"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
 ```
 
-```{r, results='asis', fig.asp=1}
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
@@ -379,14 +385,6 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fig_caption <- "Missing clinical presentation"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -423,12 +421,17 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_diagnosis <- n_detected
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
-qc_df <- qc_df %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1))))
+```{r}
+fig_caption <- "Missing diagnosis"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
 ```
 
-```{r, results='asis', fig.asp=1}
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
@@ -437,14 +440,6 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fig_caption <- "Missing diagnosis"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))

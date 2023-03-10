@@ -68,9 +68,18 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
+```{r}
+fig_caption <- "Submissions not transferred on the same day they were finalised"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
-  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Difference = ifelse(diff < 3,
                                     "Less than 3 days", ifelse(diff < 7,
@@ -80,17 +89,6 @@ fig_df <- qc_df %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
-
-fig_caption <- "Submissions not transferred on the same day they were finalised"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "area"
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fill_col <- "Difference"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -119,9 +117,18 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
-fig_df <- qc_df %>% 
-  dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
+```{r}
+fig_caption <- "Number of submissions not finalised on the same day they were started"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Difference = ifelse(diff <= 1,
                                     "1 day", ifelse(diff < 3,
@@ -131,16 +138,6 @@ fig_df <- qc_df %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
-fig_caption <- "Number of submissions not finalised on the same day they were started"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fill_col <- "Difference"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -229,7 +226,17 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
+```{r}
+fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
   dplyr::mutate(fid = substr(id, 3, 7)) %>%
@@ -237,15 +244,6 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- ""
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -334,22 +332,23 @@ n_incorrect_date_setup_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
+```{r}
 fig_caption <- "Incorrect date and time setup on the device"
 facility_col <- "fid_from_device"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 fill_col <- ""
+comparison <- "area"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -449,7 +448,17 @@ timci::dataset_export(screening_data,
                       "Cleaned screening data")
 ```
 
-```{r, results='asis', fig.asp=1}
+```{r}
+fig_caption <- "Screening data overview"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(screening_data), results='asis'}
 fig_df <- screening_data %>%
   dplyr::mutate(Status = ifelse(!is.na(repeat_consult) & repeat_consult == 1,
                                 "Previously enrolled",
@@ -463,15 +472,6 @@ fig_df <- screening_data %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fig_caption <- "Screening data overview"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- "Status"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
