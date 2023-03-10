@@ -545,6 +545,9 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 #' @param date_lbl String that contains the x-axis label for the plot.
 #' @param date_break_str A string giving the distance between date breaks like "2 weeks", or "10 years".
 #' @param date_format A string giving the date formatting specification for the date labels (for instance `\%b\%y`).
+#' @param start_date Minimal value in the date range
+#' @param end_date Maximal value in the date range
+#' @param max_val Maximal limit for the y-axis (optional, default `NULL`)
 #' @param fill_col Column name in data frame `df`(optional, default empty string "").
 #' @param n_facet_per_row Numeric value (optional, default 5) to set the number of facets per rows.
 #' @param text_size Numeric value (optional, default 7) to scale the text size.
@@ -558,6 +561,9 @@ plot_geom_bar_by_facility_over_time <- function(df,
                                                 date_lbl,
                                                 date_break_str,
                                                 date_format,
+                                                start_date,
+                                                end_date,
+                                                max_val = NULL,
                                                 fill_col = "",
                                                 n_facet_per_row = 5,
                                                 text_size = 7){
@@ -577,10 +583,18 @@ plot_geom_bar_by_facility_over_time <- function(df,
 
   p <- p + ggplot2::geom_bar() +
     ggplot2::labs(x = date_lbl,
-                  y = "Number of records") +
-    ggplot2::scale_x_date(date_breaks = date_break_str,
-                          date_labels = date_format) +
-    ggplot2::facet_wrap(ggplot2::vars(!!facility_col), ncol = n_facet_per_row) +
+                  y = "Number of records")
+
+  if ( !is.null(max_val) ) {
+    p <- p + ggplot2::ylim(0, max_val)
+  }
+
+  p <- p + ggplot2::scale_x_date(date_breaks = date_break_str,
+                                 date_labels = date_format,
+                                 limits = c(as.Date(start_date), as.Date(end_date))) +
+    ggplot2::facet_wrap(ggplot2::vars(!!facility_col),
+                        ncol = n_facet_per_row,
+                        drop = FALSE) +
     ggplot2::theme(text = element_text(size = text_size),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor.x = element_blank())

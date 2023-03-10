@@ -11,6 +11,9 @@ plot_geom_bar_by_facility_over_time(
   date_lbl,
   date_break_str,
   date_format,
+  start_date,
+  end_date,
+  max_val = NULL,
   fill_col = "",
   n_facet_per_row = 5,
   text_size = 7
@@ -28,6 +31,12 @@ plot_geom_bar_by_facility_over_time(
 \item{date_break_str}{A string giving the distance between date breaks like "2 weeks", or "10 years".}
 
 \item{date_format}{A string giving the date formatting specification for the date labels (for instance `\%b\%y`).}
+
+\item{start_date}{Minimal value in the date range}
+
+\item{end_date}{Maximal value in the date range}
+
+\item{max_val}{Maximal limit for the y-axis (optional, default `NULL`)}
 
 \item{fill_col}{Column name in data frame `df`(optional, default empty string "").}
 

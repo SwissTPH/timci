@@ -531,6 +531,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                  hcpidi_interview_data = hcpidi_interview_data,
                  kii_interview_data = kii_interview_data,
                  online_survey_data = online_survey_data,
+                 start_date = start_date,
                  lock_date = lock_date,
                  is_pilot = is_pilot)
   generate_word_report(lock_dir, "database_export.Rmd", "timci_data_lock_report", params)

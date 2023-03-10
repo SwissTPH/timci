@@ -34,6 +34,7 @@ params:
   qc_dir: !r tempdir()
   locked_db_dir: !r tempdir()
   facility_data: NULL
+  start_date: NULL
   lock_date: NULL
   facility_data_audit: NULL
   raw_drug_data: NULL
@@ -67,7 +68,7 @@ library(dataMaid)
 library(ggplot2)
 library(extrafont)
 library(lubridate)
-library(hms)
+library(rlang)
 loadfonts()
 ```
 
@@ -105,6 +106,7 @@ spa_pid <- Sys.getenv("TIMCI_SPA_PID")
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
+start_date <- params$start_date
 lock_date <- params$lock_date
 
 rctls_dir <- params$rctls_dir

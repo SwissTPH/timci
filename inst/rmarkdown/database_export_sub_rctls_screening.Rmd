@@ -193,7 +193,7 @@ n_other_fid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Caregiver eligibility [compliance check `r qc_underaged_cg_id`]
+### Caregiver eligibility [Compliance check `r qc_underaged_cg_id`]
 
 ```{r}
 write(" o Caregiver eligibility", stderr())
@@ -218,7 +218,7 @@ n_ineligible_cg_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Repeat visits incorrectly recorded as new enrolments [compliance check `r qc_dup_repeats_id1`]
+### Repeat visits incorrectly recorded as new enrolments [Compliance check `r qc_dup_repeats_id1`]
 
 ```{r}
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
@@ -239,6 +239,28 @@ qc_idx <- qc_dup_repeats_id1
 qc_export_label <- "timci_repeat_visit_duplicates"
 qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=timci::is_not_empty(qc_df)}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  dplyr::mutate(fid = substr(id, 3, 7)) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r, eval=timci::is_not_empty(fig_df), results='asis'}
+fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -292,7 +314,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Incorrect date and time setup on the device [context check `r qc_incorrect_date_setup`]
+### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
 
 ```{r}
 write(" o Incorrect data and time setup on the device", stderr())
@@ -347,7 +369,30 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Lock date [context check `r qc_screening_after_lockdate`]
+### Time of data entry [Context check]
+
+```{r, results='asis', fig.asp=1}
+ggplot2::ggplot(facility_data %>%
+                  dplyr::mutate(start_time1 = as.POSIXct(paste0("2022-09-23 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = start_time1)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of records") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::scale_y_datetime(date_labels = "%H:%M",
+                            date_breaks = "4 hours") +
+  ggplot2::facet_wrap(~ fid_from_device,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+### Lock date [Context check `r qc_screening_after_lockdate`]
 
 ```{r}
 write(" o Lock date context", stderr())
@@ -371,29 +416,6 @@ n_after_lockdate_records <- n_detected
 
 ```{r, eval=!is.null(cleaned_df)}
 facility_data <- cleaned_df
-```
-
-### Hour and time of entry
-
-```{r, results='asis', fig.asp=1}
-ggplot2::ggplot(facility_data %>%
-                  dplyr::mutate(start_time1 = as.POSIXct(paste0("2022-09-23 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                ggplot2::aes(x = week, y = start_time1)) +
-  ggplot2::geom_point() +
-  ggplot2::labs(x = "Weeks",
-                y = "Number of records") +
-  ggplot2::scale_x_date(date_breaks = dbreak_duration,
-                        date_labels = "%b%y") +
-  ggplot2::scale_y_datetime(date_labels = "%H:%M",
-                            date_breaks = "4 hours") +
-  ggplot2::facet_wrap(~ fid_from_device,
-                      ncol = nfacetperrow) +
-  ggplot2::theme(text = element_text(size = tsize),
-                 panel.grid.major.x = element_blank(),
-                 panel.grid.minor.x = element_blank())
 ```
 
 ### Data cleaning summary
