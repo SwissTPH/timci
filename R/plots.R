@@ -552,7 +552,7 @@ plot_numeric_indicator <- function(val, lbl, scale = 1){
 #' @param n_facet_per_row Numeric value (optional, default 5) to set the number of facets per rows.
 #' @param text_size Numeric value (optional, default 7) to scale the text size.
 #' @return This function returns a ggplot2 object.
-#' @import ggplot2 dplyr
+#' @import ggplot2 dplyr rlang
 #' @export
 
 plot_geom_bar_by_facility_over_time <- function(df,

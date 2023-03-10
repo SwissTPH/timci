@@ -33,6 +33,7 @@ Imports:
     qwraps2,
     readr,
     readxl,
+    rlang,
     rmarkdown,
     ruODK,
     scales,
