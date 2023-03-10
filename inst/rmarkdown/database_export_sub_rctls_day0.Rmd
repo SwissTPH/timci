@@ -139,6 +139,7 @@ write(" o Duplicate management", stderr())
 ```{r}
 n_dropped_records <- 0
 n_duplicate_edits <- 0
+qc_df <- NULL
 ```
 
 ```{r, eval=day0_is_not_null&(is_tanzania|is_kenya|is_india), results='asis'}
@@ -248,6 +249,19 @@ qc_idx <- qc_duplicate_id2
 qc_export_label <- "timci_day0_data_id_duplicates"
 qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=timci::is_not_empty(qc_df)&is_senegal, results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  dplyr::mutate(fid = substr(id, 3, 7)) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
