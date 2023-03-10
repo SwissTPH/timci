@@ -90,13 +90,6 @@ comparison <- "area"
 ```
 
 ```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fill_col <- "Status"
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
 fill_col <- "Difference"
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
@@ -127,7 +120,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df)}
-qc_df <- qc_df %>% 
+fig_df <- qc_df %>% 
   dplyr::mutate(Status = ifelse(is.na(fid), "Not enrolled", "Enrolled")) %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Difference = ifelse(diff <= 1,
@@ -144,13 +137,6 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(fig_df), results='asis'}
-fill_col <- "Status"
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
 ```
 
 ```{r, eval=timci::is_not_empty(fig_df), results='asis'}
