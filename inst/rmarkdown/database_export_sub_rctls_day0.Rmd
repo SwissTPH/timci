@@ -13,9 +13,36 @@ repeat_data <- facility_data %>%
     dplyr::filter(repeat_consult == 1)
 day0_is_not_null <- !is.null(day0_data)
 day0_is_not_empty <- timci::is_not_empty(day0_data)
+print_clean_drug_data_title <- ""
 ```
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
+
+```{r, eval=is_ls}
+print_clean_drug_data_title <- "### Clean drug data"
+```
+
+`r print_clean_drug_data_title`
+
+```{r, eval=is_ls}
+edited_records_status_update <- ""
+out <- timci::correct_day0_drug_data(day0_data, drug_data)
+day0_data <- out[[1]]
+drug_edits <- out[[2]]
+drug_edits_is_not_empty <- timci::is_not_empty(drug_edits)
+```
+
+```{r, eval=drug_edits_is_not_empty}
+edited_records_status_update <- paste0('**', nrow(drug_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+```
+
+`r edited_records_status_update`
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+drug_edits %>%
+  select(date, uuid) %>%
+  knitr::kable()
+```
 
 ### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 

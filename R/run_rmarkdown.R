@@ -245,6 +245,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     end_date = drug_end_date,
                                                     group = FALSE,
                                                     verbose = TRUE)
+      fn <- timci::export_df2xlsx(raw_drug_data,
+                                  mdb_dir,
+                                  "01z_drug_raw")
+      raw_drug_data <- timci::match_from_drug_xls_dict(raw_drug_data)
     }
 
     # Load day 7 follow-up data
@@ -490,6 +494,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
 
   } else {
     load(file=Sys.getenv("RDA_PATH"))
+    write(timci::is_not_empty(raw_drug_data), stderr())
   }
 
   ########################

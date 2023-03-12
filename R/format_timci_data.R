@@ -8,23 +8,6 @@
 match_from_day0_xls_dict <- function(df,
                                      is_pilot = FALSE) {
 
-  # if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  #   xls_filename <- "main_dict_senegal.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-  #   xls_filename <- "main_dict_kenya.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-  #   xls_filename <- "main_dict_india.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-  #   if ( is_pilot ) {
-  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-  #   } else{
-  #     xls_filename <- "main_dict_tanzania.xlsx"
-  #   }
-  # } else{
-  #   xls_filename <- "main_dict_tanzania.xlsx"
-  # }
-  #df <- match_from_xls_dict(df, xls_filename)
-
   # Import dictionary
   dictionary <- timci::import_country_specific_xls_dict("main_dict.xlsx",
                                                         Sys.getenv('TIMCI_COUNTRY'))
@@ -42,25 +25,6 @@ match_from_day0_xls_dict <- function(df,
 #' @export
 
 read_day0_xls_dict <- function(is_pilot = FALSE) {
-
-  # if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
-  #   xls_filename <- "main_dict_senegal.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
-  #   xls_filename <- "main_dict_kenya.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
-  #   xls_filename <- "main_dict_india.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
-  #   if ( is_pilot ) {
-  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-  #   } else {
-  #     xls_filename <- "main_dict_tanzania.xlsx"
-  #   }
-  # } else{
-  #   xls_filename <- "main_dict_tanzania.xlsx"
-  # }
-  #
-  # xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
-  # dictionary <- readxl::read_excel(xls_pathname)
 
   dictionary <- import_country_specific_xls_dict("main_dict.xlsx",
                                                  country = Sys.getenv('TIMCI_COUNTRY'))
@@ -266,7 +230,7 @@ process_facility_data <- function(df,
                   "crfs-t09a2-imcirx_hf"
                   )
 
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  df <- timci::format_multiselect_asws(df, multi_cols, sep)
 
   text_field_cols <- c('visit_reason-a3_c_1o',
                        'visit_reason-main_cg_name',
@@ -896,4 +860,40 @@ convert_yi_age2ctg <- function(val) {
     }
   }
   res
+}
+
+#' Match facility data using the Drug dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with columns that match the specified country dictionary.
+#' @export
+
+match_from_drug_xls_dict <- function(df) {
+
+  # Import dictionary
+  dictionary <- timci::import_country_specific_xls_dict("drug_dict.xlsx",
+                                                        Sys.getenv('TIMCI_COUNTRY'))
+
+  # Match column names with names from dictionary
+  df <- df %>%
+    timci::match_from_dict(dictionary)
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols <- c("rx_antimicrobials",
+                  "rx_antimalarials",
+                  "rx_imci",
+                  "rx_creams",
+                  "rx_consumables",
+                  "rx_type",
+                  "rx_antimicrobials_hf",
+                  "rx_antimalarials_hf",
+                  "rx_imci_hf",
+                  "rx_creams_hf",
+                  "rx_consumables_hf",
+                  "rx_type_hf")
+
+  df <- timci::format_multiselect_asws(df, multi_cols, sep)
+  df
+
 }

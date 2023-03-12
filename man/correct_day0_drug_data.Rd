@@ -7,9 +7,9 @@
 correct_day0_drug_data(day0_df, drug_df)
 }
 \arguments{
-\item{day0_df}{dataframe that contains Day 0 data}
+\item{day0_df}{dataframe that contains Day 0 data and needs to be corrected}
 
-\item{drug_df}{dataframe that contains corrected (structured) drug data}
+\item{drug_df}{dataframe that contains corrected (structured) drug data to edit in Day 0 data}
 }
 \value{
 This function returns a list that contains a dataframe with corrections and the list of edits

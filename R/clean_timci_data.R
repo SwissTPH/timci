@@ -371,8 +371,8 @@ correct_spa_sco_all <- function(df) {
 
 #' Edit drug data in Day 0 data entries (TIMCI-specific function - Kenya and Senegal only)
 #'
-#' @param day0_df dataframe that contains Day 0 data
-#' @param drug_df dataframe that contains corrected (structured) drug data
+#' @param day0_df dataframe that contains Day 0 data and needs to be corrected
+#' @param drug_df dataframe that contains corrected (structured) drug data to edit in Day 0 data
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
 #' @import dplyr
 #' @export
@@ -380,32 +380,12 @@ correct_spa_sco_all <- function(df) {
 correct_day0_drug_data <- function(day0_df,
                                    drug_df) {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_non_valid_facility_correction_tanzania.csv",
-                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_non_valid_facility_correction_kenya.csv",
-                            TRUE ~ "")
+  df <- day0_df %>%
+    dplyr::rows_update(drug_df %>% dplyr::select(-start,-end,-free_text1,-free_text2),
+                       by = 'uuid',
+                       unmatched = "ignore")
 
-  out <- list(df,NULL)
-  if ( csv_filename != "" ) {
-    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
-    df <- df %>%
-      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-            by.x = c("child_id", "uuid"),
-            by.y = c("old_child_id", "uuid"),
-            all.x = TRUE)
-    df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-    df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
-    if("fid_from_device" %in% colnames(df))
-    {
-      df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
-    }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, edits)
-  }
+  out <- list(df, drug_df)
   out
 
 }
