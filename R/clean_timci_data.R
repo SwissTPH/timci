@@ -380,8 +380,26 @@ correct_spa_sco_all <- function(df) {
 correct_day0_drug_data <- function(day0_df,
                                    drug_df) {
 
+  # Remove columns from drug_df for processing
+  drop <- c("start",
+            "end",
+            "free_text1",
+            "free_text2",
+            "rx_type2",
+            "rx_othtype2",
+            "rx_type2_hf",
+            "rx_othtype2_hf")
+  drug_df1 <- drug_df[,!(names(drug_df) %in% drop)]
+
+  day0_df$rx_antimicrobials <- as.character(day0_df$rx_antimicrobials)
+  day0_df$rx_antimicrobials_hf <- as.character(day0_df$rx_antimicrobials_hf)
+  day0_df$rx_antimalarials <- as.character(day0_df$rx_antimalarials)
+  day0_df$rx_antimalarials_hf <- as.character(day0_df$rx_antimalarials_hf)
+  day0_df$rx_consumables <- as.character(day0_df$rx_consumables)
+  day0_df$rx_consumables_hf <- as.character(day0_df$rx_consumables_hf)
+
   df <- day0_df %>%
-    dplyr::rows_update(drug_df %>% dplyr::select(-start,-end,-free_text1,-free_text2),
+    dplyr::rows_update(drug_df1,
                        by = 'uuid',
                        unmatched = "ignore")
 

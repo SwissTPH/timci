@@ -40,7 +40,11 @@ edited_records_status_update <- paste0('**', nrow(drug_edits), '** record(s) man
 
 ```{r, eval=drug_edits_is_not_empty, results='asis'}
 drug_edits %>%
-  select(date, uuid) %>%
+  select(start,
+         uuid,
+         child_id,
+         free_text1,
+         free_text2) %>%
   knitr::kable()
 ```
 
