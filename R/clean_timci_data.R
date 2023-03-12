@@ -387,8 +387,8 @@ correct_day0_drug_data <- function(day0_df,
             "free_text2",
             "rx_type2",
             "rx_othtype2",
-            "rx_type2_hf",
-            "rx_othtype2_hf")
+            "rx_type_hf2",
+            "rx_othtype_hf2")
   drug_df1 <- drug_df[,!(names(drug_df) %in% drop)]
 
   day0_df$rx_antimicrobials <- as.character(day0_df$rx_antimicrobials)
