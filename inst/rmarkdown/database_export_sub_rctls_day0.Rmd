@@ -14,6 +14,7 @@ repeat_data <- facility_data %>%
 day0_is_not_null <- !is.null(day0_data)
 day0_is_not_empty <- timci::is_not_empty(day0_data)
 print_clean_drug_data_title <- ""
+drug_edits_is_not_empty <- FALSE
 ```
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s) and **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
