@@ -150,9 +150,12 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r}
-# Settings
+###################
+# Export settings #
+###################
 
-# Day 0 quality check IDs
+# Screening quality check IDs
+##############################
 qc_nontimely_submission_id <- "DQC_00_01"
 qc_nontimely_completion_id <- "DQC_00_02"
 qc_screening_w_nonvalid_deviceid <- "DQC_00_03"
@@ -162,6 +165,9 @@ qc_dup_repeats_id1 <- "DQC_00_06a"
 qc_dup_repeats_id2 <- "DQC_00_06b"
 qc_incorrect_date_setup <- "DQC_00_07"
 qc_screening_after_lockdate <- "DQC_00_08"
+
+# Day 0 quality check IDs
+##########################
 qc_nonvalid_fid1 <- "DQC_00_09a"
 qc_nonvalid_fid2 <- "DQC_00_09b"
 qc_duplicate_id1 <- "DQC_00_10a"
@@ -179,21 +185,26 @@ qc_pox_ <- "DQC_00_20"
 qc_summary_id <- "DQC_00_21"
 
 # Day 7 quality check IDs
+##########################
 qc_nontimely_day7_submission_id <- "DQC_07_01"
 qc_nontimely_day7_completion_id <- "DQC_07_02"
 qc_pids_out_lock_range_day7fu <- "DQC_07_03"
 qc_nonvalid_day7fu <- "DQC_07_04"
 qc_duplicated_day7fu <- "DQC_07_05"
-qc_hospit_before_enrolment_day7fu <- "DQC_07_06"
-qc_death_before_enrolment_day7fu <- "DQC_07_07"
+qc_missing_hospit_date_day7fu <- "DQC_07_06"
+qc_hospit_before_enrolment_day7fu <- "DQC_07_07"
+qc_missing_death_date_day7fu <- "DQC_07_08"
+qc_death_before_enrolment_day7fu <- "DQC_07_09"
 
 # Hospitalisation quality check IDs
+####################################
 qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
 qc_nonvalid_hospitfu <- "DQC_HS_02"
 qc_duplicated_hospitfu <- "DQC_HS_03"
 qc_hospit_before_enrolment <- "DQC_HS_04"
 
 # Day 28 quality check IDs
+###########################
 qc_pids_out_lock_range_day28fu <- "DQC_28_01"
 qc_nonvalid_day28fu <- "DQC_28_02"
 qc_duplicated_day28fu <- "DQC_28_03"
@@ -201,17 +212,32 @@ qc_hospit_before_enrolment_day28fu <- "DQC_28_04"
 qc_death_before_enrolment_day28fu <- "DQC_28_05"
 
 # Withdrawals quality check IDs
+################################
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
 
 # SPA quality check IDs
+########################
 qc_spa_sco_nonvalid_ids <- "DQC_SP_01"
 qc_spa_sco_duplicates <- "DQC_SP_02"
 qc_spa_sco_incomplete <- "DQC_SP_03"
 qc_spa_hcpi_nonvalid_ids <- "DQC_SP_04"
 qc_spa_hcpi_duplicates <- "DQC_SP_05"
+```
 
+```{r}
 action_alert_no_modification <- "Alert to the study team. No modification of the database."
 
+if (is_india) {
+  hospit_value <- 13
+} else{
+  hospit_value <- 1
+}
+```
+
+```{r}
+#################
+# Plot settings #
+#################
 tsize <- 7
 tfont <- "Cambria"
 dbreak_duration <- "4 months"

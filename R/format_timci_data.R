@@ -85,6 +85,7 @@ process_facility_data <- function(df,
   # Combine exact and approximate options to get the age in years
   if ('a3-a3_a_3' %in% cols) {
     df$'a3-a3_a_3' <- ifelse(!is.na(df$'a3-a3_a_3'), df$'a3-a3_a_3', df$'a3-a3_a_2a')
+    df$'a3-a3_a_3' <- as.numeric(df$'a3-a3_a_3')
   } else {
     df$'a3-a3_a_3' <- df$'a3-a3_a_2a'
   }

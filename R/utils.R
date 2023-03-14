@@ -1,16 +1,16 @@
-#' Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
+#' Write dataframe to an Excel spreadsheet, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.
-#' @param dirname directory where the Excel file will be created.
+#' @param dirname directory where the Excel spreadsheet will be created.
 #' @param prefix filename prefix
 #' @param rnames Row names
-#' @return This function returns the creation timestamp of the Excel file
+#' @return This function returns the creation timestamp of the Excel spreadsheet
 #' @export
 
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
   t <- NULL
-  if (!is.null(dirname)){
+  if ( !is.null(dirname) ){
     fname <- file.path(dirname, paste0(prefix, ".xlsx"))
     openxlsx::write.xlsx(df,
                          fname,
@@ -34,7 +34,7 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 export_df2csv <- function(df, dirname, prefix) {
 
   t <- NULL
-  if (!is.null(dirname)){
+  if ( !is.null(dirname) ){
     fname <- file.path(dirname, paste0(prefix, ".csv"))
     write.csv(df,
               file = fname,
@@ -47,7 +47,7 @@ export_df2csv <- function(df, dirname, prefix) {
 
 }
 
-#' Write dataframe to both CSV and Excel file formats, with a filename consisting of a prefix and a date stamp
+#' Write dataframe to both CSV and Excel spreadsheet formats, with a filename consisting of a prefix and a date stamp
 #'
 #' @param df dataframe.
 #' @param dirname directory where the RDS file will be created.
@@ -64,6 +64,25 @@ export_df2csvxlsx <- function(df, dirname, prefix) {
                              dirname,
                              prefix)
   t <- list(t1, t2)
+
+}
+
+#' Write dataframe to an SQLite file, with a filename consisting of a prefix and a date stamp
+#'
+#' @param df dataframe.
+#' @param dirname directory where the SQLite file will be created.
+#' @param prefix filename prefix
+#' @param rnames Row names
+#' @return This function returns the creation timestamp of the Excel spreadsheet
+#' @export
+
+export_df2sqlite <- function(df, dirname, prefix, rnames = FALSE) {
+
+  t <- NULL
+  if ( !is.null(dirname) ){
+    "To be updated"
+  }
+  t
 
 }
 
@@ -122,7 +141,7 @@ match_from_dict <- function(df, dictionary) {
 #' Extract and match variable names using an external Excel dictionary
 #'
 #' @param df Input dataframe
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param xls_dict Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @return This function returns a dataframe.
 #' @export
 #' @import dplyr
@@ -142,7 +161,7 @@ match_from_xls_dict <- function(df,
 
 #' Import country-specific Excel dictionary
 #'
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param xls_dict Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @param country Character that contains the name of the TIMCI country to select (default set to "none")
 #' @return This function returns a dataframe.
 #' @export
@@ -178,7 +197,7 @@ import_country_specific_xls_dict <- function(xls_dict,
 #' Extract and match variable names using an external Excel dictionary
 #'
 #' @param df Input dataframe
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param xls_dict Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @param is_deidentified Boolean, flag to not export personally identifiable variable (default set to FALSE)
 #' @param country Character that contains the name of the TIMCI country to select (default set to "none")
 #' @return This function returns a dataframe.
@@ -207,7 +226,7 @@ match_from_filtered_xls_dict <- function(df,
 
 #' Import column-specifications from country-specific Excel dictionary
 #'
-#' @param xls_dict Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
+#' @param xls_dict Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe
 #' @param country Character that contains the name of the TIMCI country to select (default set to "none")
 #' @return This function returns a dataframe.
 #' @export

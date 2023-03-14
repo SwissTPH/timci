@@ -391,12 +391,21 @@ correct_day0_drug_data <- function(day0_df,
             "rx_othtype_hf2")
   drug_df1 <- drug_df[,!(names(drug_df) %in% drop)]
 
-  day0_df$rx_antimicrobials <- as.character(day0_df$rx_antimicrobials)
-  day0_df$rx_antimicrobials_hf <- as.character(day0_df$rx_antimicrobials_hf)
+  cols <- colnames(day0_df)
+  if ("rx_antimicrobials" %in% cols) {
+    day0_df$rx_antimicrobials <- as.character(day0_df$rx_antimicrobials)
+  }
+  if ("rx_antimicrobials_hf" %in% cols) {
+    day0_df$rx_antimicrobials_hf <- as.character(day0_df$rx_antimicrobials_hf)
+  }
   day0_df$rx_antimalarials <- as.character(day0_df$rx_antimalarials)
   day0_df$rx_antimalarials_hf <- as.character(day0_df$rx_antimalarials_hf)
-  day0_df$rx_consumables <- as.character(day0_df$rx_consumables)
-  day0_df$rx_consumables_hf <- as.character(day0_df$rx_consumables_hf)
+  if ("rx_consumables" %in% cols) {
+    day0_df$rx_consumables <- as.character(day0_df$rx_consumables)
+  }
+  if ("rx_consumables_hf" %in% cols) {
+    day0_df$rx_consumables_hf <- as.character(day0_df$rx_consumables_hf)
+  }
 
   df <- day0_df %>%
     dplyr::rows_update(drug_df1,

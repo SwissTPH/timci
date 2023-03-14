@@ -144,6 +144,15 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+```{r, eval=(qc_type=="missing_date")}
+qc_df <- timci::detect_missing_var(df,
+                                   col_date)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
 ```{r, eval=(qc_type=="incomplete_spa_observation")}
 df <- df %>% 
   rename(child_id = "child_identification-pid",

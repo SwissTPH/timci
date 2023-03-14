@@ -46,6 +46,22 @@ drug_edits %>%
          child_id,
          free_text1,
          free_text2) %>%
+  head(10) %>%
+  knitr::kable()
+```
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+cat("...")
+```
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+drug_edits %>%
+  select(start,
+         uuid,
+         child_id,
+         free_text1,
+         free_text2) %>%
+  tail(10) %>%
   knitr::kable()
 ```
 
@@ -549,6 +565,25 @@ n_free_text_rx_cg <- n_detected
 
 ```{r}
 write(" o Clinical measurements", stderr())
+```
+
+```{r}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(spo2_meas1,
+                         rr_meas),
+                       as.numeric))
+```
+
+```{r, eval=!is_india}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(temp_meas),
+                       as.numeric))
+```
+
+```{r, eval=is_india}
+day0_data <- day0_data %>%
+  dplyr::mutate(across(c(temp_meas_farenheit),
+                       as.numeric))
 ```
 
 #### Temperature\n\n

@@ -31,7 +31,7 @@ write(" o Successful follow-up duplicates", stderr())
 
 `r if (is_kenya) {'##### Initial check'}`
 
-```{r, eval=!is.null(day7fu_data)&is_kenya, results='asis'}
+```{r, eval=day7fu_is_not_null&is_kenya, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
 qc_rule <- "Identify duplicated records that correspond to different participants (participants for whom duplicates were created at enrolment) and reallocate these records to the appropriate participant."
 qc_type <- "duplicates"
@@ -63,7 +63,7 @@ if (!is.null(duplicate_edits)) {
 
 `r if (is_kenya) {'##### Final check after manual edits'}`
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
+```{r, eval=day7fu_is_not_null, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, Only the most recent successful Day 7 follow-up is kept."
 qc_rule <- "Delete all older records and keep only the most recent when more than one successful follow-up is available for the same participant."
 qc_type <- "duplicates"
@@ -85,30 +85,35 @@ n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
 day7fu_data <- cleaned_df
 ```
 
-### Missing date of hospitalisation [mandatory check `r qc_hospit_before_enrolment_day7fu`]\n\n
+### Missing date of hospitalisation [mandatory check `r qc_missing_hospit_date_day7fu`]
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
-qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+```{r}
+write(" o Missing date of hospitalisation", stderr())
+```
+
+```{r, results='asis', eval=day7fu_is_not_null}
+qc_description <- "All hospitalised participants should have complete information about their hospital visit/hospitalisation."
 qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day7fu_data %>% 
-  merge(day0_data,
-        by = "child_id",
-        all.x = TRUE)
-col_date1 <- "date_hosp_day7"
-col_date2 <- "date_visit"
-qc_text <- "a date of hospitalisation before the enrolment date"
-qc_idx <- qc_hospit_before_enrolment_day7fu
-qc_export_label <- "hospit_before_enrolment"
-qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+qc_type <- "missing_date"
+df <- day7fu_data %>%
+  dplyr::mutate(all_hf_visit_day7 = ifelse(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value),
+                                           1,
+                                           0)) %>%
+  dplyr::filter(all_hf_visit_day7 == 1)
+col_date <- "date_hosp_day7"
+qc_text <- "missing hospitalisation date"
+qc_idx <- qc_missing_hospit_date_day7fu
+qc_export_label <- "missing_hospitalisation_date"
+qc_export_description <- "the date of hospital visit/hospitalisation is missing"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_missing_hospit_date <- n_detected
 ```
 
 ### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day7fu`]\n\n
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
+```{r, eval=day7fu_is_not_null, results='asis'}
 qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -127,9 +132,32 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Missing date of death [mandatory check `r qc_missing_death_date_day7fu`]
+
+```{r}
+write(" o Missing date of death", stderr())
+```
+
+```{r, results='asis', eval=day7fu_is_not_null}
+qc_description <- "All deceased participants should have complete information about their death."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_date"
+col_date <- "date_death_day7"
+df <- day7fu_data %>%
+  dplyr::filter(status_day7 == 3)
+qc_text <- "missing death date"
+qc_idx <- qc_missing_death_date_day7fu
+qc_export_label <- "missing_death_date"
+qc_export_description <- "the date of death is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_death_date <- n_detected
+```
+
 ### Invalid date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
+```{r, eval=day7fu_is_not_null, results='asis'}
 qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 7 follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -148,7 +176,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
@@ -164,7 +192,7 @@ timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
                                           n_cleaned_day7fu_records)
 ```
 
-### Data export\n\n
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -214,7 +242,7 @@ timci::dataset_export(day7fu_data,
 
 ```{r day7-lost-to-followup}
 ltfu <- NULL
-if (!is.null(day7fu_data)) {
+if ( day7fu_is_not_null ) {
   ltfu <- timci::generate_ltfu_log(df = day0_data,
                                    fudf = allday7fu_data,
                                    end_date = 12,

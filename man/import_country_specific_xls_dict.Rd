@@ -7,7 +7,7 @@
 import_country_specific_xls_dict(xls_dict, country = "none")
 }
 \arguments{
-\item{xls_dict}{Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe}
+\item{xls_dict}{Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe}
 
 \item{country}{Character that contains the name of the TIMCI country to select (default set to "none")}
 }
