@@ -81,10 +81,10 @@ fill_col <- "Difference"
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = ifelse(diff < 3,
-                                    "Less than 3 days", ifelse(diff < 7,
-                                                       "3-7 days",
-                                                       "Above 7 days"))) %>%
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff < 3 ~ "Less than 3 days",
+    diff >= 3 & diff < 7 ~ "3-6 days",
+    diff >= 7 ~ "7 days and above")) %>%
   merge(research_facilities,
         by.x = 'fid_from_device',
         by.y = 'facility_id',
@@ -130,10 +130,10 @@ fill_col <- "Difference"
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = ifelse(diff <= 1,
-                                    "1 day", ifelse(diff < 3,
-                                                       "2-3 days",
-                                                       "Above 3 days"))) %>%
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff <= 1 ~ "1 day",
+    diff > 1 & diff < 3 ~ "1-2 days",
+    diff >= 3 ~ "3 days and above")) %>%
   merge(research_facilities,
         by.x = 'fid_from_device',
         by.y = 'facility_id',
@@ -354,18 +354,18 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Time of data entry [Context check]
+### Data entry times [Context check]
 
-```{r, results='asis', fig.asp=1}
+```{r, results='asis', eval=timci::is_not_empty(facility_data), fig.asp=1, fig.cap="Spatiotemporal pattern of data entry times"}
 ggplot2::ggplot(facility_data %>%
-                  dplyr::mutate(start_time1 = as.POSIXct(paste0("2022-09-23 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
+                  dplyr::mutate(start_time1 = as.POSIXct(paste0(Sys.Date(), df$start_time), tz = Sys.getenv("TZ"))) %>% 
                   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                                              "week",
                                                              week_start = getOption("lubridate.week.start", 1))),
                 ggplot2::aes(x = week, y = start_time1)) +
   ggplot2::geom_point() +
   ggplot2::labs(x = "Weeks",
-                y = "Number of records") +
+                y = "Start time of record entry") +
   ggplot2::scale_x_date(date_breaks = dbreak_duration,
                         date_labels = "%b%y") +
   ggplot2::scale_y_datetime(date_labels = "%H:%M",

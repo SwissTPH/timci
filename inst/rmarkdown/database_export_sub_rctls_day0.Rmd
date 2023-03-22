@@ -473,7 +473,7 @@ qc_description <- "All participants should have complete information about their
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_diagnosis"
 df <- day0_data
-qc_text <- "missing diagnosis"
+qc_text <- "missing diagnosis information"
 qc_idx <- qc_missing_diagnosis_id
 qc_export_label <- "missing_diagnosis"
 qc_export_description <- "the diagnosis is missing"
@@ -507,7 +507,7 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Missing referral [Mandatory check `r qc_missing_referral_id`]\n\n
+### Missing referral [Mandatory check `r qc_missing_referral_id`]
 
 ```{r}
 write(" o Missing referral", stderr())
@@ -528,6 +528,61 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_referral_cg <- n_detected
 ```
 
+### Spatiotemporal patterns of referrals [Context checks]
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of referrals reported by the caregiver"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Referral"
+```
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Referral = dplyr::case_when(
+    referral_cg == 1 ~ "Referred",
+    referral_cg == 0 ~ "Not referred",
+    referral_cg == 98 ~ "Not sure",
+    referral_cg == 97 ~ "Declined",
+    is.na(referral_cg) ~ "Missing")) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of referrals recorded in the facility registries/notes"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Referral"
+```
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Referral = dplyr::case_when(
+    referral_hf == 1 ~ "Referred",
+    referral_hf == 0 ~ "Not referred")) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
 ### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]\n\n
 
 ```{r}
@@ -536,12 +591,37 @@ write(" o Negative illness onset", stderr())
 
 Check for spurious values/outliers
 
-sickness_duration
+Variable sickness_duration
+Check not implemented yet
 
-### Treatments\n\n
+### Treatments
 
 ```{r}
 write(" o Treatment free text entries", stderr())
+```
+
+```{r}
+fig_caption <- "Missing prescription"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 #### Free text entries\n\n
@@ -561,7 +641,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_free_text_rx_cg <- n_detected
 ```
 
-### Clinical measurements\n\n
+### Clinical measurements
 
 ```{r}
 write(" o Clinical measurements", stderr())
@@ -586,27 +666,10 @@ day0_data <- day0_data %>%
                        as.numeric))
 ```
 
-#### Temperature\n\n
+#### Temperature
 
 ```{r}
 write("   o Temperature", stderr())
-```
-
-```{r, eval=day0_is_not_null&!is_india}
-fig_df <- day0_data %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_visit), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::filter(!is.na(temp_meas))
-```
-
-```{r, results='asis', eval=day0_is_not_null&!is_india, fig.asp=1}
-# timci::plot_geom_bar_by_facility_over_time(df = fig_df,
-#                                            facility_col = fid,
-#                                            date_col = week,
-#                                            date_lbl = "Weeks",
-#                                            date_break_str = dbreak_duration,
-#                                            date_format = "%b%y",
-#                                            n_facet_per_row = nfacetperrow,
-#                                            text_size = tsize)
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}
@@ -676,6 +739,25 @@ dataMaid::identifyOutliers(day0_data$spo2_meas1,
                            nMax = 100)
 ```
 
+```{r, eval=timci::is_not_empty(day0_data), results='asis', fig.asp=1}
+ggplot2::ggplot(day0_data %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = spo2_meas1)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Oxygen saturation (in %)") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::ylim(0, 100) +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
 #### Respiratory rate\n\n
 
 ```{r}
@@ -697,6 +779,25 @@ day0_data %>%
 ```{r, results='asis', eval=day0_is_not_null}
 dataMaid::identifyOutliers(day0_data$rr_meas,
                            nMax = 150)
+```
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis', fig.asp=1}
+ggplot2::ggplot(day0_data %>%
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = rr_meas)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Oxygen saturation (in %)") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::ylim(0, NA) +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
 ```
 
 ### Data cleaning summary\n\n

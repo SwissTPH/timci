@@ -179,7 +179,7 @@ n_detected <- nrow(qc_df)
 n_detected <- nrow(qc_df2)
 ```
 
-**Check output:** The check has detected **`r n_detected`** record(s) (i.e. **`r format(round(n_detected / n_df, digits = 2), nsmall = 2)` %** of all records) with `r qc_text` in the `r db_name` database.
+**Check output:** The check has detected **`r n_detected`** record(s) (i.e. **`r sprintf('%.1f', 100 * n_detected / n_df)` %** of all records) with `r qc_text` in the `r db_name` database.
 
 ```{r}
 partial_disp <- FALSE
