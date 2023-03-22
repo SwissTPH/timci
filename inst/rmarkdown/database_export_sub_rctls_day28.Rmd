@@ -13,6 +13,7 @@ raw_allday28fu_data <- out[[3]]
 n_raw_allday28fu_data_records <- nrow(raw_allday28fu_data)
 raw_successday28fu_data <- out[[1]]
 
+raw_allday28fu_is_not_empty <- timci::is_not_empty(raw_allday28fu_data)
 raw_day28_fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
@@ -24,26 +25,9 @@ There are **`r n_raw_allday28fu_data_records`** records in the raw `r db_name` d
 write(" o Inconsistent finalisation and submission", stderr())
 ```
 
-```{r, eval=raw_allday28fu_is_not_empty, results='asis'}
-qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- raw_allday28fu_data
-col_date1 <- "end"
-col_date2 <- "submission_date"
-cleaning <- "none"
-qc_text <- "the submission was not transferred on the same day it was finalised"
-qc_idx <- qc_nontimely_submission_day28fu
-qc_export_label <- "nontimely_day28_submission"
-qc_export_description <- "the submission was not transferred on the same day it was finalised"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
 ```{r}
 fig_caption <- "Submissions not transferred on the same day they were finalised"
-facility_col <- "fid"
+facility_col <- "hf_id"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
@@ -59,7 +43,7 @@ fig_df <- qc_df %>%
     diff >= 3 & diff < 7 ~ "3-6 days",
     diff >= 7 ~ "7 days and above")) %>%
   merge(research_facilities,
-        by.x = 'fid',
+        by.x = 'hf_id',
         by.y = 'facility_id',
         all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
@@ -73,26 +57,9 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
 write(" o Non-timely completion", stderr())
 ```
 
-```{r, eval=raw_allday28fu_is_not_empty, results='asis'}
-qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- raw_allday28fu_data
-col_date1 <- "start"
-col_date2 <- "end"
-cleaning <- "none"
-qc_text <- "the submission was not finalised on the same day it was started"
-qc_idx <- qc_nontimely_completion_day28fu
-qc_export_label <- "nontimely_day28_completion"
-qc_export_description <- "the submission was not finalised on the same day it was started"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
 ```{r}
 fig_caption <- "Number of submissions not finalised on the same day they were started"
-facility_col <- "fid"
+facility_col <- "hf_id"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
@@ -108,7 +75,7 @@ fig_df <- qc_df %>%
     diff > 1 & diff < 3 ~ "1-2 days",
     diff >= 3 ~ "3 days and above")) %>%
   merge(research_facilities,
-        by.x = 'fid',
+        by.x = 'hf_id',
         by.y = 'facility_id',
         all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
@@ -197,21 +164,6 @@ raw_day0_with_names <- day0_data %>%
                         ls_name,
                         uuid),
         by = "uuid")
-```
-
-```{r, eval=!is.null(allday28fu_data), results='asis'}
-qc_description <- "Day 28 follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."
-qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
-qc_type <- "inconsistent_names"
-df <- allday28fu_data
-refdf <- raw_day0_with_names
-qc_text <- "non-consistent participant names"
-qc_idx <- qc_nonconsistent_name_day28fu
-qc_export_label <- "nonconsistent_names_day28fu"
-qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
 ```
 
 ### Data cleaning summary\n\n
