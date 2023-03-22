@@ -2,22 +2,20 @@
 % Please edit documentation in R/check_duplicates.R
 \name{check_name_consistency}
 \alias{check_name_consistency}
-\title{Identify name duplicates (TIMCI-specific function)}
+\title{Check name consistency (TIMCI-specific function)}
 \usage{
-check_name_consistency(df, col_name1, col_name2, cleaning = "none")
+check_name_consistency(df, col_name1, col_name2)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{df}{dataframe}
 
-\item{col_name1}{name of the column containing IDs in `df`}
+\item{col_name1}{name of the column containing names in `df`}
 
-\item{col_name2}{name of the column containing IDs in `df`}
-
-\item{cleaning}{type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)}
+\item{col_name2}{name of the column containing names in `df`}
 }
 \value{
 This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 }
 \description{
-Identify name duplicates (TIMCI-specific function)
+Check name consistency (TIMCI-specific function)
 }

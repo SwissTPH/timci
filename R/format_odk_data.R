@@ -5,7 +5,7 @@
 #' @param start_date start date (optional, by default set to `NULL`)
 #' @param end_date end date (optional, by default set to `NULL`)
 #' @return This function returns a formatted dataframe for future display and analysis.
-#' @import magrittr dplyr
+#' @import magrittr dplyr lubridate
 #' @export
 
 format_odk_metadata <- function(df,
@@ -13,29 +13,25 @@ format_odk_metadata <- function(df,
                                 end_date = NULL) {
 
   if (dim(df)[1] > 0) {
-    df$SubmissionDate <- strftime(x = df$SubmissionDate,
-                                  format = "%Y-%m-%d %T")
-    df$start <- strftime(x = df$start,
-                         format = "%Y-%m-%d %T")
-    df$end <- strftime(x = df$end,
-                       format = "%Y-%m-%d %T")
+    df$SubmissionDate <- strftime(strptime(x = df$SubmissionDate, format = "%Y-%m-%dT%T"))
+    df$start <- strftime(strptime(x = df$start, format = "%Y-%m-%dT%T"))
+    df$end <- strftime(strptime(x = df$end, format = "%Y-%m-%dT%T"))
 
-    df$today <- strftime(df$start,
-                         "%Y-%m-%d")
+    df$start_time <- strftime(df$start, "%T")
+    df$end_time <- strftime(df$end, "%T")
+
+    df$today <- strftime(df$start, "%Y-%m-%d")
     df$duration <- floor(difftime(df$end,
                                   df$start,
                                   units = "days"))
 
-    df$start_time <- strftime(df$start,"%T")
-    df$end_time <- strftime(df$end,"%T")
-
-    df <- df %>% dplyr::rename(date = today)
+    df <- df %>%
+      dplyr::rename(date = today)
 
     # Filter by start date and end date
     if (!is.null(start_date)) {
       df <- df %>%
         dplyr::filter(date >= as.Date(start_date, "%Y-%m-%d"))
-      print(df)
     }
     if (!is.null(end_date)) {
       df <- df %>%

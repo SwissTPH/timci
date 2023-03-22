@@ -153,6 +153,13 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+```{r, eval=(qc_type=="inconsistent_names")}
+out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
+                                                       fudf = df)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="incomplete_spa_observation")}
 df <- df %>% 
   rename(child_id = "child_identification-pid",

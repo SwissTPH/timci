@@ -264,6 +264,9 @@ process_facility_data <- function(df,
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
+  if ( "t_screening_start" %in% cols ) {
+    df$t_screening_start <- strftime(strptime(x = df$t_screening_start, format = "%Y-%m-%dT%T"))
+  }
 
   df
 

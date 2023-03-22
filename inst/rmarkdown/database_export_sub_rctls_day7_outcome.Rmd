@@ -198,6 +198,10 @@ timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
 write(" o Data export", stderr())
 ```
 
+```{r}
+raw_successday7fu_data <- raw_successday7fu_data[ , !(names(raw_successday7fu_data) %in% day7fu_pii_drops)]
+```
+
 ```{r, results = 'asis'}
 timci::dataset_export(raw_successday7fu_data,
                       "04b",

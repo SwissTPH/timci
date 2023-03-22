@@ -1,11 +1,13 @@
 #' Process day 7 follow-up data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call
+#' @param is_deidentified Boolean, flag to not export personally identifiable variable (default set to `TRUE`)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr lubridate anytime
 
-format_day7_data <- function(df) {
+format_day7_data <- function(df,
+                             is_deidentified = TRUE) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
@@ -18,7 +20,7 @@ format_day7_data <- function(df) {
   # Match column names with names from dictionary
   day7_df <- timci::match_from_filtered_xls_dict(df,
                                                  "day7_dict.xlsx",
-                                                 is_deidentified = TRUE,
+                                                 is_deidentified = is_deidentified,
                                                  country = Sys.getenv('TIMCI_COUNTRY'))
 
   # Format day 0 date
@@ -43,11 +45,13 @@ format_day7_data <- function(df) {
 #' Process day 28 follow-up data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected during the Day 28 follow-up call
+#' @param is_deidentified Boolean, flag to not export personally identifiable variable (default set to `TRUE`)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr
 
-format_day28_data <- function(df) {
+format_day28_data <- function(df,
+                              is_deidentified = TRUE) {
 
   # Set the dictionary to be used
   day28_dict <- "day28_dict.xlsx"
@@ -63,7 +67,7 @@ format_day28_data <- function(df) {
   # Match column names with names from dictionary
   day28_df <- timci::match_from_filtered_xls_dict(df,
                                                   "day28_dict.xlsx",
-                                                  is_deidentified = TRUE,
+                                                  is_deidentified = is_deidentified,
                                                   country = Sys.getenv('TIMCI_COUNTRY'))
 
   # Format death date

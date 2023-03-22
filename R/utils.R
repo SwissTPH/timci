@@ -365,4 +365,3 @@ normalised_levenshtein_ratio <- function(s1, s2) {
   out <- 100 * (1-d/n)
 
 }
-
