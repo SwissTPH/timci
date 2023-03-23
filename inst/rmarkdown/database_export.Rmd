@@ -246,6 +246,10 @@ tsize <- 7
 tfont <- "Cambria"
 dbreak_duration <- "4 months"
 nfacetperrow <- 4
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+y_min <- NA
+y_max <- NA
 ```
 
 \newpage

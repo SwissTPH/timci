@@ -601,3 +601,78 @@ plot_geom_bar_by_facility_over_time <- function(df,
   p
 
 }
+
+#' Create facets with scatters over time
+#'
+#' plot_scatter_by_facility_over_time() creates an image that contains facets with scatters over time.
+#'
+#' @param df Data frame to use for the plot.
+#' @param facility_col Column name in data frame `df`.
+#' @param date_col Column name in data frame `df`, should contain dates.
+#' @param date_lbl String that contains the x-axis label for the plot.
+#' @param date_break_str A string giving the distance between date breaks like "2 weeks", or "10 years".
+#' @param date_format A string giving the date formatting specification for the date labels (for instance `\%b\%y`).
+#' @param start_date Minimal value in the date range.
+#' @param end_date Maximal value in the date range.
+#' @param y_col Column name in data frame `df`.
+#' @param y_lbl String that contains the y-axis label for the plot.
+#' @param y_is_time Boolean (optional, default `FALSE`).
+#' @param time_break_str A string giving the distance between time breaks like "4 hours" (optional, default "").
+#' @param time_format A string giving the date formatting specification for the time labels, for instance `\%H:\%M` (optional, default "").
+#' @param y_min Minimum value of the y-axis (optional, default `NA`).
+#' @param y_max Maximum value of the y-axis (optional, default `NA`).
+#' @param n_facet_per_row Numeric value (optional, default 5) to set the number of facets per rows.
+#' @param text_size Numeric value (optional, default 7) to scale the text size.
+#' @return This function returns a ggplot2 object.
+#' @import ggplot2 dplyr rlang
+#' @export
+
+plot_scatter_by_facility_over_time <- function(df,
+                                               facility_col,
+                                               date_col,
+                                               date_lbl,
+                                               date_break_str,
+                                               date_format,
+                                               start_date,
+                                               end_date,
+                                               y_col,
+                                               y_lbl,
+                                               y_is_time = FALSE,
+                                               time_break_str = "",
+                                               time_format = "",
+                                               y_min = NA,
+                                               y_max = NA,
+                                               n_facet_per_row = 5,
+                                               text_size = 7){
+
+  # Quote the arguments that refer to data frame columns
+  date_col <- rlang::sym(date_col)
+  facility_col <- rlang::sym(facility_col)
+  y_col <- rlang::sym(y_col)
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = !!date_col,
+                                        y = !!y_col)) +
+    ggplot2::geom_point() +
+    ggplot2::labs(x = date_lbl,
+                  y = y_lbl) +
+    ggplot2::scale_x_date(date_breaks = date_break_str,
+                          date_labels = date_format,
+                          limits = c(as.Date(start_date), as.Date(end_date)))
+
+  if ( y_is_time ) {
+    p <- p + ggplot2::scale_y_datetime(date_breaks = time_break_str,
+                                       date_labels = time_format)
+  } else {
+    p <- p + ggplot2::ylim(y_min, y_max)
+  }
+
+  p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facility_col),
+                               ncol = n_facet_per_row,
+                               drop = FALSE) +
+    ggplot2::theme(text = element_text(size = text_size),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.x = element_blank())
+
+  p
+
+}

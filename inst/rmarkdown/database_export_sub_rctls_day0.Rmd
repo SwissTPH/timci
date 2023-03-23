@@ -714,6 +714,45 @@ dataMaid::identifyOutliers(day0_data$temp_meas_farenheit,
                            nMax = 50)
 ```
 
+```{r}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of temperature values"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_is_time <- FALSE
+y_min <- 0
+y_max <- NA
+comparison <- "type"
+```
+
+```{r, eval=!is_india}
+y_col <- "temp_meas"
+y_lbl <- "Temperature (in °C)"
+```
+
+```{r, eval=is_india}
+y_col <- "temp_meas_farenheit"
+y_lbl <- "Temperature (in °F)"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(day0_data)}
+cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
 #### Pulse oximetry\n\n
 
 ```{r}
@@ -739,23 +778,35 @@ dataMaid::identifyOutliers(day0_data$spo2_meas1,
                            nMax = 100)
 ```
 
-```{r, eval=timci::is_not_empty(day0_data), results='asis', fig.asp=1}
-ggplot2::ggplot(day0_data %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                ggplot2::aes(x = week, y = spo2_meas1)) +
-  ggplot2::geom_point() +
-  ggplot2::labs(x = "Weeks",
-                y = "Oxygen saturation (in %)") +
-  ggplot2::scale_x_date(date_breaks = dbreak_duration,
-                        date_labels = "%b%y") +
-  ggplot2::ylim(0, 100) +
-  ggplot2::facet_wrap(~ fid,
-                      ncol = nfacetperrow) +
-  ggplot2::theme(text = element_text(size = tsize),
-                 panel.grid.major.x = element_blank(),
-                 panel.grid.minor.x = element_blank())
+```{r}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of oxygen saturation values"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "spo2_meas1"
+y_lbl <- "Oxygen saturation (in %)"
+y_is_time <- FALSE
+y_min <- 0
+y_max <- 100
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(facility_data)}
+cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 #### Respiratory rate\n\n
@@ -781,23 +832,35 @@ dataMaid::identifyOutliers(day0_data$rr_meas,
                            nMax = 150)
 ```
 
-```{r, eval=timci::is_not_empty(day0_data), results='asis', fig.asp=1}
-ggplot2::ggplot(day0_data %>%
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                ggplot2::aes(x = week, y = rr_meas)) +
-  ggplot2::geom_point() +
-  ggplot2::labs(x = "Weeks",
-                y = "Oxygen saturation (in %)") +
-  ggplot2::scale_x_date(date_breaks = dbreak_duration,
-                        date_labels = "%b%y") +
-  ggplot2::ylim(0, NA) +
-  ggplot2::facet_wrap(~ fid,
-                      ncol = nfacetperrow) +
-  ggplot2::theme(text = element_text(size = tsize),
-                 panel.grid.major.x = element_blank(),
-                 panel.grid.minor.x = element_blank())
+```{r}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of respiratory rate values"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "rr_meas"
+y_lbl <- "Respiratory rate (in breaths/min)"
+y_is_time <- FALSE
+y_min <- 0
+y_max <- NA
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(facility_data)}
+cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Data cleaning summary\n\n

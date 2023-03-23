@@ -333,6 +333,17 @@ facility_data <- cleaned_df
 ```
 
 ```{r}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week", 
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r}
 fig_caption <- "Incorrect date and time setup on the device"
 facility_col <- "fid_from_device"
 date_col <- "week"
@@ -343,12 +354,6 @@ comparison <- "area"
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -356,25 +361,36 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
 
 ### Data entry times [Context check]
 
-```{r, results='asis', eval=timci::is_not_empty(facility_data), fig.asp=1, fig.cap="Spatiotemporal pattern of data entry times"}
-ggplot2::ggplot(facility_data %>%
-                  dplyr::mutate(start_time1 = as.POSIXct(paste0(Sys.Date(), df$start_time), tz = Sys.getenv("TZ"))) %>% 
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                ggplot2::aes(x = week, y = start_time1)) +
-  ggplot2::geom_point() +
-  ggplot2::labs(x = "Weeks",
-                y = "Start time of record entry") +
-  ggplot2::scale_x_date(date_breaks = dbreak_duration,
-                        date_labels = "%b%y") +
-  ggplot2::scale_y_datetime(date_labels = "%H:%M",
-                            date_breaks = "4 hours") +
-  ggplot2::facet_wrap(~ fid_from_device,
-                      ncol = nfacetperrow) +
-  ggplot2::theme(text = element_text(size = tsize),
-                 panel.grid.major.x = element_blank(),
-                 panel.grid.minor.x = element_blank())
+```{r}
+fig_df <- facility_data %>%
+  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of data entry times"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "start_time1"
+y_lbl <- "Start time of record entry"
+y_is_time <- TRUE
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(facility_data)}
+cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Lock date [Context check `r qc_screening_after_lockdate`]
