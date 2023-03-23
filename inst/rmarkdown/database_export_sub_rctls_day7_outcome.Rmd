@@ -64,7 +64,7 @@ if (!is.null(duplicate_edits)) {
 `r if (is_kenya) {'##### Final check after manual edits'}`
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
-qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, Only the most recent successful Day 7 follow-up is kept."
+qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, only the most recent successful Day 7 follow-up is kept."
 qc_rule <- "Delete all older records and keep only the most recent when more than one successful follow-up is available for the same participant."
 qc_type <- "duplicates"
 df <- day7fu_data
