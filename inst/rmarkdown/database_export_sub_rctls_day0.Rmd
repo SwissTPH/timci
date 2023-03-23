@@ -732,19 +732,21 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 y_is_time <- FALSE
-y_min <- 0
-y_max <- NA
 comparison <- "type"
 ```
 
 ```{r, eval=!is_india}
 y_col <- "temp_meas"
 y_lbl <- "Temperature (in °C)"
+y_min <- 25
+y_max <- 45
 ```
 
 ```{r, eval=is_india}
 y_col <- "temp_meas_farenheit"
 y_lbl <- "Temperature (in °F)"
+y_min <- 0
+y_max <- NA
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(day0_data)}
@@ -853,7 +855,7 @@ y_col <- "rr_meas"
 y_lbl <- "Respiratory rate (in breaths/min)"
 y_is_time <- FALSE
 y_min <- 0
-y_max <- NA
+y_max <- 150
 comparison <- "type"
 ```
 
