@@ -21,7 +21,7 @@ day7fu_data <- day7fu_data %>%
   dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
 ```
 
-### Duplicate management\n\n
+### Duplicate management
 
 #### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]\n\n
 

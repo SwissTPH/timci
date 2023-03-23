@@ -341,6 +341,7 @@ detect_inconsistent_names_between_visits <- function(refdf,
 
   if ( timci::is_not_empty(refdf) & timci::is_not_empty(fudf)) {
 
+    # Generate plausible combinations of names to be compared
     if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
       refdf <- refdf %>%
         dplyr::mutate(refname = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
@@ -371,8 +372,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
       dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
       dplyr::select(child_id,
                     uuid,
-                    lvr)
-    qc_df <- qc_df[qc_df$lvr > thres, ]
+                    lvr) %>%
+      dplyr::filter(lvr < thres)
 
   }
 

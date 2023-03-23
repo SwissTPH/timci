@@ -47,7 +47,7 @@ n_afterlock_pids_hospitfu_records <- n_detected
 hospit_data <- cleaned_df
 ```
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]\n\n
+### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "Hospitalisation follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
@@ -71,7 +71,7 @@ n_nonvalid_pids_hospitfu <- n_detected
 locked_hospit_data <- cleaned_df
 ```
 
-### Duplicate management [compliance check `r qc_duplicated_hospitfu`]\n\n
+### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
@@ -92,7 +92,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_duplicates_hospitfu <- n_detected
 ```
 
-### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment`]\n\n
+### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment`]
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
@@ -100,7 +100,10 @@ qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- locked_hospit_data %>%
   filter(found == 1) %>% 
-  merge(day0_data,
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        fid,
+                        date_visit),
         by = "child_id",
         all.x = TRUE)
 col_date1 <- "date_visit_rhf"
@@ -114,7 +117,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 ```{r}
 timci::create_hospit_qc_flowchart(nrow(hospit_data),
@@ -124,7 +127,7 @@ timci::create_hospit_qc_flowchart(nrow(hospit_data),
                                   nrow(locked_hospit_data))
 ```
 
-### Data export\n\n
+### Data export
 
 ```{r export-RCT-LS-ODK-fu-hospit-data, results = 'asis'}
 timci::dataset_export(hospit_data,
@@ -202,7 +205,7 @@ timci::dataset_export(hospit_fu,
                       "Hospitalisation log data")
 ```
 
-### Data summary statistics\n\n
+### Data summary statistics
 
 ```{r, results='asis'}
 skimr::skim(locked_hospit_data)

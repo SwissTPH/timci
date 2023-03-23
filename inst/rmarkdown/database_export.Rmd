@@ -331,6 +331,11 @@ Each updated version is to be circulated to by the data management team to the r
 
 \newpage
 
+```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
+```
+
+\newpage
+
 ```{r}
 day7fu_is_not_null <- !is.null(raw_day7fu_data)
 day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
@@ -363,11 +368,6 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
 ```{r db-export-successfulday28fu-subsection, child = if(is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28_outcome.Rmd'}
-```
-
-\newpage
-
-```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
 ```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}

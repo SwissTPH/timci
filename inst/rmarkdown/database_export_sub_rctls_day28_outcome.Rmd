@@ -52,43 +52,43 @@ day28fu_data <- cleaned_df
 ### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day28fu`]\n\n
 
 ```{r, eval=!is.null(day28fu_data), results='asis'}
-qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 28 follow-up."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day28fu_data %>% 
-  merge(day0_data,
-        by = "child_id",
-        all.x = TRUE)
-col_date1 <- "date_hosp_day28"
-col_date2 <- "date_visit"
-qc_text <- "a date of hospitalisation before the enrolment date"
-qc_idx <- qc_hospit_before_enrolment_day28fu
-qc_export_label <- "hospit_before_enrolment"
-qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
+# qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 28 follow-up."
+# qc_rule <- action_alert_no_modification
+# qc_type <- "date_discrepancy"
+# df <- day28fu_data %>% 
+#   merge(day0_data,
+#         by = "child_id",
+#         all.x = TRUE)
+# col_date1 <- "date_hosp_day28"
+# col_date2 <- "date_visit"
+# qc_text <- "a date of hospitalisation before the enrolment date"
+# qc_idx <- qc_hospit_before_enrolment_day28fu
+# qc_export_label <- "hospit_before_enrolment"
+# qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+# cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+#                       envir = environment(),
+#                       quiet = TRUE))
 ```
 
 ### Invalid date of death [context check `r qc_death_before_enrolment_day28fu`]\n\n
 
 ```{r, eval=!is.null(day28fu_data), results='asis'}
-qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 28 follow-up."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day28fu_data %>% 
-  merge(day0_data,
-        by = "child_id",
-        all.x = TRUE)
-col_date1 <- "date_death_day28"
-col_date2 <- "date_visit"
-qc_text <- "a date of death before the enrolment date"
-qc_idx <- qc_death_before_enrolment_day28fu
-qc_export_label <- "death_before_enrolment"
-qc_export_description <- "the reported date of death was before the enrolment date"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
+# qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 28 follow-up."
+# qc_rule <- action_alert_no_modification
+# qc_type <- "date_discrepancy"
+# df <- day28fu_data %>% 
+#   merge(day0_data,
+#         by = "child_id",
+#         all.x = TRUE)
+# col_date1 <- "date_death_day28"
+# col_date2 <- "date_visit"
+# qc_text <- "a date of death before the enrolment date"
+# qc_idx <- qc_death_before_enrolment_day28fu
+# qc_export_label <- "death_before_enrolment"
+# qc_export_description <- "the reported date of death was before the enrolment date"
+# cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+#                       envir = environment(),
+#                       quiet = TRUE))
 ```
 
 ### Data cleaning summary\n\n

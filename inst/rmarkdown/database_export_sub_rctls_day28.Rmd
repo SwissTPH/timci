@@ -35,22 +35,6 @@ comparison <- "area"
 fill_col <- "Difference"
 ```
 
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = dplyr::case_when(
-    diff < 3 ~ "Less than 3 days",
-    diff >= 3 & diff < 7 ~ "3-6 days",
-    diff >= 7 ~ "7 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'hf_id',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
 ### Non-timely completion [Context check `r qc_nontimely_completion_day7fu`]
 
 ```{r}
@@ -65,22 +49,6 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "area"
 fill_col <- "Difference"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = dplyr::case_when(
-    diff <= 1 ~ "1 day",
-    diff > 1 & diff < 3 ~ "1-2 days",
-    diff >= 3 ~ "3 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'hf_id',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
 ```
 
 ### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]\n\n
