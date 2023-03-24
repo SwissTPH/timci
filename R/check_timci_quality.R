@@ -145,9 +145,14 @@ detect_inconsistent_dates <- function(df,
   df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))#as.Date(as.character(df[[col_date_end]]), format = date_format) - as.Date(as.character(df[[col_date_start]]), format = date_format)
   if ( 'fid_from_device' %in% cols ) {
     kcols <- c("fid_from_device", "fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
-  } else{
+  } else if ( 'fid' %in% cols ) {
     kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  } else if ( 'hf_id' %in% cols ) {
+    kcols <- c("hf_id", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  } else {
+    kcols <- c("child_id", col_date_start, col_date_end, "diff", "uuid")
   }
+
   if ( !"start" %in% kcols ) {
     kcols <- c(kcols, "start")
   }
@@ -160,8 +165,22 @@ detect_inconsistent_dates <- function(df,
 
   if (timci::is_not_empty(qc_df)) {
     qc_df <- qc_df %>%
-      dplyr::select(kcols) %>%
-      dplyr::arrange(diff, fid)
+      dplyr::select(kcols)
+
+    if ( 'fid_from_device' %in% cols ) {
+      qc_df <- qc_df %>%
+        dplyr::arrange(diff, fid_from_device)
+    } else if ( 'fid' %in% cols ) {
+      qc_df <- qc_df %>%
+        dplyr::arrange(diff, fid)
+    } else if ( 'hf_id' %in% cols ) {
+      qc_df <- qc_df %>%
+        dplyr::arrange(diff, hf_id)
+    } else{
+      qc_df <- qc_df %>%
+        dplyr::arrange(diff)
+    }
+
   }
 
   if ( !is.null(qc_df) & cleaning == "replace_by_end_date" ) {
