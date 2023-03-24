@@ -17,7 +17,7 @@ locked_hospit_data <- NULL
 hospit_fu <- NULL
 ```
 
-### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]\n\n
+### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
@@ -73,6 +73,10 @@ locked_hospit_data <- cleaned_df
 
 ### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
 
+```{r}
+write(" o Duplicate management", stderr())
+```
+
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
 qc_rule <- action_alert_no_modification
@@ -92,10 +96,14 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_duplicates_hospitfu <- n_detected
 ```
 
-### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment`]
+### Invalid date of hospitalisation [Context check `r qc_hospit_before_enrolment`]
+
+```{r}
+write(" o Invalid date of hospitalisation", stderr())
+```
 
 ```{r, eval=!is.null(locked_hospit_data), results='asis'}
-qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the hospitalisation follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- locked_hospit_data %>%
@@ -112,6 +120,64 @@ qc_text <- "a date of hospitalisation before the enrolment date"
 qc_idx <- qc_hospit_before_enrolment
 qc_export_label <- "hospit_before_enrolment"
 qc_export_description <- "the reported date of hospitalisation was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Invalid date of death [Context check `r qc_hospit_before_enrolment`]
+
+```{r}
+write(" o Invalid date of death", stderr())
+```
+
+```{r, eval=!is.null(locked_hospit_data), results='asis'}
+qc_description <- "The reported death should have happened between enrolment at Day 0 and the hospitalisation follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- locked_hospit_data %>%
+  filter(found == 1) %>% 
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        fid,
+                        date_visit),
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_death"
+col_date2 <- "date_visit"
+qc_text <- "a date of hospitalisation before the enrolment date"
+qc_idx <- qc_hospit_before_enrolment
+qc_export_label <- "death_before_enrolment"
+qc_export_description <- "the reported date of death was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Invalid date of discharge [Context check `r qc_hospit_before_enrolment`]
+
+```{r}
+write(" o Invalid date of discharge", stderr())
+```
+
+```{r, eval=!is.null(locked_hospit_data), results='asis'}
+qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the hospitalisation follow-up."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- locked_hospit_data %>%
+  filter(found == 1) %>% 
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        fid,
+                        date_visit),
+        by = "child_id",
+        all.x = TRUE)
+col_date1 <- "date_discharge"
+col_date2 <- "date_visit"
+qc_text <- "a date of hospitalisation before the enrolment date"
+qc_idx <- qc_hospit_before_enrolment
+qc_export_label <- "discharge_before_enrolment"
+qc_export_description <- "the reported date of discharge was before the enrolment date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
