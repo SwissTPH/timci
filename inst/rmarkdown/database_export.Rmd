@@ -178,11 +178,12 @@ qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_13"
 qc_missing_cp_id <- "DQC_00_14"
 qc_missing_diagnosis_id <- "DQC_00_15"
 qc_missing_referral_id <- "DQC_00_16"
-qc_negative_nb_days_id <- "DQC_00_17"
-qc_free_text_rx_id <- "DQC_00_18"
-qc_drug_duplicate_id <- "DQC_00_19"
-qc_pox_ <- "DQC_00_20"
-qc_summary_id <- "DQC_00_21"
+qc_missing_treatment_id <- "DQC_00_17"
+qc_negative_nb_days_id <- "DQC_00_18"
+qc_free_text_rx_id <- "DQC_00_19"
+qc_drug_duplicate_id <- "DQC_00_20"
+qc_pox_ <- "DQC_00_21"
+qc_summary_id <- "DQC_00_22"
 
 # Day 7 quality check IDs
 ##########################
@@ -196,6 +197,7 @@ qc_missing_hospit_date_day7fu <- "DQC_07_07"
 qc_hospit_before_enrolment_day7fu <- "DQC_07_08"
 qc_missing_death_date_day7fu <- "DQC_07_09"
 qc_death_before_enrolment_day7fu <- "DQC_07_10"
+qc_death_before_hospit_day7fu <- "DQC_07_11"
 
 # Hospitalisation quality check IDs
 ####################################
@@ -212,8 +214,10 @@ qc_pids_out_lock_range_day28fu <- "DQC_28_03"
 qc_nonvalid_day28fu <- "DQC_28_04"
 qc_nonconsistent_name_day28fu <- "DQC_28_05"
 qc_duplicated_day28fu <- "DQC_28_06"
-qc_hospit_before_enrolment_day28fu <- "DQC_28_07"
-qc_death_before_enrolment_day28fu <- "DQC_28_08"
+qc_missing_hospit_date_day28fu <- "DQC_28_07"
+qc_hospit_before_enrolment_day28fu <- "DQC_28_08"
+qc_missing_death_date_day28fu <- "DQC_28_09"
+qc_death_before_enrolment_day28fu <- "DQC_28_10"
 
 # Withdrawals quality check IDs
 ################################

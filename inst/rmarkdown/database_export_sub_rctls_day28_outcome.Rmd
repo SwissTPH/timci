@@ -49,7 +49,7 @@ n_dropped_duplicate_day28fu_records <- nrow(day28fu_data) - nrow(cleaned_df)
 day28fu_data <- cleaned_df
 ```
 
-### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day7fu`]
+### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day28fu`]
 
 ```{r}
 write(" o Missing date of hospitalisation", stderr())
@@ -82,7 +82,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Missing date of death [Mandatory check `r qc_missing_death_date_day7fu`]
+### Missing date of death [Mandatory check `r qc_missing_death_date_day28fu`]
 
 ```{r}
 write(" o Missing date of death", stderr())

@@ -120,6 +120,15 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+```{r, eval=(qc_type=="missing_date")}
+qc_df <- timci::detect_missing_var(df,
+                                   col_date)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
 ```{r, eval=(qc_type=="missing_clinical_presentation")}
 qc_df <- timci::detect_missing_clinical_presentation(df)
 outcols <- c("child_id", "fid", "date_visit", "uuid")
@@ -144,10 +153,9 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
-```{r, eval=(qc_type=="missing_date")}
-qc_df <- timci::detect_missing_var(df,
-                                   col_date)
-outcols <- c("child_id", "fid", "uuid")
+```{r, eval=(qc_type=="missing_treatment")}
+qc_df <- timci::detect_missing_treatment(df)
+outcols <- c("child_id", "fid", "date_visit", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)

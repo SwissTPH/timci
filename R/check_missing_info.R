@@ -107,3 +107,28 @@ detect_missing_referral <- function(facility_df) {
   out
 
 }
+
+#' Detect missing treatment (TIMCI-specific function)
+#'
+#' @param facility_df dataframe containing the processed facility data
+#' @return This function returns a dataframe containing only participants with no treatment
+#' @export
+#' @import dplyr
+
+detect_missing_treatment <- function(facility_df) {
+
+  out <- NULL
+
+  if ( timci::is_not_empty(facility_df) ) {
+
+    out <- facility_df %>%
+      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin),
+                                     1,
+                                     0)) %>%
+      filter(missing == 1)
+
+  }
+
+  out
+
+}

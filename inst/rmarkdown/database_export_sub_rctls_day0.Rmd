@@ -624,7 +624,7 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Free text entries\n\n
+#### Free text entries
 
 ```{r, results='asis', eval=day0_is_not_null}
 qc_description <- "All participants should have antibiotics entered in a structured way and not in free text."
@@ -639,6 +639,52 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_free_text_rx_cg <- n_detected
+```
+
+#### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+
+```{r}
+write(" o Missing treatment", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_treatment"
+df <- day0_data
+qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
+qc_idx <- qc_missing_treatment_id
+qc_export_label <- "missing_treatment"
+qc_export_description <- "the treatment information is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_treatment <- n_detected
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of treatments"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Treatment"
+```
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Treatment = dplyr::case_when(
+    !is.na(rx_amoxicillin) ~ "Present",
+    is.na(rx_amoxicillin) ~ "Missing")) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ### Clinical measurements

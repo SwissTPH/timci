@@ -41,13 +41,16 @@ identify_duplicates_by_dates <- function(df,
   if ( timci::is_not_empty(df) ) {
 
     qc_df <- df %>%
-      dplyr::arrange(!!dplyr::enquo(col_date)) %>% # order by ascending dates
+      dplyr::rename(date_value1 = !!dplyr::enquo(col_date)) %>%
       dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
       dplyr::group_by(id) %>%
+      dplyr::mutate(date_value2 = sort(date_value1,
+                                       decreasing = TRUE,
+                                       na.last = TRUE)) %>% # order by descending dates
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c(col_date),
+                         values_from = date_value2,
                          names_prefix = "date_")
 
     if ( "date_2" %in% colnames(qc_df) ) {

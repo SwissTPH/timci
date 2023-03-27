@@ -23,7 +23,7 @@ qc_type <- "duplicates"
 df <- raw_drug_data
 col_id <- "uuid"
 col_date <- "start"
-cleaning <- "drop_all"
+cleaning <- "keep_latest"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_drug_duplicate_id
 qc_export_label <- "timci_drug_data_id_duplicates"
