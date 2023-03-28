@@ -317,7 +317,7 @@ Each updated version is to be circulated to by the data management team to the r
 
 # `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
-```{r db-export-screening-subsection, child = 'database_export_sub_rctls_context.Rmd'}
+```{r db-export-context-subsection, child = 'database_export_sub_rctls_context.Rmd'}
 ```
 
 \newpage
