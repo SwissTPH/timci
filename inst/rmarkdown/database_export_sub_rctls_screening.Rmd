@@ -333,17 +333,6 @@ facility_data <- cleaned_df
 ```
 
 ```{r}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
-                                             "week", 
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-```
-
-```{r}
 fig_caption <- "Incorrect date and time setup on the device"
 facility_col <- "fid_from_device"
 date_col <- "week"
@@ -354,6 +343,15 @@ comparison <- "area"
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week", 
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -362,15 +360,7 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
 ### Data entry times [Context check]
 
 ```{r}
-fig_df <- facility_data %>%
-  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time), tz = Sys.getenv("TZ"))) %>% 
-  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+write(" o Data entry times", stderr())
 ```
 
 ```{r}
@@ -388,6 +378,16 @@ comparison <- "type"
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(facility_data)}
+fig_df <- facility_data %>%
+  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time),
+                                         tz = Sys.getenv("TZ"))) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))

@@ -15,14 +15,19 @@ max_val = max(tmp$n)
 ```
 
 ```{r, eval=is_kenya&type_comparison}
-df1 <- fig_df %>% dplyr::filter(type == "Dispensary")
-df2 <- fig_df %>% dplyr::filter(type == "Health Center")
+df1 <- fig_df %>%
+  dplyr::filter(type == "Dispensary")
+df2 <- fig_df %>%
+  dplyr::filter(type == "Health Center")
 ```
 
 ```{r, eval=is_kenya&area_comparison}
-df1 <- fig_df %>% dplyr::filter(lvl2 == "Kakamega County")
-df2 <- fig_df %>% dplyr::filter(lvl2 == "Kitui County")
-df3 <- fig_df %>% dplyr::filter(lvl2 == "Uasin Gishu County")
+df1 <- fig_df %>%
+  dplyr::filter(lvl2 == "Kakamega County")
+df2 <- fig_df %>%
+  dplyr::filter(lvl2 == "Kitui County")
+df3 <- fig_df %>%
+  dplyr::filter(lvl2 == "Uasin Gishu County")
 
 lbl1 <- "Kakamega County"
 lbl2 <- "Kitui County"
@@ -30,15 +35,21 @@ lbl3 <- "Uasin Gishu County"
 ```
 
 ```{r, eval=is_tanzania}
-df1 <- fig_df %>% dplyr::filter(lvl2 == "Kaliua")
-df2 <- fig_df %>% dplyr::filter(lvl2 == "Sengerema")
-df3 <- fig_df %>% dplyr::filter(lvl2 == "Tanga")
+df1 <- fig_df %>%
+  dplyr::filter(lvl2 == "Kaliua")
+df2 <- fig_df %>%
+  dplyr::filter(lvl2 == "Sengerema")
+df3 <- fig_df %>%
+  dplyr::filter(lvl2 == "Tanga")
 ```
 
 ```{r, eval=is_india}
-df1 <- fig_df %>% dplyr::filter(lvl2 == "Deoria")
-df2 <- fig_df %>% dplyr::filter(lvl2 == "Sitapur")
-df3 <- fig_df %>% dplyr::filter(lvl2 == "Unnao")
+df1 <- fig_df %>%
+  dplyr::filter(lvl2 == "Deoria")
+df2 <- fig_df %>%
+  dplyr::filter(lvl2 == "Sitapur")
+df3 <- fig_df %>%
+  dplyr::filter(lvl2 == "Unnao")
 ```
 
 ```{r, results='asis', eval=is_kenya&timci::is_not_empty(df1)&type_comparison, fig.asp=1, fig.cap=paste0(fig_caption, " - Dispensaries")}
@@ -232,8 +243,11 @@ timci::plot_scatter_by_facility_over_time(df = df2,
                                           end_date = lock_date,
                                           y_col = y_col,
                                           y_lbl = y_lbl,
+                                          y_is_time = y_is_time,
                                           time_break_str = time_break_str,
                                           time_format = time_format,
+                                          y_min = y_min,
+                                          y_max = y_max,
                                           n_facet_per_row = 5,
                                           text_size = tsize)
 ```
