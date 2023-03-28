@@ -144,7 +144,7 @@ detect_inconsistent_dates <- function(df,
 
   df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))
   if ( 'fid_from_device' %in% cols ) {
-    kcols <- c("fid_from_device", "child_id", col_date_start, col_date_end, "diff", "uuid")
+    kcols <- c("fid_from_device", "fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
   } else if ( 'fid' %in% cols ) {
     kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
   } else if ( 'hf_id' %in% cols ) {

@@ -156,34 +156,35 @@ if (!is.null(params$facility_data)) {
 
 # Screening quality check IDs
 ##############################
-qc_nontimely_submission_id <- "DQC_00_01"
-qc_nontimely_completion_id <- "DQC_00_02"
-qc_screening_w_nonvalid_deviceid <- "DQC_00_03"
-qc_screening_other_fids <- "DQC_00_04"
-qc_underaged_cg_id <- "DQC_00_05"
-qc_dup_repeats_id1 <- "DQC_00_06a"
-qc_dup_repeats_id2 <- "DQC_00_06b"
-qc_incorrect_date_setup <- "DQC_00_07"
-qc_screening_after_lockdate <- "DQC_00_08"
+qc_nontimely_submission_id <- "DQC_00_0SG_01"
+qc_screening_other_fids <- "DQC_00_0SG_04"
+qc_underaged_cg_id <- "DQC_00_0SG_05"
+qc_dup_repeats_id1 <- "DQC_00_0SG_06a"
+qc_dup_repeats_id2 <- "DQC_00_0SG_06b"
+qc_incorrect_date_setup <- "DQC_00_0SG_07"
+qc_screening_after_lockdate <- "DQC_00_0SG_08"
+
+# Day 0 drug quality check IDs
+###############################
+qc_drug_duplicate_id <- "DQC_00_1DG_01"
 
 # Day 0 quality check IDs
 ##########################
-qc_nonvalid_fid1 <- "DQC_00_09a"
-qc_nonvalid_fid2 <- "DQC_00_09b"
-qc_duplicate_id1 <- "DQC_00_10a"
-qc_duplicate_id2 <- "DQC_00_10b"
-qc_incorrect_enrolment_date <- "DQC_00_11"
-qc_multiple_enrolment_id <- "DQC_00_12"
-qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_13"
-qc_missing_cp_id <- "DQC_00_14"
-qc_missing_diagnosis_id <- "DQC_00_15"
-qc_missing_referral_id <- "DQC_00_16"
-qc_missing_treatment_id <- "DQC_00_17"
-qc_negative_nb_days_id <- "DQC_00_18"
-qc_free_text_rx_id <- "DQC_00_19"
-qc_drug_duplicate_id <- "DQC_00_20"
-qc_pox_ <- "DQC_00_21"
-qc_summary_id <- "DQC_00_22"
+qc_nonvalid_fid1 <- "DQC_00_2ED_01a"
+qc_nonvalid_fid2 <- "DQC_00_2ED_01b"
+qc_duplicate_id1 <- "DQC_00_2ED_02a"
+qc_duplicate_id2 <- "DQC_00_2ED_02b"
+qc_incorrect_enrolment_date <- "DQC_00_2ED_03"
+qc_multiple_enrolment_id <- "DQC_00_2ED_04"
+qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_2ED_05"
+qc_missing_cp_id <- "DQC_00_2ED_06"
+qc_missing_diagnosis_id <- "DQC_00_2ED_07"
+qc_missing_referral_id <- "DQC_00_2ED_08"
+qc_missing_treatment_id <- "DQC_00_2ED_09"
+qc_negative_nb_days_id <- "DQC_00_2ED_10"
+qc_free_text_rx_id <- "DQC_00_2ED_11"
+qc_pox_ <- "DQC_00_2ED_12"
+qc_summary_id <- "DQC_00_2ED_13"
 
 # Day 7 quality check IDs
 ##########################
@@ -222,6 +223,7 @@ qc_death_before_enrolment_day28fu <- "DQC_28_10"
 # Withdrawals quality check IDs
 ################################
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
+qc_withdrawal_before_enrolment <- "DQC_WD_02"
 
 # SPA quality check IDs
 ########################

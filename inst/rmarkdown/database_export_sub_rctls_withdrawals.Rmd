@@ -89,7 +89,7 @@ timci::quality_check_export(non_reconciled_withdrawn_ids,
                             "withdrawals were not reconciled")
 ```
 
-### Invalid date of withdrawal [Context check `r qc_hospit_before_enrolment`]
+### Invalid date of withdrawal [Context check `r qc_withdrawal_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of withdrawal", stderr())
@@ -103,7 +103,7 @@ df <- day0_data_id_withdrawal
 col_date1 <- "date"
 col_date2 <- "date_visit"
 qc_text <- "a date of withdrawal before the enrolment date"
-qc_idx <- qc_hospit_before_enrolment
+qc_idx <- qc_withdrawal_before_enrolment
 qc_export_label <- "withdrawal_before_enrolment"
 qc_export_description <- "the date of withdrawal was before the enrolment date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
