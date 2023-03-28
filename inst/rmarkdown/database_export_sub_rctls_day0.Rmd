@@ -583,7 +583,7 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]\n\n
+### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]
 
 ```{r}
 write(" o Negative illness onset", stderr())
@@ -801,7 +801,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Pulse oximetry\n\n
+#### Pulse oximetry
 
 ```{r}
 write("   o Pulse oximetry", stderr())
@@ -857,7 +857,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Respiratory rate\n\n
+#### Respiratory rate
 
 ```{r}
 write("   o Respiratory rate", stderr())
@@ -911,7 +911,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
@@ -934,7 +934,7 @@ timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_cleaned_day0_records)
 ```
 
-### Data export\n\n
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -979,7 +979,7 @@ timci::dataset_export(study_data,
                       "Facility visit data")
 ```
 
-### Data summary statistics\n\n
+### Data summary statistics
 
 ```{r}
 day0_data <- day0_data %>%

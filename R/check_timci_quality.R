@@ -142,9 +142,9 @@ detect_inconsistent_dates <- function(df,
   cleaned_df <- NULL
   cols <- colnames(df)
 
-  df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))#as.Date(as.character(df[[col_date_end]]), format = date_format) - as.Date(as.character(df[[col_date_start]]), format = date_format)
+  df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))
   if ( 'fid_from_device' %in% cols ) {
-    kcols <- c("fid_from_device", "fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+    kcols <- c("fid_from_device", "child_id", col_date_start, col_date_end, "diff", "uuid")
   } else if ( 'fid' %in% cols ) {
     kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
   } else if ( 'hf_id' %in% cols ) {
@@ -153,19 +153,11 @@ detect_inconsistent_dates <- function(df,
     kcols <- c("child_id", col_date_start, col_date_end, "diff", "uuid")
   }
 
-  if ( !"start" %in% kcols ) {
-    kcols <- c(kcols, "start")
-  }
-  if ( !"end" %in% kcols ) {
-    kcols <- c(kcols, "end")
-  }
-
   qc_df <- df %>%
+    dplyr::select(kcols) %>%
     dplyr::filter(diff > 0)
 
   if (timci::is_not_empty(qc_df)) {
-    qc_df <- qc_df %>%
-      dplyr::select(kcols)
 
     if ( 'fid_from_device' %in% cols ) {
       qc_df <- qc_df %>%
