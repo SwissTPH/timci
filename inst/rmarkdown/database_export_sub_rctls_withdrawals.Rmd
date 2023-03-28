@@ -2,7 +2,7 @@
 write("Export withdrawal data and run corresponding quality checks", stderr())
 ```
 
-## Withdrawal quality checks\n\n
+## Withdrawal quality checks
 
 **Rule:** withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.
 

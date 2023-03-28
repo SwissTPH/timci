@@ -157,6 +157,8 @@ if (!is.null(params$facility_data)) {
 # Screening quality check IDs
 ##############################
 qc_nontimely_submission_id <- "DQC_00_0SG_01"
+qc_nontimely_completion_id <- "DQC_00_0SG_02"
+qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_03"
 qc_screening_other_fids <- "DQC_00_0SG_04"
 qc_underaged_cg_id <- "DQC_00_0SG_05"
 qc_dup_repeats_id1 <- "DQC_00_0SG_06a"
@@ -338,6 +340,11 @@ Each updated version is to be circulated to by the data management team to the r
 \newpage
 
 ```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
+```
+
+\newpage
+
+```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
 ```
 
 \newpage
