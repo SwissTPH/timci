@@ -8,6 +8,7 @@ create_screening_qc_flowchart(
   n_raw_screening_records,
   n_nonvalid_deviceid_records,
   n_other_fid_records,
+  n_before_startdate_records,
   n_after_lockdate_records,
   n_ineligible_cg_records,
   n_edited_repeat_visit_records,
@@ -21,6 +22,8 @@ create_screening_qc_flowchart(
 \item{n_nonvalid_deviceid_records}{Number of screening records with a non-valid device ID}
 
 \item{n_other_fid_records}{Number of screening records corresponding to facility involved in another TIMCI study (India-specific)}
+
+\item{n_before_startdate_records}{Number of screening records with an entry date anterior to the start date}
 
 \item{n_after_lockdate_records}{Number of screening records with an entry date posterior to the lock date}
 

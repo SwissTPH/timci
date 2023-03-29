@@ -7,13 +7,33 @@ write("Export repeat visit data and run corresponding quality checks", stderr())
 ```{r}
 db_name <- "Repeat visit"
 repeat_data <- facility_data %>%
-    dplyr::filter(repeat_consult == 1)
+  dplyr::filter(repeat_consult == 1)
 n_raw_repeat_records <- nrow(repeat_data)
 repeat_is_not_null <- !is.null(repeat_data)
 repeat_is_not_empty <- timci::is_not_empty(repeat_data)
 ```
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
+
+### Format raw data
+
+```{r}
+repeat_dictionary <- subset(dictionary, repeats == 1)
+n_repeat_dictionary_vars <- nrow(repeat_dictionary)
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
+                                "fid_from_device")))
+```
+
+There are **`r n_repeat_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+repeat_dictionary %>%
+  dplyr::select(new,
+                old) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference"))
+```
 
 ### Data export
 

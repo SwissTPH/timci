@@ -6,23 +6,21 @@ write("Write contextual information including dates, study facilities, facility 
 ## Context
 
 ```{r}
-start_date <- NULL
 end_date <- NULL
 facility_data_is_not_null <- !is.null(facility_data)
 facility_data_is_not_empty <- timci::is_not_empty(facility_data)
 ```
 
 ```{r load-RCT-LS-ODK-facility-data, results='asis', eval=facility_data_is_not_empty}
-start_date <- min(facility_data$date_visit)
 end_date <- max(facility_data$date_visit)
 if (is.null(lock_date)) {
   lock_date <- end_date
 }
 week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
 if (is_senegal) {
-  cat(paste0("* Début de la collecte de données : **", start_date, "**"))
+  cat(paste0("* Début de la collecte de données pour l'étude longitudinale : **", start_date, "**"))
 } else {
-  cat(paste0("* Data collection start: **", start_date, "**"))
+  cat(paste0("* Study start: **", start_date, "**"))
 }
 ```
 
@@ -35,7 +33,8 @@ if (is_senegal) {
 ```
 
 ```{r, results = "asis", eval=facility_data_is_not_empty, fig.asp=1}
-timci::generate_calendar_heatmap2(facility_data,
+timci::generate_calendar_heatmap2(facility_data %>%
+                                    dplyr::filter(date_visit >= as.Date(start_date, "%Y-%m-%d")),
                                   date_visit,
                                   legendtitle = "Calendar heatmap of facility screenings")
 ```
@@ -50,7 +49,7 @@ cat("### Included facilities")
 ```
 
 ```{r, results='asis'}
-cat(paste0("Data collection was planned in **", facility_nb, "** facilities."))
+cat(paste0("Data collection was conducted in **", facility_nb, "** facilities."))
 ```
 
 ```{r, results='asis'}

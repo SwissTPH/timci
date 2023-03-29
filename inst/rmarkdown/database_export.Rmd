@@ -156,15 +156,16 @@ if (!is.null(params$facility_data)) {
 
 # Screening quality check IDs
 ##############################
-qc_nontimely_submission_id <- "DQC_00_0SG_01"
-qc_nontimely_completion_id <- "DQC_00_0SG_02"
-qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_03"
-qc_screening_other_fids <- "DQC_00_0SG_04"
-qc_underaged_cg_id <- "DQC_00_0SG_05"
-qc_dup_repeats_id1 <- "DQC_00_0SG_06a"
-qc_dup_repeats_id2 <- "DQC_00_0SG_06b"
-qc_incorrect_date_setup <- "DQC_00_0SG_07"
-qc_screening_after_lockdate <- "DQC_00_0SG_08"
+qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
+qc_nontimely_submission_id <- "DQC_00_0SG_02"
+qc_nontimely_completion_id <- "DQC_00_0SG_03"
+qc_incorrect_date_setup <- "DQC_00_0SG_04"
+qc_screening_before_startdate <- "DQC_00_0SG_05"
+qc_screening_after_lockdate <- "DQC_00_0SG_06"
+qc_screening_other_fids <- "DQC_00_0SG_07"
+qc_underaged_cg_id <- "DQC_00_0SG_08"
+qc_dup_repeats_id1 <- "DQC_00_0SG_09a"
+qc_dup_repeats_id2 <- "DQC_00_0SG_09b"
 
 # Day 0 drug quality check IDs
 ###############################
@@ -393,7 +394,6 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ## Cross-sectional quantitative studies
 
 ```{r}
-start_date <- NULL
 end_date <- NULL
 facility_data_is_not_null <- !is.null(facility_data)
 facility_data_is_not_empty <- timci::is_not_empty(facility_data)

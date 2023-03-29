@@ -71,7 +71,9 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name,
   fs::dir_ls(local_dir)
   raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
                                   col_types = cols(.default = "c"))
-  timci::format_odk_metadata(raw_odk_data, start_date, end_date)
+  timci::format_odk_metadata(raw_odk_data,
+                             start_date,
+                             end_date)
 
 }
 

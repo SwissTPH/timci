@@ -3,6 +3,7 @@
 #' @param n_raw_screening_records Initial number of screening records
 #' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID
 #' @param n_other_fid_records Number of screening records corresponding to facility involved in another TIMCI study (India-specific)
+#' @param n_before_startdate_records Number of screening records with an entry date anterior to the start date
 #' @param n_after_lockdate_records Number of screening records with an entry date posterior to the lock date
 #' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
 #' @param n_edited_repeat_visit_records Number of screening records that were edited manually
@@ -15,34 +16,41 @@
 create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_nonvalid_deviceid_records,
                                           n_other_fid_records,
+                                          n_before_startdate_records,
                                           n_after_lockdate_records,
                                           n_ineligible_cg_records,
                                           n_edited_repeat_visit_records,
                                           n_incorrect_date_setup_records,
                                           n_cleaned_screening_records) {
 
-  n_excluded <- n_nonvalid_deviceid_records + n_after_lockdate_records
-  n_edited <- n_edited_repeat_visit_records + n_ineligible_cg_records
+  n_excluded <- n_nonvalid_deviceid_records + n_other_fid_records + n_before_startdate_records + n_after_lockdate_records
+  n_edited <- n_ineligible_cg_records + n_edited_repeat_visit_records + n_incorrect_date_setup_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw screening records\n(N = %s)']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) posterior to the lock date\n\nManually edited (N = %s)\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit\n%s record(s) corrected for the start date']
-                  2 [label = 'Cleaned screening records\n(N = %s)']
+                  1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
+                  m2 [label = 'Manually edited (N = %s)\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit\n%s record(s) corrected for the start date']
+                  2 [label = 'Cleaned screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
-                  {rank=same; p1 -> m1}
+                  p2 -> 2 [arrowhead='none']
+                  {rank=same; p2 -> m2}
 
-                  edge [dir=none]
-                  1 -> p1;
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
+                {rank=same; p1 -> m1}
+
+                edge [dir=none]
+                1 -> p1
                 }",
                 n_raw_screening_records,
                 n_excluded,
                 n_nonvalid_deviceid_records,
                 n_other_fid_records,
+                n_before_startdate_records,
                 n_after_lockdate_records,
                 n_edited,
                 n_ineligible_cg_records,
@@ -80,9 +88,9 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw Day 0 records\n(N = %s)']
+                  1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s dummy record(s) with a non-unique child ID\n\nManually edited (N = %s)\n%s record(s) with a non-unique child ID\n%s record(s) with incorrect enrolment date']
-                  2 [label = 'Cleaned Day 0 records\n(N = %s)']
+                  2 [label = 'Cleaned Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -125,9 +133,9 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw Day 7 follow-up records\n(N = %s)']
+                  1 [label = 'Raw Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs\n']
-                  2 [label = 'Cleaned Day 7 follow-up records\n(N = %s)']
+                  2 [label = 'Cleaned Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -165,9 +173,9 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw successful Day 7 follow-up records\n(N = %s)']
+                  1 [label = 'Raw successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
-                  2 [label = 'Cleaned successful Day 7 follow-up records\n(N = %s)']
+                  2 [label = 'Cleaned successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -206,9 +214,9 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw Day 28 follow-up records\n(N = %s)']
+                  1 [label = 'Raw Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs\n']
-                  2 [label = 'Cleaned Day 28 follow-up records\n(N = %s)']
+                  2 [label = 'Cleaned Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -246,9 +254,9 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw successful Day 28 follow-up records\n(N = %s)']
+                  1 [label = 'Raw successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
-                  2 [label = 'Cleaned successful Day 28 follow-up records\n(N = %s)']
+                  2 [label = 'Cleaned successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;
@@ -289,9 +297,9 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
-                  1 [label = 'Raw hospitalisation records\n(N = %s)']
+                  1 [label = 'Raw hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs']
-                  2 [label = 'Cleaned hospitalisation records\n(N = %s)']
+                  2 [label = 'Cleaned hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> 2;

@@ -198,29 +198,21 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  split = FALSE,
                                                  media = FALSE)
 
-    col_specs <- timci::import_col_specifications(xls_dict = "main_dict.xlsx",
-                                                  country = Sys.getenv('TIMCI_COUNTRY'))
-
     # SANITY CHECK: export raw LS/RCT data from ODK
     t <- tempdir()
     utils::unzip(raw_facility_zip, exdir = t)
     fs::dir_ls(t)
-    if (!is.null(col_specs)) {
-      raw_odk_data <- readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")),
-                                      col_types = col_specs)
-    } else{
-      raw_odk_data <- readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")))
-    }
+    raw_odk_data <- readr::read_csv(file.path(t, paste0(crf_facility_fid,".csv")),
+                                    col_types = cols(.default = "c"))
     fn <- timci::export_df2xlsx(raw_odk_data,
                                 mdb_dir,
                                 "01a_screening_raw")
 
     raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
                                                           csv_name = paste0(crf_facility_fid,".csv"),
-                                                          start_date = start_date,
+                                                          start_date = NULL,
                                                           end_date = end_date,
-                                                          local_dir = t,
-                                                          col_specs = col_specs)
+                                                          local_dir = t)
     if (is_tanzania) {
       facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
     } else{
@@ -241,7 +233,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
       raw_drug_data <- extract_data_from_odk_server(cpid = dm_pid,
                                                     cpid_forms = dm_form_list,
                                                     cfid = crf_drug_fid,
-                                                    start_date = start_date,
+                                                    start_date = NULL,
                                                     end_date = drug_end_date,
                                                     group = FALSE,
                                                     verbose = TRUE)
@@ -254,16 +246,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     # Load day 7 follow-up data
     write(formats2h3("Load day 7 follow-up data"), stderr())
 
-    day7_col_specs <- timci::import_col_specifications(xls_dict = "day7_dict.xlsx",
-                                                       country = Sys.getenv('TIMCI_COUNTRY'))
-
     raw_day7fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
                                                     cpp = rctls_pp,
                                                     cfid = crf_day7_fid,
                                                     start_date = start_date,
                                                     end_date = day7fu_end_date,
-                                                    col_specs = day7_col_specs,
                                                     verbose = TRUE)
 
     fn <- timci::export_df2xlsx(raw_day7fu_data,
@@ -273,16 +261,12 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     # Load hospital visit follow-up data
     write(formats2h3("Load hospital visit data"), stderr())
 
-    hosp_col_specs <- timci::import_col_specifications(xls_dict = "hospit_dict.xlsx",
-                                                       country = Sys.getenv('TIMCI_COUNTRY'))
-
     raw_hospit_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                     cpid_forms = rct_ls_form_list,
                                                     cpp = rctls_pp,
                                                     cfid = crf_hospit_fid,
                                                     start_date = start_date,
                                                     end_date = hospitfu_end_date,
-                                                    col_specs = hosp_col_specs,
                                                     verbose = TRUE)
 
     fn <- timci::export_df2xlsx(raw_hospit_data,
@@ -294,9 +278,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (is_rct) {
       write(formats2h3("Load day 28 follow-up data"), stderr())
 
-      day28_col_specs <- timci::import_col_specifications(xls_dict = "day28_dict.xlsx",
-                                                         country = Sys.getenv('TIMCI_COUNTRY'))
-
       if (crf_day28_fid %in% rct_ls_form_list) {
         raw_day28fu_data <- extract_data_from_odk_server(cpid = rctls_pid,
                                                          cpid_forms = rct_ls_form_list,
@@ -304,7 +285,6 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                          cfid = crf_day28_fid,
                                                          start_date = start_date,
                                                          end_date = day28fu_end_date,
-                                                         col_specs = day28_col_specs,
                                                          verbose = TRUE)
       }
     }
@@ -565,7 +545,8 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                    start_date = start_date,
                    end_date = end_date,
                    sample_target = sample_size,
-                   facility_data = facility_data,
+                   facility_data = facility_data %>%
+                     dplyr::filter(date_visit >= as.Date(start_date, "%Y-%m-%d")),
                    raw_day7fu_data = raw_day7fu_data,
                    raw_hospit_data = raw_hospit_data,
                    raw_day28fu_data = raw_day28fu_data,
@@ -941,78 +922,12 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                                group = TRUE,
                                                split = FALSE,
                                                media = FALSE)
-  # Dirty fix - To be moved when time allows
-  col_specs <- list(
-    'a4_c_10a' = col_integer(),
-    'crfs-t04a-b2_3' = col_integer(),
-    'crfs-t03-m3_1b' = col_integer(),
-    'crfs-t03-m3_3' = col_integer(),
-    'crfs-t03-m3_3o' = col_character(),
-    'crfs-t03-m3_4' = col_integer(),
-    'crfs-t03-m3_6' = col_integer(),
-    'crfs-t03-m3_7' = col_integer(),
-    'crfs-t03-m3_8a' = col_integer(),
-    'crfs-t03-m3_9a' = col_integer(),
-    'crfs-t09a1-medication_injection' = col_integer(),
-    'crfs-t09a1-injection_types' = col_integer(),
-    'crfs-t09a1-injection_typeso' = col_character(),
-    'crfs-t09a2-g3_1' = col_character(),
-    'crfs-t09a2-g3_1o' = col_character(),
-    'crfs-t09a2-i2_1' = col_integer(),
-    'crfs-t09a2-i2_1a' = col_integer(),
-    'crfs-t09a2-i2_1b' = col_integer(),
-    'crfs-t09a2-i2_1o' = col_character(),
-    'crfs-t09a2-j2_1' = col_integer(),
-    'crfs-t09a2-j2_1c' = col_integer(),
-    'crfs-t09a2-h2_2a' = col_character(),
-    'crfs-t09a2-h2_2ao' = col_character(),
-    'crfs-t07a-tt07a-e2_1' = col_integer(),
-    'crfs-t07a-tt07a-e2_1a' = col_integer(),
-    'crfs-t07a-tt07a-e2_2' = col_integer(),
-    'crfs-t07a-tt07a-e2_2a' = col_integer(),
-    'crfs-t07a-tt07a-e2_3' = col_integer(),
-    'crfs-t07a-tt07a-e2_3a' = col_integer(),
-    'crfs-t07a-tt07a-e2_4' = col_integer(),
-    'crfs-t07a-tt07a-e2_4a' = col_integer(),
-    'crfs-t06a-tt06a-d2_6' = col_integer(),
-    'crfs-t06a-d2_6b' = col_integer(),
-    'crfs-t06a-tt06a-d2_1' = col_integer(),
-    'crfs-t06a-d2_1a' = col_integer(),
-    'crfs-t06a-tt06a-d2_4' = col_integer(),
-    'crfs-t06a-d2_4a' = col_integer(),
-    'crfs-t06a-tt06a-d2_5' = col_integer(),
-    'crfs-t06a-d2_5a' = col_integer(),
-    'crfs-t06a-tt06a-d2_2' = col_integer(),
-    'crfs-t06a-d2_2b' = col_integer(),
-    'crfs-t06a-tt06a-d2_3' = col_integer(),
-    'crfs-t06a-d2_3b' = col_integer(),
-    'crfs-t08a-f2_1' = col_character(),
-    'crfs-t08a-f2_1o' = col_character(),
-    'crfs-t08a-f2_2' = col_integer(),
-    'crfs-t08a-f2_3' = col_integer(),
-    'crfs-t08a-f2_4' = col_integer(),
-    'crfs-t08a-f2_5' = col_double(),
-    'crfs-t08a-f2_6' = col_integer(),
-    'crfs-t08a-f2_7' = col_integer(),
-    'crfs-t08a-f2_8' = col_integer(),
-    'crfs-t08a-f2_9' = col_integer(),
-    'crfs-t08a-f2_10a' = col_integer(),
-    'crfs-t05b-c3_1' = col_integer(),
-    'crfs-t05b-c3_2' = col_integer(),
-    'crfs-t05b-c3_3' = col_integer(),
-    'crfs-t05b-c3_3a' = col_integer(),
-    'crfs-t05b-c3_4' = col_integer(),
-    'crfs-t05b-c3_6a' = col_integer(),
-    'crfs-t05b-c3_6' = col_integer(),
-    'crfs-t05b-c3_6o' = col_character()
-  )
 
   raw_facility_data <- timci::extract_data_from_odk_zip(odk_zip = raw_facility_zip,
                                                         csv_name = paste0(crf_facility_fid,".csv"),
                                                         start_date = start_date,
                                                         end_date = end_date,
-                                                        local_dir = tempdir(),
-                                                        col_specs = col_specs)
+                                                        local_dir = tempdir())
   fn <- timci::export_df2xlsx(raw_facility_data,
                               mdb_dir,
                               "01a_screening_raw")
@@ -1047,7 +962,6 @@ run_rmarkdown_rctls <- function(rctls_pid,
                                                   cfid = crf_hospit_fid,
                                                   start_date = start_date,
                                                   end_date = hospitfu_end_date,
-                                                  col_specs = col_specs,
                                                   verbose = TRUE)
 
   # [Tanzania and India only] Load day 28 follow-up data

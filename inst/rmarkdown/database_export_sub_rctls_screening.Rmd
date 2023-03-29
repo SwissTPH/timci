@@ -16,9 +16,28 @@ n_raw_screening_records <- nrow(raw_screening_data)
 out <- timci::extract_enrolled_participants(facility_data, is_pilot)
 raw_day0_data <- out[[1]]
 raw_pii <- out[[2]]
+raw_repeat_visits <- NULL
 ```
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
+
+### Format raw data
+
+```{r}
+dictionary <- timci::import_country_specific_xls_dict("main_dict.xlsx", Sys.getenv('TIMCI_COUNTRY'))
+screening_dictionary <- subset(dictionary, screening == 1)
+n_screening_dictionary_vars <- nrow(screening_dictionary)
+```
+
+There are **`r n_screening_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+screening_dictionary %>%
+  dplyr::select(new,
+                old) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference"))
+```
 
 ### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
 
@@ -45,7 +64,7 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Inconsistent finalisation and submission dates [Context check `r qc_nontimely_submission_id`]
+### Discrepancy between finalisation and submission dates [Context check `r qc_nontimely_submission_id`]
 
 ```{r}
 write(" o Non-timely submission", stderr())
@@ -94,7 +113,7 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Non-timely completion [Context check `r qc_nontimely_completion_id`]
+### Discrepancy between start and completion dates [Context check `r qc_nontimely_completion_id`]
 
 ```{r}
 write(" o Non-timely completion", stderr())
@@ -141,6 +160,117 @@ fig_df <- qc_df %>%
 cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
+
+```{r}
+write(" o Incorrect data and time setup on the device", stderr())
+```
+
+```{r}
+qc_df <- NULL
+n_incorrect_date_setup_records <- 0
+cleaned_df <- NULL
+```
+
+```{r, results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
+qc_rule <- "If the submission date is anterior to the creation date in the database, the (incorrect) creation date is replaced by the submission date."
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "submission_date"
+col_date2 <- "start"
+cleaning <- "replace_by_start_date"
+qc_text <- "an incorrect date setup on the tablet"
+qc_idx <- qc_incorrect_date_setup
+qc_export_label <- "incorrect_date_setup"
+qc_export_description <- "the date setup is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_date_setup_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+```{r}
+fig_caption <- "Incorrect date and time setup on the device"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "area"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week", 
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Study start date [Context check `r qc_screening_before_startdate`]
+
+```{r}
+write(" o Study start date context", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Screening data are considered valid only from the study start date. Data may have been entered before this date for training purposes."
+qc_rule <- paste0("Records entered before the study start date on ", start_date, " are deleted")
+qc_type <- "anterior_to_startdate"
+df <- facility_data
+qc_text <- paste0("an entry date anterior to the study start date on **", start_date, "**")
+qc_idx <- qc_screening_before_startdate
+qc_export_label <- "anterior_to_startdate"
+qc_export_description <- "the entry date is anterior to the study start date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+facility_data_before_start <- qc_df
+n_before_startdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Study lock date [Context check `r qc_screening_after_lockdate`]
+
+```{r}
+write(" o Study lock date context", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
+qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are deleted")
+qc_type <- "posterior_to_lockdate"
+df <- facility_data
+qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
+qc_idx <- qc_screening_after_lockdate
+qc_export_label <- "posterior_to_lockdate"
+qc_export_description <- "the entry date ID is posterior to the lock date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+facility_data_after_lock <- qc_df
+n_after_lockdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
 ```
 
 ### Facility IDs from other TIMCI studies [context check `r qc_screening_other_fids`]
@@ -298,65 +428,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
-
-```{r}
-write(" o Incorrect data and time setup on the device", stderr())
-```
-
-```{r}
-qc_df <- NULL
-n_incorrect_date_setup_records <- 0
-cleaned_df <- NULL
-```
-
-```{r, results='asis'}
-qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
-qc_rule <- "If the submission date is anterior to the creation date in the database, the (incorrect) creation date is replaced by the submission date."
-qc_type <- "date_discrepancy"
-df <- facility_data
-col_date1 <- "submission_date"
-col_date2 <- "start"
-cleaning <- "replace_by_start_date"
-qc_text <- "an incorrect date setup on the tablet"
-qc_idx <- qc_incorrect_date_setup
-qc_export_label <- "incorrect_date_setup"
-qc_export_description <- "the date setup is not correct"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_incorrect_date_setup_records <- n_detected
-```
-
-```{r, eval=!is.null(cleaned_df)}
-facility_data <- cleaned_df
-```
-
-```{r}
-fig_caption <- "Incorrect date and time setup on the device"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- ""
-comparison <- "area"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
-                                             "week", 
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
 ### Data entry times [Context check]
 
 ```{r}
@@ -393,32 +464,6 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Lock date [Context check `r qc_screening_after_lockdate`]
-
-```{r}
-write(" o Lock date context", stderr())
-```
-
-```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Screening data are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
-qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are removed in the locked database.")
-qc_type <- "posterior_to_lockdate"
-df <- facility_data
-qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
-qc_idx <- qc_screening_after_lockdate
-qc_export_label <- "posterior_to_lockdate"
-qc_export_description <- "the device ID is not valid"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-facility_data_after_lock <- qc_df
-n_after_lockdate_records <- n_detected
-```
-
-```{r, eval=!is.null(cleaned_df)}
-facility_data <- cleaned_df
-```
-
 ### Data cleaning summary
 
 ```{r}
@@ -435,11 +480,75 @@ n_cleaned_screening_records <- nrow(screening_data)
 timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
                                      n_other_fid_records,
+                                     n_before_startdate_records,
                                      n_after_lockdate_records,
                                      n_ineligible_cg_records,
                                      n_repeat_edit_records,
                                      n_incorrect_date_setup_records,
                                      n_cleaned_screening_records)
+```
+
+### Data overview
+
+```{r}
+write(" o Data overview", stderr())
+```
+
+```{r}
+fig_caption <- "Screening data overview over time by facility"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(screening_data), results='asis'}
+fig_df <- screening_data %>%
+  dplyr::mutate(Status = dplyr::case_when(
+    repeat_consult == 1 ~ "Repeat visit",
+    consent == 1        ~ "Newly enrolled",
+    .default            = "Not enrolled")) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+screening_data <- screening_data %>%
+  dplyr::mutate(across(c(device_id,
+                         sys_submit_id,
+                         form_version,
+                         fid,
+                         who_age_ctg,
+                         district,
+                         facility,
+                         dob_knwn,
+                         age_mo_knwn,
+                         main_cg,
+                         enrolled),
+                       factor)) %>%
+  dplyr::mutate(across(c(age_yr,
+                         age_mo),
+                       as.integer)) %>% 
+  dplyr::mutate(across(c(date_visit),
+                       ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start,
+                         end,
+                         submission_date),
+                       as.POSIXct))
+```
+
+```{r, results='asis'}
+skimr::skim(screening_data)
 ```
 
 ### Data export
@@ -470,40 +579,4 @@ timci::dataset_export(facility_data_audit,
                       "timci_facility_audit_data",
                       rctls_dir,
                       "Screening audit data")
-```
-
-### Data overview
-
-```{r}
-fig_caption <- "Screening data overview"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- "Status"
-comparison <- "type"
-```
-
-```{r, results='asis', eval=timci::is_not_empty(screening_data), results='asis'}
-fig_df <- screening_data %>%
-  dplyr::mutate(Status = dplyr::case_when(
-    repeat_consult == 1 ~ "Repeat visit",
-    consent == 1        ~ "Newly enrolled",
-    .default            = "Not enrolled")) %>% 
-  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-#### Data summary statistics
-
-```{r, results='asis'}
-skimr::skim(screening_data)
 ```

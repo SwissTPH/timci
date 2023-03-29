@@ -12,10 +12,6 @@ db_name <- "Day 7 follow-up"
 day7fu_pii_drops <- c("name", "cg_name", "phone_nb")
 ```
 
-### Format raw data
-
-Import excel description here
-
 ```{r format-RCT-LS-ODK-fu-day7-data}
 out <- timci::format_day7_data(raw_day7fu_data,
                                is_deidentified = FALSE)
@@ -30,6 +26,25 @@ raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
 ```
 
 There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` database.
+
+### Format raw data
+
+```{r}
+day7fu_dictionary <- timci::import_country_specific_xls_dict("day7_dict.xlsx", Sys.getenv('TIMCI_COUNTRY'))
+n_day7fu_dictionary_vars <- nrow(day7fu_dictionary)
+```
+
+There are **`r n_day7fu_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+day7fu_dictionary %>%
+  dplyr::select(new,
+                old,
+                deidentified) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference",
+                             "Deidentified export"))
+```
 
 ### Non-consistent finalisation and submission dates [Context check `r qc_nontimely_submission_day7fu`]
 
@@ -141,7 +156,7 @@ qc_rule <- "Discard follow-up records of participants who are enrolled in the Da
 qc_type <- "nonvalid_ids2"
 df <- raw_allday7fu_data
 idcol1 <- "child_id"
-refdf <- facility_data_after_lock %>%
+refdf <- rbind(facility_data_before_start, facility_data_after_lock) %>%
   filter( !is.na(child_id) )
 idcol2 <- "child_id"
 col_date <- "date_call"
