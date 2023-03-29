@@ -3,3 +3,68 @@ write("Export repeat visit data and run corresponding quality checks", stderr())
 ```
 
 ## Repeat visit quality checks
+
+```{r}
+db_name <- "Repeat visit"
+repeat_data <- facility_data %>%
+    dplyr::filter(repeat_consult == 1)
+n_raw_repeat_records <- nrow(repeat_data)
+repeat_is_not_null <- !is.null(repeat_data)
+repeat_is_not_empty <- timci::is_not_empty(repeat_data)
+```
+
+Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
+
+### Data export
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, eval=!deidentification_on, results = 'asis'}
+timci::dataset_export(repeat_data,
+                      "02b",
+                      "timci_repeat_data",
+                      rctls_dir,
+                      "Raw Repeat visit data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(repeat_data,
+                      "02b",
+                      "timci_repeat_data",
+                      locked_db_dir,
+                      "Cleaned Repeat visit data")
+```
+
+### Data overview
+
+```{r}
+fig_caption <- "Repeat data overview"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
+fig_df <- repeat_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Data summary statistics
+
+```{r, results='asis'}
+skimr::skim(repeat_data)
+```

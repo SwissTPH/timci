@@ -464,6 +464,16 @@ timci::dataset_export(screening_data,
                       "Cleaned screening data")
 ```
 
+```{r export-facility-audit, results = 'asis'}
+timci::dataset_export(facility_data_audit,
+                      "00",
+                      "timci_facility_audit_data",
+                      rctls_dir,
+                      "Screening audit data")
+```
+
+### Data overview
+
 ```{r}
 fig_caption <- "Screening data overview"
 facility_col <- "fid_from_device"
@@ -476,12 +486,11 @@ comparison <- "type"
 
 ```{r, results='asis', eval=timci::is_not_empty(screening_data), results='asis'}
 fig_df <- screening_data %>%
-  dplyr::mutate(Status = ifelse(!is.na(repeat_consult) & repeat_consult == 1,
-                                "Previously enrolled",
-                                ifelse(!is.na(consent) & consent == 1,
-                                       "Newly enrolled",
-                                       "Not enrolled"))) %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(submission_date),
+  dplyr::mutate(Status = dplyr::case_when(
+    repeat_consult == 1 ~ "Repeat visit",
+    consent == 1        ~ "Newly enrolled",
+    .default            = "Not enrolled")) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
                                              "week",
                                              week_start = getOption("lubridate.week.start", 1))) %>%
   merge(research_facilities,
@@ -493,10 +502,8 @@ cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r export-facility-audit, results = 'asis'}
-timci::dataset_export(facility_data_audit,
-                      "00",
-                      "timci_facility_audit_data",
-                      rctls_dir,
-                      "Screening audit data")
+#### Data summary statistics
+
+```{r, results='asis'}
+skimr::skim(screening_data)
 ```
