@@ -789,7 +789,7 @@ y_max <- 45
 ```{r, eval=is_india}
 y_col <- "temp_meas_farenheit"
 y_lbl <- "Temperature (in °F)"
-y_min <- 0
+y_min <- 90
 y_max <- NA
 ```
 
