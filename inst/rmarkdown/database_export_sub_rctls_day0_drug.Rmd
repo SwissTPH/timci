@@ -14,7 +14,7 @@ n_raw_drug_records <- nrow(raw_drug_data)
 
 There are **`r n_raw_drug_records`** record(s) in the raw `r db_name` database.
 
-### Duplicated entries
+### Duplicated entries [Compliance check `r qc_duplicate_drug`]
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
@@ -25,7 +25,7 @@ col_id <- "uuid"
 col_date <- "start"
 cleaning <- "keep_latest"
 qc_text <- "duplicated IDs"
-qc_idx <- qc_drug_duplicate_id
+qc_idx <- qc_duplicate_drug
 qc_export_label <- "timci_drug_data_id_duplicates"
 qc_export_description <- "the submission was done twice for the same record ID"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -36,6 +36,10 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=!is.null(cleaned_df)}
 drug_data <- cleaned_df
 ```
+
+### Amoxicillin entries [Expert knowledge checks `r qc_amox_consistency_drug`]
+
+### Metronidazole entries [Expert knowledge checks `r qc_amox_consistency_drug`]
 
 ### Data export
 

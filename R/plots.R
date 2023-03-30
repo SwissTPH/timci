@@ -574,7 +574,7 @@ plot_geom_bar_by_facility_over_time <- function(df,
 
   if ( fill_col != "" ) {
     fill_col <- rlang::sym(fill_col)
-    p <- ggplot2::ggplot(df,
+    p <- ggplot2::ggplot(df %>% arrange(!!fill_col),
                          ggplot2::aes(x = !!date_col, fill = !!fill_col))
   } else{
     p <- ggplot2::ggplot(df,
@@ -602,12 +602,72 @@ plot_geom_bar_by_facility_over_time <- function(df,
 
 }
 
+#' Plot Bar Chart over Time
+#'
+#' This function creates a bar chart by area type over time, based on the data
+#' provided in the input dataframe. The bars represent the number of records in
+#' each facility for each time interval.
+#'
+#' @param df a dataframe containing the data to plot
+#' @param facility_col a string indicating the column name of the facility variable in \code{df}
+#' @param date_col a string indicating the column name of the date variable in \code{df}
+#' @param date_lbl a string indicating the x-axis label for the plot
+#' @param date_break_str a string indicating the date format for the x-axis ticks
+#' @param date_format a string indicating the date format for the x-axis labels
+#' @param start_date a string indicating the start date for the x-axis
+#' @param end_date a string indicating the end date for the x-axis
+#' @param max_val an optional numeric indicating the maximum y-value for the plot
+#' @param text_size an optional numeric indicating the size of the text in the plot
+#'
+#' @return a ggplot object displaying the bar chart over time
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom rlang sym
+#' @export
+
+plot_geom_bar_over_time <- function(df,
+                                    facility_col,
+                                    date_col,
+                                    date_lbl,
+                                    date_break_str,
+                                    date_format,
+                                    start_date,
+                                    end_date,
+                                    max_val = NULL,
+                                    text_size = 7){
+
+  # Quote the arguments that refer to data frame columns
+  date_col <- rlang::sym(date_col)
+  facility_col <- rlang::sym(facility_col)
+
+  p <- ggplot2::ggplot(df %>% arrange(!!facility_col),
+                         ggplot2::aes(x = !!date_col, fill = !!facility_col)) +
+    ggplot2::geom_bar() +
+    ggplot2::labs(x = date_lbl,
+                  y = "Number of records")
+
+  if ( !is.null(max_val) ) {
+    p <- p + ggplot2::ylim(0, max_val)
+  }
+
+  p <- p + ggplot2::scale_x_date(date_breaks = date_break_str,
+                                 date_labels = date_format,
+                                 limits = c(as.Date(start_date), as.Date(end_date))) +
+    ggplot2::theme(text = element_text(size = text_size),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.x = element_blank())
+  p
+
+}
+
 #' Create facets with scatters over time
 #'
-#' plot_scatter_by_facility_over_time() creates an image that contains facets with scatters over time.
+#' This function creates a scatter plot with multiple facets, where each facet represents a facility or location.
+#' The plot is organized over time, with the x-axis representing dates and the y-axis representing values from a specified column in the data frame.
 #'
-#' @param df Data frame to use for the plot.
-#' @param facility_col Column name in data frame `df`.
+#' @param df A data frame containing the data to be plotted.
+#' @param facility_col The name of the column in \code{df} that represents the facilities
 #' @param date_col Column name in data frame `df`, should contain dates.
 #' @param date_lbl String that contains the x-axis label for the plot.
 #' @param date_break_str A string giving the distance between date breaks like "2 weeks", or "10 years".
@@ -650,6 +710,9 @@ plot_scatter_by_facility_over_time <- function(df,
   facility_col <- rlang::sym(facility_col)
   y_col <- rlang::sym(y_col)
 
+  mean_line <- mean(df[[y_col]], na.rm=TRUE)
+  sd_lines <- mean_line + c(-1.96, 1.96) * sd(df[[y_col]], na.rm=TRUE)
+
   p <- ggplot2::ggplot(df, ggplot2::aes(x = !!date_col,
                                         y = !!y_col)) +
     ggplot2::geom_point() +
@@ -657,13 +720,17 @@ plot_scatter_by_facility_over_time <- function(df,
                   y = y_lbl) +
     ggplot2::scale_x_date(date_breaks = date_break_str,
                           date_labels = date_format,
-                          limits = c(as.Date(start_date), as.Date(end_date)))
+                          limits = c(as.Date(start_date), as.Date(end_date))) +
+    ggplot2::geom_hline(yintercept = mean_line, color = "#3d527a") +
+    ggplot2::geom_hline(yintercept = sd_lines, linetype = "dotted", color = "#fc7969")
 
   if ( y_is_time ) {
     p <- p + ggplot2::scale_y_datetime(date_breaks = time_break_str,
                                        date_labels = time_format)
   } else {
-    p <- p + ggplot2::ylim(y_min, y_max)
+
+    p <- p +
+      ggplot2::ylim(y_min, y_max)
   }
 
   p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facility_col),

@@ -25,9 +25,9 @@ plot_scatter_by_facility_over_time(
 )
 }
 \arguments{
-\item{df}{Data frame to use for the plot.}
+\item{df}{A data frame containing the data to be plotted.}
 
-\item{facility_col}{Column name in data frame `df`.}
+\item{facility_col}{The name of the column in \code{df} that represents the facilities}
 
 \item{date_col}{Column name in data frame `df`, should contain dates.}
 
@@ -63,5 +63,6 @@ plot_scatter_by_facility_over_time(
 This function returns a ggplot2 object.
 }
 \description{
-plot_scatter_by_facility_over_time() creates an image that contains facets with scatters over time.
+This function creates a scatter plot with multiple facets, where each facet represents a facility or location.
+The plot is organized over time, with the x-axis representing dates and the y-axis representing values from a specified column in the data frame.
 }

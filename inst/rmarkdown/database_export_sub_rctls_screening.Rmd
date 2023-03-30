@@ -1,8 +1,8 @@
-## Screening data quality checks
-
 ```{r}
 write("Export screening data and run corresponding quality checks", stderr())
 ```
+
+## Screening data quality checks and cleaning
 
 ```{r}
 db_name <- "screening"
@@ -39,7 +39,9 @@ screening_dictionary %>%
                              "ODK reference"))
 ```
 
-### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
+### Facilities
+
+#### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
 
 ```{r}
 write(" o Non-valid device IDs", stderr())
@@ -64,114 +66,45 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Discrepancy between finalisation and submission dates [Context check `r qc_nontimely_submission_id`]
+#### Facility IDs from other TIMCI studies [Context check `r qc_screening_other_fids`]
 
 ```{r}
-write(" o Non-timely submission", stderr())
-```
-
-```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- facility_data
-col_date1 <- "end"
-col_date2 <- "submission_date"
-cleaning <- "none"
-qc_text <- "an actual transfer date later than the finalisation date"
-qc_idx <- qc_nontimely_submission_id
-qc_export_label <- "nontimely_day0_submission"
-qc_export_description <- "the submission was not transferred on the same day it was finalised"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r}
-fig_caption <- "Submissions not transferred on the same day they were finalised"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "area"
-fill_col <- "Difference"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = dplyr::case_when(
-    diff < 3 ~ "Less than 3 days",
-    diff >= 3 & diff < 7 ~ "3-6 days",
-    diff >= 7 ~ "7 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-### Discrepancy between start and completion dates [Context check `r qc_nontimely_completion_id`]
-
-```{r}
-write(" o Non-timely completion", stderr())
-```
-
-```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- facility_data
-col_date1 <- "start"
-col_date2 <- "end"
-cleaning <- "none"
-qc_text <- "an actual finalisation date later than the start date"
-qc_idx <- qc_nontimely_completion_id
-qc_export_label <- "nontimely_day0_completion"
-qc_export_description <- "the submission was not finalised on the same day it was started"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r}
-fig_caption <- "Number of submissions not finalised on the same day they were started"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-fill_col <- "Difference"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Difference = dplyr::case_when(
-    diff <= 1 ~ "1 day",
-    diff > 1 & diff < 3 ~ "1-2 days",
-    diff >= 3 ~ "3 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
-
-```{r}
-write(" o Incorrect data and time setup on the device", stderr())
+write(" o Facility IDs from other facilities (India only)", stderr())
 ```
 
 ```{r}
 qc_df <- NULL
-n_incorrect_date_setup_records <- 0
+n_other_fid_records <- 0
 cleaned_df <- NULL
+```
+
+`r if ( !is_india ) { paste0('This check is only implemented for the India dataset.') }`
+
+```{r, eval=facility_data_is_not_null&is_india, results='asis'}
+qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
+qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
+qc_type <- "other_study_fids"
+df <- facility_data
+qc_text <- "facility IDs corresponding to another TIMCI study"
+qc_idx <- qc_screening_other_fids
+qc_export_label <- "screening_other_fids"
+qc_export_description <- "the facility ID correspond to another TIMCI study"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_other_fid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+### Dates and times
+
+#### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
+
+```{r}
+write(" o Incorrect data and time setup on the device", stderr())
 ```
 
 ```{r, results='asis'}
@@ -202,8 +135,6 @@ facility_col <- "fid_from_device"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
-fill_col <- ""
-comparison <- "area"
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
@@ -216,12 +147,112 @@ fig_df <- qc_df %>%
         by.y = 'facility_id',
         all.x = TRUE)
 
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
 
-### Study start date [Context check `r qc_screening_before_startdate`]
+#### Late submissions [Compliance check `r qc_nontimely_submission_id`]
+
+```{r}
+write(" o Non-timely submission", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day). A delay superior to 12 days mean that the participant has never appeared in the Day 7 follow-up log on the tablet."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "an actual transfer date later than the finalisation date"
+qc_idx <- qc_nontimely_submission_id
+qc_export_label <- "nontimely_day0_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_late_submissions <- n_detected
+```
+
+```{r}
+fig_caption <- "Submissions not transferred on the same day they were finalised"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff < 3 ~ "a) Less than 3 days",
+    diff >= 3 & diff < 7 ~ "b) 3-6 days",
+    diff >= 7 ~ "c) 7 days and above")) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Late completions [Compliance check `r qc_nontimely_completion_id`]
+
+```{r}
+write(" o Non-timely completion", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- facility_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "an actual finalisation date later than the start date"
+qc_idx <- qc_nontimely_completion_id
+qc_export_label <- "nontimely_day0_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_late_completions <- n_detected
+```
+
+```{r}
+fig_caption <- "Number of submissions not finalised on the same day they were started"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff <= 1 ~ "a) 1 day",
+    diff > 1 & diff < 3 ~ "b) 1-2 days",
+    diff >= 3 ~ "c) 3 days and above")) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Study start date [Context check `r qc_screening_before_startdate`]
 
 ```{r}
 write(" o Study start date context", stderr())
@@ -247,7 +278,7 @@ n_before_startdate_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Study lock date [Context check `r qc_screening_after_lockdate`]
+#### Study lock date [Context check `r qc_screening_after_lockdate`]
 
 ```{r}
 write(" o Study lock date context", stderr())
@@ -273,40 +304,45 @@ n_after_lockdate_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Facility IDs from other TIMCI studies [context check `r qc_screening_other_fids`]
+#### Entry times [Context check `r qc_screening_after_lockdate`]
 
 ```{r}
-write(" o Facility IDs from other facilities (India only)", stderr())
+write(" o Data entry times", stderr())
 ```
-
-`r if ( !is_india ) { paste0('This check is only implemented for India.') }`
 
 ```{r}
-qc_df <- NULL
-n_other_fid_records <- 0
-cleaned_df <- NULL
+fig_caption <- "Spatiotemporal pattern of data entry times"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "start_time1"
+y_lbl <- "Start time of record entry"
+y_is_time <- TRUE
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+comparison <- "type"
 ```
 
-```{r, eval=facility_data_is_not_null&is_india, results='asis'}
-qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
-qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
-qc_type <- "other_study_fids"
-df <- facility_data
-qc_text <- "facility IDs corresponding to another TIMCI study"
-qc_idx <- qc_screening_other_fids
-qc_export_label <- "screening_other_fids"
-qc_export_description <- "the facility ID correspond to another TIMCI study"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+```{r, results='asis', eval=timci::is_not_empty(facility_data)}
+fig_df <- facility_data %>%
+  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time),
+                                         tz = Sys.getenv("TZ"))) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1))) %>%
+  merge(research_facilities,
+        by.x = 'fid_from_device',
+        by.y = 'facility_id',
+        all.x = TRUE)
+cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_other_fid_records <- n_detected
 ```
 
-```{r, eval=!is.null(cleaned_df)}
-facility_data <- cleaned_df
-```
+### Eligibility
 
-### Caregiver eligibility [Compliance check `r qc_underaged_cg_id`]
+#### Caregiver eligibility [Compliance check `r qc_underaged_cg_id`]
 
 ```{r}
 write(" o Caregiver eligibility", stderr())
@@ -331,7 +367,7 @@ n_ineligible_cg_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-### Repeat visits incorrectly recorded as new enrolments [Compliance check `r qc_dup_repeats_id1`]
+#### Repeat visits incorrectly recorded as new enrolments [Compliance check `r qc_dup_repeats_id1`]
 
 ```{r}
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
@@ -362,8 +398,6 @@ facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
-fill_col <- ""
-comparison <- "type"
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
@@ -374,7 +408,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -428,40 +462,38 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Data entry times [Context check]
+### Misc
+
+#### Missing young infant child age category [Mandatory check `r qc_inconsistent_age_info`]
 
 ```{r}
-write(" o Data entry times", stderr())
+write(" o Discrepancy in child age and categories", stderr())
 ```
 
-```{r}
-fig_caption <- "Spatiotemporal pattern of data entry times"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-y_col <- "start_time1"
-y_lbl <- "Start time of record entry"
-y_is_time <- TRUE
-time_break_str <- "4 hours"
-time_format <- "%H:%M"
-comparison <- "type"
-```
-
-```{r, results='asis', eval=timci::is_not_empty(facility_data)}
-fig_df <- facility_data %>%
-  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time),
-                                         tz = Sys.getenv("TZ"))) %>% 
-  dplyr::mutate(week = lubridate::floor_date(as.Date(end),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Age group consistent with young infants flag and categories as specified in the codebook."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_value"
+df <- facility_data %>% dplyr::filter(yg_infant == 1)
+col_value <- "who_age_ctg"
+qc_text <- "missing young infant age category"
+qc_idx <- qc_inconsistent_age_info
+qc_export_label <- "inconsistent_age_info"
+qc_export_description <- "age information is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_inconsistent_age_info <- n_detected
+```
+
+```{r, results='asis'}
+ggplot2::ggplot(facility_data %>% dplyr::filter(yg_infant == 1),
+                ggplot2::aes(x = who_age_ctg,
+                             y = age_mo)) +
+    ggplot2::geom_point() +
+    ggplot2::theme(text = element_text(size = tsize),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.x = element_blank())
 ```
 
 ### Data cleaning summary
@@ -476,7 +508,7 @@ screening_data <- timci::extract_screening_data(facility_data,
 n_cleaned_screening_records <- nrow(screening_data)
 ```
 
-```{r}
+```{r, fig.asp=1}
 timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
                                      n_other_fid_records,
@@ -485,6 +517,9 @@ timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_ineligible_cg_records,
                                      n_repeat_edit_records,
                                      n_incorrect_date_setup_records,
+                                     n_late_submissions,
+                                     n_late_completions,
+                                     n_inconsistent_age_info,
                                      n_cleaned_screening_records)
 ```
 
@@ -517,7 +552,7 @@ fig_df <- screening_data %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -528,12 +563,18 @@ screening_data <- screening_data %>%
                          sys_submit_id,
                          form_version,
                          fid,
+                         fid_from_device,
                          who_age_ctg,
                          district,
                          facility,
                          dob_knwn,
                          age_mo_knwn,
+                         quarter,
+                         consult_reason,
                          main_cg,
+                         main_cg_lbl,
+                         repeat_consult,
+                         consent,
                          enrolled),
                        factor)) %>%
   dplyr::mutate(across(c(age_yr,

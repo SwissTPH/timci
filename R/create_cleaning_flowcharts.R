@@ -8,6 +8,9 @@
 #' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
 #' @param n_edited_repeat_visit_records Number of screening records that were edited manually
 #' @param n_incorrect_date_setup_records Number of screening records with an incorrect date that had to be edited manually
+#' @param n_late_submissions Number of screening records with late submission
+#' @param n_late_completions Number of screening records with late completion
+#' @param n_inconsistent_age_info Number of screening records with inconsistent age information
 #' @param n_cleaned_screening_records Number of cleaned screening records
 #' @return This function returns a graph object
 #' @export
@@ -21,10 +24,14 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_ineligible_cg_records,
                                           n_edited_repeat_visit_records,
                                           n_incorrect_date_setup_records,
+                                          n_late_submissions,
+                                          n_late_completions,
+                                          n_inconsistent_age_info,
                                           n_cleaned_screening_records) {
 
   n_excluded <- n_nonvalid_deviceid_records + n_other_fid_records + n_before_startdate_records + n_after_lockdate_records
-  n_edited <- n_ineligible_cg_records + n_edited_repeat_visit_records + n_incorrect_date_setup_records
+  n_edited <- n_incorrect_date_setup_records + n_ineligible_cg_records + n_edited_repeat_visit_records
+  n_informed <- n_late_submissions + n_late_completions + n_inconsistent_age_info
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
@@ -32,19 +39,24 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
                   1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
-                  m2 [label = 'Manually edited (N = %s)\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit\n%s record(s) corrected for the start date']
+                  m2 [label = 'Automatically/manually edited (N = %s)\n%s record(s) corrected for the start date\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit']
+                  m3 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
                   2 [label = 'Cleaned screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p2 -> 2 [arrowhead='none']
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
                   {rank=same; p2 -> m2}
 
                   node [shape=none, width=0, height=0, label='']
                   p1 -> p2 [arrowhead='none']
-                {rank=same; p1 -> m1}
+                  {rank=same; p1 -> m1}
 
-                edge [dir=none]
-                1 -> p1
+                  edge [dir=none]
+                  1 -> p1
                 }",
                 n_raw_screening_records,
                 n_excluded,
@@ -53,9 +65,13 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                 n_before_startdate_records,
                 n_after_lockdate_records,
                 n_edited,
+                n_incorrect_date_setup_records,
                 n_ineligible_cg_records,
                 n_edited_repeat_visit_records,
-                n_incorrect_date_setup_records,
+                n_informed,
+                n_late_submissions,
+                n_late_completions,
+                n_inconsistent_age_info,
                 n_cleaned_screening_records)
 
   DiagrammeR::grViz(gr)

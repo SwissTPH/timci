@@ -157,19 +157,22 @@ if (!is.null(params$facility_data)) {
 # Screening quality check IDs
 ##############################
 qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
-qc_nontimely_submission_id <- "DQC_00_0SG_02"
-qc_nontimely_completion_id <- "DQC_00_0SG_03"
-qc_incorrect_date_setup <- "DQC_00_0SG_04"
+qc_incorrect_date_setup <- "DQC_00_0SG_02"
+qc_nontimely_submission_id <- "DQC_00_0SG_03"
+qc_nontimely_completion_id <- "DQC_00_0SG_04"
 qc_screening_before_startdate <- "DQC_00_0SG_05"
 qc_screening_after_lockdate <- "DQC_00_0SG_06"
 qc_screening_other_fids <- "DQC_00_0SG_07"
-qc_underaged_cg_id <- "DQC_00_0SG_08"
-qc_dup_repeats_id1 <- "DQC_00_0SG_09a"
-qc_dup_repeats_id2 <- "DQC_00_0SG_09b"
+qc_inconsistent_facility_info <- "DQC_00_0SG_08"
+qc_inconsistent_age_info <- "DQC_00_0SG_09"
+qc_underaged_cg_id <- "DQC_00_0SG_10"
+qc_dup_repeats_id1 <- "DQC_00_0SG_11a"
+qc_dup_repeats_id2 <- "DQC_00_0SG_11b"
 
 # Day 0 drug quality check IDs
 ###############################
-qc_drug_duplicate_id <- "DQC_00_1DG_01"
+qc_duplicate_drug <- "DQC_00_1DG_01"
+qc_amox_consistency_drug <- "DQC_00_1DG_01"
 
 # Day 0 quality check IDs
 ##########################

@@ -2,7 +2,7 @@
 write("Export Day 0 data and run corresponding quality checks", stderr())
 ```
 
-## Day 0 data quality checks
+## Day 0 data quality checks and cleaning
 
 ```{r}
 db_name <- "Day 0"
@@ -174,6 +174,27 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
+### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
+
+```{r}
+write(" o Discrepancy in facility IDs", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Facility information can be extracted in 4 different manners: from the research assistant's manual entry, from the first 5 characters of the child ID, from the device which is used (assuming 1 device is screening children in 1 unique facility per day) and from the GPS coordinates."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info"
+df <- day0_data
+qc_text <- ""
+qc_idx <- qc_inconsistent_facility_info
+qc_export_label <- "inconsistent_facility_info"
+qc_export_description <- "facility information is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_inconsistent_facility_info <- n_detected
+```
+
 ### Duplicate management\n\n
 
 ```{r}
@@ -223,7 +244,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -307,7 +328,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -367,7 +388,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -387,15 +408,9 @@ multiple <- FALSE
 ```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
-### Child age [Consistency check]
+### Clinical presentation
 
-Age group consistent with young infants flag and categories as specified in the codebook
-
-To be implemented
-
-who_age_ctg, yg_infant
-
-### Missing clinical presentation [Mandatory check `r qc_missing_cp_id`]\n\n
+#### Missing clinical presentation [Mandatory check `r qc_missing_cp_id`]
 
 ```{r}
 write(" o Missing clinical presentation", stderr())
@@ -445,7 +460,88 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Convulsion reporting over time
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(Convulsions = dplyr::case_when(
+    sx_convulsions == 1  ~ "a) Yes",
+    sx_convulsions == 0  ~ "b) No",
+    sx_convulsions == 98 ~ "c) Not sure")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+
+fig_caption <- "Convulsion reporting at clinical presentation over time"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Convulsions"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Lethargy reporting over time
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(Lethargy = dplyr::case_when(
+    sx_lethargy == 1  ~ "a) Yes",
+    sx_lethargy == 0  ~ "b) No",
+    sx_lethargy == 98 ~ "c) Not sure")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+
+fig_caption <- "Lethargy reporting at clinical presentation over time"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Lethargy"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Vomit everything reporting over time
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate("Vomit everything" = dplyr::case_when(
+    sx_vomit_evthing == 1  ~ "a) Yes",
+    is.na(sx_vomit_evthing) | sx_vomit_evthing == 0  ~ "b) No",
+    sx_vomit_evthing == 98 ~ "c) Not sure")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
+  merge(research_facilities,
+        by.x = 'fid',
+        by.y = 'facility_id',
+        all.x = TRUE)
+
+fig_caption <- "Vomit everything reporting at clinical presentation over time"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Vomit everything"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -500,7 +596,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -551,7 +647,7 @@ fig_df <- day0_data %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -576,7 +672,7 @@ fig_df <- day0_data %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -617,7 +713,7 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -680,7 +776,7 @@ fig_df <- day0_data %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -710,7 +806,7 @@ day0_data <- day0_data %>%
                        as.numeric))
 ```
 
-#### Temperature
+#### Temperature [Reasonability checks]
 
 ```{r}
 write("   o Temperature", stderr())
@@ -799,7 +895,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Pulse oximetry
+#### Pulse oximetry [Reasonability checks]
 
 ```{r}
 write("   o Pulse oximetry", stderr())
@@ -855,7 +951,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Respiratory rate
+#### Respiratory rate [Reasonability checks]
 
 ```{r}
 write("   o Respiratory rate", stderr())

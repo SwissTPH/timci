@@ -137,9 +137,24 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
-```{r, eval=(qc_type=="missing_date")}
-qc_df <- timci::detect_missing_var(df,
-                                   col_date)
+```{r, eval=(qc_type=="inconsistent_facility_info")}
+qc_df <- df[(!is.na(df$fid) & df$fid != df$fid_from_device), ]
+outcols <- c("child_id", "fid", "fid_from_device", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="missing_value")}
+qc_df <- timci::detect_missing_var(df, col_value)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="blank_value")}
+qc_df <- timci::detect_blank_var(df, col_value)
 outcols <- c("child_id", "fid", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%

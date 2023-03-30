@@ -78,7 +78,7 @@ fig_df <- repeat_data %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
-cat(knitr::knit_child('database_export_sub_facet_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```

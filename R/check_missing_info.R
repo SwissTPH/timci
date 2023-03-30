@@ -1,4 +1,4 @@
-#' Detect missing referral reported by caregiver at the exit of the consultation (TIMCI-specific function)
+#' Detect missing (NA) value (TIMCI-specific function)
 #'
 #' @param df dataframe
 #' @param col column name to check for missingness
@@ -15,6 +15,33 @@ detect_missing_var <- function(df, col) {
 
     out <- df %>%
       dplyr::mutate(missing = ifelse(is.na(!!col),
+                                     1,
+                                     0)) %>%
+      filter(missing == 1)
+
+  }
+
+  out
+
+}
+
+#' Detect blank ("") value (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @param col column name to check for missingness
+#' @return This function returns a dataframe containing only participants with no information in column `col`
+#' @export
+#' @import dplyr rlang
+
+detect_blank_var <- function(df, col) {
+
+  out <- NULL
+  col <- rlang::sym(col)
+
+  if ( timci::is_not_empty(df) ) {
+
+    out <- df %>%
+      dplyr::mutate(missing = ifelse(!!col == "",
                                      1,
                                      0)) %>%
       filter(missing == 1)

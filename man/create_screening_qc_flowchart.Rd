@@ -13,6 +13,9 @@ create_screening_qc_flowchart(
   n_ineligible_cg_records,
   n_edited_repeat_visit_records,
   n_incorrect_date_setup_records,
+  n_late_submissions,
+  n_late_completions,
+  n_inconsistent_age_info,
   n_cleaned_screening_records
 )
 }
@@ -32,6 +35,12 @@ create_screening_qc_flowchart(
 \item{n_edited_repeat_visit_records}{Number of screening records that were edited manually}
 
 \item{n_incorrect_date_setup_records}{Number of screening records with an incorrect date that had to be edited manually}
+
+\item{n_late_submissions}{Number of screening records with late submission}
+
+\item{n_late_completions}{Number of screening records with late completion}
+
+\item{n_inconsistent_age_info}{Number of screening records with inconsistent age information}
 
 \item{n_cleaned_screening_records}{Number of cleaned screening records}
 }

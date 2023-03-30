@@ -841,7 +841,7 @@ convert_age2ctg <- function(yi_ctg,
                     yr_ctg == 0 ~ "[60-364d]",
                     yr_ctg > 0 ~ "[12-59m]",
                     ( incl == 1 & excl != 1 ) ~ "[12-59m]",
-                    TRUE ~ "")
+                    .default = "")
 }
 
 #' Convert age in days to age categories (TIMCI-specific function)

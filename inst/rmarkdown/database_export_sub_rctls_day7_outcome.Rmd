@@ -94,13 +94,13 @@ write(" o Missing date of hospitalisation", stderr())
 ```{r, results='asis', eval=day7fu_is_not_null}
 qc_description <- "All hospitalised participants should have complete information about their hospital visit/hospitalisation."
 qc_rule <- action_alert_no_modification
-qc_type <- "missing_date"
+qc_type <- "missing_value"
 df <- day7fu_data %>%
   dplyr::mutate(all_hf_visit_day7 = ifelse(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value),
                                            1,
                                            0)) %>%
   dplyr::filter(all_hf_visit_day7 == 1)
-col_date <- "date_hosp_day7"
+col_value <- "date_hosp_day7"
 qc_text <- "missing hospitalisation date"
 qc_idx <- qc_missing_hospit_date_day7fu
 qc_export_label <- "missing_hospitalisation_date"
@@ -189,8 +189,8 @@ write(" o Missing date of death", stderr())
 ```{r, results='asis', eval=day7fu_is_not_null}
 qc_description <- "All deceased participants should have complete information about their death."
 qc_rule <- action_alert_no_modification
-qc_type <- "missing_date"
-col_date <- "date_death_day7"
+qc_type <- "missing_value"
+col_value <- "date_death_day7"
 df <- day7fu_data %>%
   dplyr::filter(status_day7 == 3)
 qc_text <- "missing death date"
