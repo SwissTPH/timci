@@ -78,6 +78,45 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
 }
 
+#' Create cleaning flowchart for drug re-entry data (TIMCI-specific)
+#'
+#' @param n_raw_drug_records Initial number of drug records
+#' @param n_dropped_duplicate_records Number of drug records that were dropped
+#' @param n_cleaned_drug_records Number of cleaned drug records
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_drug_qc_flowchart <- function(n_raw_drug_records,
+                                     n_dropped_duplicate_records,
+                                     n_cleaned_drug_records) {
+
+  n_excluded <- n_dropped_duplicate_records
+
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+                  1 [label = 'Raw drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-unique ID']
+                  2 [label = 'Cleaned drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> 2;
+                  {rank=same; p1 -> m1}
+
+                  edge [dir=none]
+                  1 -> p1;
+                }",
+                n_raw_drug_records,
+                n_excluded,
+                n_dropped_duplicate_records,
+                n_cleaned_drug_records)
+
+  DiagrammeR::grViz(gr)
+
+}
+
 #' Create cleaning flowchart for Day 0 data (TIMCI-specific)
 #'
 #' @param n_raw_day0_records Initial number of Day 0 records

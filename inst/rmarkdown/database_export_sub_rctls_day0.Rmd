@@ -17,59 +17,15 @@ drug_edits_is_not_empty <- FALSE
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s).
 
-```{r, eval=is_ls}
-print_clean_drug_data_title <- "### Clean drug data"
-```
+### Facilities
 
-`r print_clean_drug_data_title`
-
-```{r, eval=is_ls}
-edited_records_status_update <- ""
-out <- timci::correct_day0_drug_data(day0_data, drug_data)
-day0_data <- out[[1]]
-drug_edits <- out[[2]]
-drug_edits_is_not_empty <- timci::is_not_empty(drug_edits)
-```
-
-```{r, eval=drug_edits_is_not_empty}
-edited_records_status_update <- paste0('**', nrow(drug_edits), '** record(s) manually corrected in the ', db_name, ' database.')
-```
-
-`r edited_records_status_update`
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-drug_edits %>%
-  select(start,
-         uuid,
-         child_id,
-         free_text1,
-         free_text2) %>%
-  head(10) %>%
-  knitr::kable()
-```
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-cat("...")
-```
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-drug_edits %>%
-  select(start,
-         uuid,
-         child_id,
-         free_text1,
-         free_text2) %>%
-  tail(10) %>%
-  knitr::kable()
-```
-
-### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
+#### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 
 ```{r}
 write(" o Non-valid enrolling facility IDs", stderr())
 ```
 
-`r if ( is_kenya | is_tanzania ) { paste0('#### Initial check [Compliance check ', qc_nonvalid_fid1, ']\n\n') }`
+`r if ( is_kenya | is_tanzania ) { paste0('##### Initial check [Compliance check ', qc_nonvalid_fid1, ']\n\n') }`
 
 ```{r}
 n_nonvalid_fid_records <- 0
@@ -92,7 +48,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_kenya | is_tanzania ) {'#### Facility ID manual edits\n\n'}`
+`r if ( is_kenya | is_tanzania ) {'##### Facility ID manual edits\n\n'}`
 
 ```{r}
 edited_records <- NULL
@@ -117,7 +73,7 @@ edited_records %>%
   knitr::kable()
 ```
 
-`r if (is_kenya | is_tanzania) { paste0('#### Final check after manual edits [Compliance check ', qc_nonvalid_fid2, ']\n\n') }`
+`r if (is_kenya | is_tanzania) { paste0('##### Final check after manual edits [Compliance check ', qc_nonvalid_fid2, ']\n\n') }`
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
@@ -141,7 +97,7 @@ n_nonvalid_fid_records <- n_detected
 day0_data <- cleaned_df
 ```
 
-`r if (is_india) {'### Inconsistent facility information [Context check]\n\n'}`
+`r if (is_india) {'#### Inconsistent facility information [Context check]\n\n'}`
 
 `r if (is_india) {'**Rule**: records with inconsistent facility information are kept in the locked database, but will need to be checked more carefully (e.g: GPS data).\n\n'}`
 
@@ -174,7 +130,7 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
-### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
+#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
 
 ```{r}
 write(" o Discrepancy in facility IDs", stderr())
@@ -638,11 +594,11 @@ fill_col <- "Referral"
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Referral = dplyr::case_when(
-    referral_cg == 1 ~ "Referred",
-    referral_cg == 0 ~ "Not referred",
-    referral_cg == 98 ~ "Not sure",
-    referral_cg == 97 ~ "Declined",
-    is.na(referral_cg) ~ "Missing")) %>%
+    referral_cg == 1 ~ "a) Referred",
+    referral_cg == 0 ~ "b) Not referred",
+    referral_cg == 98 ~ "c) Not sure",
+    referral_cg == 97 ~ "d) Declined",
+    is.na(referral_cg) ~ "e) Missing")) %>%
   merge(research_facilities,
         by.x = 'fid',
         by.y = 'facility_id',
@@ -688,24 +644,21 @@ Check for spurious values/outliers
 Variable sickness_duration
 Check not implemented yet
 
-### Treatments
+### Antimicrobials
+
+#### Free text entries
 
 ```{r}
 write(" o Treatment free text entries", stderr())
 ```
 
-```{r}
-fig_caption <- "Missing prescription"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- ""
-comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>%
+```{r, eval=day0_is_not_null, results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate("Free text" = dplyr::case_when(
+    !is.na(rx_othtype) & is.na(rx_othtype_hf) ~ "a) Free text from prescription only",
+    !is.na(rx_othtype_hf) & is.na(rx_othtype) ~ "b) Free text from registry only",
+    !is.na(rx_othtype_hf) & !is.na(rx_othtype) ~ "c) Free text from both sources",
+    .default = "d) No free text entry")) %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
                                              week_start = getOption("lubridate.week.start", 1))) %>%
@@ -713,12 +666,19 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Free text entries"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Free text"
+comparison <- "type"
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
-
-#### Free text entries
 
 ```{r, results='asis', eval=day0_is_not_null}
 qc_description <- "All participants should have antibiotics entered in a structured way and not in free text."
@@ -733,6 +693,52 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_free_text_rx_cg <- n_detected
+```
+
+```{r, eval=is_ls}
+print_clean_drug_data_title <- "#### Clean drug data"
+```
+
+`r print_clean_drug_data_title`
+
+```{r, eval=is_ls}
+edited_records_status_update <- ""
+out <- timci::correct_day0_drug_data(day0_data, drug_data)
+day0_data <- out[[1]]
+drug_edits <- out[[2]]
+drug_edits_is_not_empty <- timci::is_not_empty(drug_edits)
+```
+
+```{r, eval=drug_edits_is_not_empty}
+edited_records_status_update <- paste0('**', nrow(drug_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+```
+
+`r edited_records_status_update`
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+drug_edits %>%
+  select(start,
+         uuid,
+         child_id,
+         free_text1,
+         free_text2) %>%
+  head(10) %>%
+  knitr::kable()
+```
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+cat("...")
+```
+
+```{r, eval=drug_edits_is_not_empty, results='asis'}
+drug_edits %>%
+  select(start,
+         uuid,
+         child_id,
+         free_text1,
+         free_text2) %>%
+  tail(10) %>%
+  knitr::kable()
 ```
 
 #### Missing treatment [Mandatory check `r qc_missing_treatment_id`]

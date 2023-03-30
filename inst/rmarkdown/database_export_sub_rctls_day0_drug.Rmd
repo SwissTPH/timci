@@ -4,7 +4,7 @@ write("o Export drug re-entry data and run corresponding quality checks", stderr
 
 \newpage
 
-## Day 0 drug free text re-entry data quality checks
+## Drug free text re-entry data quality checks and cleaning
 
 ```{r}
 db_name <- "Drug"
@@ -31,15 +31,39 @@ qc_export_description <- "the submission was done twice for the same record ID"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_dropped_duplicate_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
 drug_data <- cleaned_df
+n_cleaned_drug_records <- nrow(drug_data)
 ```
 
 ### Amoxicillin entries [Expert knowledge checks `r qc_amox_consistency_drug`]
 
 ### Metronidazole entries [Expert knowledge checks `r qc_amox_consistency_drug`]
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r, fig.asp=1}
+timci::create_drug_qc_flowchart(n_raw_drug_records,
+                                n_dropped_duplicate_records,
+                                n_cleaned_drug_records)
+```
+
+### Data overview
+
+```{r}
+write(" o Data overview", stderr())
+```
+
+```{r, results='asis'}
+skimr::skim(drug_data)
+```
 
 ### Data export
 

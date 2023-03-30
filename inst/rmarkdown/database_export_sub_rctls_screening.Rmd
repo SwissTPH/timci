@@ -129,14 +129,6 @@ n_incorrect_date_setup_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-```{r}
-fig_caption <- "Incorrect date and time setup on the device"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-```
-
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = lubridate::floor_date(as.Date(start),
@@ -146,6 +138,12 @@ fig_df <- qc_df %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Incorrect date and time setup on the device"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
 
 cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       envir = environment(),
@@ -176,16 +174,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_late_submissions <- n_detected
 ```
 
-```{r}
-fig_caption <- "Submissions not transferred on the same day they were finalised"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "area"
-fill_col <- "Difference"
-```
-
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
@@ -197,6 +185,15 @@ fig_df <- qc_df %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Submissions not transferred on the same day they were finalised"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -226,16 +223,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_late_completions <- n_detected
 ```
 
-```{r}
-fig_caption <- "Number of submissions not finalised on the same day they were started"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-fill_col <- "Difference"
-```
-
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
@@ -247,6 +234,15 @@ fig_df <- qc_df %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Number of submissions not finalised on the same day they were started"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Difference"
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -310,20 +306,6 @@ facility_data <- cleaned_df
 write(" o Data entry times", stderr())
 ```
 
-```{r}
-fig_caption <- "Spatiotemporal pattern of data entry times"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-y_col <- "start_time1"
-y_lbl <- "Start time of record entry"
-y_is_time <- TRUE
-time_break_str <- "4 hours"
-time_format <- "%H:%M"
-comparison <- "type"
-```
-
 ```{r, results='asis', eval=timci::is_not_empty(facility_data)}
 fig_df <- facility_data %>%
   dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time),
@@ -335,6 +317,19 @@ fig_df <- facility_data %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Spatiotemporal pattern of data entry times"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "start_time1"
+y_lbl <- "Start time of record entry"
+y_is_time <- TRUE
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+comparison <- "type"
+
 cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -392,14 +387,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r}
-fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-```
-
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
@@ -408,6 +395,13 @@ fig_df <- qc_df %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+
 cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -529,16 +523,6 @@ timci::create_screening_qc_flowchart(n_raw_screening_records,
 write(" o Data overview", stderr())
 ```
 
-```{r}
-fig_caption <- "Screening data overview over time by facility"
-facility_col <- "fid_from_device"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- "Status"
-comparison <- "type"
-```
-
 ```{r, results='asis', eval=timci::is_not_empty(screening_data), results='asis'}
 fig_df <- screening_data %>%
   dplyr::mutate(Status = dplyr::case_when(
@@ -552,6 +536,15 @@ fig_df <- screening_data %>%
         by.x = 'fid_from_device',
         by.y = 'facility_id',
         all.x = TRUE)
+
+fig_caption <- "Screening data overview over time by facility"
+facility_col <- "fid_from_device"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+comparison <- "type"
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
