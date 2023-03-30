@@ -195,11 +195,8 @@ comparison <- "type"
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  dplyr::mutate(fid = substr(id, 3, 7)) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(fid = substr(id, 3, 7))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -279,11 +276,8 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=timci::is_not_empty(qc_df)&is_senegal, results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  dplyr::mutate(fid = substr(id, 3, 7)) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(fid = substr(id, 3, 7))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -339,11 +333,8 @@ fig_df <- qc_df %>%
   dplyr::mutate(Difference = ifelse(diff <= 1,
                                     "1 day", ifelse(diff < 3,
                                                        "2-3 days",
-                                                       "Above 3 days"))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                                       "Above 3 days")))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -411,11 +402,8 @@ comparison <- "type"
 fig_df <- qc_df %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -429,11 +417,7 @@ fig_df <- day0_data %>%
     sx_convulsions == 1  ~ "a) Yes",
     sx_convulsions == 0  ~ "b) No",
     sx_convulsions == 98 ~ "c) Not sure")) %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
 
 fig_caption <- "Convulsion reporting at clinical presentation over time"
 facility_col <- "fid"
@@ -456,11 +440,7 @@ fig_df <- day0_data %>%
     sx_lethargy == 1  ~ "a) Yes",
     sx_lethargy == 0  ~ "b) No",
     sx_lethargy == 98 ~ "c) Not sure")) %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
 
 fig_caption <- "Lethargy reporting at clinical presentation over time"
 facility_col <- "fid"
@@ -483,11 +463,7 @@ fig_df <- day0_data %>%
     sx_vomit_evthing == 1  ~ "a) Yes",
     is.na(sx_vomit_evthing) | sx_vomit_evthing == 0  ~ "b) No",
     sx_vomit_evthing == 98 ~ "c) Not sure")) %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
 
 fig_caption <- "Vomit everything reporting at clinical presentation over time"
 facility_col <- "fid"
@@ -495,6 +471,29 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 fill_col <- "Vomit everything"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Unable to feed reporting over time
+
+```{r, eval=timci::is_not_empty(day0_data), results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate("Unable to feed" = dplyr::case_when(
+    sx_unable_feed == 1  ~ "a) Yes",
+    is.na(sx_unable_feed) | sx_unable_feed == 0  ~ "b) No",
+    sx_unable_feed == 98 ~ "c) Not sure")) %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
+
+fig_caption <- "Unable to feed reporting at clinical presentation over time"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Unable to feed"
 comparison <- "type"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
@@ -547,11 +546,8 @@ comparison <- "type"
 fig_df <- qc_df %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -598,11 +594,8 @@ fig_df <- day0_data %>%
     referral_cg == 0 ~ "b) Not referred",
     referral_cg == 98 ~ "c) Not sure",
     referral_cg == 97 ~ "d) Declined",
-    is.na(referral_cg) ~ "e) Missing")) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    is.na(referral_cg) ~ "e) Missing"))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -623,11 +616,8 @@ fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Referral = dplyr::case_when(
     referral_hf == 1 ~ "Referred",
-    referral_hf == 0 ~ "Not referred")) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    referral_hf == 0 ~ "Not referred"))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -652,7 +642,7 @@ Check not implemented yet
 write(" o Treatment free text entries", stderr())
 ```
 
-```{r, eval=day0_is_not_null, results='asis'}
+```{r, eval=day0_is_not_null&is_ls, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Free text" = dplyr::case_when(
     !is.na(rx_othtype) & is.na(rx_othtype_hf) ~ "a) Free text from prescription only",
@@ -661,11 +651,7 @@ fig_df <- day0_data %>%
     .default = "d) No free text entry")) %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Free text entries"
 facility_col <- "fid"
@@ -777,11 +763,8 @@ fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Treatment = dplyr::case_when(
     !is.na(rx_amoxicillin) ~ "Present",
-    is.na(rx_amoxicillin) ~ "Missing")) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    is.na(rx_amoxicillin) ~ "Missing"))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -864,11 +847,7 @@ dataMaid::identifyOutliers(day0_data$temp_meas_farenheit,
 fig_df <- day0_data %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 ```
 
 ```{r}
@@ -930,11 +909,7 @@ dataMaid::identifyOutliers(day0_data$spo2_meas1,
 fig_df <- day0_data %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 ```
 
 ```{r}
@@ -984,11 +959,7 @@ dataMaid::identifyOutliers(day0_data$rr_meas,
 fig_df <- day0_data %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 ```
 
 ```{r}

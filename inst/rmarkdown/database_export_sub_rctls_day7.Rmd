@@ -85,11 +85,8 @@ fig_df <- qc_df %>%
   dplyr::mutate(Difference = dplyr::case_when(
     diff < 3 ~ "Less than 3 days",
     diff >= 3 & diff < 7 ~ "3-6 days",
-    diff >= 7 ~ "7 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    diff >= 7 ~ "7 days and above"))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -134,11 +131,8 @@ fig_df <- qc_df %>%
   dplyr::mutate(Difference = dplyr::case_when(
     diff <= 1 ~ "1 day",
     diff > 1 & diff < 3 ~ "1-2 days",
-    diff >= 3 ~ "3 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    diff >= 3 ~ "3 days and above"))
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))

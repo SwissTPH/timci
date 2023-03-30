@@ -133,19 +133,17 @@ facility_data <- cleaned_df
 fig_df <- qc_df %>% 
   dplyr::mutate(week = lubridate::floor_date(as.Date(start),
                                              "week", 
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Incorrect date and time setup on the device"
 facility_col <- "fid_from_device"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
+comparison <- "area"
+fill_col <- ""
 
-cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -180,11 +178,7 @@ fig_df <- qc_df %>%
   dplyr::mutate(Difference = dplyr::case_when(
     diff < 3 ~ "a) Less than 3 days",
     diff >= 3 & diff < 7 ~ "b) 3-6 days",
-    diff >= 7 ~ "c) 7 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    diff >= 7 ~ "c) 7 days and above"))
 
 fig_caption <- "Submissions not transferred on the same day they were finalised"
 facility_col <- "fid_from_device"
@@ -229,11 +223,7 @@ fig_df <- qc_df %>%
   dplyr::mutate(Difference = dplyr::case_when(
     diff <= 1 ~ "a) 1 day",
     diff > 1 & diff < 3 ~ "b) 1-2 days",
-    diff >= 3 ~ "c) 3 days and above")) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+    diff >= 3 ~ "c) 3 days and above"))
 
 fig_caption <- "Number of submissions not finalised on the same day they were started"
 facility_col <- "fid_from_device"
@@ -312,11 +302,7 @@ fig_df <- facility_data %>%
                                          tz = Sys.getenv("TZ"))) %>% 
   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Spatiotemporal pattern of data entry times"
 facility_col <- "fid_from_device"
@@ -390,11 +376,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  dplyr::mutate(fid = substr(id, 3, 7)) %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE)
+  dplyr::mutate(fid = substr(id, 3, 7))
 
 fig_caption <- "Repeat visits incorrectly recorded as new enrolments"
 facility_col <- "fid"
@@ -531,11 +513,7 @@ fig_df <- screening_data %>%
     .default            = "Not enrolled")) %>% 
   dplyr::mutate(week = lubridate::floor_date(as.Date(start),
                                              "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
+                                             week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Screening data overview over time by facility"
 facility_col <- "fid_from_device"

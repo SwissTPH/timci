@@ -8,6 +8,11 @@ df3 <- NULL
 ```
 
 ```{r}
+fig_df <- fig_df %>%
+  merge(research_facilities,
+        by.x = facility_col,
+        by.y = 'facility_id',
+        all.x = TRUE)
 tmp <- fig_df %>%
   dplyr::group_by(!!rlang::sym(date_col),!!rlang::sym(facility_col)) %>%
   dplyr::count()

@@ -59,7 +59,12 @@ timci::dataset_export(repeat_data,
 
 ### Data overview
 
-```{r}
+```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
+fig_df <- repeat_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
 fig_caption <- "Repeat data overview"
 facility_col <- "fid_from_device"
 date_col <- "week"
@@ -67,17 +72,7 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 fill_col <- ""
 comparison <- "type"
-```
 
-```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
-fig_df <- repeat_data %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1))) %>%
-  merge(research_facilities,
-        by.x = 'fid_from_device',
-        by.y = 'facility_id',
-        all.x = TRUE)
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
