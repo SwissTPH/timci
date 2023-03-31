@@ -169,6 +169,45 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
 #' Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)
 #'
+#' @param n_raw_repeat_records Number of records
+#' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participan ID
+#' @param n_cleaned_repeat_records TBD
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_repeat_qc_flowchart <- function(n_raw_repeat_records,
+                                       n_nonvalid_pids_repeat_records,
+                                       n_cleaned_repeat_records) {
+
+  n_excluded <- n_nonvalid_pids_repeat_records
+
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+                  1 [label = 'Raw repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs\n']
+                  2 [label = 'Cleaned repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> 2;
+                  {rank=same; p1 -> m1}
+
+                  edge [dir=none]
+                  1 -> p1;
+                }",
+                n_raw_repeat_records,
+                n_excluded,
+                n_nonvalid_pids_repeat_records,
+                n_cleaned_repeat_records)
+
+  DiagrammeR::grViz(gr)
+
+}
+
+#' Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)
+#'
 #' @param n_raw_allday7fu_records Number of records
 #' @param n_after_lockdate_records TBD
 #' @param n_nonvalid_pid_records Number of records with a non-valid participan ID

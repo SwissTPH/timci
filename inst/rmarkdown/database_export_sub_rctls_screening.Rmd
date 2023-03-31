@@ -16,7 +16,8 @@ n_raw_screening_records <- nrow(raw_screening_data)
 out <- timci::extract_enrolled_participants(facility_data, is_pilot)
 raw_day0_data <- out[[1]]
 raw_pii <- out[[2]]
-raw_repeat_visits <- NULL
+raw_repeat_data <- facility_data %>%
+  dplyr::filter(repeat_consult == 1)
 ```
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
