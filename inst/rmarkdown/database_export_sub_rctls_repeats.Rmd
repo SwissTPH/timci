@@ -18,16 +18,9 @@ Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there
 ### Format raw data
 
 ```{r}
-repeat_dictionary <- subset(dictionary, repeats == 1)
+repeat_pii_dictionary <- subset(dictionary, repeats_pii == 1)
+repeat_dictionary <- subset(dictionary, repeats_exp == 1)
 n_repeat_dictionary_vars <- nrow(repeat_dictionary)
-
-raw_repeat_data <- raw_repeat_data %>% 
-  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
-                                "fid_from_device")))
-
-repeat_data <- repeat_data %>% 
-  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
-                                "fid_from_device")))
 ```
 
 There are **`r n_repeat_dictionary_vars`** variables exported from the raw `r db_name` database.
@@ -38,6 +31,12 @@ repeat_dictionary %>%
                 old) %>%
   knitr::kable(col.names = c("Database reference",
                              "ODK reference"))
+```
+
+```{r}
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_pii_dictionary$new,
+                                "fid_from_device")))
 ```
 
 ### Reconciliation of repeat visits with unique participants
@@ -52,7 +51,8 @@ write(" o Non-valid participant IDs", stderr())
 qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "nonvalid_ids"
-df <- repeat_data
+df <- repeat_data %>% 
+  dplyr::filter(!is.na(prev_id))
 idcol1 <- "prev_id"
 refdf <- day0_data
 idcol2 <- "child_id"
@@ -68,6 +68,44 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=!is.null(cleaned_df)}
 n_nonvalid_pids_repeat_records <- n_detected
 repeat_data <- cleaned_df
+```
+
+#### Non-valid names
+
+To be implemented
+
+### Dates and times
+
+#### Repeat visit anterior to enrolment [Context check]
+
+```{r}
+write(" o Check for date of repeat visit anterior to date of enrolment", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+df <- repeat_data %>% 
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        date_visit) %>%
+          dplyr::rename(date_day0 = date_visit),
+        by.x = "prev_id",
+        by.y = "child_id",
+        all.x = TRUE)
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+# qc_description <- "Repeat visit should have happened after enrolment on Day 0."
+# qc_rule <- action_alert_no_modification
+# qc_type <- "date_discrepancy"
+# col_date1 <- "date_visit"
+# col_date2 <- "date_day0"
+# qc_text <- "a date of repeat visit before the enrolment date"
+# qc_idx <- qc_death_before_enrolment_day7fu
+# qc_export_label <- "repeat_visit_before_enrolment"
+# qc_export_description <- "the reported date of repeat visit was before the enrolment date"
+# cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+#                       envir = environment(),
+#                       quiet = TRUE))
 ```
 
 ### Data cleaning summary
@@ -90,6 +128,12 @@ timci::create_repeat_qc_flowchart(n_raw_repeat_records,
 
 ```{r}
 write(" o Data overview", stderr())
+```
+
+```{r}
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
+                                "fid_from_device")))
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
@@ -147,8 +191,14 @@ skimr::skim(repeat_data)
 write(" o Data export", stderr())
 ```
 
+```{r}
+raw_repeat_data <- raw_repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
+                                "fid_from_device")))
+```
+
 ```{r, eval=!deidentification_on, results = 'asis'}
-timci::dataset_export(repeat_data,
+timci::dataset_export(raw_repeat_data,
                       "02b",
                       "timci_repeat_data",
                       rctls_dir,

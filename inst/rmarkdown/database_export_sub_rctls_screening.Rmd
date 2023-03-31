@@ -468,8 +468,8 @@ n_inconsistent_age_info <- n_detected
 ```{r, results='asis'}
 ggplot2::ggplot(facility_data %>% dplyr::filter(yg_infant == 1),
                 ggplot2::aes(x = who_age_ctg,
-                             y = age_mo)) +
-    ggplot2::geom_point() +
+                             fill = age_mo)) +
+    ggplot2::geom_bar(position = "dodge") +
     ggplot2::theme(text = element_text(size = tsize),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor.x = element_blank())
