@@ -234,13 +234,19 @@ cols <- colnames(qc_df)
 reformat_cond <- ( length(qc_df) > 5 ) & ( qc_type!="date_discrepancy" )
 if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {
-    if ( 'fid_from_device' %in% cols ) {
-      kcols <- c("fid_from_device", "fid", "date_visit", "child_id", "uuid")
-    } else if ( 'fid' %in% cols ) {
-      kcols <- c("fid", "date_visit", "child_id", "uuid")
+    kcols <- c("date_visit")
+    if ( 'child_id' %in% cols ) {
+      kcols <- c(kcols, "child_id")
     } else {
-      kcols <- c("date_visit", "child_id", "uuid")
+      kcols <- c(kcols, "prev_id")
     }
+    if ( 'fid' %in% cols ) {
+      kcols <- c(kcols,"fid")
+    }
+    if ( 'fid_from_device' %in% cols ) {
+      kcols <- c(kcols, "fid_from_device")
+    }
+    kcols <- c(kcols, "uuid")
     qc_df <- qc_df[kcols]
   }
 }

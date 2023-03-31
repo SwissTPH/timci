@@ -192,6 +192,11 @@ qc_free_text_rx_id <- "DQC_00_2ED_11"
 qc_pox_ <- "DQC_00_2ED_12"
 qc_summary_id <- "DQC_00_2ED_13"
 
+# Repeat visit check IDs
+#########################
+qc_pids_out_lock_range_repeat <- "DQC_00_3RV_01"
+qc_nonvalid_repeat <- "DQC_00_3RV_02"
+
 # Day 7 quality check IDs
 ##########################
 qc_nontimely_submission_day7fu <- "DQC_07_01"

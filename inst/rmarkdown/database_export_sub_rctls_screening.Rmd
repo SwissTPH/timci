@@ -256,7 +256,8 @@ qc_export_description <- "the entry date is anterior to the study start date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-facility_data_before_start <- qc_df
+facility_data_before_start <- qc_df %>%
+  dplyr::select(date_visit, child_id, uuid)
 n_before_startdate_records <- n_detected
 ```
 
@@ -282,7 +283,8 @@ qc_export_description <- "the entry date ID is posterior to the lock date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-facility_data_after_lock <- qc_df
+facility_data_after_lock <- qc_df %>%
+  dplyr::select(date_visit, child_id, uuid)
 n_after_lockdate_records <- n_detected
 ```
 
@@ -298,7 +300,7 @@ write(" o Data entry times", stderr())
 
 ```{r, results='asis', eval=timci::is_not_empty(facility_data)}
 fig_df <- facility_data %>%
-  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", df$start_time),
+  dplyr::mutate(start_time1 = as.POSIXct(paste0("2021-01-01 ", start_time),
                                          tz = Sys.getenv("TZ"))) %>% 
   dplyr::mutate(week = lubridate::floor_date(as.Date(end),
                                              "week",
