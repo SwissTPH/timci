@@ -181,23 +181,23 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_genta_records <- n_detected
 ```
 
-### Penicillin G entries [Expert knowledge checks `r qc_penig_consistency_drug`]
+### Benzylpenicillin entries [Expert knowledge checks `r qc_penig_consistency_drug`]
 
 ```{r}
-write("\to Penicillin G check", stderr())
+write("\to Benzylpenicillin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
-qc_description <- "All free entries should contain Penicillin G"
+qc_description <- "All free entries should contain Benzylpenicillin"
 qc_rule <- action_alert_no_modification
 qc_type <- "drug_reentry_accuracy"
 df <- drug_data
 col_id <- "rx_penicillinG"
 cleaning <- "none"
-qc_text <- "Penicillin G entries"
+qc_text <- "Benzylpenicillin entries"
 qc_idx <- qc_penig_consistency_drug
 qc_export_label <- "penig_entries"
-qc_export_description <- "Penicillin G was re-entered in a structured manner"
+qc_export_description <- "Benzylpenicillin was re-entered in a structured manner"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -227,6 +227,29 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_ceftriaxone_records <- n_detected
 ```
 
+### Cefixime entries [Expert knowledge checks `r qc_cefixime_consistency_drug`]
+
+```{r}
+write("\to Cefixime check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain Cefixime"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_cef"
+cleaning <- "none"
+qc_text <- "Cefixime entries"
+qc_idx <- qc_cefixime_consistency_drug
+qc_export_label <- "cefixime_entries"
+qc_export_description <- "Cefixime was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_cefixime_records <- n_detected
+```
+
 ### Ampicillin entries [Expert knowledge checks `r qc_ampi_consistency_drug`]
 
 ```{r}
@@ -248,6 +271,52 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_ampi_records <- n_detected
+```
+
+### Azithromycin entries [Expert knowledge checks `r qc_azi_consistency_drug`]
+
+```{r}
+write("\to Azithromycin check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain Azithromycin"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_azythromycin"
+cleaning <- "none"
+qc_text <- "Azithromycin entries"
+qc_idx <- qc_azi_consistency_drug
+qc_export_label <- "azithromycin_entries"
+qc_export_description <- "Azithromycin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_azithromycin_records <- n_detected
+```
+
+### Benzathine benzylpenicillin entries [Expert knowledge checks `r qc_benza_consistency_drug`]
+
+```{r}
+write("\to Benzathine benzylpenicillin check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain Benzathine benzylpenicillin"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_benzathinepeniG"
+cleaning <- "none"
+qc_text <- "Benzathine benzylpenicillin entries"
+qc_idx <- qc_benza_consistency_drug
+qc_export_label <- "benzathinepeniG_entries"
+qc_export_description <- "Benzathine benzylpenicillin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_benzathinepeniG_records <- n_detected
 ```
 
 ### Data cleaning summary
