@@ -388,7 +388,8 @@ correct_day0_drug_data <- function(day0_df,
             "rx_type2",
             "rx_othtype2",
             "rx_type_hf2",
-            "rx_othtype_hf2")
+            "rx_othtype_hf2",
+            "child_id")
   drug_df1 <- drug_df[,!(names(drug_df) %in% drop)]
 
   cols <- colnames(day0_df)
@@ -408,9 +409,9 @@ correct_day0_drug_data <- function(day0_df,
   }
 
   df <- day0_df %>%
-    dplyr::rows_update(drug_df1,
-                       by = 'uuid',
-                       unmatched = "ignore")
+    dplyr::rows_patch(drug_df1,
+                      by = 'uuid',
+                      unmatched = "ignore")
 
   out <- list(df, drug_df)
   out

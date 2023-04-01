@@ -151,21 +151,20 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info <- n_detected
 ```
 
-### Duplicate management\n\n
+### Duplicate management
 
 ```{r}
 write(" o Duplicate management", stderr())
 ```
 
-`r if ( !is_pilot ) { paste0('#### Initial check [Compliance check ', qc_duplicate_id1, ']\n\n') }`
+`r if ( !is_pilot ) { paste0('#### Initial check [Compliance check ', qc_duplicate_id1, ']') }`
 
 ```{r}
 n_dropped_records <- 0
 n_duplicate_edits <- 0
-qc_df <- NULL
 ```
 
-```{r, eval=day0_is_not_null&(is_tanzania|is_kenya|is_india), results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
 qc_type <- "duplicates"
@@ -254,7 +253,7 @@ duplicate_edits %>%
   knitr::kable()
 ```
 
-`r if ( !is_pilot ) { paste0('#### Final check after manual edits [Compliance check ', qc_duplicate_id2, ']\n\n') }`
+`r if ( !is_pilot ) { paste0('#### Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
 
 ```{r, eval=(day0_is_not_null & !is_pilot), results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
@@ -273,7 +272,21 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=timci::is_not_empty(qc_df)&is_senegal, results='asis'}
+```{r, eval=!is.null(cleaned_df)}
+day0_data <- cleaned_df
+```
+
+```{r}
+fig_caption <- "Duplicated IDs (after manual edits)"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>% 
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
   dplyr::mutate(fid = substr(id, 3, 7))
@@ -283,10 +296,6 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=!is.null(cleaned_df)}
-day0_data <- cleaned_df
-```
-
 ### Incorrect enrolment date [Context check `r qc_incorrect_enrolment_date`]\n\n
 
 ```{r}
@@ -294,9 +303,7 @@ write(" o Incorrect enrolment date", stderr())
 ```
 
 ```{r}
-qc_df <- NULL
 n_incorrect_enroldate_records <- 0
-cleaned_df <- NULL
 ```
 
 ```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
@@ -748,7 +755,13 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_treatment <- n_detected
 ```
 
-```{r}
+```{r, eval=timci::is_not_empty(day0_data)&!is_india, results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Treatment = dplyr::case_when(
+    !is.na(rx_amoxicillin) ~ "Present",
+    is.na(rx_amoxicillin) ~ "Missing"))
+
 fig_caption <- "Spatiotemporal pattern of treatments"
 facility_col <- "fid"
 date_col <- "week"
@@ -756,14 +769,6 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "type"
 fill_col <- "Treatment"
-```
-
-```{r, eval=timci::is_not_empty(day0_data)&!is_india, results='asis'}
-fig_df <- day0_data %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Treatment = dplyr::case_when(
-    !is.na(rx_amoxicillin) ~ "Present",
-    is.na(rx_amoxicillin) ~ "Missing"))
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
@@ -1038,16 +1043,16 @@ zip(params$participant_zip,
 ```
 
 ```{r export-visit-data, results = 'asis', eval=!is.null(facility_data)}
-study_data <- timci::extract_all_visits(facility_data,
-                                        is_pilot)
+# study_data <- timci::extract_all_visits(facility_data,
+#                                         is_pilot)
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(study_data,
-                      "03",
-                      "timci_facility_visits_data",
-                      rctls_dir,
-                      "Facility visit data")
+# timci::dataset_export(study_data,
+#                       "03",
+#                       "timci_facility_visits_data",
+#                       rctls_dir,
+#                       "Facility visit data")
 ```
 
 ### Data summary statistics
