@@ -130,7 +130,7 @@ if (!is.null(qc_inconsistent_facility)) {
 }
 ```
 
-#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
+#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info1`]
 
 ```{r}
 write(" o Discrepancy in facility IDs", stderr())
@@ -144,7 +144,7 @@ qc_rule <- action_alert_no_modification
 qc_type <- "inconsistent_facility_info1"
 df <- day0_data
 qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info
+qc_idx <- qc_inconsistent_facility_info1
 qc_export_label <- "inconsistent_facility_info1"
 qc_export_description <- "facility information is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -153,7 +153,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
+#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info2`]
 
 ```{r}
 write(" o Discrepancy in facility IDs", stderr())
@@ -165,7 +165,7 @@ qc_rule <- action_alert_no_modification
 qc_type <- "inconsistent_facility_info2"
 df <- day0_data
 qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info
+qc_idx <- qc_inconsistent_facility_info2
 qc_export_label <- "inconsistent_facility_info2"
 qc_export_description <- "facility information is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
