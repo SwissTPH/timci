@@ -22,6 +22,10 @@ raw_repeat_data <- facility_data %>%
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
+```{r}
+n_inconsistent_age_info <- 0
+```
+
 ### Format raw data
 
 ```{r}
@@ -42,10 +46,14 @@ screening_dictionary %>%
 
 ### Facilities
 
+```{r}
+write(" o Facility checks", stderr())
+```
+
 #### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
 
 ```{r}
-write(" o Non-valid device IDs", stderr())
+write("\to Non-valid device IDs", stderr())
 ```
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
@@ -70,7 +78,7 @@ facility_data <- cleaned_df
 #### Facility IDs from other TIMCI studies [Context check `r qc_screening_other_fids`]
 
 ```{r}
-write(" o Facility IDs from other facilities (India only)", stderr())
+write("\to Facility IDs from other facilities (India only)", stderr())
 ```
 
 ```{r}
@@ -101,6 +109,10 @@ facility_data <- cleaned_df
 ```
 
 ### Dates and times
+
+```{r}
+write(" o Date and time checks", stderr())
+```
 
 #### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
 
@@ -324,7 +336,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Eligibility
+### Participant eligibility
 
 #### Caregiver eligibility [Compliance check `r qc_underaged_cg_id`]
 

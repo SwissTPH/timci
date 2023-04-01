@@ -183,6 +183,8 @@ qc_cefixime_consistency_drug <- "DQC_00_1DG_10"
 qc_ampi_consistency_drug <- "DQC_00_1DG_11"
 qc_azi_consistency_drug <- "DQC_00_1DG_12"
 qc_benza_consistency_drug <- "DQC_00_1DG_13"
+qc_antibiotics_consistency_drug <- "DQC_00_1DG_14"
+qc_antimalarials_consistency_drug <- "DQC_00_1DG_15"
 
 # Day 0 quality check IDs
 ##########################

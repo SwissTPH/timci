@@ -30,7 +30,7 @@ qc_type <- "nonvalid_ids2"
 df <- hospit_data
 idcol1 <- "child_id"
 refdf <- facility_data_after_lock %>%
-  filter( !is.na(child_id) )
+  dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
 col_date <- "date"
 qc_text <- "participant IDs outside the lock date range"
@@ -82,7 +82,7 @@ qc_description <- "It is possible to have more than one successful follow-up rec
 qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
 df <- locked_hospit_data %>% 
-  filter(found == 1)
+  dplyr::filter(found == 1)
 col_id <- "child_id"
 col_date <- "start"
 cleaning <- "none"
@@ -107,7 +107,7 @@ qc_description <- "The reported hospital visit should have happened between enro
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- locked_hospit_data %>%
-  filter(found == 1) %>% 
+  dplyr::filter(found == 1) %>% 
   merge(day0_data %>%
           dplyr::select(child_id,
                         fid,
@@ -136,7 +136,7 @@ qc_description <- "The reported death should have happened between enrolment at 
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- locked_hospit_data %>%
-  filter(found == 1) %>% 
+  dplyr::filter(found == 1) %>% 
   merge(day0_data %>%
           dplyr::select(child_id,
                         fid,
@@ -165,7 +165,7 @@ qc_description <- "The reported hospital visit should have happened between enro
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- locked_hospit_data %>%
-  filter(found == 1) %>% 
+  dplyr::filter(found == 1) %>% 
   merge(day0_data %>%
           dplyr::select(child_id,
                         fid,

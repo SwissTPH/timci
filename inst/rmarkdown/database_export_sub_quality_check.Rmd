@@ -233,13 +233,26 @@ qc_df <- qc_df %>%
 
 <!-- Re-entry of free text treatments -->
 
-```{r, eval=(qc_type=="drug_reentry_accuracy")}
+```{r, eval=(qc_type=="drug_reentry_accuracy1")}
 drug_disp_df1 <- df %>%
   dplyr::filter(!!rlang::sym(col_id) == 1) %>%
   dplyr::select(free_text1, uuid) %>%
   dplyr::rename(free_text = free_text1)
 drug_disp_df2 <- df %>%
   dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) == 1) %>%
+  dplyr::select(free_text2, uuid) %>%
+  dplyr::rename(free_text = free_text2)
+qc_df <- rbind(drug_disp_df1,
+               drug_disp_df2)
+```
+
+```{r, eval=(qc_type=="drug_reentry_accuracy2")}
+drug_disp_df1 <- df %>%
+  dplyr::filter(!!rlang::sym(col_id) != 96) %>%
+  dplyr::select(free_text1, uuid) %>%
+  dplyr::rename(free_text = free_text1)
+drug_disp_df2 <- df %>%
+  dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) != 96) %>%
   dplyr::select(free_text2, uuid) %>%
   dplyr::rename(free_text = free_text2)
 qc_df <- rbind(drug_disp_df1,

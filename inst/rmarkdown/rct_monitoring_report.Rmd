@@ -937,7 +937,8 @@ out %>%
 ```
 
 ```{r, results = "asis"}
-all <- all %>% filter(age_incl == 1 & age_excl == 0)
+all <- all %>% 
+  dplyr::filter(age_incl == 1 & age_excl == 0)
 all$sickness[is.na(all$sickness)] <- 0
 
 sickness_statistics <- list(
@@ -963,8 +964,10 @@ out %>%
 ```
 
 ```{r, results = "asis"}
-sick <- all %>% filter(sickness == 1)
-nonsick <- all %>% filter(sickness == 0)
+sick <- all %>% 
+  dplyr::filter(sickness == 1)
+nonsick <- all %>% 
+  dplyr::filter(sickness == 0)
 all <- sick
 all$consult_reason[is.na(all$consult_reason)] <- 0
 
@@ -1051,7 +1054,8 @@ out %>%
 ```
 
 ```{r, results = "asis"}
-all <- sick %>% filter(main_cg != 1 & !is.na(underaged_mother))
+all <- sick %>% 
+  dplyr::filter(main_cg != 1 & !is.na(underaged_mother))
 
 if (nrow(all) > 0) {
   mother_statistics <- list(
@@ -1079,7 +1083,8 @@ if (nrow(all) > 0) {
 ```
 
 ```{r, results = "asis"}
-all <- sick %>% filter(cg_eligibility == 1)
+all <- sick %>% 
+  dplyr::filter(cg_eligibility == 1)
 all$prev_enrl[is.na(all$prev_enrl)] <- 0
 all$repeat_consult[is.na(all$repeat_consult)] <- 0
 
@@ -1108,7 +1113,8 @@ out %>%
 ```
 
 ```{r, results = "asis"}
-all <- all %>% filter((prev_enrl == 3 | prev_enrl == 98) | ((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0))
+all <- all %>% 
+  dplyr::filter((prev_enrl == 3 | prev_enrl == 98) | ((prev_enrl == 1 | prev_enrl == 2) & repeat_consult == 0))
 
 consent_statistics <- list(
   "Facility" = list(
@@ -1255,7 +1261,7 @@ if (!is.null(pii)) {
   if (nrow(pii) > 0) {
     
     phone_data <- data.frame(pii) %>%
-      filter(!is.na(phone_nb)) %>%
+      dplyr::filter(!is.na(phone_nb)) %>%
       dplyr::filter(prev_enrl == 3) %>%
       dplyr::group_by(facility_name)
     
@@ -1552,7 +1558,7 @@ all <- all %>%
         by.x = 'fid',
         by.y = 'facility_id',
         all.x = TRUE) %>%
-  filter(intervention == 1 | intervention == 2)
+  dplyr::filter(intervention == 1 | intervention == 2)
 ```
 
 ```{r, results="asis", eval=(nrow(baseline_data) > 0)}

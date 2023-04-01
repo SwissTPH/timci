@@ -17,7 +17,7 @@ process_gps_coordinates <- function(df) {
 
       gps_coordinates <- df[, gps_vec]
       gps_coordinates <- na.omit(gps_coordinates) %>%
-        filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
+        dplyr::filter(gps_accuracy <= 150)# gps_coordinates[!apply(gps_coordinates == "", 1, all),]
 
     }
 

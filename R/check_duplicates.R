@@ -55,7 +55,7 @@ identify_duplicates_by_dates <- function(df,
 
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
-        filter(!is.na(date_2))
+        dplyr::filter(!is.na(date_2))
       qc_df2 <- df[df[[col_id]] %in% qc_df$id, ]
     } else {
       qc_df <- NULL

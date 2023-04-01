@@ -17,6 +17,11 @@ drug_edits_is_not_empty <- FALSE
 
 Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r n_raw_day0_records`** record(s) corresponding to new Day 0 enrolment(s).
 
+```{r}
+n_nonvalid_fid_records <- 0
+n_incorrect_enroldate_records <- 0
+```
+
 ### Facilities
 
 #### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
@@ -26,10 +31,6 @@ write(" o Non-valid enrolling facility IDs", stderr())
 ```
 
 `r if ( is_kenya | is_tanzania ) { paste0('##### Initial check [Compliance check ', qc_nonvalid_fid1, ']\n\n') }`
-
-```{r}
-n_nonvalid_fid_records <- 0
-```
 
 ```{r, eval=(day0_is_not_null & (is_kenya | is_tanzania)), results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
@@ -174,13 +175,15 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info2 <- n_detected
 ```
 
-### Duplicate management
+### Participant identification
+
+#### Duplicated child IDs
 
 ```{r}
 write(" o Duplicate management", stderr())
 ```
 
-`r if ( !is_pilot ) { paste0('#### Initial check [Compliance check ', qc_duplicate_id1, ']') }`
+`r if ( !is_pilot ) { paste0('##### Initial check [Compliance check ', qc_duplicate_id1, ']') }`
 
 ```{r}
 n_dropped_records <- 0
@@ -224,7 +227,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania & !is_pilot ) { '#### Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
+`r if ( is_tanzania & !is_pilot ) { '##### Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
 
 ```{r}
 deleted_records_status_update <- ""
@@ -250,7 +253,7 @@ dropped_records %>%
   knitr::kable()
 ```
 
-`r if ( !is_pilot ) { '#### Manual correction of duplicated IDs\n\n' }`
+`r if ( !is_pilot ) { '##### Manual correction of duplicated IDs\n\n' }`
 
 ```{r}
 edited_records_status_update <- ""
@@ -319,17 +322,30 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Incorrect enrolment date [Context check `r qc_incorrect_enrolment_date`]\n\n
+#### Detection of multiple 28-disease episodes for the same children
+
+```{r}
+write(" o Detection of multiple 28-disease episodes for the same children", stderr())
+```
+
+```{r}
+multiple <- FALSE
+```
+
+`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the interim analysis'}`
+
+```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
+```
+
+### Dates and times
+
+#### Incorrect enrolment date [Context check `r qc_incorrect_enrolment_date`]\n\n
 
 ```{r}
 write(" o Incorrect enrolment date", stderr())
 ```
 
-```{r}
-n_incorrect_enroldate_records <- 0
-```
-
-```{r, eval=day0_is_not_null&(is_tanzania|is_kenya), results='asis'}
+```{r, eval=day0_is_not_null&(is_tanzania), results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -347,16 +363,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_incorrect_enroldate_records <- n_detected
 ```
 
-```{r}
-fig_caption <- "Number of days between submission start and entry of participant contact details"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- "Difference"
-comparison <- "type"
-```
-
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_df <- qc_df %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
@@ -365,24 +371,17 @@ fig_df <- qc_df %>%
                                                        "2-3 days",
                                                        "Above 3 days")))
 
+fig_caption <- "Number of days between submission start and entry of participant contact details"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Difference"
+comparison <- "type"
+
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-```
-
-### Detection of multiple 28-disease episodes for the same children\n\n
-
-```{r}
-write(" o Detection of multiple 28-disease episodes for the same children", stderr())
-```
-
-```{r}
-multiple <- FALSE
-```
-
-`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the interim analysis'}`
-
-```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
 ### Clinical presentation
@@ -438,6 +437,17 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
+
+#### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]
+
+```{r}
+write(" o Negative illness onset", stderr())
+```
+
+Check for spurious values/outliers
+
+Variable sickness_duration
+Check not implemented yet
 
 #### Convulsion reporting over time
 
@@ -531,7 +541,9 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Missing diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
+### Diagnoses
+
+#### Missing diagnosis [Mandatory check `r qc_missing_diagnosis_id`]\n\n
 
 ```{r}
 write(" o Missing diagnosis", stderr())
@@ -583,7 +595,9 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Missing referral [Mandatory check `r qc_missing_referral_id`]
+### Referrals
+
+#### Missing referral [Mandatory check `r qc_missing_referral_id`]
 
 ```{r}
 write(" o Missing referral", stderr())
@@ -604,7 +618,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_referral_cg <- n_detected
 ```
 
-### Spatiotemporal patterns of referrals [Context checks]
+#### Spatiotemporal patterns of referrals [Context checks]
 
 ```{r}
 fig_caption <- "Spatiotemporal pattern of referrals reported by the caregiver"
@@ -652,17 +666,6 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
-
-### Negative illness onset [Consistency check `r qc_negative_nb_days_id`]
-
-```{r}
-write(" o Negative illness onset", stderr())
-```
-
-Check for spurious values/outliers
-
-Variable sickness_duration
-Check not implemented yet
 
 ### Treatments
 

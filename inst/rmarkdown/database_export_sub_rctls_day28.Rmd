@@ -64,7 +64,7 @@ qc_type <- "nonvalid_ids2"
 df <- raw_allday28fu_data
 idcol1 <- "child_id"
 refdf <- facility_data_after_lock %>%
-  filter( !is.na(child_id) )
+  dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
 col_date <- "date_call"
 qc_text <- "participant IDs outside the lock date range"

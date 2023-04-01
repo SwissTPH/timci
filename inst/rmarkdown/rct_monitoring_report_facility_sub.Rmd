@@ -207,7 +207,7 @@ if (!is.null(baseline_data_tmp) & length(baseline_data_tmp) > 0 & nrow(baseline_
 ```{r}
 yi_data_tmp <- NULL
 if (timci::is_not_empty(baseline_data_tmp)) {
-  yi_data_tmp <- baseline_data_tmp %>% filter(yg_infant == 1)
+  yi_data_tmp <- baseline_data_tmp %>% dplyr::filter(yg_infant == 1)
 }
 ```
 
@@ -245,7 +245,7 @@ if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
 ```{r}
 referral_data_tmp <- NULL
 if (timci::is_not_empty(baseline_data_tmp)) {
-  referral_data_tmp <- baseline_data_tmp %>% filter(referral_cg == 1 | referral_hf == 1)
+  referral_data_tmp <- baseline_data_tmp %>% dplyr::filter(referral_cg == 1 | referral_hf == 1)
 }
 ```
 

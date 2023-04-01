@@ -13,6 +13,14 @@ create_drug_qc_flowchart(
   n_ctx_records,
   n_cipro_records,
   n_genta_records,
+  n_penig_records,
+  n_ceftriaxone_records,
+  n_cefixime_records,
+  n_ampi_records,
+  n_azithromycin_records,
+  n_benzathinepeniG_records,
+  n_antibiotics_records,
+  n_antimalarials_records,
   n_cleaned_drug_records
 )
 }
@@ -32,6 +40,22 @@ create_drug_qc_flowchart(
 \item{n_cipro_records}{The number of records that passed the cleaning check for ciprofloxacin.}
 
 \item{n_genta_records}{The number of records that passed the cleaning check for gentamicin.}
+
+\item{n_penig_records}{The number of records that passed the cleaning check for benzylpenicillin.}
+
+\item{n_ceftriaxone_records}{The number of records that passed the cleaning check for ceftriaxone.}
+
+\item{n_cefixime_records}{The number of records that passed the cleaning check for cefixime.}
+
+\item{n_ampi_records}{The number of records that passed the cleaning check for ampicillin.}
+
+\item{n_azithromycin_records}{The number of records that passed the cleaning check for azithromycin.}
+
+\item{n_benzathinepeniG_records}{The number of records that passed the cleaning check for benzathine benzylpenicillin.}
+
+\item{n_antibiotics_records}{The number of records that passed the cleaning check for other antibiotics.}
+
+\item{n_antimalarials_records}{The number of records that passed the cleaning check for antimalarials.}
 
 \item{n_cleaned_drug_records}{The total number of cleaned drug records.}
 }

@@ -1,5 +1,5 @@
 ```{r}
-write("o Export drug re-entry data and run corresponding quality checks", stderr())
+write("Export drug re-entry data and run corresponding quality checks", stderr())
 ```
 
 \newpage
@@ -10,14 +10,39 @@ write("o Export drug re-entry data and run corresponding quality checks", stderr
 db_name <- "Drug"
 drug_is_not_null <- timci::is_not_empty(raw_drug_data)
 n_raw_drug_records <- nrow(raw_drug_data)
+cols <- colnames(raw_drug_data)
 ```
 
 There are **`r n_raw_drug_records`** record(s) in the raw `r db_name` database.
 
+```{r, eval=("rx_antimicrobials" %in% cols)}
+raw_drug_data <- raw_drug_data %>%
+  rename(rx_antibio_oth = rx_antimicrobials,
+         rx_antibio_oth_hf = rx_antimicrobials_hf)
+```
+
+```{r}
+n_dropped_duplicate_records <- 0
+n_amox_records <- 0
+n_aclav_records <- 0
+n_metro_records <- 0
+n_ctx_records <- 0
+n_cipro_records <- 0
+n_genta_records <- 0
+n_penig_records <- 0
+n_ceftriaxone_records <- 0
+n_cefixime_records <- 0
+n_ampi_records <- 0
+n_azithromycin_records <- 0
+n_benzathinepeniG_records <- 0
+n_antibiotics_records <- 0
+n_antimalarials_records <- 0
+```
+
 ### Duplicated entries [Compliance check `r qc_duplicate_drug`]
 
 ```{r}
-write("\to Duplicate check", stderr())
+write(" o Duplicate check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
@@ -40,22 +65,33 @@ n_dropped_duplicate_records <- n_detected
 
 ```{r, eval=!is.null(cleaned_df)}
 drug_data <- cleaned_df
+drug_is_not_null <- timci::is_not_empty(raw_drug_data)
 n_cleaned_drug_records <- nrow(drug_data)
 ```
+
+<!-- Variables common to all following antimicrobials checks -->
+
+```{r}
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy1"
+cleaning <- "none"
+```
+
+```{r, eval=drug_is_not_null}
+df <- drug_data
+```
+
+<!-- Antimicrobials checks -->
 
 ### Amoxicillin entries [Expert knowledge checks `r qc_amox_consistency_drug`]
 
 ```{r}
-write("\to Amoxicillin check", stderr())
+write(" o Amoxicillin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Amoxicillin."
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_amoxicillin"
-cleaning <- "none"
 qc_text <- "amoxicillin entries"
 qc_idx <- qc_amox_consistency_drug
 qc_export_label <- "amoxicillin_entries"
@@ -69,16 +105,12 @@ n_amox_records <- n_detected
 ### Amoxicillin and clavulanic acid entries [Expert knowledge checks `r qc_aclav_consistency_drug`]
 
 ```{r}
-write("\to Amoxicillin and clavulanic acid check", stderr())
+write(" o Amoxicillin and clavulanic acid check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Amoxicillin and clavulanic acid"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_aclav"
-cleaning <- "none"
 qc_text <- "aclav entries"
 qc_idx <- qc_aclav_consistency_drug
 qc_export_label <- "aclav_entries"
@@ -92,16 +124,12 @@ n_aclav_records <- n_detected
 ### Metronidazole entries [Expert knowledge checks `r qc_metro_consistency_drug`]
 
 ```{r}
-write("\to Metronidazole check", stderr())
+write(" o Metronidazole check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Metronidazole"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_metronidazol"
-cleaning <- "none"
 qc_text <- "metronidazole entries"
 qc_idx <- qc_metro_consistency_drug
 qc_export_label <- "metro_entries"
@@ -115,16 +143,12 @@ n_metro_records <- n_detected
 ### Cotrimoxazole entries [Expert knowledge checks `r qc_ctx_consistency_drug`]
 
 ```{r}
-write("\to Cotrimoxazole check", stderr())
+write(" o Cotrimoxazole check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Cotrimoxazole"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_cotrimoxazole"
-cleaning <- "none"
 qc_text <- "cotrimoxazole entries"
 qc_idx <- qc_ctx_consistency_drug
 qc_export_label <- "ctx_entries"
@@ -138,16 +162,12 @@ n_ctx_records <- n_detected
 ### Ciprofloxacin entries [Expert knowledge checks `r qc_cipro_consistency_drug`]
 
 ```{r}
-write("\to Ciprofloxacin check", stderr())
+write(" o Ciprofloxacin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Ciprofloxacin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_ciprofloxacin"
-cleaning <- "none"
 qc_text <- "ciprofloxacin entries"
 qc_idx <- qc_cipro_consistency_drug
 qc_export_label <- "cipro_entries"
@@ -161,16 +181,12 @@ n_cipro_records <- n_detected
 ### Gentamicin entries [Expert knowledge checks `r qc_genta_consistency_drug`]
 
 ```{r}
-write("\to Gentamicin check", stderr())
+write(" o Gentamicin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Gentamicin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_gentamicin"
-cleaning <- "none"
 qc_text <- "Gentamicin entries"
 qc_idx <- qc_genta_consistency_drug
 qc_export_label <- "genta_entries"
@@ -184,16 +200,12 @@ n_genta_records <- n_detected
 ### Benzylpenicillin entries [Expert knowledge checks `r qc_penig_consistency_drug`]
 
 ```{r}
-write("\to Benzylpenicillin check", stderr())
+write(" o Benzylpenicillin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Benzylpenicillin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_penicillinG"
-cleaning <- "none"
 qc_text <- "Benzylpenicillin entries"
 qc_idx <- qc_penig_consistency_drug
 qc_export_label <- "penig_entries"
@@ -207,16 +219,12 @@ n_penig_records <- n_detected
 ### Ceftriaxone entries [Expert knowledge checks `r qc_ceftriaxone_consistency_drug`]
 
 ```{r}
-write("\to Ceftriaxone check", stderr())
+write(" o Ceftriaxone check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Ceftriaxone"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_ceftriaxone"
-cleaning <- "none"
 qc_text <- "Ceftriaxone entries"
 qc_idx <- qc_ceftriaxone_consistency_drug
 qc_export_label <- "ceftriaxone_entries"
@@ -230,16 +238,12 @@ n_ceftriaxone_records <- n_detected
 ### Cefixime entries [Expert knowledge checks `r qc_cefixime_consistency_drug`]
 
 ```{r}
-write("\to Cefixime check", stderr())
+write(" o Cefixime check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Cefixime"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
-col_id <- "rx_cef"
-cleaning <- "none"
+col_id <- "rx_cef_antibiotics"
 qc_text <- "Cefixime entries"
 qc_idx <- qc_cefixime_consistency_drug
 qc_export_label <- "cefixime_entries"
@@ -253,16 +257,12 @@ n_cefixime_records <- n_detected
 ### Ampicillin entries [Expert knowledge checks `r qc_ampi_consistency_drug`]
 
 ```{r}
-write("\to Ampicillin check", stderr())
+write(" o Ampicillin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Ampicillin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
 col_id <- "rx_ampicillin"
-cleaning <- "none"
 qc_text <- "Ampicillin entries"
 qc_idx <- qc_ampi_consistency_drug
 qc_export_label <- "ampicillin_entries"
@@ -276,16 +276,12 @@ n_ampi_records <- n_detected
 ### Azithromycin entries [Expert knowledge checks `r qc_azi_consistency_drug`]
 
 ```{r}
-write("\to Azithromycin check", stderr())
+write(" o Azithromycin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All free entries should contain Azithromycin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
-col_id <- "rx_azythromycin"
-cleaning <- "none"
+col_id <- "rx_azithromycin"
 qc_text <- "Azithromycin entries"
 qc_idx <- qc_azi_consistency_drug
 qc_export_label <- "azithromycin_entries"
@@ -296,27 +292,67 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_azithromycin_records <- n_detected
 ```
 
-### Benzathine benzylpenicillin entries [Expert knowledge checks `r qc_benza_consistency_drug`]
+### Benzathine Benzylpenicillin entries [Expert knowledge checks `r qc_benza_consistency_drug`]
 
 ```{r}
-write("\to Benzathine benzylpenicillin check", stderr())
+write(" o Benzathine Benzylpenicillin check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
-qc_description <- "All free entries should contain Benzathine benzylpenicillin"
-qc_rule <- action_alert_no_modification
-qc_type <- "drug_reentry_accuracy"
-df <- drug_data
+qc_description <- "All free entries should contain Benzathine Benzylpenicillin"
 col_id <- "rx_benzathinepeniG"
-cleaning <- "none"
-qc_text <- "Benzathine benzylpenicillin entries"
+qc_text <- "Benzathine Benzylpenicillin entries"
 qc_idx <- qc_benza_consistency_drug
 qc_export_label <- "benzathinepeniG_entries"
-qc_export_description <- "Benzathine benzylpenicillin was re-entered in a structured manner"
+qc_export_description <- "Benzathine Benzylpenicillin was re-entered in a structured manner"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_benzathinepeniG_records <- n_detected
+```
+
+<!-- Variables common to all following antimicrobials checks -->
+
+```{r}
+qc_type <- "drug_reentry_accuracy2"
+```
+
+### Other antibiotic entries [Expert knowledge checks `r qc_antibiotics_consistency_drug`]
+
+```{r}
+write(" o Antibiotics check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain antibiotics"
+col_id <- "rx_antibio_oth"
+qc_text <- "antibiotics entries"
+qc_idx <- qc_antibiotics_consistency_drug
+qc_export_label <- "antibiotics_entries"
+qc_export_description <- "antibiotics were re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_antibiotics_records <- n_detected
+```
+
+### Antimalarial entries [Expert knowledge checks `r qc_antimalarials_consistency_drug`]
+
+```{r}
+write(" o Antimalarials check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain antimalarials"
+col_id <- "rx_antimalarials"
+qc_text <- "antimalarials entries"
+qc_idx <- qc_antimalarials_consistency_drug
+qc_export_label <- "antimalarials_entries"
+qc_export_description <- "antimalarials were re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_antimalarials_records <- n_detected
 ```
 
 ### Data cleaning summary
@@ -334,6 +370,14 @@ timci::create_drug_qc_flowchart(n_raw_drug_records,
                                 n_ctx_records,
                                 n_cipro_records,
                                 n_genta_records,
+                                n_penig_records,
+                                n_ceftriaxone_records,
+                                n_cefixime_records,
+                                n_ampi_records,
+                                n_azithromycin_records,
+                                n_benzathinepeniG_records,
+                                n_antibiotics_records,
+                                n_antimalarials_records,
                                 n_cleaned_drug_records)
 ```
 

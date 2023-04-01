@@ -94,6 +94,14 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 #' @param n_ctx_records The number of records that passed the cleaning check for cotrimoxazole.
 #' @param n_cipro_records The number of records that passed the cleaning check for ciprofloxacin.
 #' @param n_genta_records The number of records that passed the cleaning check for gentamicin.
+#' @param n_penig_records The number of records that passed the cleaning check for benzylpenicillin.
+#' @param n_ceftriaxone_records The number of records that passed the cleaning check for ceftriaxone.
+#' @param n_cefixime_records The number of records that passed the cleaning check for cefixime.
+#' @param n_ampi_records The number of records that passed the cleaning check for ampicillin.
+#' @param n_azithromycin_records The number of records that passed the cleaning check for azithromycin.
+#' @param n_benzathinepeniG_records The number of records that passed the cleaning check for benzathine benzylpenicillin.
+#' @param n_antibiotics_records The number of records that passed the cleaning check for other antibiotics.
+#' @param n_antimalarials_records The number of records that passed the cleaning check for antimalarials.
 #' @param n_cleaned_drug_records The total number of cleaned drug records.
 #'
 #' @return This function returns a graph object that can be plotted using the DiagrammeR package.
@@ -109,18 +117,54 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                                      n_ctx_records,
                                      n_cipro_records,
                                      n_genta_records,
+                                     n_penig_records,
+                                     n_ceftriaxone_records,
+                                     n_cefixime_records,
+                                     n_ampi_records,
+                                     n_azithromycin_records,
+                                     n_benzathinepeniG_records,
+                                     n_antibiotics_records,
+                                     n_antimalarials_records,
                                      n_cleaned_drug_records) {
 
   n_excluded <- n_dropped_duplicate_records
-  n_informed <- n_amox_records + n_aclav_records + n_metro_records + n_ctx_records + n_cipro_records + n_genta_records
+  n_informed <- n_amox_records +
+    n_aclav_records +
+    n_metro_records +
+    n_ctx_records +
+    n_cipro_records +
+    n_genta_records +
+    n_penig_records +
+    n_ceftriaxone_records +
+    n_cefixime_records +
+    n_ampi_records +
+    n_azithromycin_records +
+    n_benzathinepeniG_records +
+    n_antibiotics_records +
+    n_antimalarials_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-unique ID']
-                  m2 [label = 'Other checks (N = %s)\n%s record(s) with amoxicillin\n%s record(s) with amoxicillin + clavulanic acid\n%s record(s) with metronidazole\n%s record(s) with cotrimoxazole\n%s record(s) with ciprofloxacin\n%s record(s) with gentamicin']
+                  m1 [label = 'Excluded (N = %s)\n
+                  %s record(s) with a non-unique ID']
+                  m2 [label = 'Other checks (N = %s)\n
+                  %s record(s) with Amoxicillin\n
+                  %s record(s) with Amoxicillin + Clavulanic Acid\n
+                  %s record(s) with Metronidazole\n
+                  %s record(s) with Cotrimoxazole\n
+                  %s record(s) with Ciprofloxacin\n
+                  %s record(s) with Gentamicin\n
+                  %s record(s) with Benzylpenicillin\n
+                  %s record(s) with Ceftriaxone\n
+                  %s record(s) with Cefixime\n
+                  %s record(s) with Ampicillin\n
+                  %s record(s) with Azithromycin\n
+                  %s record(s) with Benzathine Benzylpenicillin\n
+                  %s record(s) with other antibiotics\n
+                  %s record(s) with antimalarials']
                   2 [label = 'Cleaned drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -144,6 +188,14 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                 n_ctx_records,
                 n_cipro_records,
                 n_genta_records,
+                n_penig_records,
+                n_ceftriaxone_records,
+                n_cefixime_records,
+                n_ampi_records,
+                n_azithromycin_records,
+                n_benzathinepeniG_records,
+                n_antibiotics_records,
+                n_antimalarials_records,
                 n_cleaned_drug_records)
 
   DiagrammeR::grViz(gr)

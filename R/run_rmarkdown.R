@@ -569,10 +569,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     # Filter research facilities to only keep those in which SPA activities are conducted
     if (is_tanzania & !is_pilot) {
       spa_research_facilities <- research_facilities %>%
-        filter(spa == 1 & pilot == 0)
+        dplyr::filter(spa == 1 & pilot == 0)
     } else {
       spa_research_facilities <- research_facilities %>%
-        filter(spa == 1)
+        dplyr::filter(spa == 1)
     }
     spa_facility_ids <- spa_research_facilities[, c("facility_id")] %>%
       distinct()

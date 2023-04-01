@@ -109,7 +109,7 @@ dropped_cols_hosp <- c(dropped_cols,
 
 ```{r, eval=is_tanzania}
 allday7_deaths <- raw_successday7fu_data %>%
-  filter(status_day7 == 3 | fu_type == 3)
+  dplyr::filter(status_day7 == 3 | fu_type == 3)
 if (nrow(allday7_deaths) > 0) {
   allday7_deaths <- pivot_duplicates_to_columns(allday7_deaths)
 }
@@ -117,7 +117,7 @@ if (nrow(allday7_deaths) > 0) {
 
 ```{r, eval=is_tanzania}
 locked_day7fu_deaths <- day7fu_data %>%
-  filter(status_day7 == 3 | fu_type == 3)
+  dplyr::filter(status_day7 == 3 | fu_type == 3)
 
 # Remove the columns `dropped_cols` from the exported data frame
 locked_day7fu_deaths <- locked_day7fu_deaths[,!(names(locked_day7fu_deaths) %in% dropped_cols_day7)]
@@ -125,12 +125,12 @@ locked_day7fu_deaths <- locked_day7fu_deaths[,!(names(locked_day7fu_deaths) %in%
 
 ```{r, eval=!is_tanzania}
 allday7_deaths <- raw_successday7fu_data %>%
-  filter(status_day7 == 3)
+  dplyr::filter(status_day7 == 3)
 if (nrow(allday7_deaths) > 0) {
   allday7_deaths <- pivot_duplicates_to_columns(allday7_deaths)
 }
 locked_day7fu_deaths <- day7fu_data %>%
-  filter(status_day7 == 3)
+  dplyr::filter(status_day7 == 3)
 ```
 
 ```{r, results = 'asis'}

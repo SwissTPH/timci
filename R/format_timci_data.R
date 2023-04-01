@@ -45,10 +45,6 @@ process_facility_data <- function(df,
 
   cols <- colnames(df)
 
-  # if ( 'crfs-t02b-contact_start' %in% cols ) {
-  #   df$'crfs-t02b-contact_start' <- strftime(strptime(x = df$'crfs-t02b-contact_start', format = "%Y-%m-%dT%T"))
-  # }
-
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
     df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
@@ -260,15 +256,22 @@ process_facility_data <- function(df,
 
   # Match column names with names from dictionary
   df <- timci::match_from_day0_xls_dict(df, is_pilot)
+  cols <- colnames(df)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
-  # if ( 't_screening_start' %in% cols ) {
-  #   df$t_screening_start <- strftime(strptime(x = df$t_screening_start, format = "%Y-%m-%dT%T"))
-  # }
-  # if ( 'start_contact' %in% cols ) {
-  #   df$start_contact <- strftime(strptime(x = df$start_contact, format = "%Y-%m-%dT%T"))
-  # }
+  if ( 'screening_start' %in% cols ) {
+    df$screening_start <- strftime(strptime(x = df$screening_start, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'contact_start' %in% cols ) {
+    df$contact_start <- strftime(strptime(x = df$contact_start, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'consent_end' %in% cols ) {
+    df$consent_end <- strftime(strptime(x = df$consent_end, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'sd_start' %in% cols ) {
+    df$sd_start <- strftime(strptime(x = df$sd_start, format = "%Y-%m-%dT%T"))
+  }
 
   df
 

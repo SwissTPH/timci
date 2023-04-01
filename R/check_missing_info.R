@@ -17,7 +17,7 @@ detect_missing_var <- function(df, col) {
       dplyr::mutate(missing = ifelse(is.na(!!col),
                                      1,
                                      0)) %>%
-      filter(missing == 1)
+      dplyr::filter(missing == 1)
 
   }
 
@@ -44,7 +44,7 @@ detect_blank_var <- function(df, col) {
       dplyr::mutate(missing = ifelse(!!col == "",
                                      1,
                                      0)) %>%
-      filter(missing == 1)
+      dplyr::filter(missing == 1)
 
   }
 
@@ -75,7 +75,7 @@ detect_missing_clinical_presentation <- function(facility_df) {
       dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
                                                            1,
                                                            0)) %>%
-      filter(missing_clinical_presentation == 1)
+      dplyr::filter(missing_clinical_presentation == 1)
 
   }
 
@@ -100,7 +100,7 @@ detect_missing_diagnosis <- function(facility_df) {
       dplyr::mutate(missing_diagnosis = ifelse( dx_severe == 0 & dx_pneumonia == 0 & dx_diarrhoea == 0 & dx_dehydration == 0 & dx_malaria == 0 & dx_ear_infection == 0 & dx_malnutrition == 0 &	dx_anaemia == 0	&	dx_mlist == 96 & dx_oth_yn == 0,
                                                 1,
                                                 0 )) %>%
-      filter(missing_diagnosis == 1)
+      dplyr::filter(missing_diagnosis == 1)
 
   }
 
@@ -127,7 +127,7 @@ detect_missing_referral <- function(facility_df) {
       dplyr::mutate(missing_referral_cg = ifelse(referral_cg == 98 | referral_cg == 97 | referral_cg == 100,
                                                  1,
                                                  0)) %>%
-      filter(missing_referral_cg == 1)
+      dplyr::filter(missing_referral_cg == 1)
 
   }
 
@@ -152,7 +152,7 @@ detect_missing_treatment <- function(facility_df) {
       dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf),
                                      1,
                                      0)) %>%
-      filter(missing == 1)
+      dplyr::filter(missing == 1)
 
   }
 

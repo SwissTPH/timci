@@ -36,7 +36,8 @@ if (is_tanzania) {
                                  by.x = 'fid',
                                  by.y = 'facility_id',
                                  all = FALSE)
-    cg_qual_export_data <- cg_qual_export_data %>% filter(intervention == 1 | intervention == 2)
+    cg_qual_export_data <- cg_qual_export_data %>% 
+      dplyr::filter(intervention == 1 | intervention == 2)
   }
   
 }
