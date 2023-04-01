@@ -23,6 +23,8 @@ n_detected <- 0
 cleaned_df_status_update <- ""
 ```
 
+<!-- Each check has a specific code chunk that will be executed only when the check is selected, i.e. eval=(qc_type=="check_name") -->
+
 ```{r, eval=(qc_type=="other_study_fids")}
 out <- timci::remove_facilities_for_other_studies(df,
                                                   all_facilities,
@@ -137,9 +139,37 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
-```{r, eval=(qc_type=="inconsistent_facility_info")}
-qc_df <- df[(!is.na(df$fid) & df$fid != df$fid_from_device), ]
-outcols <- c("child_id", "fid", "fid_from_device", "uuid")
+```{r, eval=(qc_type=="inconsistent_facility_info1")}
+qc_df <- df %>% 
+  dplyr::filter(!is.na(fid)) %>% 
+  dplyr::filter(fid != fid_from_device)
+cols <- colnames(df)
+outcols <- c("child_id", "fid", "fid_from_device", "fid_ra")
+if ( "latitude" %in%  cols ) {
+  outcols <- c(outcols, "latitude")
+}
+if ( "longitude" %in%  cols ) {
+  outcols <- c(outcols, "longitude")
+}
+outcols <- c(outcols, "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="inconsistent_facility_info2")}
+qc_df <- df %>% 
+  dplyr::filter(!is.na(fid)) %>% 
+  dplyr::filter(!is.na(fid_ra) & (fid != fid_ra))
+cols <- colnames(df)
+outcols <- c("child_id", "fid", "fid_from_device", "fid_ra")
+if ( "latitude" %in%  cols ) {
+  outcols <- c(outcols, "latitude")
+}
+if ( "longitude" %in%  cols ) {
+  outcols <- c(outcols, "longitude")
+}
+outcols <- c(outcols, "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -161,6 +191,8 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Missing clinical presentation -->
+
 ```{r, eval=(qc_type=="missing_clinical_presentation")}
 qc_df <- timci::detect_missing_clinical_presentation(df)
 outcols <- c("child_id", "fid", "date_visit", "uuid")
@@ -168,6 +200,8 @@ qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
 ```
+
+<!-- Missing diagnosis -->
 
 ```{r, eval=(qc_type=="missing_diagnosis")}
 qc_df <- timci::detect_missing_diagnosis(df)
@@ -177,6 +211,8 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Missing referral -->
+
 ```{r, eval=(qc_type=="missing_referral")}
 qc_df <- timci::detect_missing_referral(df)
 outcols <- c("child_id", "fid", "date_visit", "uuid")
@@ -184,6 +220,8 @@ qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
 ```
+
+<!-- Missing treatment -->
 
 ```{r, eval=(qc_type=="missing_treatment")}
 qc_df <- timci::detect_missing_treatment(df)
@@ -193,12 +231,31 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Re-entry of free text treatments -->
+
+```{r, eval=(qc_type=="drug_reentry_accuracy")}
+drug_disp_df1 <- df %>%
+  dplyr::filter(!!rlang::sym(col_id) == 1) %>%
+  dplyr::select(free_text1, uuid) %>%
+  dplyr::rename(free_text = free_text1)
+drug_disp_df2 <- df %>%
+  dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) == 1) %>%
+  dplyr::select(free_text2, uuid) %>%
+  dplyr::rename(free_text = free_text2)
+qc_df <- rbind(drug_disp_df1,
+               drug_disp_df2)
+```
+
+<!-- Inconsistent names -->
+
 ```{r, eval=(qc_type=="inconsistent_names")}
 out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
                                                        fudf = df)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
+
+<!-- Incomplete SPA observations -->
 
 ```{r, eval=(qc_type=="incomplete_spa_observation")}
 df <- df %>% 
@@ -210,6 +267,8 @@ df2 <- df %>%
   dplyr::filter(back_from_lab == 1)
 qc_df <- df2[!df2$child_id %in% df1$child_id, ]
 ```
+
+<!-- For all checks -->
 
 ```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}
 n_detected <- nrow(qc_df)

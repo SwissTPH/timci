@@ -16,6 +16,10 @@ There are **`r n_raw_drug_records`** record(s) in the raw `r db_name` database.
 
 ### Duplicated entries [Compliance check `r qc_duplicate_drug`]
 
+```{r}
+write("\to Duplicate management", stderr())
+```
+
 ```{r, results='asis', eval=drug_is_not_null}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
 qc_rule <- "Remaining duplicated record IDs are deleted from the database."
@@ -26,7 +30,7 @@ col_date <- "start"
 cleaning <- "keep_latest"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicate_drug
-qc_export_label <- "timci_drug_data_id_duplicates"
+qc_export_label <- "drug_id_duplicates"
 qc_export_description <- "the submission was done twice for the same record ID"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
@@ -41,7 +45,141 @@ n_cleaned_drug_records <- nrow(drug_data)
 
 ### Amoxicillin entries [Expert knowledge checks `r qc_amox_consistency_drug`]
 
-### Metronidazole entries [Expert knowledge checks `r qc_amox_consistency_drug`]
+```{r}
+write("\to Amoxicillin entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain amoxicillin."
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_amoxicillin"
+cleaning <- "none"
+qc_text <- "amoxicillin entries"
+qc_idx <- qc_amox_consistency_drug
+qc_export_label <- "amoxicillin_entries"
+qc_export_description <- "amoxicillin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_amox_records <- n_detected
+```
+
+### Aclav entries [Expert knowledge checks `r qc_aclav_consistency_drug`]
+
+```{r}
+write("\to Aclav entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain aclav"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_aclav"
+cleaning <- "none"
+qc_text <- "aclav entries"
+qc_idx <- qc_aclav_consistency_drug
+qc_export_label <- "aclav_entries"
+qc_export_description <- "Aclav was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_aclav_records <- n_detected
+```
+
+### Metronidazole entries [Expert knowledge checks `r qc_metro_consistency_drug`]
+
+```{r}
+write("\to Metronidazole entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain metronidazole"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_metronidazol"
+cleaning <- "none"
+qc_text <- "metronidazole entries"
+qc_idx <- qc_metro_consistency_drug
+qc_export_label <- "metro_entries"
+qc_export_description <- "metronidazole was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_metro_records <- n_detected
+```
+
+### Cotrimoxazole entries [Expert knowledge checks `r qc_ctx_consistency_drug`]
+
+```{r}
+write("\to Cotrimoxazole entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain cotrimoxazole"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_cotrimoxazole"
+cleaning <- "none"
+qc_text <- "cotrimoxazole entries"
+qc_idx <- qc_ctx_consistency_drug
+qc_export_label <- "ctx_entries"
+qc_export_description <- "cotrimoxazole was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_ctx_records <- n_detected
+```
+
+### Ciprofloxacin entries [Expert knowledge checks `r qc_cipro_consistency_drug`]
+
+```{r}
+write("\to Ciprofloxacin entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain ciprofloxacin"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_ciprofloxacin"
+cleaning <- "none"
+qc_text <- "ciprofloxacin entries"
+qc_idx <- qc_cipro_consistency_drug
+qc_export_label <- "cipro_entries"
+qc_export_description <- "ciprofloxacin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_cipro_records <- n_detected
+```
+
+### Gentamicin entries [Expert knowledge checks `r qc_genta_consistency_drug`]
+
+```{r}
+write("\to Ciprofloxacin entries", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries should contain ciprofloxacin"
+qc_rule <- action_alert_no_modification
+qc_type <- "drug_reentry_accuracy"
+df <- drug_data
+col_id <- "rx_gentamicin"
+cleaning <- "none"
+qc_text <- "gentamicin entries"
+qc_idx <- qc_genta_consistency_drug
+qc_export_label <- "genta_entries"
+qc_export_description <- "gentamicin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_genta_records <- n_detected
+```
 
 ### Data cleaning summary
 
@@ -52,6 +190,12 @@ write(" o Data cleaning summary", stderr())
 ```{r, fig.asp=1}
 timci::create_drug_qc_flowchart(n_raw_drug_records,
                                 n_dropped_duplicate_records,
+                                n_amox_records,
+                                n_aclav_records,
+                                n_metro_records,
+                                n_ctx_records,
+                                n_cipro_records,
+                                n_genta_records,
                                 n_cleaned_drug_records)
 ```
 

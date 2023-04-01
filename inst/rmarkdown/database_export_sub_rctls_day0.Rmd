@@ -136,19 +136,42 @@ if (!is.null(qc_inconsistent_facility)) {
 write(" o Discrepancy in facility IDs", stderr())
 ```
 
+Facility information can be extracted in 4 different manners: from the research assistant's manual entry, from the first 5 characters of the child ID, from the device which is used (assuming 1 device is screening children in 1 unique facility per day) and from the GPS coordinates.
+
 ```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Facility information can be extracted in 4 different manners: from the research assistant's manual entry, from the first 5 characters of the child ID, from the device which is used (assuming 1 device is screening children in 1 unique facility per day) and from the GPS coordinates."
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
 qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info"
+qc_type <- "inconsistent_facility_info1"
 df <- day0_data
 qc_text <- ""
 qc_idx <- qc_inconsistent_facility_info
-qc_export_label <- "inconsistent_facility_info"
+qc_export_label <- "inconsistent_facility_info1"
 qc_export_description <- "facility information is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_inconsistent_facility_info <- n_detected
+n_inconsistent_facility_info1 <- n_detected
+```
+
+#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info`]
+
+```{r}
+write(" o Discrepancy in facility IDs", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the research assistant's manual entry."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info2"
+df <- day0_data
+qc_text <- ""
+qc_idx <- qc_inconsistent_facility_info
+qc_export_label <- "inconsistent_facility_info2"
+qc_export_description <- "facility information is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_inconsistent_facility_info2 <- n_detected
 ```
 
 ### Duplicate management
@@ -641,20 +664,39 @@ Check for spurious values/outliers
 Variable sickness_duration
 Check not implemented yet
 
-### Antimicrobials
+### Treatments
+
+```{r}
+write(" o Treatments", stderr())
+```
 
 #### Free text entries
 
 ```{r}
-write(" o Treatment free text entries", stderr())
+write("   o Free text entries", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
+qc_rule <- action_alert_no_modification
+qc_type <- "free_text"
+df <- day0_data
+qc_text <- "free text drug"
+qc_idx <- qc_free_text_rx_id
+qc_export_label <- "free_text_drug"
+qc_export_description <- "the treatments should have been entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_free_text_rx_cg <- n_detected
 ```
 
 ```{r, eval=day0_is_not_null&is_ls, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Free text" = dplyr::case_when(
     !is.na(rx_othtype) & is.na(rx_othtype_hf) ~ "a) Free text from prescription only",
-    !is.na(rx_othtype_hf) & is.na(rx_othtype) ~ "b) Free text from registry only",
-    !is.na(rx_othtype_hf) & !is.na(rx_othtype) ~ "c) Free text from both sources",
+    is.na(rx_othtype) & !is.na(rx_othtype_hf) ~ "b) Free text from registry only",
+    !is.na(rx_othtype) & !is.na(rx_othtype_hf) ~ "c) Free text from both sources",
     .default = "d) No free text entry")) %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
@@ -673,23 +715,53 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=day0_is_not_null}
-qc_description <- "All participants should have antibiotics entered in a structured way and not in free text."
+#### Structured entries
+
+##### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+
+```{r}
+write("   o Missing treatment", stderr())
+```
+
+```{r, results='asis', eval=day0_is_not_null&!is_india}
+qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
 qc_rule <- action_alert_no_modification
-qc_type <- "free_text"
+qc_type <- "missing_treatment"
 df <- day0_data
-qc_text <- "free text drug"
-qc_idx <- qc_free_text_rx_id
-qc_export_label <- "free_text_drug"
-qc_export_description <- "the treatments should have been entered in a structured manner"
+qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
+qc_idx <- qc_missing_treatment_id
+qc_export_label <- "missing_treatment"
+qc_export_description <- "the treatment information is missing"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_free_text_rx_cg <- n_detected
+n_missing_treatment <- n_detected
+```
+
+```{r, eval=timci::is_not_empty(day0_data)&!is_india, results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Treatment = dplyr::case_when(
+    !is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf) ~ "a) Structured entry from prescription only",
+    is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "b) Structured entry from registry only",
+    !is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "c) Structured entry from both sources",
+    .default = "d) No structured entry"))
+
+fig_caption <- "Spatiotemporal pattern of treatments"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Treatment"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 ```{r, eval=is_ls}
-print_clean_drug_data_title <- "#### Clean drug data"
+print_clean_drug_data_title <- "##### Update with reentered drug data"
 ```
 
 `r print_clean_drug_data_title`
@@ -734,33 +806,16 @@ drug_edits %>%
   knitr::kable()
 ```
 
-#### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+##### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
 
-```{r}
-write(" o Missing treatment", stderr())
-```
-
-```{r, results='asis', eval=day0_is_not_null&!is_india}
-qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
-qc_rule <- action_alert_no_modification
-qc_type <- "missing_treatment"
-df <- day0_data
-qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
-qc_idx <- qc_missing_treatment_id
-qc_export_label <- "missing_treatment"
-qc_export_description <- "the treatment information is missing"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_missing_treatment <- n_detected
-```
-
-```{r, eval=timci::is_not_empty(day0_data)&!is_india, results='asis'}
+```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Treatment = dplyr::case_when(
-    !is.na(rx_amoxicillin) ~ "Present",
-    is.na(rx_amoxicillin) ~ "Missing"))
+    !is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf) ~ "a) Structured entry from prescription only",
+    is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "b) Structured entry from registry only",
+    !is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "c) Structured entry from both sources",
+    .default = "d) No structured entry"))
 
 fig_caption <- "Spatiotemporal pattern of treatments"
 facility_col <- "fid"
@@ -774,6 +829,10 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
+
+##### Discrepancies between drug re-entry and initial entries
+
+To be added only for Kenya and Senegal
 
 ### Clinical measurements
 

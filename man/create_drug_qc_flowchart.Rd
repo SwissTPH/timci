@@ -2,24 +2,46 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_drug_qc_flowchart}
 \alias{create_drug_qc_flowchart}
-\title{Create cleaning flowchart for drug re-entry data (TIMCI-specific)}
+\title{Create a flowchart summarizing the cleaning of drug re-entry data (TIMCI-specific)}
 \usage{
 create_drug_qc_flowchart(
   n_raw_drug_records,
   n_dropped_duplicate_records,
+  n_amox_records,
+  n_aclav_records,
+  n_metro_records,
+  n_ctx_records,
+  n_cipro_records,
+  n_genta_records,
   n_cleaned_drug_records
 )
 }
 \arguments{
-\item{n_raw_drug_records}{Initial number of drug records}
+\item{n_raw_drug_records}{The initial number of drug records.}
 
-\item{n_dropped_duplicate_records}{Number of drug records that were dropped}
+\item{n_dropped_duplicate_records}{The number of drug records dropped due to duplicate IDs.}
 
-\item{n_cleaned_drug_records}{Number of cleaned drug records}
+\item{n_amox_records}{The number of records that passed the cleaning check for amoxicillin.}
+
+\item{n_aclav_records}{The number of records that passed the cleaning check for amoxicillin + clavulanic acid.}
+
+\item{n_metro_records}{The number of records that passed the cleaning check for metronidazole.}
+
+\item{n_ctx_records}{The number of records that passed the cleaning check for cotrimoxazole.}
+
+\item{n_cipro_records}{The number of records that passed the cleaning check for ciprofloxacin.}
+
+\item{n_genta_records}{The number of records that passed the cleaning check for gentamicin.}
+
+\item{n_cleaned_drug_records}{The total number of cleaned drug records.}
 }
 \value{
-This function returns a graph object
+This function returns a graph object that can be plotted using the DiagrammeR package.
 }
 \description{
-Create cleaning flowchart for drug re-entry data (TIMCI-specific)
+This function generates a flowchart summarizing the cleaning of drug re-entry data
+specific to the TIMCI project. The flowchart displays the initial number of drug
+records, the number of records excluded due to duplicate IDs, and the number of records
+that passed other cleaning checks for specific drugs. The function returns a graph object
+that can be plotted using the DiagrammeR package.
 }

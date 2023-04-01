@@ -45,9 +45,9 @@ process_facility_data <- function(df,
 
   cols <- colnames(df)
 
-  if ( 'crfs-t02b-contact_start' %in% cols ) {
-    df$'crfs-t02b-contact_start' <- strftime(strptime(x = df$'crfs-t02b-contact_start', format = "%Y-%m-%dT%T"))
-  }
+  # if ( 'crfs-t02b-contact_start' %in% cols ) {
+  #   df$'crfs-t02b-contact_start' <- strftime(strptime(x = df$'crfs-t02b-contact_start', format = "%Y-%m-%dT%T"))
+  # }
 
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
@@ -263,9 +263,12 @@ process_facility_data <- function(df,
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
-  if ( 't_screening_start' %in% cols ) {
-    df$t_screening_start <- strftime(strptime(x = df$t_screening_start, format = "%Y-%m-%dT%T"))
-  }
+  # if ( 't_screening_start' %in% cols ) {
+  #   df$t_screening_start <- strftime(strptime(x = df$t_screening_start, format = "%Y-%m-%dT%T"))
+  # }
+  # if ( 'start_contact' %in% cols ) {
+  #   df$start_contact <- strftime(strptime(x = df$start_contact, format = "%Y-%m-%dT%T"))
+  # }
 
   df
 

@@ -172,7 +172,12 @@ qc_dup_repeats_id2 <- "DQC_00_0SG_11b"
 # Day 0 drug quality check IDs
 ###############################
 qc_duplicate_drug <- "DQC_00_1DG_01"
-qc_amox_consistency_drug <- "DQC_00_1DG_01"
+qc_amox_consistency_drug <- "DQC_00_1DG_02"
+qc_aclav_consistency_drug <- "DQC_00_1DG_03"
+qc_metro_consistency_drug <- "DQC_00_1DG_04"
+qc_ctx_consistency_drug <- "DQC_00_1DG_05"
+qc_cipro_consistency_drug <- "DQC_00_1DG_06"
+qc_genta_consistency_drug <- "DQC_00_1DG_07"
 
 # Day 0 quality check IDs
 ##########################

@@ -78,20 +78,41 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
 }
 
-#' Create cleaning flowchart for drug re-entry data (TIMCI-specific)
+#' Create a flowchart summarizing the cleaning of drug re-entry data (TIMCI-specific)
 #'
-#' @param n_raw_drug_records Initial number of drug records
-#' @param n_dropped_duplicate_records Number of drug records that were dropped
-#' @param n_cleaned_drug_records Number of cleaned drug records
-#' @return This function returns a graph object
-#' @export
+#' This function generates a flowchart summarizing the cleaning of drug re-entry data
+#' specific to the TIMCI project. The flowchart displays the initial number of drug
+#' records, the number of records excluded due to duplicate IDs, and the number of records
+#' that passed other cleaning checks for specific drugs. The function returns a graph object
+#' that can be plotted using the DiagrammeR package.
+#'
+#' @param n_raw_drug_records The initial number of drug records.
+#' @param n_dropped_duplicate_records The number of drug records dropped due to duplicate IDs.
+#' @param n_amox_records The number of records that passed the cleaning check for amoxicillin.
+#' @param n_aclav_records The number of records that passed the cleaning check for amoxicillin + clavulanic acid.
+#' @param n_metro_records The number of records that passed the cleaning check for metronidazole.
+#' @param n_ctx_records The number of records that passed the cleaning check for cotrimoxazole.
+#' @param n_cipro_records The number of records that passed the cleaning check for ciprofloxacin.
+#' @param n_genta_records The number of records that passed the cleaning check for gentamicin.
+#' @param n_cleaned_drug_records The total number of cleaned drug records.
+#'
+#' @return This function returns a graph object that can be plotted using the DiagrammeR package.
+#'
 #' @import DiagrammeR
+#' @export
 
 create_drug_qc_flowchart <- function(n_raw_drug_records,
                                      n_dropped_duplicate_records,
+                                     n_amox_records,
+                                     n_aclav_records,
+                                     n_metro_records,
+                                     n_ctx_records,
+                                     n_cipro_records,
+                                     n_genta_records,
                                      n_cleaned_drug_records) {
 
   n_excluded <- n_dropped_duplicate_records
+  n_informed <- n_amox_records + n_aclav_records + n_metro_records + n_ctx_records + n_cipro_records + n_genta_records
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
@@ -99,10 +120,15 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 
                   1 [label = 'Raw drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-unique ID']
+                  m2 [label = 'Other checks (N = %s)\n%s record(s) with amoxicillin\n%s record(s) with amoxicillin + clavulanic acid\n%s record(s) with metronidazole\n%s record(s) with cotrimoxazole\n%s record(s) with ciprofloxacin\n%s record(s) with gentamicin']
                   2 [label = 'Cleaned drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p2 -> 2 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2;
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
@@ -111,6 +137,13 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                 n_raw_drug_records,
                 n_excluded,
                 n_dropped_duplicate_records,
+                n_informed,
+                n_amox_records,
+                n_aclav_records,
+                n_metro_records,
+                n_ctx_records,
+                n_cipro_records,
+                n_genta_records,
                 n_cleaned_drug_records)
 
   DiagrammeR::grViz(gr)

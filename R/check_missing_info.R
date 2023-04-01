@@ -149,7 +149,7 @@ detect_missing_treatment <- function(facility_df) {
   if ( timci::is_not_empty(facility_df) ) {
 
     out <- facility_df %>%
-      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin),
+      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf),
                                      1,
                                      0)) %>%
       filter(missing == 1)
