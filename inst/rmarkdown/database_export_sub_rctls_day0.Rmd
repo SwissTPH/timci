@@ -134,7 +134,7 @@ if (!is.null(qc_inconsistent_facility)) {
 #### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info1`]
 
 ```{r}
-write(" o Discrepancy in facility IDs", stderr())
+write(" o Discrepancy in facility IDs (vs. device)", stderr())
 ```
 
 Facility information can be extracted in 4 different manners: from the research assistant's manual entry, from the first 5 characters of the child ID, from the device which is used (assuming 1 device is screening children in 1 unique facility per day) and from the GPS coordinates.
@@ -147,7 +147,7 @@ df <- day0_data
 qc_text <- ""
 qc_idx <- qc_inconsistent_facility_info1
 qc_export_label <- "inconsistent_facility_info1"
-qc_export_description <- "facility information is inconsistent"
+qc_export_description <- "facility information between the child ID and the device is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -157,7 +157,7 @@ n_inconsistent_facility_info1 <- n_detected
 #### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info2`]
 
 ```{r}
-write(" o Discrepancy in facility IDs", stderr())
+write(" o Discrepancy in facility IDs (vs. manual entry)", stderr())
 ```
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
@@ -168,7 +168,7 @@ df <- day0_data
 qc_text <- ""
 qc_idx <- qc_inconsistent_facility_info2
 qc_export_label <- "inconsistent_facility_info2"
-qc_export_description <- "facility information is inconsistent"
+qc_export_description <- "facility information between the child ID and the research assistant's entry is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -279,7 +279,7 @@ duplicate_edits %>%
   knitr::kable()
 ```
 
-`r if ( !is_pilot ) { paste0('#### Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
+`r if ( !is_pilot ) { paste0('##### Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
 
 ```{r, eval=(day0_is_not_null & !is_pilot), results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
@@ -339,10 +339,10 @@ multiple <- FALSE
 
 ### Dates and times
 
-#### Incorrect enrolment date [Context check `r qc_incorrect_enrolment_date`]\n\n
+#### Ambiguities about the enrolment date [Context check `r qc_ambiguous_enrolment_date1`]
 
 ```{r}
-write(" o Incorrect enrolment date", stderr())
+write(" o Ambiguities about the enrolment date", stderr())
 ```
 
 ```{r, eval=day0_is_not_null&(is_tanzania), results='asis'}
@@ -351,11 +351,68 @@ qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- day0_data
 col_date1 <- "start"
-col_date2 <- "start_contact"
+col_date2 <- "contact_start"
 cleaning <- "replace_by_end_date"
 qc_text <- "an incorrect date of enrolment"
-qc_idx <- qc_incorrect_enrolment_date
-qc_export_label <- "incorrect_enrolment_date"
+qc_idx <- qc_ambiguous_enrolment_date1
+qc_export_label <- "ambiguous_enrolment_date"
+qc_export_description <- "the enrolment date is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_enroldate_records <- n_detected
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = ifelse(diff <= 1,
+                                    "1 day", ifelse(diff < 3,
+                                                       "2-3 days",
+                                                       "Above 3 days")))
+
+fig_caption <- "Number of days between submission start and entry of participant contact details"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Difference"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=day0_is_not_null&(is_kenya), results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "sd_start"
+col_date2 <- "start"
+cleaning <- "replace_by_end_date"
+qc_text <- "an incorrect date of enrolment"
+qc_idx <- qc_ambiguous_enrolment_date1
+qc_export_label <- "ambiguous_enrolment_date1"
+qc_export_description <- "the enrolment date is not correct"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_incorrect_enroldate_records <- n_detected
+```
+
+```{r, eval=day0_is_not_null&(is_kenya), results='asis'}
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data
+col_date1 <- "start"
+col_date2 <- "sd_start"
+cleaning <- "replace_by_end_date"
+qc_text <- "an incorrect date of enrolment"
+qc_idx <- qc_ambiguous_enrolment_date2
+qc_export_label <- "ambiguous_enrolment_date2"
 qc_export_description <- "the enrolment date is not correct"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
@@ -444,10 +501,21 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 write(" o Negative illness onset", stderr())
 ```
 
-Check for spurious values/outliers
-
-Variable sickness_duration
-Check not implemented yet
+```{r, results='asis', eval=timci::is_not_empty(day0_data)}
+qc_description <- "Check for spurious values/outliers in illness onset: illness onset should be positive values (number of days) only."
+qc_rule <- action_alert_no_modification
+qc_type <- "negative_value"
+df <- day0_data
+col_value <- "sick_duration"
+qc_text <- "negative illness onset"
+qc_idx <- qc_negative_nb_days_id
+qc_export_label <- "negative_illness_onset"
+qc_export_description <- "illness onset is negative"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_negative_illness_onset <- n_detected
+```
 
 #### Convulsion reporting over time
 

@@ -17,7 +17,9 @@ locked_hospit_data <- NULL
 hospit_fu <- NULL
 ```
 
-### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]
+### Participant identification
+
+#### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
@@ -47,7 +49,7 @@ n_afterlock_pids_hospitfu_records <- n_detected
 hospit_data <- cleaned_df
 ```
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]
+#### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "Hospitalisation follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
@@ -71,7 +73,7 @@ n_nonvalid_pids_hospitfu <- n_detected
 locked_hospit_data <- cleaned_df
 ```
 
-### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
+#### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
 
 ```{r}
 write(" o Duplicate management", stderr())
@@ -96,7 +98,9 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_duplicates_hospitfu <- n_detected
 ```
 
-### Invalid date of hospitalisation [Context check `r qc_hospit_before_enrolment`]
+### Dates and times
+
+#### Invalid date of hospitalisation [Context check `r qc_hospit_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of hospitalisation", stderr())
@@ -125,7 +129,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Invalid date of death [Context check `r qc_hospit_before_enrolment`]
+#### Invalid date of death [Context check `r qc_hospit_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of death", stderr())
@@ -154,7 +158,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Invalid date of discharge [Context check `r qc_hospit_before_enrolment`]
+#### Invalid date of discharge [Context check `r qc_hospit_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of discharge", stderr())

@@ -1,12 +1,12 @@
 #' Detect missing (NA) value (TIMCI-specific function)
 #'
 #' @param df dataframe
-#' @param col column name to check for missingness
+#' @param col column name to check for missing (NA) values
 #' @return This function returns a dataframe containing only participants with no information in column `col`
 #' @export
 #' @import dplyr rlang
 
-detect_missing_var <- function(df, col) {
+detect_missing_value <- function(df, col) {
 
   out <- NULL
   col <- rlang::sym(col)
@@ -28,12 +28,12 @@ detect_missing_var <- function(df, col) {
 #' Detect blank ("") value (TIMCI-specific function)
 #'
 #' @param df dataframe
-#' @param col column name to check for missingness
+#' @param col column name to check for blank ("") values
 #' @return This function returns a dataframe containing only participants with no information in column `col`
 #' @export
 #' @import dplyr rlang
 
-detect_blank_var <- function(df, col) {
+detect_blank_value <- function(df, col) {
 
   out <- NULL
   col <- rlang::sym(col)
@@ -45,6 +45,33 @@ detect_blank_var <- function(df, col) {
                                      1,
                                      0)) %>%
       dplyr::filter(missing == 1)
+
+  }
+
+  out
+
+}
+
+#' Detect negative value (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @param col column name to check for negative values
+#' @return This function returns a dataframe containing only participants with no information in column `col`
+#' @export
+#' @import dplyr rlang
+
+detect_negative_value <- function(df, col) {
+
+  out <- NULL
+  col <- rlang::sym(col)
+
+  if ( timci::is_not_empty(df) ) {
+
+    out <- df %>%
+      dplyr::mutate(negative = ifelse(is.numeric(!!col) < 0,
+                                      1,
+                                      0)) %>%
+      dplyr::filter(negative == 1)
 
   }
 

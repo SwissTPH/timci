@@ -158,11 +158,10 @@ refdf <- rbind(facility_data_before_start,
                facility_data_after_lock) %>%
   dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
-col_date <- "date_call"
 qc_text <- "participant IDs outside the lock date range"
 qc_idx <- qc_pids_out_lock_range_day7fu
 qc_export_label <- "pids_outside_lock_range"
-qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+qc_export_description <- "the follow-up corresponds to a child who has been enrolled outside the date range for the lock"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))

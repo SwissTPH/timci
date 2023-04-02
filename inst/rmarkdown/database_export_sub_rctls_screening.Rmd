@@ -122,7 +122,7 @@ write(" o Incorrect data and time setup on the device", stderr())
 
 ```{r, results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
-qc_rule <- "If the submission date is anterior to the creation date in the database, the (incorrect) creation date is replaced by the submission date."
+qc_rule <- "If the server submission date is anterior to the creation date (start of the form on the tablet) in the database, the creation date is considered incorrect and is replaced by the server submission date."
 qc_type <- "date_discrepancy"
 df <- facility_data
 col_date1 <- "submission_date"
@@ -465,7 +465,8 @@ write(" o Discrepancy in child age and categories", stderr())
 qc_description <- "Age group consistent with young infants flag and categories as specified in the codebook."
 qc_rule <- action_alert_no_modification
 qc_type <- "blank_value"
-df <- facility_data %>% dplyr::filter(yg_infant == 1)
+df <- facility_data %>%
+  dplyr::filter(yg_infant == 1)
 col_value <- "who_age_ctg"
 qc_text <- "missing young infant age category"
 qc_idx <- qc_inconsistent_age_info
@@ -478,10 +479,10 @@ n_inconsistent_age_info <- n_detected
 ```
 
 ```{r, results='asis'}
-ggplot2::ggplot(facility_data %>% dplyr::filter(yg_infant == 1),
+ggplot2::ggplot(facility_data,
                 ggplot2::aes(x = who_age_ctg,
-                             fill = age_mo)) +
-    ggplot2::geom_bar(position = "dodge") +
+                             fill = yg_infant)) +
+    ggplot2::geom_bar(position = "stack") +
     ggplot2::theme(text = element_text(size = tsize),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor.x = element_blank())
@@ -555,7 +556,6 @@ screening_data <- screening_data %>%
                          facility,
                          dob_knwn,
                          age_mo_knwn,
-                         quarter,
                          consult_reason,
                          main_cg,
                          main_cg_lbl,

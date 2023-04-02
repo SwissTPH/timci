@@ -143,15 +143,32 @@ detect_inconsistent_dates <- function(df,
   cols <- colnames(df)
 
   df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))
-  if ( 'fid_from_device' %in% cols ) {
-    kcols <- c("fid_from_device", "fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
-  } else if ( 'fid' %in% cols ) {
-    kcols <- c("fid", "child_id", col_date_start, col_date_end, "diff", "uuid")
+  cols <- colnames(df)
+  kcols <- c()
+  if ( 'fid' %in% cols ) {
+    kcols <- c(kcols,"fid")
   } else if ( 'hf_id' %in% cols ) {
-    kcols <- c("hf_id", "child_id", col_date_start, col_date_end, "diff", "uuid")
-  } else {
-    kcols <- c("child_id", col_date_start, col_date_end, "diff", "uuid")
+    kcols <- c(kcols, "hf_id")
   }
+  if ( 'fid_from_device' %in% cols ) {
+    kcols <- c(kcols, "fid_from_device")
+  }
+  if ( 'child_id' %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  } else if ( 'prev_id' %in% cols ) {
+    kcols <- c(kcols, "prev_id")
+  }
+  kcols <- c(kcols, col_date_start, col_date_end)
+  if ( col_date_start != "start" & col_date_end != "start" ) {
+    kcols <- c(kcols, "start")
+  }
+  if ( col_date_start != "end" & col_date_end != "end" ) {
+    kcols <- c(kcols, "end")
+  }
+  if ( col_date_start != "submission_date" & col_date_end != "submission_date" & "submission_date" %in% cols ) {
+    kcols <- c(kcols, "submission_date")
+  }
+  kcols <- c(kcols, "diff", "uuid")
 
   qc_df <- df %>%
     dplyr::select(kcols) %>%
@@ -226,20 +243,15 @@ identify_nonvalid_ids <- function(df1,
 #' @param col_id1 column name containing IDs in `df1`
 #' @param df2 reference dataframe
 #' @param col_id2 column name containing IDs in `df2`
-#' @param col_date column name containing dates in `df1`
-#' @param lock_date lock date
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
 #' @export
 
 identify_nonvalid_ids2 <- function(df1,
                                    col_id1,
                                    df2,
-                                   col_id2,
-                                   col_date,
-                                   lock_date) {
+                                   col_id2) {
 
   qc_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
-  qc_df <- qc_df[qc_df[[col_date]] > as.Date(lock_date, "%Y-%m-%d"), ]
   cleaned_df <- df1[!df1[[col_id1]] %in% qc_df[[col_id2]], ]
 
   list(qc_df, cleaned_df)

@@ -104,9 +104,7 @@ cleaned_df <- out[[2]]
 out <- timci::identify_nonvalid_ids2(df,
                                      idcol1,
                                      refdf,
-                                     idcol2,
-                                     col_date,
-                                     lock_date = lock_date)
+                                     idcol2)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
@@ -175,16 +173,30 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Missing value (NA) -->
+
 ```{r, eval=(qc_type=="missing_value")}
-qc_df <- timci::detect_missing_var(df, col_value)
+qc_df <- timci::detect_missing_value(df, col_value)
 outcols <- c("child_id", "fid", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Blank value ("") -->
+
 ```{r, eval=(qc_type=="blank_value")}
-qc_df <- timci::detect_blank_var(df, col_value)
+qc_df <- timci::detect_blank_value(df, col_value)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Negative value -->
+
+```{r, eval=(qc_type=="negative_value")}
+qc_df <- timci::detect_negative_value(df, col_value)
 outcols <- c("child_id", "fid", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
@@ -309,13 +321,12 @@ if ( reformat_cond ) {
     kcols <- c("date_visit")
     if ( 'child_id' %in% cols ) {
       kcols <- c(kcols, "child_id")
-    } else {
+    } else if ( 'prev_id' %in% cols ) {
       kcols <- c(kcols, "prev_id")
     }
     if ( 'fid' %in% cols ) {
       kcols <- c(kcols,"fid")
-    }
-    if ( 'fid_from_device' %in% cols ) {
+    } else if ( 'fid_from_device' %in% cols ) {
       kcols <- c(kcols, "fid_from_device")
     }
     kcols <- c(kcols, "uuid")

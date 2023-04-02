@@ -39,7 +39,37 @@ repeat_data <- repeat_data %>%
                                 "fid_from_device")))
 ```
 
-### Reconciliation of repeat visits with unique participants
+### Participant identification
+
+#### Repeat visits corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_repeat`]
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+qc_description <- paste0("Repeat visits are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard repeat visit records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids2"
+df <- repeat_data
+idcol1 <- "prev_id"
+refdf <- rbind(facility_data_before_start,
+               facility_data_after_lock) %>%
+  dplyr::filter( !is.na(child_id) )
+idcol2 <- "child_id"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_repeat
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the repeat visit corresponds to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_afterlock_pids_repeat_records <- n_detected
+repeat_data <- cleaned_df
+```
 
 #### Non-valid participant IDs [Context check `r qc_nonvalid_repeat`]
 
@@ -51,8 +81,7 @@ write(" o Non-valid participant IDs", stderr())
 qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "nonvalid_ids"
-df <- repeat_data %>% 
-  dplyr::filter(!is.na(prev_id))
+df <- repeat_data
 idcol1 <- "prev_id"
 refdf <- day0_data
 idcol2 <- "child_id"
@@ -164,7 +193,6 @@ repeat_data <- repeat_data %>%
                          who_age_ctg,
                          dob_knwn,
                          age_mo_knwn,
-                         quarter,
                          consult_reason,
                          main_cg,
                          main_cg_lbl,

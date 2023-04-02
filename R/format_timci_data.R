@@ -47,7 +47,8 @@ process_facility_data <- function(df,
 
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
-    df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
+    df <- df %>%
+      dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
     # Format the date of birth
     df$'a3-a3_a_7' <- ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m-%d"), '')
   }
@@ -58,23 +59,6 @@ process_facility_data <- function(df,
   }
   if ('a3-yob' %in% cols) {
     df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y"), '')
-  }
-
-  # Extract age in days (WHO category)
-  if ('a3-a3_a_9' %in% cols) {
-    df$yi_age_ctg_tmp <- sapply(df$'a3-a3_a_9', timci::convert_yi_age2ctg)
-  }
-  if ('a3-a3_a_9a' %in% cols) {
-    df$yi_age_ctg_tmp2 <- sapply(df$'a3-a3_a_9a', timci::convert_yi_age2ctg)
-  }
-  if ('a3-a3_a_8' %in% cols) {
-    df$'a3-a3_a_8' <- ifelse(is.na(df$'a3-a3_a_8') & df$'a3-is_young_infant' == 1,
-                             ifelse(!is.na(df$'a3-a3_a_9') & df$'a3-dobk' == 1,
-                                    df$yi_age_ctg_tmp,
-                                    ifelse(!is.na(df$'a3-a3_a_9a'),
-                                           df$yi_age_ctg_tmp2,
-                                           "")),
-                             df$'a3-a3_a_8')
   }
 
   # Combine exact and approximate options to get the age in years
@@ -108,9 +92,31 @@ process_facility_data <- function(df,
                              ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
   }
 
-  if ('a3-a3_a_5' %in% cols) {
-    df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
-  }
+  # Convert to WHO age categories
+  df <- df %>%
+    dplyr::mutate(age_ctg = dplyr::case_when(
+      # Exact date of birth known
+      as.numeric(`a3-a3_a_9`) >= 1 & as.numeric(`a3-a3_a_9`) < 7                                      ~ "[1-6d]",
+      as.numeric(`a3-a3_a_9`) >= 7 & as.numeric(`a3-a3_a_9`) < 28                                     ~ "[7-27d]",
+      as.numeric(`a3-a3_a_9`) >= 28 & as.numeric(`a3-a3_a_9`) < 60                                    ~ "[28-59d]",
+      as.numeric(`a3-a3_a_9`) >= 60 & as.numeric(`a3-a3_a_9`) < 365                                   ~ "[60-364d]",
+      as.numeric(`a3-a3_a_9`) >= 365 & as.numeric(`a3-a3_a_9`) < 1827                                 ~ "[12-59m]",
+      # Non-exact date of birth
+      as.numeric(`a3-a3_a_9a`) >= 0 & as.numeric(!is.na(`a3-a3_a_9b`)) & as.numeric(`a3-a3_a_9a`) < 7 ~ "[1-6d]",
+      as.numeric(`a3-a3_a_9a`) >= 7 & as.numeric(`a3-a3_a_9a`) < 28                                   ~ "[7-27d]",
+      as.numeric(`a3-a3_a_9a`) >= 28 & as.numeric(`a3-a3_a_9a`) < 60                                  ~ "[28-59d]",
+      as.numeric(`a3-a3_a_9a`) >= 60 & as.numeric(`a3-a3_a_9a`) < 365                                 ~ "[60-364d]",
+      as.numeric(`a3-a3_a_9a`) >= 365 & as.numeric(`a3-a3_a_9a`) < 1827                               ~ "[12-59m]",
+      # Age categories
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 0 & as.numeric(`a3-a3_a_8`) == 1      ~ "[1-6d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 0 & as.numeric(`a3-a3_a_8`) == 2      ~ "[7-27d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 1                                     ~ "[28-59d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) >= 2                                     ~ "[60-364d]",
+      as.numeric(`a3-a3_a_2`) > 0 & as.numeric(`a3-a3_a_2`) < 5                                       ~ "[12-59m]",
+      as.numeric(`a3-incl1`) == 0 | as.numeric(`a3-excl1`) == 1                                       ~ "non-eligible age",
+      .default = "")) %>%
+    dplyr::select(-`a3-a3_a_8`)  %>%
+    dplyr::rename(`a3-a3_a_8` = age_ctg)
 
   # Format the location
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {

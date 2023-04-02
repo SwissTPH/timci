@@ -148,23 +148,8 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n
-                  %s record(s) with a non-unique ID']
-                  m2 [label = 'Other checks (N = %s)\n
-                  %s record(s) with Amoxicillin\n
-                  %s record(s) with Amoxicillin + Clavulanic Acid\n
-                  %s record(s) with Metronidazole\n
-                  %s record(s) with Cotrimoxazole\n
-                  %s record(s) with Ciprofloxacin\n
-                  %s record(s) with Gentamicin\n
-                  %s record(s) with Benzylpenicillin\n
-                  %s record(s) with Ceftriaxone\n
-                  %s record(s) with Cefixime\n
-                  %s record(s) with Ampicillin\n
-                  %s record(s) with Azithromycin\n
-                  %s record(s) with Benzathine Benzylpenicillin\n
-                  %s record(s) with other antibiotics\n
-                  %s record(s) with antimalarials']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-unique ID']
+                  m2 [label = 'Other checks (N = %s)\n%s record(s) with Amoxicillin\n%s record(s) with Amoxicillin + Clavulanic Acid\n%s record(s) with Metronidazole\n%s record(s) with Cotrimoxazole\n%s record(s) with Ciprofloxacin\n%s record(s) with Gentamicin\n%s record(s) with Benzylpenicillin\n%s record(s) with Ceftriaxone\n%s record(s) with Cefixime\n%s record(s) with Ampicillin\n%s record(s) with Azithromycin\n%s record(s) with Benzathine Benzylpenicillin\n%s record(s) with other antibiotics\n%s record(s) with antimalarials']
                   2 [label = 'Cleaned drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
