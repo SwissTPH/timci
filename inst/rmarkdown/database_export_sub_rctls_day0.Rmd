@@ -339,7 +339,7 @@ write(" o Detection of multiple 28-disease episodes for the same children", stde
 multiple <- FALSE
 ```
 
-`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the interim analysis'}`
+`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the soft lock'}`
 
 ```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
@@ -352,7 +352,11 @@ multiple <- FALSE
 write(" o Ambiguities about the enrolment date", stderr())
 ```
 
-```{r, eval=day0_is_not_null&(is_tanzania), results='asis'}
+```{r}
+qc_df <- NULL
+```
+
+```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -777,10 +781,10 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 ##### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r}
-write("   o Missing structured treatment", stderr())
+write("   o Missing structured treatment - check 1", stderr())
 ```
 
-```{r, results='asis', eval=day0_is_not_null&!is_india}
+```{r, results='asis', eval=day0_is_not_null&!is_rct}
 qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_treatment"
@@ -795,7 +799,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_treatment <- n_detected
 ```
 
-```{r, eval=timci::is_not_empty(day0_data)&!is_india, results='asis'}
+```{r, eval=timci::is_not_empty(day0_data)&!is_rct, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
   dplyr::mutate(Treatment = dplyr::case_when(
@@ -864,6 +868,10 @@ drug_edits %>%
 ```
 
 ##### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
+
+```{r}
+write("   o Missing structured treatment - check 2", stderr())
+```
 
 ```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
 fig_df <- day0_data %>%
