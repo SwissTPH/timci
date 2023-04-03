@@ -24,6 +24,13 @@ n_incorrect_enroldate_records <- 0
 
 ### Facilities
 
+Facility information can be extracted in 4 different manners:
+
+* from the research assistant's manual entry (variable *fid_ra*) - not implemented in Senegal
+* from the first 5 characters of the child ID (X-F0001-Pxxxx refers to facility F0001)
+* from the device which is used (assuming 1 device is used to screen children in 1 unique facility each day)
+* from the tablet GPS coordinates - not implemented in Kenya
+
 #### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 
 ```{r}
@@ -137,8 +144,6 @@ if (!is.null(qc_inconsistent_facility)) {
 write(" o Discrepancy in facility IDs (vs. device)", stderr())
 ```
 
-Facility information can be extracted in 4 different manners: from the research assistant's manual entry, from the first 5 characters of the child ID, from the device which is used (assuming 1 device is screening children in 1 unique facility per day) and from the GPS coordinates.
-
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
 qc_rule <- action_alert_no_modification
@@ -156,11 +161,13 @@ n_inconsistent_facility_info1 <- n_detected
 
 #### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info2`]
 
+This check is relevant and implemented only for Kenya and Tanzania.
+
 ```{r}
 write(" o Discrepancy in facility IDs (vs. manual entry)", stderr())
 ```
 
-```{r, eval=facility_data_is_not_null, results='asis'}
+```{r, eval=facility_data_is_not_null&(is_kenya|is_tanzania), results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the research assistant's manual entry."
 qc_rule <- action_alert_no_modification
 qc_type <- "inconsistent_facility_info2"
@@ -642,7 +649,12 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_diagnosis <- n_detected
 ```
 
-```{r}
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
 fig_caption <- "Missing diagnosis"
 facility_col <- "fid"
 date_col <- "week"
@@ -650,13 +662,6 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 fill_col <- ""
 comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1)))
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
@@ -665,7 +670,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ### Referrals
 
-#### Missing referral [Mandatory check `r qc_missing_referral_id`]
+#### Missing referral information [Mandatory check `r qc_missing_referral_id`]
 
 ```{r}
 write(" o Missing referral", stderr())
@@ -686,18 +691,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_referral_cg <- n_detected
 ```
 
-#### Spatiotemporal patterns of referrals [Context checks]
-
-```{r}
-fig_caption <- "Spatiotemporal pattern of referrals reported by the caregiver"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-fill_col <- "Referral"
-```
-
 ```{r, eval=timci::is_not_empty(day0_data), results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
@@ -707,6 +700,14 @@ fig_df <- day0_data %>%
     referral_cg == 98 ~ "c) Not sure",
     referral_cg == 97 ~ "d) Declined",
     is.na(referral_cg) ~ "e) Missing"))
+
+fig_caption <- "Spatiotemporal pattern of referrals reported by the caregiver"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "type"
+fill_col <- "Referral"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
@@ -747,21 +748,6 @@ write(" o Treatments", stderr())
 write("   o Free text entries", stderr())
 ```
 
-```{r, results='asis', eval=day0_is_not_null}
-qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
-qc_rule <- action_alert_no_modification
-qc_type <- "free_text"
-df <- day0_data
-qc_text <- "free text drug"
-qc_idx <- qc_free_text_rx_id
-qc_export_label <- "free_text_drug"
-qc_export_description <- "the treatments should have been entered in a structured manner"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_free_text_rx_cg <- n_detected
-```
-
 ```{r, eval=day0_is_not_null&is_ls, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Free text" = dplyr::case_when(
@@ -788,10 +774,10 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 #### Structured entries
 
-##### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+##### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r}
-write("   o Missing treatment", stderr())
+write("   o Missing structured treatment", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}
@@ -877,7 +863,7 @@ drug_edits %>%
   knitr::kable()
 ```
 
-##### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+##### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
 fig_df <- day0_data %>%
@@ -899,6 +885,21 @@ fill_col <- "Treatment"
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
+qc_rule <- action_alert_no_modification
+qc_type <- "free_text_missing_structured_entry"
+df <- day0_data
+qc_text <- "free text drug"
+qc_idx <- qc_free_text_rx_id
+qc_export_label <- "free_text_drug"
+qc_export_description <- "the treatments should have been entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_free_text_rx_cg <- n_detected
 ```
 
 ##### Discrepancies between drug re-entry and initial entries

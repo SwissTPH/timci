@@ -96,7 +96,7 @@ qc_description <- "All hospitalised participants should have complete informatio
 qc_rule <- action_alert_no_modification
 qc_type <- "missing_value"
 df <- day7fu_data %>%
-  dplyr::mutate(all_hf_visit_day7 = ifelse(status_day7 == 2 | (status_day7 != 2 & hf_visit_day7 == 1 & hf_visit_type == hospit_value),
+  dplyr::mutate(all_hf_visit_day7 = ifelse(status_day7 == 2 | admission == 1,
                                            1,
                                            0)) %>%
   dplyr::filter(all_hf_visit_day7 == 1)

@@ -211,6 +211,7 @@ qc_summary_id <- "DQC_00_2ED_15"
 #########################
 qc_pids_out_lock_range_repeat <- "DQC_00_3RV_01"
 qc_nonvalid_repeat <- "DQC_00_3RV_02"
+qc_nonconsistent_name_repeat <- "DQC_00_3RV_03"
 
 # Day 7 quality check IDs
 ##########################

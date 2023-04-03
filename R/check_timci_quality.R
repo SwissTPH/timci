@@ -233,6 +233,24 @@ identify_nonvalid_ids <- function(df1,
   qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
   cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
 
+  cols <- colnames(qc_df)
+  kcols <- c()
+  if ( "date_visit" %in% cols ) {
+    kcols <- c(kcols, "date_visit")
+  } else if ( "date_call" %in% cols ) {
+    kcols <- c(kcols, "date_call")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  } else if ( "prev_id" %in% cols ) {
+    kcols <- c(kcols, "prev_id")
+  }
+  if ( "uuid" %in% cols ) {
+    kcols <- c(kcols, "uuid")
+  }
+  qc_df <- qc_df %>%
+    dplyr::select(kcols)
+
   list(qc_df, cleaned_df)
 
 }
@@ -253,6 +271,24 @@ identify_nonvalid_ids2 <- function(df1,
 
   qc_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
   cleaned_df <- df1[!df1[[col_id1]] %in% qc_df[[col_id2]], ]
+
+  cols <- colnames(qc_df)
+  kcols <- c()
+  if ( "date_visit" %in% cols ) {
+    kcols <- c(kcols, "date_visit")
+  } else if ( "date_call" %in% cols ) {
+    kcols <- c(kcols, "date_call")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  } else if ( "prev_id" %in% cols ) {
+    kcols <- c(kcols, "prev_id")
+  }
+  if ( "uuid" %in% cols ) {
+    kcols <- c(kcols, "uuid")
+  }
+  qc_df <- qc_df %>%
+    dplyr::select(kcols)
 
   list(qc_df, cleaned_df)
 

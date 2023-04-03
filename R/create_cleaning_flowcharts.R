@@ -214,15 +214,22 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s dummy record(s) with a non-unique child ID\n\nManually edited (N = %s)\n%s record(s) with a non-unique child ID\n%s record(s) with incorrect enrolment date']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s dummy record(s) with a non-unique child ID']
+                  m2 [label = 'Automatically/manually edited (N = %s)\n%s record(s) with a non-unique child ID\n%s record(s) with incorrect enrolment date\nXX record(s) with re-entered structured drug data']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
-                  {rank=same; p1 -> m1}
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
 
-                  edge [dir=none]
-                  1 -> p1;
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
+                  {rank=same; p1 -> m1}
                 }",
                 n_raw_day0_records,
                 n_excluded,

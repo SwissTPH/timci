@@ -227,7 +227,7 @@ raw_day0_with_names <- day0_data %>%
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 qc_description <- "Day 7 follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."
-qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
 qc_type <- "inconsistent_names"
 df <- allday7fu_data
 refdf <- raw_day0_with_names

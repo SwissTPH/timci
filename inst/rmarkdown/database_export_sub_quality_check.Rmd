@@ -142,7 +142,10 @@ qc_df <- df %>%
   dplyr::filter(!is.na(fid)) %>% 
   dplyr::filter(fid != fid_from_device)
 cols <- colnames(df)
-outcols <- c("child_id", "fid", "fid_from_device", "fid_ra")
+outcols <- c("child_id", "fid", "fid_from_device")
+if ( "fid_ra" %in%  cols ) {
+  outcols <- c(outcols, "fid_ra")
+}
 if ( "latitude" %in%  cols ) {
   outcols <- c(outcols, "latitude")
 }
@@ -244,6 +247,11 @@ qc_df <- qc_df %>%
 ```
 
 <!-- Re-entry of free text treatments -->
+
+```{r, eval=(qc_type=="free_text_missing_structured_entry")}
+qc_df <- df[(is.na(df$rx_amoxicillin) & !is.na(df$rx_othtype)) & (is.na(df$rx_amoxicillin_hf) & !is.na(df$rx_othtype_hf)),]
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+```
 
 ```{r, eval=(qc_type=="drug_reentry_accuracy1")}
 drug_disp_df1 <- df %>%

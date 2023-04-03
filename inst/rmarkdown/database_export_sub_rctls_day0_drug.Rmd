@@ -237,11 +237,13 @@ n_ceftriaxone_records <- n_detected
 
 ### Cefixime entries [Expert knowledge checks `r qc_cefixime_consistency_drug`]
 
+This check is relevant and implemented only for Kenya.
+
 ```{r}
 write(" o Cefixime check", stderr())
 ```
 
-```{r, results='asis', eval=drug_is_not_null}
+```{r, results='asis', eval=drug_is_not_null&is_kenya}
 qc_description <- "All free entries should contain Cefixime"
 col_id <- "rx_cef_antibiotics"
 qc_text <- "Cefixime entries"

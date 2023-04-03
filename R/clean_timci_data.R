@@ -393,11 +393,11 @@ correct_day0_drug_data <- function(day0_df,
   drug_df1 <- drug_df[,!(names(drug_df) %in% drop)]
 
   cols <- colnames(day0_df)
-  if ("rx_antimicrobials" %in% cols) {
-    day0_df$rx_antimicrobials <- as.character(day0_df$rx_antimicrobials)
+  if ("rx_antibio_oth" %in% cols) {
+    day0_df$rx_antibio_oth <- as.character(day0_df$rx_antibio_oth)
   }
-  if ("rx_antimicrobials_hf" %in% cols) {
-    day0_df$rx_antimicrobials_hf <- as.character(day0_df$rx_antimicrobials_hf)
+  if ("rx_antibio_oth_hf" %in% cols) {
+    day0_df$rx_antibio_oth_hf <- as.character(day0_df$rx_antibio_oth_hf)
   }
   day0_df$rx_antimalarials <- as.character(day0_df$rx_antimalarials)
   day0_df$rx_antimalarials_hf <- as.character(day0_df$rx_antimalarials_hf)
@@ -408,10 +408,50 @@ correct_day0_drug_data <- function(day0_df,
     day0_df$rx_consumables_hf <- as.character(day0_df$rx_consumables_hf)
   }
 
+  # Update blank (NA) drug values in df with values entered in the drug dataframe
   df <- day0_df %>%
     dplyr::rows_patch(drug_df1,
                       by = 'uuid',
                       unmatched = "ignore")
+
+  # Replace 0 values in df if values entered in the drug dataframe is equal to 1
+  # cols <- colnames(df)
+  # colnames(drug_df1) <- paste0(colnames(drug_df1),"1")
+  # df <- df %>%
+  #   merge(drug_df1,
+  #         by.x = "uuid",
+  #         by.y = "uuid1",
+  #         all.x = TRUE) %>%
+  #   dplyr::mutate(rx_amoxicillin = ifelse(rx_amoxicillin == 0 & rx_amoxicillin1 == 1, 1, rx_amoxicillin)) %>%
+  #   dplyr::mutate(rx_amoxicillin_hf = ifelse(rx_amoxicillin_hf == 0 & rx_amoxicillin_hf1 == 1, 1, rx_amoxicillin_hf)) %>%
+  #   dplyr::mutate(rx_penicillinG = ifelse(rx_penicillinG == 0 & rx_penicillinG1 == 1, 1, rx_penicillinG)) %>%
+  #   dplyr::mutate(rx_penicillinG_hf = ifelse(rx_penicillinG_hf == 0 & rx_penicillinG_hf1 == 1, 1, rx_penicillinG_hf)) %>%
+  #   dplyr::mutate(rx_ceftriaxone = ifelse(rx_ceftriaxone == 0 & rx_ceftriaxone1 == 1, 1, rx_ceftriaxone)) %>%
+  #   dplyr::mutate(rx_ceftriaxone_hf = ifelse(rx_ceftriaxone_hf == 0 & rx_ceftriaxone_hf1 == 1, 1, rx_ceftriaxone_hf)) %>%
+  #   dplyr::mutate(rx_cef_antibiotics = ifelse(rx_cef_antibiotics == 0 & rx_cef_antibiotics1 == 1, 1, rx_cef_antibiotics)) %>%
+  #   dplyr::mutate(rx_cef_antibiotics_hf = ifelse(rx_cef_antibiotics_hf == 0 & rx_cef_antibiotics_hf1 == 1, 1, rx_cef_antibiotics_hf)) %>%
+  #   dplyr::mutate(rx_ciprofloxacin = ifelse(rx_ciprofloxacin == 0 & rx_ciprofloxacin1 == 1, 1, rx_ciprofloxacin)) %>%
+  #   dplyr::mutate(rx_ciprofloxacin_hf = ifelse(rx_ciprofloxacin_hf == 0 & rx_ciprofloxacin_hf1 == 1, 1, rx_ciprofloxacin_hf)) %>%
+  #   dplyr::mutate(rx_gentamicin = ifelse(rx_gentamicin == 0 & rx_gentamicin1 == 1, 1, rx_gentamicin)) %>%
+  #   dplyr::mutate(rx_gentamicin_hf = ifelse(rx_gentamicin_hf == 0 & rx_gentamicin_hf1 == 1, 1, rx_gentamicin_hf)) %>%
+  #   dplyr::mutate(rx_metronidazol = ifelse(rx_metronidazol == 0 & rx_metronidazol1 == 1, 1, rx_metronidazol)) %>%
+  #   dplyr::mutate(rx_metronidazol_hf = ifelse(rx_metronidazol_hf == 0 & rx_metronidazol_hf1 == 1, 1, rx_metronidazol_hf)) %>%
+  #   dplyr::mutate(rx_ampicillin = ifelse(rx_ampicillin == 0 & rx_ampicillin1 == 1, 1, rx_ampicillin)) %>%
+  #   dplyr::mutate(rx_ampicillin_hf = ifelse(rx_ampicillin_hf == 0 & rx_ampicillin_hf1 == 1, 1, rx_ampicillin_hf)) %>%
+  #   dplyr::mutate(rx_azithromycin = ifelse(rx_azithromycin == 0 & rx_azithromycin1 == 1, 1, rx_azithromycin)) %>%
+  #   dplyr::mutate(rx_azithromycin_hf = ifelse(rx_azithromycin_hf == 0 & rx_azithromycin_hf1 == 1, 1, rx_azithromycin_hf)) %>%
+  #   dplyr::mutate(rx_benzathinepeniG = ifelse(rx_benzathinepeniG == 0 & rx_benzathinepeniG1 == 1, 1, rx_benzathinepeniG)) %>%
+  #   dplyr::mutate(rx_benzathinepeniG_hf = ifelse(rx_benzathinepeniG_hf == 0 & rx_benzathinepeniG_hf1 == 1, 1, rx_benzathinepeniG_hf)) %>%
+  #   dplyr::mutate(rx_aclav = ifelse(rx_aclav == 0 & rx_aclav1 == 1, 1, rx_aclav)) %>%
+  #   dplyr::mutate(rx_aclav_hf = ifelse(rx_aclav_hf == 0 & rx_aclav_hf1 == 1, 1, rx_aclav_hf)) %>%
+  #   dplyr::mutate(rx_cotrimoxazole = ifelse(rx_cotrimoxazole == 0 & rx_cotrimoxazole1 == 1, 1, rx_cotrimoxazole)) %>%
+  #   dplyr::mutate(rx_cotrimoxazole_hf = ifelse(rx_cotrimoxazole_hf == 0 & rx_cotrimoxazole_hf1 == 1, 1, rx_cotrimoxazole_hf)) %>%
+  #   dplyr::mutate(rx_antibio_oth = ifelse(rx_antibio_oth != rx_antibio_oth1, paste(rx_antibio_oth,rx_antibio_oth1,";"), rx_antibio_oth)) %>%
+  #   dplyr::mutate(rx_antimalarials = ifelse(rx_antimalarials != rx_antimalarials1, paste(rx_antimalarials,rx_antimalarials1,";"), rx_antimalarials)) %>%
+  #   dplyr::mutate(rx_imci = ifelse(rx_imci != rx_imci1, paste(rx_imci,rx_imci1,";"), rx_imci)) %>%
+  #   dplyr::mutate(rx_creams = ifelse(rx_creams != rx_creams1, paste(rx_creams,rx_creams1,";"), rx_creams)) %>%
+  #   dplyr::mutate(rx_consumables = ifelse(rx_consumables != rx_consumables1, paste(rx_consumables,rx_consumables1,";"), rx_consumables)) %>%
+  #   dplyr::select(cols)
 
   out <- list(df, drug_df)
   out

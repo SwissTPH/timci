@@ -357,26 +357,48 @@ detect_inconsistent_names_between_visits <- function(refdf,
         dplyr::mutate(refname3 = tolower(paste(fs_name, sep = ' ')))
     }
 
-    fudf <- fudf %>%
-      dplyr::mutate(name = tolower(name))
+    cols <- colnames(fudf)
+
+    if ( "name" %in% cols ) {
+      fudf <- fudf %>%
+        dplyr::mutate(name = tolower(name))
+    } else if ( "fs_name_check" %in% cols ) {
+      fudf <- fudf %>%
+        dplyr::mutate(name = tolower(paste(fs_name_check, ls_name_check, sep = ' ')))
+    }
 
     qc_df <- refdf %>%
       dplyr::select(refname,
                     refname2,
                     refname3,
-                    child_id) %>%
-      merge(fudf,
-            by = 'child_id',
-            all = TRUE) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
-      dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
-      dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
-      dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
-      dplyr::select(child_id,
-                    uuid,
-                    lvr) %>%
-      dplyr::filter(lvr < thres)
+                    child_id)
+    if ( "child_id" %in% cols ) {
+      qc_df <- qc_df %>%
+        merge(fudf,
+              by = 'child_id',
+              all = TRUE)
+    } else if ( "prev_id" %in% cols ) {
+      qc_df <- qc_df %>%
+        merge(fudf,
+              by.x = 'child_id',
+              by.y = 'prev_id',
+              all = TRUE)
+    }
+
+    if ( "name" %in% colnames(qc_df)) {
+      qc_df <- qc_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
+        dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
+        dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
+        dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
+        dplyr::select(child_id,
+                      uuid,
+                      lvr) %>%
+        dplyr::filter(lvr < thres)
+    } else {
+      qc_df <- NULL
+    }
 
   }
 
