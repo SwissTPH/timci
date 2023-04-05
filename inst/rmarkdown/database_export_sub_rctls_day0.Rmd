@@ -26,10 +26,10 @@ n_incorrect_enroldate_records <- 0
 
 Facility information can be extracted in 4 different manners:
 
-* from the research assistant's manual entry (variable *fid_ra*) - not implemented in Senegal
-* from the first 5 characters of the child ID (X-F0001-Pxxxx refers to facility F0001)
-* from the device which is used (assuming 1 device is used to screen children in 1 unique facility each day)
-* from the tablet GPS coordinates - not implemented in Kenya
+* from the research assistant's manual entry (variable *fid_ra*) - not implemented in Senegal ;
+* from the first 5 characters of the child ID e.g., X-F0001-Pxxxx corresponds to facility F0001 (variable **fid**) ;
+* calculation of the facility ID that is most used on 1 specific day with a specific device, assuming 1 device is used to screen children in 1 unique facility each day (derived variable **fid_from_device**)) ;
+* from the tablet GPS coordinates - not implemented in Kenya.
 
 #### Non-valid enrolling facility IDs [Compliance `r if ( is_kenya | is_tanzania ) { 'checks' } else { paste0("check ", qc_nonvalid_fid2) }`]\n\n
 
