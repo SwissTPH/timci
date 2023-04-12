@@ -313,7 +313,7 @@ identify_repeat_duplicate <- function(df,
       # Filter so that keep only repeat visits (between Day 1 and Day 28)
       qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
       qc_df <- qc_df %>%
-        dplyr::filter(diff >= 0 & diff <= 28)
+        dplyr::filter(diff > 0 & diff <= 28)
 
     } else {
       qc_df <- NULL
