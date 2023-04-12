@@ -277,7 +277,11 @@ if (is_india) {
 #################
 tsize <- 7
 tfont <- "Cambria"
-dbreak_duration <- "4 months"
+if (is_senegal) {
+  dbreak_duration <- "5 months"
+} else {
+  dbreak_duration <- "4 months"
+}
 nfacetperrow <- 4
 time_break_str <- "4 hours"
 time_format <- "%H:%M"
