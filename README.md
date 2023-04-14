@@ -1,7 +1,7 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/SwissTPH/timci/commits/master)
 
-# Tools for Integrated Management of Childhood Illnesses (TIMCI) :stethoscope:
+# :stethoscope: Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
 `timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by [ODK](https://getodk.org/) for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
@@ -80,7 +80,7 @@ In order to avoid the warning *No hyphenation patterns were preloaded for the la
 tinytex::tlmgr_install("hyphen-french")
 ```
 
-#### emayili :email:
+#### :email: emayili
 This package is required to send emails using a gmail address.
 The function `send_email_tls` in the `timci` package requires `emayili v0.6.5` and above to work correctly.
 
