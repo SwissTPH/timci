@@ -619,9 +619,9 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 ```{r, eval=timci::is_not_empty(day0_data), results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Vomit everything" = dplyr::case_when(
-    sx_vomit_evthing == 1  ~ "a) Yes",
+    sx_vomit_evthing == 1                            ~ "a) Yes",
     is.na(sx_vomit_evthing) | sx_vomit_evthing == 0  ~ "b) No",
-    sx_vomit_evthing == 98 ~ "c) Not sure")) %>%
+    sx_vomit_evthing == 98                           ~ "c) Not sure")) %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
 
 fig_caption <- "Vomit everything reporting at clinical presentation over time"
@@ -642,9 +642,9 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 ```{r, eval=timci::is_not_empty(day0_data), results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Unable to feed" = dplyr::case_when(
-    sx_unable_feed == 1  ~ "a) Yes",
+    sx_unable_feed == 1                          ~ "a) Yes",
     is.na(sx_unable_feed) | sx_unable_feed == 0  ~ "b) No",
-    sx_unable_feed == 98 ~ "c) Not sure")) %>%
+    sx_unable_feed == 98                         ~ "c) Not sure")) %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1))))
 
 fig_caption <- "Unable to feed reporting at clinical presentation over time"
@@ -705,6 +705,32 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 fill_col <- ""
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+write("   o Free text entries", stderr())
+```
+
+```{r, eval=day0_is_not_null, results='asis'}
+fig_df <- day0_data %>%
+  dplyr::mutate("Free text available" = dplyr::case_when(
+    !is.na(dx_oth) ~ "a) Yes",
+    .default       = "b) No")) %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
+fig_caption <- "Diagnosis free text entries"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Free text available"
 comparison <- "type"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
@@ -796,12 +822,12 @@ write("   o Free text entries", stderr())
 fig_df <- day0_data %>%
   dplyr::mutate("Free text available" = dplyr::case_when(
     !is.na(rx_misc_oth) | !is.na(rx_misc_oth_hf) ~ "a) Yes",
-    .default                                     = "d) No")) %>%
+    .default                                     = "b) No")) %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
                                              week_start = getOption("lubridate.week.start", 1)))
 
-fig_caption <- "Free text entries"
+fig_caption <- "Treatment free text entries"
 facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
