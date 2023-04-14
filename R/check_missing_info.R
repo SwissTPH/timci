@@ -105,7 +105,7 @@ detect_missing_clinical_presentation <- function(facility_df) {
       dplyr::filter(missing_clinical_presentation == 1) %>%
       timci::calculate_antibio_has_been_prescribed() %>%
       timci::calculate_antibio_has_been_recorded() %>%
-      timci::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
+      dplyr::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
 
     outcols <- c("child_id",
                  "fid",
