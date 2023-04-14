@@ -184,10 +184,33 @@ n_inconsistent_facility_info2 <- n_detected
 
 ### Participant identification
 
+#### Duplicated records [Compliance check `r qc_true_duplicates`]
+
+```{r}
+write(" o Management of duplicated records", stderr())
+```
+
+```{r, eval=day0_is_not_null, results='asis'}
+qc_description <- "Participants who have been entered twice as new enrolments on the same day, which creates duplicates in the database."
+qc_rule <- "True duplicates are detected and corrected where possible."
+qc_type <- "true_duplicates"
+df <- day0_data
+col_id <- "child_id"
+col_date <- "start"
+cleaning <- "none"
+qc_text <- "duplicated IDs"
+qc_idx <- qc_true_duplicates
+qc_export_label <- "timci_true_duplicates"
+qc_export_description <- "the data was entered in two different records on the same day"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
 #### Duplicated child IDs
 
 ```{r}
-write(" o Duplicate management", stderr())
+write(" o Management of duplicated child IDs", stderr())
 ```
 
 `r if ( !is_pilot ) { paste0('##### Initial check [Compliance check ', qc_duplicate_id1, ']') }`
@@ -199,7 +222,7 @@ n_duplicate_edits <- 0
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
-qc_rule <- "Duplicated child IDs are detected and corrected proactively were possible."
+qc_rule <- "Duplicated child IDs are detected and corrected proactively where possible."
 qc_type <- "duplicates"
 df <- day0_data
 col_id <- "child_id"
@@ -286,6 +309,24 @@ duplicate_edits %>%
   knitr::kable()
 ```
 
+```{r, eval=duplicate_edits_is_not_empty, results='asis'}
+duplicate_edits %>%
+  select(old_child_id, uuid, new_child_id) %>%
+  head(5) %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Five first rows")
+```
+
+...
+
+```{r, eval=duplicate_edits_is_not_empty, results='asis'}
+duplicate_edits %>%
+  select(old_child_id, uuid, new_child_id) %>%
+  tail(5) %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Five last rows")
+```
+
 `r if ( !is_pilot ) { paste0('##### Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
 
 ```{r, eval=(day0_is_not_null & !is_pilot), results='asis'}
@@ -356,7 +397,7 @@ write(" o Ambiguities about the enrolment date", stderr())
 qc_df <- NULL
 ```
 
-```{r, eval=day0_is_not_null&is_tanzania, results='asis'}
+```{r, eval=day0_is_not_null&is_tanzania&is_senegal, results='asis'}
 qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if research assistants reuse a form that already exist on their device to enrol a new participant, it is possible that the date on which the name of the participant is entered in the form is not on the same day it was started. As a consequence the enrolment date may be shifted and follow-up may not be triggered at the right time."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
@@ -485,21 +526,20 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_cp <- n_detected
 ```
 
-```{r}
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))  %>%
+  dplyr::mutate(Antibiotics = ifelse(antibio_has_been_prescribed == 1 | antibio_has_been_recorded, "Yes", "No"))
+
 fig_caption <- "Missing clinical presentation"
 facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
-fill_col <- ""
+fill_col <- "Antibiotics"
 comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>%
-  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
-                                             "week",
-                                             week_start = getOption("lubridate.week.start", 1)))
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
@@ -754,11 +794,9 @@ write("   o Free text entries", stderr())
 
 ```{r, eval=day0_is_not_null&is_ls, results='asis'}
 fig_df <- day0_data %>%
-  dplyr::mutate("Free text" = dplyr::case_when(
-    !is.na(rx_othtype) & is.na(rx_othtype_hf) ~ "a) Free text from prescription only",
-    is.na(rx_othtype) & !is.na(rx_othtype_hf) ~ "b) Free text from registry only",
-    !is.na(rx_othtype) & !is.na(rx_othtype_hf) ~ "c) Free text from both sources",
-    .default = "d) No free text entry")) %>%
+  dplyr::mutate("Free text available" = dplyr::case_when(
+    !is.na(rx_misc_oth) | !is.na(rx_misc_oth_hf) ~ "a) Yes",
+    .default                                     = "d) No")) %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
                                              week_start = getOption("lubridate.week.start", 1)))
@@ -768,7 +806,7 @@ facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
-fill_col <- "Free text"
+fill_col <- "Free text available"
 comparison <- "type"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
@@ -802,11 +840,9 @@ n_missing_treatment <- n_detected
 ```{r, eval=timci::is_not_empty(day0_data)&!is_rct, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Treatment = dplyr::case_when(
-    !is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf) ~ "a) Structured entry from prescription only",
-    is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "b) Structured entry from registry only",
-    !is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "c) Structured entry from both sources",
-    .default = "d) No structured entry"))
+  dplyr::mutate("Structured treatment entry" = dplyr::case_when(
+    ( !is.na(rx_amoxicillin) & !is.na(rx_misc) & rx_misc != "996" ) | ( is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996" ) ) ~ "a) Yes",
+    .default                                                                                                                                     = "b) No"))
 
 fig_caption <- "Spatiotemporal pattern of treatments"
 facility_col <- "fid"
@@ -814,7 +850,7 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "type"
-fill_col <- "Treatment"
+fill_col <- "Structured treatment entry"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
@@ -876,11 +912,9 @@ write("   o Missing structured treatment - check 2", stderr())
 ```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate(Treatment = dplyr::case_when(
-    !is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf) ~ "a) Structured entry from prescription only",
-    is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "b) Structured entry from registry only",
-    !is.na(rx_amoxicillin) & !is.na(rx_amoxicillin_hf) ~ "c) Structured entry from both sources",
-    .default = "d) No structured entry"))
+  dplyr::mutate("Structured treatment entry" = dplyr::case_when(
+    ( !is.na(rx_amoxicillin) & !is.na(rx_misc) & rx_misc != "996" ) | ( is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996" ) ) ~ "a) Yes",
+    .default                                                                                                                                     = "b) No"))
 
 fig_caption <- "Spatiotemporal pattern of treatments"
 facility_col <- "fid"
@@ -888,7 +922,7 @@ date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "type"
-fill_col <- "Treatment"
+fill_col <- "Structured treatment entry"
 
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),

@@ -102,7 +102,23 @@ detect_missing_clinical_presentation <- function(facility_df) {
       dplyr::mutate(missing_clinical_presentation = ifelse(danger_signs == 0 & (sx_vomit == 0 | sx_vomit == 98 ) & (sx_less_feed == 0 | sx_less_feed == 98) & (sx_cough == 0 | sx_cough == 98) & (sx_difficulty_breath == 0 | sx_difficulty_breath == 98) & (sx_diarrhoea == 0 | sx_diarrhoea == 98) & (sx_fever == 0 | sx_fever == 98) & sx_var == 96,
                                                            1,
                                                            0)) %>%
-      dplyr::filter(missing_clinical_presentation == 1)
+      dplyr::filter(missing_clinical_presentation == 1) %>%
+      timci::calculate_antibio_has_been_prescribed() %>%
+      timci::calculate_antibio_has_been_recorded() %>%
+      timci::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
+
+    outcols <- c("child_id",
+                 "fid",
+                 "date_visit",
+                 "antibio_has_been_prescribed",
+                 "antibio_has_been_recorded",
+                 "free_text",
+                 "dx_oth",
+                 "uuid")
+
+    out <- out %>%
+      dplyr::select(outcols) %>%
+      dplyr::arrange(fid)
 
   }
 
@@ -176,7 +192,7 @@ detect_missing_treatment <- function(facility_df) {
   if ( timci::is_not_empty(facility_df) ) {
 
     out <- facility_df %>%
-      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & is.na(rx_amoxicillin_hf),
+      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & ( is.na(rx_misc) | rx_misc == "996" ) & is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996"),
                                      1,
                                      0)) %>%
       dplyr::filter(missing == 1)

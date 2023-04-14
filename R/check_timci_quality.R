@@ -245,6 +245,9 @@ identify_nonvalid_ids <- function(df1,
   } else if ( "prev_id" %in% cols ) {
     kcols <- c(kcols, "prev_id")
   }
+  if ( "deviceid" %in% cols ) {
+    kcols <- c(kcols, "deviceid")
+  }
   if ( "uuid" %in% cols ) {
     kcols <- c(kcols, "uuid")
   }
@@ -286,6 +289,9 @@ identify_nonvalid_ids2 <- function(df1,
   }
   if ( "uuid" %in% cols ) {
     kcols <- c(kcols, "uuid")
+  }
+  if ( "deviceid" %in% cols ) {
+    kcols <- c(kcols, "deviceid")
   }
   qc_df <- qc_df %>%
     dplyr::select(kcols)

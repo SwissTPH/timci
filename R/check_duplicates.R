@@ -50,7 +50,7 @@ identify_duplicates_by_dates <- function(df,
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = date_value2,
+                         values_from = c(date_value2),
                          names_prefix = "date_")
 
     if ( "date_2" %in% colnames(qc_df) ) {
@@ -260,7 +260,86 @@ check_name_consistency <- function(df,
 
 }
 
-#' Identify ID duplicates by dates (TIMCI-specific function)
+#' Concatenate names for fuzzy-matching scoring (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with an additional column `name` that contains the concatenated name.
+#' @export
+#' @import dplyr
+
+concatenate_names <- function(df) {
+
+  out <- NULL
+
+  # Concatenate child's name depending on the country
+  if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
+    out <- df %>%
+      dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' ')))
+  } else{
+    out <- df %>%
+      dplyr::mutate(name = tolower(paste(fs_name, ls_name, sep = ' ')))
+  }
+
+  # Add mother's name
+  out <- out %>%
+    dplyr::mutate(mother_name = dplyr::case_when(
+      main_cg == 1 ~ tolower(paste(cg_fs_name, cg_ls_name, sep = ' ')),
+      .default     = tolower(paste(mother_fs_name, mother_ls_name, sep = ' ')))) %>%
+    dplyr::mutate(name = gsub('[0-9]+', '', paste(name, mother_name, sep = ' ')))
+
+  out
+
+}
+
+#' Identify repeat ID duplicates by dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param col_date name of the column containing dates in `df`
+#' @param col_id name of the column containing IDs in `df`
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr
+
+identify_day0_duplicates <- function(df,
+                                     col_id,
+                                     col_date) {
+
+  # Threshold for fuzzy matching
+  thres <- 80
+
+  qc_df <- NULL
+
+  if ( timci::is_not_empty(df) ) {
+
+    qc_df <- df %>%
+      dplyr::filter(enrolled == 1) %>%
+      dplyr::arrange(!!dplyr::enquo(col_date)) %>% # Sort data by dates
+      timci::concatenate_names() %>% # Concatenate names
+      dplyr::rename(id = !!dplyr::enquo(col_id),
+                    date = !!dplyr::enquo(col_date)) %>%
+      dplyr::group_by(id) %>%
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(id,
+                         names_from = row_n,
+                         values_from = c("date", "name"))
+
+    if ( "date_2" %in% colnames(qc_df) ) {
+      qc_df <- qc_df %>%
+        dplyr::filter(!is.na(name_2)) %>%
+        dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+        dplyr::filter(lvr > thres)
+
+    } else {
+      qc_df <- NULL
+    }
+
+  }
+
+  qc_df
+
+}
+
+#' Identify repeat ID duplicates by dates (TIMCI-specific function)
 #'
 #' @param df dataframe containing the processed facility data
 #' @param col_date name of the column containing dates in `df`
@@ -275,49 +354,88 @@ identify_repeat_duplicate <- function(df,
                                       col_date,
                                       cleaning = "none") {
 
-  # Threshold to be determined exactly
-  thres <- 75
+  cleaned_df <- NULL
+
+  qc_df <- identify_day0_duplicates(df, col_id, col_date)
+
+  # Filter so that keep only repeat visits (between Day 1 and Day 28)
+  if ( timci::is_not_empty(qc_df) ) {
+    qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
+    qc_df <- qc_df %>%
+      dplyr::filter(diff > 0 & diff <= 28) %>%
+      dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
+  } else {
+    qc_df <- NULL
+  }
+
+  list(qc_df, cleaned_df)
+
+}
+
+#' Identify true ID duplicates by dates (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param col_date name of the column containing dates in `df`
+#' @param col_id name of the column containing IDs in `df`
+#' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr
+
+identify_true_duplicate <- function(df,
+                                    col_id,
+                                    col_date,
+                                    cleaning = "none") {
+
+  cleaned_df <- NULL
+
+  qc_df <- identify_day0_duplicates(df, col_id, col_date)
+
+  # Filter so that keep only duplicates that happened on the same day
+  if ( timci::is_not_empty(qc_df) ) {
+    qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
+    qc_df <- qc_df %>%
+      dplyr::filter(diff == 0) %>%
+      dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
+  } else {
+    qc_df <- NULL
+  }
+
+  list(qc_df, cleaned_df)
+
+}
+
+#' Identify multiple 28-disease episodes for the same children (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @return This function returns a dataframe.
+#' @export
+#' @import dplyr
+
+identify_multiple_enrolments <- function(df) {
 
   qc_df <- NULL
   cleaned_df <- NULL
 
+  # Threshold to be determined exactly
+  thres <- 75
+
   if ( timci::is_not_empty(df) ) {
 
-    qc_df <- df %>%
-      dplyr::filter(enrolled == 1) %>%
-      dplyr::arrange(!!dplyr::enquo(col_date)) # Sort data by dates
-
+    # Generate plausible combinations of names to be compared
     if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
-      qc_df <- qc_df %>%
-        dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' ')))
+      df <- df %>%
+        dplyr::mutate(refname = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+        dplyr::mutate(refname2 = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
+        dplyr::mutate(refname3 = tolower(paste(fs_name, ls_name, sep = ' ')))
     } else{
-      qc_df <- qc_df %>%
-        dplyr::mutate(name = tolower(paste(fs_name, ls_name, sep = ' ')))
+      df <- df %>%
+        dplyr::mutate(refname = tolower(paste(fs_name, ls_name, sep = ' '))) %>%
+        dplyr::mutate(refname2 = tolower(paste(ls_name, fs_name, sep = ' '))) %>%
+        dplyr::mutate(refname3 = tolower(paste(fs_name, sep = ' ')))
     }
 
-    qc_df <- qc_df %>%
-      dplyr::rename(id = !!dplyr::enquo(col_id),
-                    date = !!dplyr::enquo(col_date)) %>%
-      dplyr::group_by(id) %>%
-      dplyr::mutate(row_n = row_number()) %>%
-      tidyr::pivot_wider(id,
-                         names_from = row_n,
-                         values_from = c("date", "name"))
-
-    if ( "date_2" %in% colnames(qc_df) ) {
-      qc_df <- qc_df %>%
-        dplyr::filter(!is.na(name_2)) %>%
-        dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2))
-      qc_df <- qc_df[qc_df$lvr > thres, c("id", "date_1", "date_2", "lvr")]
-
-      # Filter so that keep only repeat visits (between Day 1 and Day 28)
-      qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
-      qc_df <- qc_df %>%
-        dplyr::filter(diff > 0 & diff <= 28)
-
-    } else {
-      qc_df <- NULL
-    }
+    # To be continued...
 
   }
 

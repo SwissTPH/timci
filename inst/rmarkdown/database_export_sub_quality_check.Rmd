@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = FALSE,
 qc_df <- NULL
 qc_df2 <- NULL
 cleaned_df <- NULL
+cols <- colnames(df)
 n_df <- nrow(df)
 n_detected <- 0
 cleaned_df_status_update <- ""
@@ -38,6 +39,9 @@ out <- timci::allocate_screening_facility2(df,
                                            research_facilities)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
+# outcols <- c("date_visit", "child_id", "fid_from_device", "child_id_manual", "device_id", "uuid")
+# qc_df <- qc_df %>%
+#   dplyr::select(outcols)
 ```
 
 ```{r, eval=(qc_type=="anterior_to_startdate")}
@@ -128,6 +132,8 @@ cleaned_df <- out[[2]]
 qc_df2 <- out[[3]]
 ```
 
+<!-- Duplicated child IDs - repeat visits -->
+
 ```{r, eval=(qc_type=="duplicates_check_pii")}
 out <- timci::identify_repeat_duplicate(df,
                                         col_id,
@@ -137,11 +143,21 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+<!-- Duplicated child IDs - true duplicates -->
+
+```{r, eval=(qc_type=="true_duplicates")}
+out <- timci::identify_true_duplicate(df,
+                                      col_id,
+                                      col_date,
+                                      cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
   dplyr::filter(!is.na(fid)) %>% 
   dplyr::filter(fid != fid_from_device)
-cols <- colnames(df)
 outcols <- c("date_visit", "child_id", "fid", "fid_from_device")
 if ( "fid_ra" %in%  cols ) {
   outcols <- c(outcols, "fid_ra")
@@ -165,7 +181,6 @@ qc_df <- qc_df %>%
 qc_df <- df %>% 
   dplyr::filter(!is.na(fid)) %>% 
   dplyr::filter(!is.na(fid_ra) & (fid != fid_ra))
-cols <- colnames(df)
 outcols <- c("date_visit", "child_id", "fid", "fid_from_device", "fid_ra")
 if ( "child_id_manual" %in%  cols ) {
   outcols <- c(outcols, "child_id_manual")
@@ -216,10 +231,6 @@ qc_df <- qc_df %>%
 
 ```{r, eval=(qc_type=="missing_clinical_presentation")}
 qc_df <- timci::detect_missing_clinical_presentation(df)
-outcols <- c("child_id", "fid", "date_visit", "uuid")
-qc_df <- qc_df %>%
-  dplyr::select(outcols) %>%
-  dplyr::arrange(fid)
 ```
 
 <!-- Missing diagnosis -->
@@ -255,7 +266,7 @@ qc_df <- qc_df %>%
 <!-- Re-entry of free text treatments -->
 
 ```{r, eval=(qc_type=="free_text_missing_structured_entry")}
-qc_df <- df[(is.na(df$rx_amoxicillin) & !is.na(df$rx_othtype)) & (is.na(df$rx_amoxicillin_hf) & !is.na(df$rx_othtype_hf)),]
+qc_df <- df[(is.na(df$rx_amoxicillin) & !is.na(df$rx_misc_oth)) & (is.na(df$rx_amoxicillin_hf) & !is.na(df$rx_misc_oth_hf)),]
 outcols <- c("child_id", "fid", "date_visit", "uuid")
 ```
 
@@ -325,10 +336,27 @@ full_disp <- FALSE
 qc_df_is_not_empty <- timci::is_not_empty(qc_df)
 ```
 
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_idx,
+                            label = qc_export_label,
+                            cdir = qc_dir,
+                            description = qc_export_description)
+```
+
 ```{r, eval=qc_df_is_not_empty}
 partial_disp <- qc_df_is_not_empty & ( nrow(qc_df) > 10 )
 full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
 cols <- colnames(qc_df)
+columns_to_remove <- grep("name_", cols)
+if ( length(columns_to_remove) ) {
+  qc_df <- qc_df %>% 
+    dplyr::select(-columns_to_remove)
+}
+if ( 'uuid' %in% cols ) {
+  qc_df <- qc_df %>% 
+    dplyr::select(-uuid)
+}
 reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type!="date_discrepancy" )
 if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {
@@ -343,8 +371,8 @@ if ( reformat_cond ) {
     } else if ( 'fid_from_device' %in% cols ) {
       kcols <- c(kcols, "fid_from_device")
     }
-    kcols <- c(kcols, "uuid")
-    qc_df <- qc_df[kcols]
+    qc_df <- qc_df %>% 
+      dplyr::select(kcols)
   }
 }
 n_cols <- length(qc_df)
@@ -374,14 +402,6 @@ qc_df %>%
 qc_df %>%
   select(1:min(n_cols, 5)) %>%
   knitr::kable(row.names = FALSE)
-```
-
-```{r, results = 'asis'}
-timci::quality_check_export(df = qc_df,
-                            idx = qc_idx,
-                            label = qc_export_label,
-                            cdir = qc_dir,
-                            description = qc_export_description)
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
