@@ -1,7 +1,7 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/SwissTPH/timci/commits/master)
 
-# Tools for Integrated Management of Childhood Illnesses (TIMCI) :boy: :stethoscope: :girl:
+# Tools for Integrated Management of Childhood Illnesses (TIMCI) :stethoscope:
 
 `timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by [ODK](https://getodk.org/) for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
