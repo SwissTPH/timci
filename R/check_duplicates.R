@@ -203,10 +203,10 @@ identify_day0_duplicates_and_fu <- function(df,
     }
 
     if ( timci::is_not_empty(qc_df) & timci::is_not_empty(day7fu_df) ) {
-      # qc_df <- qc_df %>%
-      #   merge(day7fu_df,
-      #         by = id,
-      #         all.x = TRUE)
+      qc_df <- qc_df %>%
+        merge(day7fu_df,
+              by = "id",
+              all.x = TRUE)
     }
 
     if ( !is.null(qc_df) & cleaning == "drop_all" ) {
