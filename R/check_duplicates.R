@@ -44,7 +44,6 @@ identify_duplicates_by_dates <- function(df,
       dplyr::rename(date_value1 = !!dplyr::enquo(col_date)) %>%
       dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
       dplyr::group_by(id) %>%
-      #dplyr::mutate(name = paste(fs_name, ls_name, sep = " ")) %>%
       dplyr::mutate(date_value2 = sort(date_value1,
                                        decreasing = TRUE,
                                        na.last = TRUE)) %>% # order by descending dates
@@ -73,6 +72,154 @@ identify_duplicates_by_dates <- function(df,
       # (i.e. in the present situation: duplicates of elements with a later record available)
       # Extract unique elements by selecting only those elements that are not duplicates of elements detected earlier
       cleaned_df <- df[!duplicated(df[[col_id]]), ]
+    }
+
+  }
+
+  list(qc_df, cleaned_df, qc_df2)
+
+}
+
+#' Identify ID duplicates with names (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param col_date name of the column containing dates in `df`
+#' @param col_id name of the column containing IDs in `df`
+#' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr
+
+identify_duplicates_with_names <- function(df,
+                                           col_id,
+                                           col_date,
+                                           cleaning = "none") {
+
+  qc_df <- NULL
+  qc_df2 <- NULL
+  cleaned_df <- NULL
+
+  if ( timci::is_not_empty(df) ) {
+
+    qc_df <- df %>%
+      dplyr::rename(date_value = !!dplyr::enquo(col_date)) %>%
+      dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
+      dplyr::group_by(id)
+
+    if ( "fs_name" %in% colnames(qc_df) ) {
+      qc_df <- qc_df %>%
+        dplyr::mutate(name = paste(fs_name, ls_name, sep = " "))
+    }
+
+    qc_df <- qc_df %>%
+      dplyr::mutate(date = sort(date_value,
+                                decreasing = TRUE,
+                                na.last = TRUE)) %>% # order by descending dates
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(id,
+                         names_from = row_n,
+                         values_from = c(date, name, uuid))
+
+    if ( "date_2" %in% colnames(qc_df) ) {
+      qc_df <- qc_df %>%
+        dplyr::filter(!is.na(date_2))
+      qc_df2 <- df[df[[col_id]] %in% qc_df$id, ]
+    } else {
+      qc_df <- NULL
+    }
+
+    if ( !is.null(qc_df) & cleaning == "drop_all" ) {
+      cleaned_df <- df[!df[[col_id]] %in% qc_df$id, ]
+    }
+    if ( !is.null(qc_df) & cleaning == "keep_latest" ) {
+      # Order data by descending dates
+      df <- df %>%
+        dplyr::arrange(desc(!!dplyr::enquo(col_date)))
+      # Duplicated() determines which elements of a vector or data frame are duplicates of elements with smaller subscripts
+      # (i.e. in the present situation: duplicates of elements with a later record available)
+      # Extract unique elements by selecting only those elements that are not duplicates of elements detected earlier
+      cleaned_df <- df[!duplicated(df[[col_id]]), ]
+    }
+
+  }
+
+  list(qc_df, cleaned_df, qc_df2)
+
+}
+
+#' Identify day 0 ID duplicates wit names and corresponding Day 7 follow-ups (TIMCI-specific function)
+#'
+#' @param df dataframe containing the processed facility data
+#' @param day7fu_df dataframe containing Day 7 follow-up data
+#' @param cleaning type of cleaning to be performed on duplicates, by default set to "none" (i.e., no cleaning following the identification of duplicates)
+#' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @export
+#' @import dplyr
+
+identify_day0_duplicates_and_fu <- function(df,
+                                            day7fu_df = NULL,
+                                            cleaning = "none") {
+
+  qc_df <- NULL
+  qc_df2 <- NULL
+  cleaned_df <- NULL
+
+  if ( timci::is_not_empty(df) ) {
+
+    qc_df <- df %>%
+      dplyr::rename(id = child_id) %>%
+      dplyr::group_by(id) %>%
+        dplyr::mutate(name = paste(fs_name, ls_name, sep = " ")) %>%
+      dplyr::mutate(date = sort(date_visit,
+                                decreasing = TRUE,
+                                na.last = TRUE)) %>% # order by descending dates
+      dplyr::mutate(row_n = row_number()) %>%
+      tidyr::pivot_wider(id,
+                         names_from = row_n,
+                         values_from = c(date, name, uuid))
+
+    if ( "date_2" %in% colnames(qc_df) ) {
+      qc_df <- qc_df %>%
+        dplyr::filter(!is.na(date_2))
+      qc_df2 <- df[df$child_id %in% qc_df$id, ]
+    } else {
+      qc_df <- NULL
+    }
+
+    if ( timci::is_not_empty(day7fu_df) ) {
+
+      day7fu_df <- day7fu_df %>%
+        dplyr::rename(id = child_id) %>%
+        dplyr::rename(day7_name = name) %>%
+        dplyr::rename(day7_uuid = uuid) %>%
+        dplyr::group_by(id) %>%
+        dplyr::mutate(day7_date = sort(date_call,
+                                       decreasing = TRUE,
+                                       na.last = TRUE)) %>% # order by descending dates
+        dplyr::mutate(row_n = row_number()) %>%
+        tidyr::pivot_wider(id,
+                           names_from = row_n,
+                           values_from = c(day7_date, day7_name, day7_uuid))
+    }
+
+    if ( timci::is_not_empty(qc_df) & timci::is_not_empty(day7fu_df) ) {
+      # qc_df <- qc_df %>%
+      #   merge(day7fu_df,
+      #         by = id,
+      #         all.x = TRUE)
+    }
+
+    if ( !is.null(qc_df) & cleaning == "drop_all" ) {
+      cleaned_df <- df[!df$child_id %in% qc_df$id, ]
+    }
+    if ( !is.null(qc_df) & cleaning == "keep_latest" ) {
+      # Order data by descending dates
+      df <- df %>%
+        dplyr::arrange(desc(date_visit))
+      # Duplicated() determines which elements of a vector or data frame are duplicates of elements with smaller subscripts
+      # (i.e. in the present situation: duplicates of elements with a later record available)
+      # Extract unique elements by selecting only those elements that are not duplicates of elements detected earlier
+      cleaned_df <- df[!duplicated(df$child_id), ]
     }
 
   }

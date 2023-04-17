@@ -13,15 +13,7 @@ day7fu_pii_drops <- c("name", "cg_name", "phone_nb")
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}
-out <- timci::format_day7_data(raw_day7fu_data,
-                               is_deidentified = FALSE)
-
-# Extract all Day 7 follow-up records
-raw_allday7fu_data <- out[[3]]
 n_raw_allday7fu_data_records <- nrow(raw_allday7fu_data)
-
-# Extract successful Day 7 follow-up records only
-raw_successday7fu_data <- out[[1]]
 raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
 ```
 
@@ -308,11 +300,11 @@ timci::dataset_export(raw_allday7fu_data,
 ```
 
 ```{r}
-allday7fu_data <- allday7fu_data[ , !(names(allday7fu_data) %in% day7fu_pii_drops)]
+allday7fu_data_no_pii <- allday7fu_data[ , !(names(allday7fu_data) %in% day7fu_pii_drops)]
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(allday7fu_data,
+timci::dataset_export(allday7fu_data_no_pii,
                       "04a",
                       "timci_followup_day7_data",
                       locked_db_dir,

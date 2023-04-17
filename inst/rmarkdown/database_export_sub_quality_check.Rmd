@@ -122,11 +122,36 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+<!-- Duplicated IDs -->
+
 ```{r, eval=(qc_type=="duplicates")}
 out <- timci::identify_duplicates_by_dates(df,
                                            col_id,
                                            col_date,
                                            cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
+```
+
+<!-- Duplicated child IDs with names -->
+
+```{r, eval=(qc_type=="duplicates_with_names")}
+out <- timci::identify_duplicates_with_names(df,
+                                             col_id,
+                                             col_date,
+                                             cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
+```
+
+<!-- Duplicated child IDs at Day 0 -->
+
+```{r, eval=(qc_type=="day0_duplicates")}
+out <- timci::identify_day0_duplicates_and_fu(df = df,
+                                              day7fu_df = ref_df,
+                                              cleaning = cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 qc_df2 <- out[[3]]
@@ -347,16 +372,18 @@ timci::quality_check_export(df = qc_df,
 ```{r, eval=qc_df_is_not_empty}
 partial_disp <- qc_df_is_not_empty & ( nrow(qc_df) > 10 )
 full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
-cols <- colnames(qc_df)
-columns_to_remove <- grep("name_", cols)
-if ( length(columns_to_remove) ) {
+
+names_to_remove <- grep("name", colnames(qc_df))
+if ( length(names_to_remove) ) {
   qc_df <- qc_df %>% 
-    dplyr::select(-columns_to_remove)
+    dplyr::select(-names_to_remove)
 }
-if ( 'uuid' %in% cols ) {
+uuids_to_remove <- grep("uuid", colnames(qc_df))
+if ( length(uuids_to_remove) ) {
   qc_df <- qc_df %>% 
-    dplyr::select(-uuid)
+    dplyr::select(-uuids_to_remove)
 }
+
 reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type!="date_discrepancy" )
 if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {

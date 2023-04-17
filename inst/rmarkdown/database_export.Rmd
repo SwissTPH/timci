@@ -351,6 +351,30 @@ Each updated version is to be circulated to by the data management team to the r
 
 # `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
+```{r}
+day7fu_is_not_null <- !is.null(raw_day7fu_data)
+day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
+```
+
+```{r, eval = day7fu_is_not_empty}
+day7_out <- timci::format_day7_data(raw_day7fu_data,
+                                    is_deidentified = FALSE)
+# Extract all Day 7 follow-up records
+raw_allday7fu_data <- day7_out[[3]]
+# Extract successful Day 7 follow-up records only
+raw_successday7fu_data <- day7_out[[1]]
+```
+
+```{r}
+hospitfu_is_not_null <- !is.null(raw_hospit_data)
+hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
+```
+
+```{r}
+day28fu_is_not_null <- !is.null(raw_day28fu_data)
+day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
+```
+
 ```{r db-export-context-subsection, child = 'database_export_sub_rctls_context.Rmd'}
 ```
 
@@ -379,11 +403,6 @@ Each updated version is to be circulated to by the data management team to the r
 
 \newpage
 
-```{r}
-day7fu_is_not_null <- !is.null(raw_day7fu_data)
-day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
-```
-
 ```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
 ```
 
@@ -394,17 +413,7 @@ day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
 
 \newpage
 
-```{r}
-hospitfu_is_not_null <- !is.null(raw_hospit_data)
-hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
-```
-
 ```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
-```
-
-```{r}
-day28fu_is_not_null <- !is.null(raw_day28fu_data)
-day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
 ```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}

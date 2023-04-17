@@ -34,7 +34,7 @@ write(" o Successful follow-up duplicates", stderr())
 ```{r, eval=day7fu_is_not_null&is_kenya, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
 qc_rule <- "Identify duplicated records that correspond to different participants (participants for whom duplicates were created at enrolment) and reallocate these records to the appropriate participant."
-qc_type <- "duplicates"
+qc_type <- "duplicates_with_names"
 df <- day7fu_data
 col_id <- "child_id"
 col_date <- "start"
@@ -66,7 +66,7 @@ if (!is.null(duplicate_edits)) {
 ```{r, eval=day7fu_is_not_null, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, only the most recent successful Day 7 follow-up is kept."
 qc_rule <- "Delete all older records and keep only the most recent when more than one successful follow-up is available for the same participant."
-qc_type <- "duplicates"
+qc_type <- "duplicates_with_names"
 df <- day7fu_data
 col_id <- "child_id"
 col_date <- "start"
@@ -333,6 +333,10 @@ timci::dataset_export(raw_successday7fu_data,
                       "timci_followup_successful_day7_data",
                       rctls_dir,
                       "Raw successful Day 7 follow-up only)")
+```
+
+```{r}
+day7fu_data <- day7fu_data[ , !(names(day7fu_data) %in% day7fu_pii_drops)]
 ```
 
 ```{r}
