@@ -955,21 +955,32 @@ calculate_antibio_has_been_recorded <- function(df) {
 
   out <- df
   cols <- colnames(out)
-  rx_cols <- c("rx_amoxicillin_hf",
-               "rx_penicillinG_hf",
-               "rx_ceftriaxone_hf",
-               "rx_ciprofloxacin_hf",
-               "rx_gentamicin_hf",
-               "rx_metronidazol_hf",
-               "rx_ampicillin_hf",
-               "rx_azithromycin_hf",
-               "rx_aclav_hf",
-               "rx_benzathinepeniG_hf",
-               "rx_cotrimoxazole_hf")
-  if ( "rx_cef_antibiotics_hf" %in% cols ) {
-    rx_cols <- c(rx_cols, "rx_cef_antibiotics_hf")
+
+  rx_cols_list <- c("rx_amoxicillin_hf",
+                    "rx_penicillinG_hf",
+                    "rx_ceftriaxone_hf",
+                    "rx_ciprofloxacin_hf",
+                    "rx_gentamicin_hf",
+                    "rx_metronidazol_hf",
+                    "rx_ampicillin_hf",
+                    "rx_azithromycin_hf",
+                    "rx_aclav_hf",
+                    "rx_benzathinepeniG_hf",
+                    "rx_cotrimoxazole_hf",
+                    "rx_cef_antibiotics_hf")
+
+  rx_cols <- c()
+  for ( ccol in rx_cols_list ) {
+    if ( ccol %in% cols ) {
+      rx_cols <- c(rx_cols, ccol)
+    }
   }
-  out$antibio_has_been_recorded <- ( (rowSums(out[, rx_cols] == 1, na.rm = TRUE ) > 0) * 1 )
+
+  if ( length(rx_cols) > 0 ) {
+    out$antibio_has_been_recorded <- ( (rowSums(out[, rx_cols] == 1, na.rm = TRUE ) > 0) * 1 )
+  } else {
+    out$antibio_has_been_recorded <- 0
+  }
 
   out
 

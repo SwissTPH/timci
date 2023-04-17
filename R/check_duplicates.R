@@ -44,6 +44,7 @@ identify_duplicates_by_dates <- function(df,
       dplyr::rename(date_value1 = !!dplyr::enquo(col_date)) %>%
       dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
       dplyr::group_by(id) %>%
+      #dplyr::mutate(name = paste(fs_name, ls_name, sep = " ")) %>%
       dplyr::mutate(date_value2 = sort(date_value1,
                                        decreasing = TRUE,
                                        na.last = TRUE)) %>% # order by descending dates

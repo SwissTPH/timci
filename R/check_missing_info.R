@@ -104,8 +104,16 @@ detect_missing_clinical_presentation <- function(facility_df) {
                                                            0)) %>%
       dplyr::filter(missing_clinical_presentation == 1) %>%
       timci::calculate_antibio_has_been_prescribed() %>%
-      timci::calculate_antibio_has_been_recorded() %>%
-      dplyr::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
+      timci::calculate_antibio_has_been_recorded()
+
+    cols <- colnames(out)
+    if ( "rx_misc_oth_hf" %in% cols ) {
+      out <- out %>%
+        dplyr::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
+    } else {
+      out <- out %>%
+        dplyr::mutate(free_text = rx_misc_oth)
+    }
 
     outcols <- c("child_id",
                  "fid",
