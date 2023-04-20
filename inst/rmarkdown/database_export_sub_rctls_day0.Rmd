@@ -371,7 +371,7 @@ write(" o Detection of multiple 28-disease episodes for the same children", stde
 ```
 
 ```{r}
-multiple <- FALSE
+multiple <- TRUE
 ```
 
 `r if( !multiple) {'Only implemented for the final analysis - checks disabled for the soft lock'}`

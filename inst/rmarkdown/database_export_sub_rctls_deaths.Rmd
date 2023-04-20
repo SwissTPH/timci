@@ -185,6 +185,10 @@ timci::dataset_export(locked_day28fu_deaths,
 
 ### Combined death data
 
+```{r}
+all_deaths <- NULL
+```
+
 ```{r, eval=is_rct}
 all_deaths <- allday7_deaths %>%
   merge(allday28_deaths,
@@ -198,7 +202,17 @@ all_deaths <- allday7_deaths %>%
         all.x = TRUE)
 ```
 
-```{r, eval=is_rct, results = 'asis'}
+```{r, eval=is_ls}
+all_deaths <- allday7_deaths %>%
+  merge(allday0_data,
+        by = 'child_id',
+        all.x = TRUE) %>%
+  merge(hospit_data,
+        by = 'child_id',
+        all.x = TRUE)
+```
+
+```{r, eval=timci::is_not_empty(all_deaths), results = 'asis'}
 timci::dataset_export(all_deaths,
                       "16",
                       "timci_all_death_data",

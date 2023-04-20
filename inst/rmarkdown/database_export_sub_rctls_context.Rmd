@@ -33,8 +33,11 @@ if (is_senegal) {
 ```
 
 ```{r, results = "asis", eval=facility_data_is_not_empty, fig.asp=1}
-timci::generate_calendar_heatmap2(facility_data %>%
-                                    dplyr::filter(date_visit >= as.Date(start_date, "%Y-%m-%d")),
+# timci::generate_calendar_heatmap2(facility_data %>%
+#                                     dplyr::filter(date_visit >= as.Date(start_date, "%Y-%m-%d") & date_visit <= as.Date(lock_date, "%Y-%m-%d")),
+#                                   date_visit,
+#                                   legendtitle = "Calendar heatmap of facility screenings")
+timci::generate_calendar_heatmap2(facility_data,
                                   date_visit,
                                   legendtitle = "Calendar heatmap of facility screenings")
 ```

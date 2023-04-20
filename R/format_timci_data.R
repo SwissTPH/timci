@@ -896,12 +896,14 @@ match_from_drug_xls_dict <- function(df) {
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
   multi_cols <- c("rx_antimicrobials",
+                  "rx_antibio_oth",
                   "rx_antimalarials",
                   "rx_imci",
                   "rx_creams",
                   "rx_consumables",
                   "rx_misc",
                   "rx_antimicrobials_hf",
+                  "rx_antibio_oth_hf",
                   "rx_antimalarials_hf",
                   "rx_imci_hf",
                   "rx_creams_hf",
