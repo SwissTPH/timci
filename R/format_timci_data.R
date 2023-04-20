@@ -926,19 +926,23 @@ calculate_antibio_has_been_prescribed <- function(df) {
 
   out <- df
   cols <- colnames(out)
-  rx_cols <- c("rx_amoxicillin",
-               "rx_penicillinG",
-               "rx_ceftriaxone",
-               "rx_ciprofloxacin",
-               "rx_gentamicin",
-               "rx_metronidazol",
-               "rx_ampicillin",
-               "rx_azithromycin",
-               "rx_aclav",
-               "rx_benzathinepeniG",
-               "rx_cotrimoxazole")
-  if ( "rx_cef_antibiotics" %in% cols ) {
-    rx_cols <- c(rx_cols, "rx_cef_antibiotics")
+  rx_cols_list <- c("rx_amoxicillin",
+                    "rx_penicillinG",
+                    "rx_ceftriaxone",
+                    "rx_ciprofloxacin",
+                    "rx_gentamicin",
+                    "rx_metronidazol",
+                    "rx_ampicillin",
+                    "rx_azithromycin",
+                    "rx_aclav",
+                    "rx_benzathinepeniG",
+                    "rx_cotrimoxazole",
+                    "rx_cef_antibiotics")
+  rx_cols <- c()
+  for ( ccol in rx_cols_list ) {
+    if ( ccol %in% cols ) {
+      rx_cols <- c(rx_cols, ccol)
+    }
   }
   out$antibio_has_been_prescribed <- ( (rowSums(out[, rx_cols] == 1, na.rm = TRUE ) > 0) * 1 )
 

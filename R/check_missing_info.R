@@ -107,12 +107,17 @@ detect_missing_clinical_presentation <- function(facility_df) {
       timci::calculate_antibio_has_been_recorded()
 
     cols <- colnames(out)
-    if ( "rx_misc_oth_hf" %in% cols ) {
+    if ( "rx_misc_oth" %in% cols & "rx_misc_oth_hf" %in% cols ) {
       out <- out %>%
         dplyr::mutate(free_text = paste(rx_misc_oth, rx_misc_oth_hf, sep = " - "))
     } else {
-      out <- out %>%
-        dplyr::mutate(free_text = rx_misc_oth)
+      if ( "rx_misc_oth" %in% cols ) {
+        out <- out %>%
+          dplyr::mutate(free_text = rx_misc_oth)
+      } else{
+        out <- out %>%
+          dplyr::mutate(free_text = rx_misc_oth_hf)
+      }
     }
 
     outcols <- c("child_id",
@@ -125,7 +130,7 @@ detect_missing_clinical_presentation <- function(facility_df) {
                  "uuid")
 
     out <- out %>%
-      dplyr::select(outcols) %>%
+      dplyr::select(dplyr::any_of(outcols)) %>%
       dplyr::arrange(fid)
 
   }
