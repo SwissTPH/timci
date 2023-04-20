@@ -66,6 +66,7 @@ library(knitr)
 library(skimr)
 library(dataMaid)
 library(ggplot2)
+library(extrafont)
 library(lubridate)
 library(rlang)
 ```
@@ -285,7 +286,8 @@ if (is_india) {
 #################
 # Plot settings #
 #################
-tsize <- 8
+tsize <- 7
+tfont <- "Cambria"
 if (is_senegal) {
   dbreak_duration <- "5 months"
 } else {
