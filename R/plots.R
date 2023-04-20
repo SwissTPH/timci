@@ -654,7 +654,7 @@ plot_geom_bar_over_time <- function(df,
   p <- p + ggplot2::scale_x_date(date_breaks = date_break_str,
                                  date_labels = date_format,
                                  limits = c(as.Date(start_date), as.Date(end_date))) +
-    ggplot2::theme(text = element_text(size = text_size),
+    ggplot2::theme(text = element_text(family="Cambria", size = text_size),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor.x = element_blank())
   p
@@ -736,7 +736,7 @@ plot_scatter_by_facility_over_time <- function(df,
   p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facility_col),
                                ncol = n_facet_per_row,
                                drop = FALSE) +
-    ggplot2::theme(text = element_text(size = text_size),
+    ggplot2::theme(text = element_text(family="Cambria", size = text_size),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor.x = element_blank())
 
