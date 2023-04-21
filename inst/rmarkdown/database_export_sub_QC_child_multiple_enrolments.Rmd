@@ -14,12 +14,15 @@ multiple_enrolment_data <- day0_data %>%
 qc_df <- multiple_enrolment_data %>%
   dplyr::group_by(prev_id) %>% 
   dplyr::mutate(date = sort(date_visit,
-                            decreasing = TRUE,
-                            na.last = TRUE)) %>% # order by descending dates
+                            decreasing = FALSE, # order by ascending dates
+                            na.last = TRUE)) %>% # missing values in the data are put last
   dplyr::mutate(row_n = row_number()) %>%
   tidyr::pivot_wider(prev_id,
                      names_from = row_n,
                      values_from = c(date, child_id, name, uuid))
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 qc_df <- day0_data %>%
   timci::concatenate_names() %>%
   dplyr::select(child_id, date_visit, name) %>%
@@ -34,6 +37,32 @@ qc_df <- day0_data %>%
 timci::quality_check_export(df = qc_df,
                             idx = qc_multiple_enrolment_id,
                             label = "multiple_enrolments",
+                            cdir = qc_dir,
+                            description = "Multiple enrolments")
+```
+
+```{r}
+merge_cond <- timci::is_not_empty(qc_df) & "child_id_1" %in% colnames(qc_df)
+```
+
+```{r, eval=merge_cond, results='asis'}
+qc_df1 <- qc_df %>% 
+  dplyr::filter(child_id != child_id_1) %>%
+  dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
+if ( timci::is_not_empty(qc_df1) ) {
+  qc_df <- qc_df %>%
+    dplyr::select(-date, -name) %>% 
+    merge(qc_df1,
+          by.x = "child_id_1",
+          by.y = "child_id",
+          all.x = TRUE)
+}
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_multiple_enrolment_id,
+                            label = "multiple_enrolments1",
                             cdir = qc_dir,
                             description = "Multiple enrolments")
 ```

@@ -408,52 +408,111 @@ correct_day0_drug_data <- function(day0_df,
     day0_df$rx_consumables_hf <- as.character(day0_df$rx_consumables_hf)
   }
 
-  # Update blank (NA) drug values in df with values entered in the drug dataframe
-  df <- day0_df %>%
-    dplyr::rows_patch(drug_df1,
-                      by = 'uuid',
-                      unmatched = "ignore")
-
   # Replace 0 values in df if values entered in the drug dataframe is equal to 1
-  # cols <- colnames(df)
-  # colnames(drug_df1) <- paste0(colnames(drug_df1),"1")
-  # df <- df %>%
-  #   merge(drug_df1,
-  #         by.x = "uuid",
-  #         by.y = "uuid1",
-  #         all.x = TRUE) %>%
-  #   dplyr::mutate(rx_amoxicillin = ifelse(rx_amoxicillin == 0 & rx_amoxicillin1 == 1, 1, rx_amoxicillin)) %>%
-  #   dplyr::mutate(rx_amoxicillin_hf = ifelse(rx_amoxicillin_hf == 0 & rx_amoxicillin_hf1 == 1, 1, rx_amoxicillin_hf)) %>%
-  #   dplyr::mutate(rx_penicillinG = ifelse(rx_penicillinG == 0 & rx_penicillinG1 == 1, 1, rx_penicillinG)) %>%
-  #   dplyr::mutate(rx_penicillinG_hf = ifelse(rx_penicillinG_hf == 0 & rx_penicillinG_hf1 == 1, 1, rx_penicillinG_hf)) %>%
-  #   dplyr::mutate(rx_ceftriaxone = ifelse(rx_ceftriaxone == 0 & rx_ceftriaxone1 == 1, 1, rx_ceftriaxone)) %>%
-  #   dplyr::mutate(rx_ceftriaxone_hf = ifelse(rx_ceftriaxone_hf == 0 & rx_ceftriaxone_hf1 == 1, 1, rx_ceftriaxone_hf)) %>%
-  #   dplyr::mutate(rx_cef_antibiotics = ifelse(rx_cef_antibiotics == 0 & rx_cef_antibiotics1 == 1, 1, rx_cef_antibiotics)) %>%
-  #   dplyr::mutate(rx_cef_antibiotics_hf = ifelse(rx_cef_antibiotics_hf == 0 & rx_cef_antibiotics_hf1 == 1, 1, rx_cef_antibiotics_hf)) %>%
-  #   dplyr::mutate(rx_ciprofloxacin = ifelse(rx_ciprofloxacin == 0 & rx_ciprofloxacin1 == 1, 1, rx_ciprofloxacin)) %>%
-  #   dplyr::mutate(rx_ciprofloxacin_hf = ifelse(rx_ciprofloxacin_hf == 0 & rx_ciprofloxacin_hf1 == 1, 1, rx_ciprofloxacin_hf)) %>%
-  #   dplyr::mutate(rx_gentamicin = ifelse(rx_gentamicin == 0 & rx_gentamicin1 == 1, 1, rx_gentamicin)) %>%
-  #   dplyr::mutate(rx_gentamicin_hf = ifelse(rx_gentamicin_hf == 0 & rx_gentamicin_hf1 == 1, 1, rx_gentamicin_hf)) %>%
-  #   dplyr::mutate(rx_metronidazol = ifelse(rx_metronidazol == 0 & rx_metronidazol1 == 1, 1, rx_metronidazol)) %>%
-  #   dplyr::mutate(rx_metronidazol_hf = ifelse(rx_metronidazol_hf == 0 & rx_metronidazol_hf1 == 1, 1, rx_metronidazol_hf)) %>%
-  #   dplyr::mutate(rx_ampicillin = ifelse(rx_ampicillin == 0 & rx_ampicillin1 == 1, 1, rx_ampicillin)) %>%
-  #   dplyr::mutate(rx_ampicillin_hf = ifelse(rx_ampicillin_hf == 0 & rx_ampicillin_hf1 == 1, 1, rx_ampicillin_hf)) %>%
-  #   dplyr::mutate(rx_azithromycin = ifelse(rx_azithromycin == 0 & rx_azithromycin1 == 1, 1, rx_azithromycin)) %>%
-  #   dplyr::mutate(rx_azithromycin_hf = ifelse(rx_azithromycin_hf == 0 & rx_azithromycin_hf1 == 1, 1, rx_azithromycin_hf)) %>%
-  #   dplyr::mutate(rx_benzathinepeniG = ifelse(rx_benzathinepeniG == 0 & rx_benzathinepeniG1 == 1, 1, rx_benzathinepeniG)) %>%
-  #   dplyr::mutate(rx_benzathinepeniG_hf = ifelse(rx_benzathinepeniG_hf == 0 & rx_benzathinepeniG_hf1 == 1, 1, rx_benzathinepeniG_hf)) %>%
-  #   dplyr::mutate(rx_aclav = ifelse(rx_aclav == 0 & rx_aclav1 == 1, 1, rx_aclav)) %>%
-  #   dplyr::mutate(rx_aclav_hf = ifelse(rx_aclav_hf == 0 & rx_aclav_hf1 == 1, 1, rx_aclav_hf)) %>%
-  #   dplyr::mutate(rx_cotrimoxazole = ifelse(rx_cotrimoxazole == 0 & rx_cotrimoxazole1 == 1, 1, rx_cotrimoxazole)) %>%
-  #   dplyr::mutate(rx_cotrimoxazole_hf = ifelse(rx_cotrimoxazole_hf == 0 & rx_cotrimoxazole_hf1 == 1, 1, rx_cotrimoxazole_hf)) %>%
-  #   dplyr::mutate(rx_antibio_oth = ifelse(rx_antibio_oth != rx_antibio_oth1, paste(rx_antibio_oth,rx_antibio_oth1,";"), rx_antibio_oth)) %>%
-  #   dplyr::mutate(rx_antimalarials = ifelse(rx_antimalarials != rx_antimalarials1, paste(rx_antimalarials,rx_antimalarials1,";"), rx_antimalarials)) %>%
-  #   dplyr::mutate(rx_imci = ifelse(rx_imci != rx_imci1, paste(rx_imci,rx_imci1,";"), rx_imci)) %>%
-  #   dplyr::mutate(rx_creams = ifelse(rx_creams != rx_creams1, paste(rx_creams,rx_creams1,";"), rx_creams)) %>%
-  #   dplyr::mutate(rx_consumables = ifelse(rx_consumables != rx_consumables1, paste(rx_consumables,rx_consumables1,";"), rx_consumables)) %>%
-  #   dplyr::select(cols)
+  cols <- colnames(day0_df)
+  colnames(drug_df1) <- paste0(colnames(drug_df1),"1")
+  df <- day0_df %>%
+    merge(drug_df1,
+          by.x = "uuid",
+          by.y = "uuid1",
+          all.x = TRUE) %>%
+    selective_replace("rx_amoxicillin", cols) %>%
+    selective_replace("rx_amoxicillin_hf", cols) %>%
+    selective_replace("rx_penicillinG", cols) %>%
+    selective_replace("rx_penicillinG_hf", cols) %>%
+    selective_replace("rx_ceftriaxone", cols) %>%
+    selective_replace("rx_ceftriaxone_hf", cols) %>%
+    selective_replace("rx_cef_antibiotics", cols) %>%
+    selective_replace("rx_cef_antibiotics_hf", cols) %>%
+    selective_replace("rx_ciprofloxacin", cols) %>%
+    selective_replace("rx_ciprofloxacin_hf", cols) %>%
+    selective_replace("rx_gentamicin", cols) %>%
+    selective_replace("rx_gentamicin_hf", cols) %>%
+    selective_replace("rx_metronidazol", cols) %>%
+    selective_replace("rx_metronidazol_hf", cols) %>%
+    selective_replace("rx_ampicillin", cols) %>%
+    selective_replace("rx_ampicillin_hf", cols) %>%
+    selective_replace("rx_azithromycin", cols) %>%
+    selective_replace("rx_azithromycin_hf", cols) %>%
+    selective_replace("rx_benzathinepeniG", cols) %>%
+    selective_replace("rx_benzathinepeniG_hf", cols) %>%
+    selective_replace("rx_aclav", cols) %>%
+    selective_replace("rx_aclav_hf", cols) %>%
+    selective_replace("rx_cotrimoxazole", cols) %>%
+    selective_replace("rx_cotrimoxazole_hf", cols) %>%
+    selective_multi_replace("rx_antibio_oth", cols) %>%
+    selective_multi_replace("rx_antimalarials", cols) %>%
+    selective_multi_replace("rx_imci", cols) %>%
+    selective_multi_replace("rx_creams", cols) %>%
+    selective_multi_replace("rx_consumables", cols) %>%
+    dplyr::select(cols)
 
   out <- list(df, drug_df)
+  out
+
+}
+
+#' Replace NA and 0 values in a data frame column with 1 if another corresponding column is 1.
+#'
+#' This function replaces NA and 0 values in a specified column of a data frame with 1 if
+#' another corresponding column with the same name and a "1" suffix has a value of 1.
+#'
+#' @param df A data frame.
+#' @param col A character string indicating the name of the column to replace.
+#' @param cols A character vector of column names to check for the existence of the `col` column.
+#'
+#' @return The input data frame with specified column values replaced.
+#'
+#' @import dplyr rlang
+#'
+#' @export
+
+selective_replace <- function(df, col, cols) {
+
+  out <- df
+  if (col %in% cols) {
+    qcol <- rlang::sym(col) # Quote the arguments that refer to data frame columns
+    out <- out %>%
+      dplyr::mutate(!!qcol := dplyr::case_when(
+        ( !!qcol == 0 ) & ( !!rlang::sym(paste0(col, "1")) == 1 ) ~ 1,
+        is.na(as.numeric(!!qcol)) & !is.na(as.numeric(!!rlang::sym(paste0(col, "1"))))    ~ as.numeric(!!rlang::sym(paste0(col, "1"))),
+        .default = as.numeric(!!qcol))
+        )
+  }
+
+  out
+
+}
+
+#' Replace NA and 0 values in a data frame column with 1 if another corresponding column is 1.
+#'
+#' This function replaces NA and 0 values in a specified column of a data frame with 1 if
+#' another corresponding column with the same name and a "1" suffix has a value of 1.
+#'
+#' @param df A data frame.
+#' @param col A character string indicating the name of the column to replace.
+#' @param cols A character vector of column names to check for the existence of the `col` column.
+#'
+#' @return The input data frame with specified column values replaced.
+#'
+#' @import dplyr rlang
+#'
+#' @export
+
+selective_multi_replace <- function(df, col, cols) {
+
+  out <- df
+  if (col %in% cols) {
+    qcol <- rlang::sym(col) # Quote the arguments that refer to data frame columns
+    out <- out %>%
+      dplyr::mutate(!!qcol := dplyr::case_when(
+        ( !!qcol != "96" ) & ( !!rlang::sym(paste0(col, "1")) != "96" ) ~ paste0(!!qcol, ";", !!rlang::sym(paste0(col, "1"))),
+        ( !!qcol == "96" ) & ( !!rlang::sym(paste0(col, "1")) != "96" ) ~ !!rlang::sym(paste0(col, "1")),
+        ( !!qcol == "" ) & ( !!rlang::sym(paste0(col, "1")) != "" )     ~ !!rlang::sym(paste0(col, "1")),
+        .default = !!qcol)
+      )
+  }
+
   out
 
 }

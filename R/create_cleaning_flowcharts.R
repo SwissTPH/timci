@@ -230,6 +230,9 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   node [shape=none, width=0, height=0, label='']
                   p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
+
+                  edge [dir=none]
+                  1 -> p1
                 }",
                 n_raw_day0_records,
                 n_excluded,

@@ -241,6 +241,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                   mdb_dir,
                                   "01z_drug_raw")
       raw_drug_data <- timci::match_from_drug_xls_dict(raw_drug_data)
+      # Replace the space between different answers by a semicolon in multiple select questions
+      sep <- ";"
+      multi_cols <- c("rx_antibio_oth",
+                      "rx_antimalarials",
+                      "rx_antibio_oth_hf",
+                      "rx_antimalarials_hf")
+      raw_drug_data <- timci::format_multiselect_asws(raw_drug_data, multi_cols, sep)
     }
 
     # Load day 7 follow-up data

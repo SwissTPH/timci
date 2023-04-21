@@ -710,8 +710,8 @@ plot_scatter_by_facility_over_time <- function(df,
   facility_col <- rlang::sym(facility_col)
   y_col <- rlang::sym(y_col)
 
-  mean_line <- mean(df[[y_col]], na.rm=TRUE)
-  sd_lines <- mean_line + c(-1.96, 1.96) * stats::sd(df[[y_col]], na.rm=TRUE)
+  mean_line <- mean(df[[y_col]], na.rm = TRUE)
+  sd_lines <- mean_line + c(-1.96, 1.96) * stats::sd(df[[y_col]], na.rm = TRUE)
 
   p <- ggplot2::ggplot(df, ggplot2::aes(x = !!date_col,
                                         y = !!y_col)) +
