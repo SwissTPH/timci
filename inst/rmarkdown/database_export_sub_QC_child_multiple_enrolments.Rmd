@@ -1,42 +1,39 @@
-```{r, eval=day0_is_not_null}
-multiple_enrolment_data <- day0_data %>% 
-  dplyr::filter( prev_id != "" )
-
+```{r}
 qc_df <- NULL
 qc_df2 <- NULL
 cleaned_df <- NULL
 ```
 
+```{r, eval=timci::is_not_empty(day0_data)}
+multiple_enrolment_data <- day0_data %>%
+  dplyr::filter( prev_id != "" ) %>%
+  timci::concatenate_names()
+```
+
 ```{r, eval=timci::is_not_empty(multiple_enrolment_data), results='asis'}
 qc_df <- multiple_enrolment_data %>%
-  dplyr::rename(date_value = start) %>%
-  dplyr::rename(id = prev_id) %>%
-  dplyr::group_by(id)
-
-if ( "fs_name" %in% colnames(qc_df) ) {
-  qc_df <- qc_df %>%
-    dplyr::mutate(name = paste(fs_name, ls_name, sep = " "))
-}
-
-qc_df <- qc_df %>%
-  dplyr::mutate(date = sort(date_value,
+  dplyr::group_by(prev_id) %>% 
+  dplyr::mutate(date = sort(date_visit,
                             decreasing = TRUE,
                             na.last = TRUE)) %>% # order by descending dates
   dplyr::mutate(row_n = row_number()) %>%
-  tidyr::pivot_wider(id,
+  tidyr::pivot_wider(prev_id,
                      names_from = row_n,
                      values_from = c(date, child_id, name, uuid))
-
-if ( "date_2" %in% colnames(qc_df) ) {
-  qc_df <- qc_df %>%
-    dplyr::filter(!is.na(date_2))
-}
+qc_df <- day0_data %>%
+  timci::concatenate_names() %>%
+  dplyr::select(child_id, date_visit, name) %>%
+  dplyr::rename(date = date_visit) %>% 
+  merge(qc_df,
+        by.x = "child_id",
+        by.y = "prev_id",
+        all.y = TRUE)
 ```
 
 ```{r, results = 'asis'}
 timci::quality_check_export(df = qc_df,
-                            idx = "00",
-                            label = "test_multiple",
+                            idx = qc_multiple_enrolment_id,
+                            label = "multiple_enrolments",
                             cdir = qc_dir,
-                            description = "Test multiple")
+                            description = "Multiple enrolments")
 ```
