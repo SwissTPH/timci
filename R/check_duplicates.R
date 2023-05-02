@@ -469,7 +469,7 @@ identify_day0_duplicates <- function(df,
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c("date", "name"))
+                         values_from = c("date", "name", "uuid"))
 
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%

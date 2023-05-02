@@ -196,7 +196,7 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid")
+outcols <- c(outcols, "uuid", "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -216,7 +216,7 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid")
+outcols <- c(outcols, "uuid", "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -395,7 +395,7 @@ if ( length(uuids_to_remove) ) {
     dplyr::select(-uuids_to_remove)
 }
 
-reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type!="date_discrepancy" )
+reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type != "date_discrepancy" )
 if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {
     kcols <- c("date_visit")

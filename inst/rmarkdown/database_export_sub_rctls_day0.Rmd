@@ -159,6 +159,46 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
+`r if ( is_senegal ) {'##### Facility ID manual edits\n\n'}`
+
+```{r}
+edited_records <- NULL
+edited_df_status_update <- ""
+```
+
+```{r, eval=is_senegal}
+out <- timci::correct_day0_inconsistent_facilities(day0_data)
+day0_data <- out[[1]]
+edited_records <- out[[2]]
+```
+
+```{r, eval=(is_senegal)&!is.null(edited_records)}
+edited_df_status_update <- paste0('**', nrow(edited_records), '** record(s) were manually edited in the ', db_name, ' database.')
+```
+
+`r edited_df_status_update`
+
+```{r, eval=(is_senegal)&!is.null(edited_records), results='asis'}
+edited_records %>%
+  dplyr::select(child_id, uuid, new_fid) %>%
+  knitr::kable()
+```
+
+```{r, eval=facility_data_is_not_null&is_senegal, results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info1"
+df <- day0_data
+qc_text <- ""
+qc_idx <- qc_inconsistent_facility_info1
+qc_export_label <- "inconsistent_facility_info1a"
+qc_export_description <- "facility information between the child ID and the device is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_inconsistent_facility_info1 <- n_detected
+```
+
 #### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info2`]
 
 This check is relevant and implemented only for Kenya and Tanzania.
