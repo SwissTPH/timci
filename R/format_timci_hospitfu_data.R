@@ -52,7 +52,10 @@ generate_hospital_log <- function(pii,
                    'age_mo',
                    'fs_name',
                    'ls_name',
-                   'facility')
+                   'facility',
+                   'phone_nb',
+                   'cg_fs_name',
+                   'cg_ls_name')
   } else{
     col_order <- c('child_id',
                    'sex',
@@ -63,6 +66,9 @@ generate_hospital_log <- function(pii,
                    'ls_name',
                    'ms_name',
                    'facility',
+                   'phone_nb',
+                   'cg_fs_name',
+                   'cg_ls_name',
                    'child_hf_id')
   }
 
@@ -94,7 +100,9 @@ generate_hospital_log <- function(pii,
       hospit_log <- day7fu_data %>%
         dplyr::filter( (status_day7 == 2) | (hf_visit_day7 == 1 & hosp_visit == 1) )
 
-      hospit_log <- merge(hospit_log, rpii, by = "child_id")
+      hospit_log <- merge(hospit_log,
+                          rpii,
+                          by = "child_id")
       if (!is.null(hospit_log)) {
         if (nrow(hospit_log) > 0) {
           if((Sys.getenv('TIMCI_COUNTRY') != 'Tanzania') | (is_pilot == TRUE)) {
@@ -154,7 +162,10 @@ generate_hospital_log <- function(pii,
                              'fid',
                              'facility',
                              'date_day0',
-                             'date_call')
+                             'date_call',
+                             'phone_nb',
+                             'cg_fs_name',
+                             'cg_ls_name')
             } else {
               col_order <- c('device_id',
                              'district',
@@ -175,7 +186,10 @@ generate_hospital_log <- function(pii,
                              'facility',
                              'date_day0',
                              'date_call',
-                             'child_hf_id')
+                             'child_hf_id',
+                             'phone_nb',
+                             'cg_fs_name',
+                             'cg_ls_name')
             }
           }
           hospit_log <- hospit_log[, col_order]
@@ -203,18 +217,26 @@ generate_hospital_log <- function(pii,
                        'fs_name',
                        'ls_name',
                        'dob',
-                       'sex')
+                       'sex',
+                       'phone_nb',
+                       'cg_fs_name',
+                       'cg_ls_name')
       } else {
         col_order <- c('child_id',
                        'fs_name',
                        'ms_name',
                        'ls_name',
                        'dob',
-                       'sex')
+                       'sex',
+                       'phone_nb',
+                       'cg_fs_name',
+                       'cg_ls_name')
       }
       rpii2 <- rpii[, col_order]
 
-      hospit_log2 <- merge(hospit_log2, rpii2, by = "child_id")
+      hospit_log2 <- merge(hospit_log2,
+                           rpii2,
+                           by = "child_id")
 
       if (!is.null(hospit_log2)) {
         if (nrow(hospit_log2) > 0) {

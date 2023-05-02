@@ -510,7 +510,7 @@ identify_repeat_duplicate <- function(df,
   if ( timci::is_not_empty(qc_df) ) {
     qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
     qc_df <- qc_df %>%
-      dplyr::filter(diff > 0 & diff <= 28) %>%
+      dplyr::filter(diff > 0 & diff < 28) %>%
       dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
   } else {
     qc_df <- NULL
