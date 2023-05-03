@@ -296,6 +296,12 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
+```{r}
+initial_duplicates_df <- qc_df %>%
+  dplyr::select(id) %>% 
+  dplyr::mutate(is_duplicate = 1)
+```
+
 `r if ( is_tanzania & !is_pilot ) { '#### Duplicated child IDs - Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
 
 ```{r}

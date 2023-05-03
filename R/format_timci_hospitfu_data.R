@@ -9,7 +9,8 @@ format_hospital_data <- function(df) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
-  multi_cols = c("n4-n4_1")
+  multi_cols = c("n4-n4_1",
+                 "n4-n4_8")
   df <- format_multiselect_asws(df,
                                 multi_cols, sep)
 

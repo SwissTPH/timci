@@ -113,6 +113,18 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+```{r, eval=(qc_type=="nonvalid_ids_identify_duplicates")}
+out <- timci::identify_nonvalid_ids_with_previous_duplicates(df,
+                                                             idcol1,
+                                                             refdf,
+                                                             idcol2,
+                                                             duplicatedf,
+                                                             idcol3,
+                                                             valcol)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="date_discrepancy")}
 out <- timci::detect_inconsistent_dates(df,
                                         col_date_start = col_date1,

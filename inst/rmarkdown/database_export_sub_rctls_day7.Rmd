@@ -173,11 +173,14 @@ write(" o Non-valid participant IDs", stderr())
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
-qc_type <- "nonvalid_ids"
+qc_type <- "nonvalid_ids_identify_duplicates"
 df <- allday7fu_data
 idcol1 <- "child_id"
 refdf <- day0_data
 idcol2 <- "child_id"
+duplicatedf <- initial_duplicates_df
+idcol3 <- "id"
+valcol <- "is_duplicate"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_day7fu
 qc_export_label <- "nonvalid_pids_day7fu"

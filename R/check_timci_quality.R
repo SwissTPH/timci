@@ -302,6 +302,62 @@ identify_nonvalid_ids2 <- function(df1,
 
 #' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
 #'
+#' This function takes in two data frames and two column names, and identifies the non-valid IDs in the first data frame based on the IDs in the second data frame. It returns a list of two data frames, one containing the IDs and dates at which the ID has been allocated, and the other containing the cleaned data.
+#'
+#' @param df1 A dataframe containing the data to check for non-valid IDs.
+#' @param col_id1 The column name containing IDs in \code{df1}.
+#' @param df2 A reference dataframe containing the valid IDs to compare with.
+#' @param col_id2 The column name containing IDs in \code{df2}.
+#' @param df3 A dataframe containing additional information related to valid IDs.
+#' @param col_id3 The column name containing IDs in \code{df3}.
+#' @param col_val The column name containing values related to valid IDs in \code{df3}.
+#'
+#' @return A list containing two data frames. The first data frame contains the IDs and dates at which the ID has been allocated in different columns. The second data frame contains the cleaned data.
+#
+#' @export
+
+identify_nonvalid_ids_with_previous_duplicates <- function(df1,
+                                                           col_id1,
+                                                           df2,
+                                                           col_id2,
+                                                           df3,
+                                                           col_id3,
+                                                           col_val) {
+
+  qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ] %>%
+    merge(df3[c(col_id3, col_val),],
+          by.x = col_id1,
+          by.y = col_id3,
+          all.x = TRUE)
+  cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  cols <- colnames(qc_df)
+  kcols <- c()
+  if ( "date_visit" %in% cols ) {
+    kcols <- c(kcols, "date_visit")
+  } else if ( "date_call" %in% cols ) {
+    kcols <- c(kcols, "date_call")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  } else if ( "prev_id" %in% cols ) {
+    kcols <- c(kcols, "prev_id")
+  }
+  if ( "deviceid" %in% cols ) {
+    kcols <- c(kcols, "deviceid")
+  }
+  if ( "uuid" %in% cols ) {
+    kcols <- c(kcols, "uuid")
+  }
+  qc_df <- qc_df %>%
+    dplyr::select(kcols)
+
+  list(qc_df, cleaned_df)
+
+}
+
+#' Identify non-valid IDs in a dataframe based on IDs in another dataframe (TIMCI-specific function)
+#'
 #' @param df dataframe containing the data to check
 #' @param col_id column name containing IDs in `df1`
 #' @param day0_df Day 0 dataframe
