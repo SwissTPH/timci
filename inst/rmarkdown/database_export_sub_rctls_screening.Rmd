@@ -369,7 +369,7 @@ facility_data <- cleaned_df
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']') }`
+`r if ( is_tanzania | is_ls ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']') }`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with their participant ID, this creates duplicates in the database."
@@ -404,9 +404,9 @@ cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania ) { '#### Manual correction of repeat visits recorded as duplicated IDs' }`
+`r if ( is_tanzania | is_ls ) { '#### Manual correction of repeat visits recorded as duplicated IDs' }`
 
-`r if ( is_tanzania ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:* variable *repeat_consult* set to 1* variable *consent* set to NA* variable *enrolled* set to NA') }`
+`r if ( is_tanzania | is_ls ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:* variable *repeat_consult* set to 1* variable *consent* set to NA* variable *enrolled* set to NA') }`
 
 ```{r}
 repeat_visit_edits_is_not_empty <- FALSE
@@ -414,7 +414,7 @@ edited_records_status_update <- ""
 n_repeat_edit_records <- 0
 ```
 
-```{r, eval=is_tanzania}
+```{r, eval=(is_tanzania|is_ls)}
 out <- timci::edit_day0_to_repeat(facility_data)
 facility_data <- out[[1]]
 repeat_visit_edits <- out[[2]]
@@ -434,9 +434,9 @@ repeat_visit_edits %>%
   knitr::kable()
 ```
 
-`r if ( is_tanzania ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']') }`
+`r if ( is_tanzania | is_ls ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']') }`
 
-```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
+```{r, eval=facility_data_is_not_null&(is_tanzania|is_ls), results='asis'}
 qc_description <- "Remaining repeat visits incorrectly recorded as new enrolments are deleted from the database." 
 qc_rule <- action_alert_no_modification
 qc_type <- "duplicates_check_pii"

@@ -37,6 +37,42 @@ correct_day0_non_valid_facilities <- function(df) {
 
 }
 
+#' Edit non-valid facilities in Day 0 data entries (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_day0_inconsistent_facilities <- function(df) {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_facility_correction_senegal.csv",
+                            TRUE ~ "")
+
+  out <- list(df,NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+    df <- df %>%
+      merge(edits[, c("child_id", "uuid", "new_fid")],
+            by = c("child_id", "uuid"),
+            all.x = TRUE)
+    df$fid <- ifelse(is.na(df$new_fid), df$fid, df$new_fid)
+    if ( "fid_from_device" %in% colnames(df) )
+    {
+      df$fid_from_device <- ifelse(is.na(df$new_fid), df$fid_from_device, df$new_fid)
+    }
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_fid")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, edits)
+  }
+  out
+
+}
+
 #' Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
 #' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
 #'
@@ -102,6 +138,8 @@ edit_day0_child_ids <- function(df) {
 edit_day0_to_repeat <- function(df) {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_repeat_correction_tanzania.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_repeat_correction_senegal.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_repeat_correction_kenya.csv",
                             TRUE ~ "")
 
   out <- list(df, NULL)

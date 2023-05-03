@@ -55,7 +55,7 @@ generate_fu_logs <- function(rctls_pid,
     crf_day28_fid <- Sys.getenv("TIMCI_CRF_DAY28_FID")
   }
 
-  thres_date <- Sys.Date() - 45
+  thres_date <- Sys.Date() - 3000# 45
   filter <- paste0("__system/submissionDate ge ", thres_date)
 
   #######################

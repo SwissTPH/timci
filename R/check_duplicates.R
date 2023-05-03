@@ -469,7 +469,7 @@ identify_day0_duplicates <- function(df,
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c("date", "name"))
+                         values_from = c("date", "name", "uuid"))
 
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
@@ -510,7 +510,7 @@ identify_repeat_duplicate <- function(df,
   if ( timci::is_not_empty(qc_df) ) {
     qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
     qc_df <- qc_df %>%
-      dplyr::filter(diff > 0 & diff <= 28) %>%
+      dplyr::filter(diff > 0 & diff < 28) %>%
       dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
   } else {
     qc_df <- NULL

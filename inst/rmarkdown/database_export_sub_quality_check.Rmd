@@ -113,6 +113,18 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+```{r, eval=(qc_type=="nonvalid_ids_identify_duplicates")}
+out <- timci::identify_nonvalid_ids_with_previous_duplicates(df,
+                                                             idcol1,
+                                                             refdf,
+                                                             idcol2,
+                                                             duplicatedf,
+                                                             idcol3,
+                                                             valcol)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
 ```{r, eval=(qc_type=="date_discrepancy")}
 out <- timci::detect_inconsistent_dates(df,
                                         col_date_start = col_date1,
@@ -196,7 +208,7 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid")
+outcols <- c(outcols, "uuid", "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -216,7 +228,7 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid")
+outcols <- c(outcols, "uuid", "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -395,7 +407,7 @@ if ( length(uuids_to_remove) ) {
     dplyr::select(-uuids_to_remove)
 }
 
-reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type!="date_discrepancy" )
+reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type != "date_discrepancy" )
 if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {
     kcols <- c("date_visit")

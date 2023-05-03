@@ -157,7 +157,7 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                   {rank=same; p2 -> m2}
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> p2;
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
@@ -309,14 +309,24 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 
                   1 [label = 'Raw Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs\n']
+                  m2 [label = 'Automatically/manually edited (N = XX)']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
-                  1 -> p1;
+                  1 -> p1
                 }",
                 n_raw_allday7fu_records,
                 n_excluded,
@@ -349,14 +359,24 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
 
                   1 [label = 'Raw successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
+                  m2 [label = 'Automatically/manually edited (N = XX)']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
-                  1 -> p1;
+                  1 -> p1
                 }",
                 n_raw_day7fu_records,
                 n_excluded,
@@ -390,14 +410,24 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
 
                   1 [label = 'Raw Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs\n']
+                  m2 [label = 'Automatically/manually edited (N = XX)']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
-                  1 -> p1;
+                  1 -> p1
                 }",
                 n_raw_allday28fu_records,
                 n_excluded,
@@ -430,14 +460,24 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 
                   1 [label = 'Raw successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
+                  m2 [label = 'Automatically/manually edited (N = XX)']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
-                  1 -> p1;
+                  1 -> p1
                 }",
                 n_raw_day28fu_records,
                 n_excluded,
@@ -473,14 +513,24 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
 
                   1 [label = 'Raw hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) posterior to the lock date\n%s record(s) with non-valid child IDs']
+                  m2 [label = 'Automatically/manually edited (N = XX)']
+                  m3 [label = 'Other checks triggered (N = XX)']
                   2 [label = 'Cleaned hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p1 -> 2;
+                  p3 -> 2 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
                   {rank=same; p1 -> m1}
 
                   edge [dir=none]
-                  1 -> p1;
+                  1 -> p1
                 }",
                 n_raw_hospit_records,
                 n_excl1,

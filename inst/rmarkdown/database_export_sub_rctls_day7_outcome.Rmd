@@ -111,11 +111,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_hospit_date <- n_detected
 ```
 
-### Hospitalisations anterior to enrolment [Context check `r qc_hospit_before_enrolment_day7fu`]
-
-```{r}
-write(" o Invalid date of hospitalisation", stderr())
-```
+### Dates of hospitalisation
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
@@ -124,6 +120,20 @@ df <- day7fu_data %>%
                         date_visit),
         by = "child_id",
         all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of number of days between "
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "start_time1"
+y_lbl <- "Start time of record entry"
+y_is_time <- TRUE
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+comparison <- "type"
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
@@ -145,18 +155,10 @@ ggplot2::ggplot(df %>%
                  panel.grid.minor.x = element_blank())
 ```
 
+### Hospitalisations anterior to enrolment [Context check `r qc_hospit_before_enrolment_day7fu`]
+
 ```{r}
-fig_caption <- "Spatiotemporal pattern of number of days between "
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-y_col <- "start_time1"
-y_lbl <- "Start time of record entry"
-y_is_time <- TRUE
-time_break_str <- "4 hours"
-time_format <- "%H:%M"
-comparison <- "type"
+write(" o Invalid date of hospitalisation", stderr())
 ```
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
@@ -203,11 +205,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_death_date <- n_detected
 ```
 
-### Deaths anterior to enrolment [Context check `r qc_death_before_enrolment_day7fu`]
-
-```{r}
-write(" o Check for date of death anterior to date of enrolment", stderr())
-```
+### Dates of death
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
@@ -237,6 +235,31 @@ ggplot2::ggplot(df %>%
                  panel.grid.minor.x = element_blank())
 ```
 
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_death_day7, date_hosp_day7, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and hospitalisation") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+### Deaths anterior to enrolment [Context check `r qc_death_before_enrolment_day7fu`]
+
+```{r}
+write(" o Check for date of death anterior to date of enrolment", stderr())
+```
+
 ```{r, eval=day7fu_is_not_null, results='asis'}
 qc_description <- "Death should have happened after enrolment on Day 0."
 qc_rule <- action_alert_no_modification
@@ -256,34 +279,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r}
 write(" o Check for date of death anterior to date of hospitalisation", stderr())
-```
-
-```{r, eval=day7fu_is_not_null, results='asis'}
-df <- day7fu_data %>% 
-  merge(day0_data %>%
-          dplyr::select(child_id,
-                        date_visit),
-        by = "child_id",
-        all.x = TRUE)
-```
-
-```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
-ggplot2::ggplot(df %>%
-                  dplyr::mutate(diff = floor(difftime(date_death_day7, date_hosp_day7, units = "days"))) %>% 
-                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
-                                                             "week",
-                                                             week_start = getOption("lubridate.week.start", 1))),
-                ggplot2::aes(x = week, y = diff)) +
-  ggplot2::geom_point() +
-  ggplot2::labs(x = "Weeks",
-                y = "Number of days between enrolment and hospitalisation") +
-  ggplot2::scale_x_date(date_breaks = dbreak_duration,
-                        date_labels = "%b%y") +
-  ggplot2::facet_wrap(~ fid,
-                      ncol = nfacetperrow) +
-  ggplot2::theme(text = element_text(size = tsize),
-                 panel.grid.major.x = element_blank(),
-                 panel.grid.minor.x = element_blank())
 ```
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
