@@ -19,13 +19,13 @@ qc_df <- multiple_enrolment_data %>%
   dplyr::mutate(row_n = row_number()) %>%
   tidyr::pivot_wider(prev_id,
                      names_from = row_n,
-                     values_from = c(date, child_id, name, uuid))
+                     values_from = c(date, child_id, name, mother_name, uuid))
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 qc_df <- day0_data %>%
   timci::concatenate_names() %>%
-  dplyr::select(child_id, date_visit, name) %>%
+  dplyr::select(child_id, date_visit, name, mother_name) %>%
   dplyr::rename(date = date_visit) %>% 
   merge(qc_df,
         by.x = "child_id",
@@ -51,7 +51,7 @@ qc_df1 <- qc_df %>%
   dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
 if ( timci::is_not_empty(qc_df1) ) {
   qc_df <- qc_df %>%
-    dplyr::select(-date, -name) %>% 
+    dplyr::select(-date, -name, -mother_name) %>% 
     merge(qc_df1,
           by.x = "child_id_1",
           by.y = "child_id",
