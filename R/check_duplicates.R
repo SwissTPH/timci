@@ -433,7 +433,8 @@ concatenate_names <- function(df) {
     dplyr::mutate(mother_name = dplyr::case_when(
       main_cg == 1 ~ tolower(paste(cg_fs_name, cg_ls_name, sep = ' ')),
       .default     = tolower(paste(mother_fs_name, mother_ls_name, sep = ' ')))) %>%
-    dplyr::mutate(name = gsub('[0-9]+', '', paste(name, mother_name, sep = ' ')))
+    dplyr::mutate(name = gsub('[0-9]+', '', name))%>%
+    dplyr::mutate(mother_name = gsub('[0-9]+', '', mother_name))
 
   out
 
@@ -454,6 +455,8 @@ identify_day0_duplicates <- function(df,
 
   # Threshold for fuzzy matching
   thres <- 80
+  child_wt <- 0.6
+  mother_wt <- 0.4
 
   qc_df <- NULL
 
@@ -469,12 +472,14 @@ identify_day0_duplicates <- function(df,
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c("date", "name", "uuid"))
+                         values_from = c("date", "name", "mother_name", "uuid"))
 
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
         dplyr::filter(!is.na(name_2)) %>%
-        dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+        dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+        dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
+        dplyr::mutate(lvr = child_wt * lvr1 + mother_wt * lvr2)  %>%
         dplyr::filter(lvr > thres)
 
     } else {
@@ -508,7 +513,7 @@ identify_repeat_duplicate <- function(df,
 
   # Filter so that keep only repeat visits (between Day 1 and Day 28)
   if ( timci::is_not_empty(qc_df) ) {
-    qc_df$diff <- as.Date(as.character(qc_df$date_2), format="%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format="%Y-%m-%d")
+    qc_df$diff <- as.Date(as.character(qc_df$date_2), format = "%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format = "%Y-%m-%d")
     qc_df <- qc_df %>%
       dplyr::filter(diff > 0 & diff < 28) %>%
       dplyr::select_if(~!(all(is.na(.)) | all(. == "")))

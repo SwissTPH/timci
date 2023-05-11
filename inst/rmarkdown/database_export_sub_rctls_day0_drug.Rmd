@@ -43,6 +43,10 @@ n_erythromycin_records <- 0
 n_flucloxacillin_records <- 0
 n_mupirocin_records <- 0
 n_tetracycline_records <- 0
+n_isionazid_records <- 0
+n_rifampicin_records <- 0
+n_RH_records <- 0
+n_RHZE_records <- 0
 
 # antimalarials
 n_artesunate_records <- 0
@@ -469,6 +473,86 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_tetracycline_records <- n_detected
 ```
 
+### Isoniazid entries [Expert knowledge checks `r qc_isionazid_consistency_drug`]
+
+```{r}
+write(" o Isoniazid check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries detected by this check should contain Isoniazid"
+col_id <- "rx_antibio_oth"
+value <- 67
+qc_text <- "RHZE entries"
+qc_idx <- qc_isionazid_consistency_drug
+qc_export_label <- "isionazid_entries"
+qc_export_description <- "Isoniazid was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_isionazid_records <- n_detected
+```
+
+### Rifampicin entries [Expert knowledge checks `r qc_rifampicin_consistency_drug`]
+
+```{r}
+write(" o Rifampicin check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries detected by this check should contain Rifampicin"
+col_id <- "rx_antibio_oth"
+value <- 71
+qc_text <- "Rifampicin entries"
+qc_idx <- qc_rifampicin_consistency_drug
+qc_export_label <- "rifampicin_entries"
+qc_export_description <- "Rifampicin was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_rifampicin_records <- n_detected
+```
+
+### Rifampicin / Isoniazid entries [Expert knowledge checks `r qc_RH_consistency_drug`]
+
+```{r}
+write(" o RH check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries detected by this check should contain Rifampicin / Isoniazid (RH)"
+col_id <- "rx_antibio_oth"
+value <- 38
+qc_text <- "RH entries"
+qc_idx <- qc_RH_consistency_drug
+qc_export_label <- "RH_entries"
+qc_export_description <- "RH was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_RH_records <- n_detected
+```
+
+### Rifampicin / Isoniazid / Pyrazinamide / Ethambutol entries [Expert knowledge checks `r qc_RHZE_consistency_drug`]
+
+```{r}
+write(" o RHZE check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries detected by this check should contain Rifampicin / Isoniazid / Pyrazinamide / Ethambutol (RHZE)"
+col_id <- "rx_antibio_oth"
+value <- 39
+qc_text <- "RHZE entries"
+qc_idx <- qc_RHZE_consistency_drug
+qc_export_label <- "RHZE_entries"
+qc_export_description <- "RHZE was re-entered in a structured manner"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_RHZE_records <- n_detected
+```
+
 ### Artesunate entries [Expert knowledge checks `r qc_artesunate_consistency_drug`]
 
 ```{r}
@@ -618,6 +702,7 @@ write(" o Data cleaning summary", stderr())
 
 ```{r}
 n_antibiotics_records <- n_cefadroxil_records + n_doxycycline_records + n_erythromycin_records + n_flucloxacillin_records + n_mupirocin_records + n_tetracycline_records
+n_antiTB_records <- n_RHZE_records
 n_antimalarials_records <- n_artesunate_records + n_arthemeter_records + n_AL_records + n_ASAQ_records + n_DHAPPQ_records + n_primaquine_records + n_quinine_records
 ```
 

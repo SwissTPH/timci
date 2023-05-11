@@ -22,7 +22,7 @@ correct_day0_non_valid_facilities <- function(df) {
             all.x = TRUE)
     df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
     df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
-    if("fid_from_device" %in% colnames(df))
+    if ("fid_from_device" %in% colnames(df))
     {
       df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
     }
