@@ -1,4 +1,4 @@
-child_id,fid,fid_from_device,fid_ra,latitude,longitude,uuid,new_child_id,reason,action,date,author,date_ihi
+old_child_id,fid,fid_from_device,fid_ra,latitude,longitude,uuid,new_child_id,reason,action,date,author,date_ihi
 T-F0001-P0376,F0001,F0021,F0021,-2.7050781,32.75903,uuid:5ff0643e-8ab3-4a38-ad5d-64cfbc142c5c,T-F0021-P0376,manual entry with incorrect facility code,edit,8/2/2022,IHI,1/22/2022
 T-F0001-P0377,F0001,F0021,F0021,-2.7050985,32.7590417,uuid:53ac17b0-edea-4144-9df7-5fa28c5b17d2,T-F0021-P0377,manual entry with incorrect facility code,edit,8/2/2022,IHI,1/22/2022
 T-F0001-P1617,F0001,F0001,F0010,-4.6541443,32.1737835,uuid:d00903e5-227a-4677-bbcd-9d798c37cd36,T-F0010-P1617,,edit,,IHI,7/18/2022
