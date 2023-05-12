@@ -372,7 +372,7 @@ write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 `r if ( is_tanzania | is_ls ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']') }`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with their participant ID, this creates duplicates in the database."
+qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
 qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
 qc_type <- "duplicates_check_pii"
 df <- facility_data
@@ -582,6 +582,14 @@ skimr::skim(screening_data)
 
 ```{r}
 write(" o Data export", stderr())
+```
+
+```{r, eval = TRUE, results = 'asis'}
+timci::dataset_export(facility_data,
+                      "01",
+                      "timci_facility_data",
+                      rctls_dir,
+                      "Raw screening data")
 ```
 
 ```{r export-screening-data, results = 'asis'}
