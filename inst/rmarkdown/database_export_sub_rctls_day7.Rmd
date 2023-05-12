@@ -176,7 +176,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "nonvalid_ids_identify_duplicates"
 df <- allday7fu_data
 idcol1 <- "child_id"
-refdf <- day0_data
+refdf <- facility_data
 idcol2 <- "child_id"
 duplicatedf <- initial_duplicates_df
 idcol3 <- "id"
