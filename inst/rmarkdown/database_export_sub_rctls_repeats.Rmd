@@ -39,6 +39,10 @@ repeat_data <- repeat_data %>%
                                 "fid_from_device")))
 ```
 
+```{r}
+write(colnames(repeat_data), stderr())
+```
+
 ### Participant identification
 
 #### Repeat visits corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_repeat`]
@@ -82,7 +86,8 @@ qc_description <- "Repeat visits are relevant only if they can be reconciled wit
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "nonvalid_ids"
 df <- repeat_data %>%
-  dplyr::filter(!is.na(prev_id))
+  dplyr::filter(!is.na(prev_id)) #%>%
+  #dplyr::mutate(child_name = gsub('[0-9]+', '', tolower(paste(fs_name_check, ls_name_check, sep = ' '))))
 idcol1 <- "prev_id"
 refdf <- day0_data
 idcol2 <- "child_id"
@@ -98,8 +103,28 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=!is.null(cleaned_df)}
 n_nonvalid_pids_repeat_records <- n_detected
 repeat_data_part <- cleaned_df
-repeat_data <- rbind(repeat_data %>% dplyr::filter(is.na(prev_id)),
+repeat_data <- rbind(repeat_data %>%
+                       dplyr::filter(is.na(prev_id)),
                      repeat_data_part)
+```
+
+```{r, eval=FALSE, results='asis'}
+qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Non-reconciled repeat visits are searched for matched names."
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_type <- "matched_names"
+df <- qc_df
+refdf <- day0_data
+col_date <- "date_visit"
+col_name <- "child_name"
+ldate_diff <- -30
+udate_diff <- 0
+qc_text <- "non-valid participant IDs and matched names"
+qc_idx <- qc_nonvalid_repeat
+qc_export_label <- "nonvalid_pids_repeat_with_matched_names"
+qc_export_description <- "the child ID does not correspond to any ID found in the locked Day 0 database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
 #### Non-consistent participant names [Context check `r qc_nonconsistent_name_repeat`]
@@ -198,7 +223,7 @@ timci::create_repeat_qc_flowchart(n_raw_repeat_records,
 write(" o Data overview", stderr())
 ```
 
-```{r}
+```{r, eval = FALSE}
 repeat_data <- repeat_data %>% 
   dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
                                 "fid_from_device")))
@@ -258,7 +283,7 @@ skimr::skim(repeat_data)
 write(" o Data export", stderr())
 ```
 
-```{r}
+```{r, eval = FALSE}
 raw_repeat_data <- raw_repeat_data %>% 
   dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
                                 "fid_from_device")))
