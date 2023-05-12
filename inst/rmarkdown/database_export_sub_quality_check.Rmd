@@ -125,11 +125,23 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
+<!-- Date discrepancies -->
+
 ```{r, eval=(qc_type=="date_discrepancy")}
 out <- timci::detect_inconsistent_dates(df,
                                         col_date_start = col_date1,
                                         col_date_end = col_date2,
                                         cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+```{r, eval=(qc_type=="date_discrepancy_fu")}
+out <- timci::detect_inconsistent_dates(df,
+                                        col_date_start = col_date1,
+                                        col_date_end = col_date2,
+                                        cleaning,
+                                        list_of_cols = fu_cols)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
@@ -190,6 +202,21 @@ out <- timci::identify_true_duplicate(df,
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
+
+<!-- Detect matched names between follow-up and reference Day 0 database -->
+
+```{r, eval=(qc_type=="matched_names")}
+out <- timci::detect_matched_names_between_fu_and_day0(df,
+                                                       refdf,
+                                                       col_date,
+                                                       col_name,
+                                                       ldate_diff,
+                                                       udate_diff)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+<!-- Inconsistent facility -->
 
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
