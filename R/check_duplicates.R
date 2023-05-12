@@ -417,24 +417,31 @@ check_name_consistency <- function(df,
 
 concatenate_names <- function(df) {
 
-  out <- NULL
-
-  # Concatenate child's name depending on the country
-  if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
-    out <- df %>%
-      dplyr::mutate(name = tolower(paste(fs_name, ms_name, ls_name, sep = ' ')))
-  } else{
-    out <- df %>%
-      dplyr::mutate(name = tolower(paste(fs_name, ls_name, sep = ' ')))
-  }
-
-  # Add mother's name
-  out <- out %>%
+  # Concatenate mother's name
+  out <- df %>%
     dplyr::mutate(mother_name = dplyr::case_when(
       main_cg == 1 ~ tolower(paste(cg_fs_name, cg_ls_name, sep = ' ')),
       .default     = tolower(paste(mother_fs_name, mother_ls_name, sep = ' ')))) %>%
-    dplyr::mutate(name = gsub('[0-9]+', '', name))%>%
     dplyr::mutate(mother_name = gsub('[0-9]+', '', mother_name))
+
+  # Concatenate child's name depending on the country
+  if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
+    out <- out %>%
+      dplyr::mutate(name = gsub('[0-9]+', '', tolower(paste(fs_name, ms_name, ls_name, sep = ' ')))) %>%
+      dplyr::mutate(name_root = gsub('[0-9]+', '', tolower(paste(fs_name, ms_name, sep = ' ')))) %>%
+      dplyr::mutate(name_switch = gsub('[0-9]+', '', tolower(paste(fs_name, ls_name, ms_name, sep = ' ')))) %>%
+      dplyr::mutate(mother_name_first = dplyr::case_when(
+        main_cg == 1 ~ tolower(cg_fs_name),
+        .default     = tolower(mother_fs_name))) %>%
+      dplyr::mutate(mother_name_first = gsub('[0-9]+', '', mother_name_first)) %>%
+      dplyr::mutate(mother_name_last = dplyr::case_when(
+        main_cg == 1 ~ tolower(cg_ls_name),
+        .default     = tolower(mother_ls_name))) %>%
+      dplyr::mutate(mother_name_last = gsub('[0-9]+', '', mother_name_last))
+  } else{
+    out <- out %>%
+      dplyr::mutate(name = gsub('[0-9]+', '', tolower(paste(fs_name, ls_name, sep = ' '))))
+  }
 
   out
 
@@ -454,9 +461,10 @@ identify_day0_duplicates <- function(df,
                                      col_date) {
 
   # Threshold for fuzzy matching
-  thres <- 80
-  child_wt <- 0.6
-  mother_wt <- 0.4
+  thres1 <- 50 # threshold to be applied when matching child names
+  thres2 <- 40 # threshold to be applied when matching mother names
+  thres3 <- 60 # threshold to be applied when matching child name roots (2 names only so that threshold should be more restrictive)
+  thres4 <- 70 # threshold to be applied when matching mother name roots (1 name only so that threshold should be more restrictive)
 
   qc_df <- NULL
 
@@ -469,19 +477,48 @@ identify_day0_duplicates <- function(df,
       dplyr::rename(id = !!dplyr::enquo(col_id),
                     date = !!dplyr::enquo(col_date)) %>%
       dplyr::group_by(id) %>%
-      dplyr::mutate(row_n = row_number()) %>%
-      tidyr::pivot_wider(id,
-                         names_from = row_n,
-                         values_from = c("date", "name", "mother_name", "uuid"))
+      dplyr::mutate(row_n = row_number())
+
+    if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
+      qc_df <- qc_df %>%
+        tidyr::pivot_wider(id,
+                           names_from = row_n,
+                           values_from = c("date",
+                                           "name",
+                                           "name_root",
+                                           "name_switch",
+                                           "mother_name",
+                                           "mother_name_first",
+                                           "mother_name_last",
+                                           "uuid"))
+    } else{
+      qc_df <- qc_df %>%
+        tidyr::pivot_wider(id,
+                           names_from = row_n,
+                           values_from = c("date",
+                                           "name",
+                                           "mother_name",
+                                           "uuid"))
+    }
 
     if ( "date_2" %in% colnames(qc_df) ) {
       qc_df <- qc_df %>%
-        dplyr::filter(!is.na(name_2)) %>%
-        dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
-        dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
-        dplyr::mutate(lvr = child_wt * lvr1 + mother_wt * lvr2)  %>%
-        dplyr::filter(lvr > thres)
-
+        dplyr::filter(!is.na(name_2))
+      if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
+        qc_df <- qc_df %>%
+          dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+          dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(name_1, name_switch_2)) %>%
+          dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(name_root_1, name_root_2)) %>%
+          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
+          dplyr::mutate(lvr5 = timci::normalised_levenshtein_ratio(mother_name_first_1, mother_name_first_2)) %>%
+          dplyr::mutate(lvr6 = timci::normalised_levenshtein_ratio(mother_name_last_1, mother_name_last_2)) %>%
+          dplyr::filter( ((lvr1 > thres1) | (lvr2 > thres1)) & (lvr3  > thres3) & ((lvr4 > thres2) | (lvr5 > thres4) | (lvr6 > thres4)) )
+      } else{
+        qc_df <- qc_df %>%
+          dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+          dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
+          dplyr::filter((lvr1 > thres1) & (lvr2 > thres2))
+      }
     } else {
       qc_df <- NULL
     }
@@ -665,10 +702,98 @@ detect_inconsistent_names_between_visits <- function(refdf,
         dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
         dplyr::select(child_id,
                       uuid,
+                      name,
+                      refname,
                       lvr) %>%
         dplyr::filter(lvr < thres)
     } else {
       qc_df <- NULL
+    }
+
+  }
+
+  list(qc_df, cleaned_df)
+
+}
+
+
+#' Detects matched names between follow-up and day 0 dataframes (TIMCI-specific function).
+#'
+#' This function searches for matched names between a follow-up dataframe and a day 0 dataframe. It returns a list containing two dataframes: one with quality control information, and another one with cleaned data.
+#'
+#' @param df Follow-up dataframe to search for matched names.
+#' @param day0_df Day 0 dataframe to search for matched names.
+#' @param col_date Name of the column containing the date in the `df` dataframe.
+#' @param col_name Name of the column containing the name in the `df` dataframe.
+#' @param ldate_diff Lower date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#' @param udate_diff Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#'
+#' @return A list with two dataframes: qc_df and cleaned_df.
+#' @export
+
+detect_matched_names_between_fu_and_day0 <- function(df,
+                                                     day0_df,
+                                                     col_date,
+                                                     col_name,
+                                                     ldate_diff = 0,
+                                                     udate_diff = 0) {
+
+  qc_df <- NULL
+  cleaned_df <- NULL
+
+  thres <- 70
+
+  if (timci::is_not_empty(df) & timci::is_not_empty(day0_df)) {
+
+    # Add derived column names that take into account country cultural specificity
+    day0_df <- day0_df %>%
+      timci::concatenate_names() %>%
+      dplyr::select(date_visit,
+                    district,
+                    fid,
+                    child_id,
+                    child_name,
+                    mother_name,
+                    uuid)
+
+    columns <- colnames(day0_df)
+    out <- data.frame(matrix(nrow = 0, ncol = length(columns)))
+    colnames(out) <- columns
+
+    for (row in 1:nrow(df)) {
+
+      # Extract constraints for restricting the search in day0_df
+      cdistrict <- df[row, "district"]
+      cdate <- as.Date(df[row, col_date])
+      min_date <- as.Date(cdate + ldate_diff)
+      max_date <- as.Date(cdate + udate_diff)
+      uuid <- df[row, "uuid"]
+
+      child_name <- df[row, col_name]
+
+      if (min_date <= max_date) {
+
+        sub_df <- day0_df %>%
+          dplyr::filter(district == cdistrict) %>%
+          dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
+          dplyr::mutate(matched_uuid = uuid) %>%
+          dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
+          dplyr::filter(lvr > thres)
+
+        if ( nrows(sub_df) > 0 ) {
+          out <- rbind(out, sub_df)
+        }
+
+      }
+
+    }
+
+    if ( nrows(out) > 0 ) {
+      qc_df <- df %>%
+        merge(out,
+              by.x = "uuid",
+              by.y = "matched_uuid",
+              all = TRUE)
     }
 
   }

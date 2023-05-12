@@ -47,9 +47,10 @@ correct_day0_non_valid_facilities <- function(df) {
 correct_day0_inconsistent_facilities <- function(df) {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_facility_correction_senegal.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_facility_correction_tanzania.csv",
                             TRUE ~ "")
 
-  out <- list(df,NULL)
+  out <- list(df, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
@@ -74,16 +75,21 @@ correct_day0_inconsistent_facilities <- function(df) {
 }
 
 #' Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
-#' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
 #'
-#' @param df dataframe
-#' @return This function returns a list that contains an edited dataframe and the list of edits
+#' This function can be used to correct documented child ID duplicates, incorrect facility codes, or typos in Day 0 data entries. It reads in a CSV file containing corrections and applies them to the input dataframe.
+#'
+#' @param df A dataframe containing the Day 0 data entries to be corrected.
+#' @param wf A logical value indicating whether to apply facility code corrections (default is FALSE).
+#' @return A list containing the edited dataframe and the list of applied corrections.
 #' @import dplyr
+#' @import readr
 #' @export
 
-edit_day0_child_ids <- function(df) {
+edit_day0_child_ids <- function(df,
+                                wf = FALSE) {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_duplicate_correction_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' & !wf ~ "day0_duplicate_correction_tanzania.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' & wf ~ "day0_duplicate_correction_winconsistency_facilityname_tanzania.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_duplicate_correction_kenya.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_duplicate_correction_senegal.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'India' ~ "day0_duplicate_correction_india.csv",
@@ -104,15 +110,15 @@ edit_day0_child_ids <- function(df) {
 
     df <- df %>%
       merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-            by.x=c("child_id", "uuid"),
-            by.y=c("old_child_id", "uuid"),
-            all.x=TRUE)
+            by.x = c("child_id", "uuid"),
+            by.y = c("old_child_id", "uuid"),
+            all.x = TRUE)
     df$child_id <- ifelse(is.na(df$new_child_id),
                           df$child_id,
                           df$new_child_id)
     df$child_id <- as.character(df$child_id)
     df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
-    if("fid_from_device" %in% colnames(df))
+    if ("fid_from_device" %in% colnames(df))
     {
       df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
     }
@@ -137,7 +143,7 @@ edit_day0_child_ids <- function(df) {
 
 edit_day0_to_repeat <- function(df) {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_repeat_correction_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_repeat_correction_same_id_tanzania.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_repeat_correction_senegal.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_repeat_correction_kenya.csv",
                             TRUE ~ "")

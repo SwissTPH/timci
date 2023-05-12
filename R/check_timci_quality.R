@@ -126,16 +126,18 @@ detect_non_timely_completion <- function(df) {
 #' @param df dataframe containing the processed facility data
 #' @param col_date_start column
 #' @param col_date_end column
+#' @param list_of_cols list of columns to be exported if needed (default is set to an empty vector)
 #' @param cleaning type of cleaning to be performed on inconsistent dates, by default set to "none" (i.e., no cleaning following the identification of inconsistent dates)
 #' @param date_format format of the date
 #' @return This function returns a dataframe containing data of possible duplicate participants only
 #' @export
-#' @import dplyr
+#' @import dplyr lubridate
 
 detect_inconsistent_dates <- function(df,
                                       col_date_start,
                                       col_date_end,
                                       cleaning = "none",
+                                      list_of_cols = c(),
                                       date_format = "%Y-%m-%d %T") {
 
   qc_df <- NULL
@@ -143,6 +145,9 @@ detect_inconsistent_dates <- function(df,
   cols <- colnames(df)
 
   df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))
+  df[[paste0("day_", col_date_end)]] <- lubridate::wday(df[[col_date_end]], label = TRUE)
+  df[[paste0("day_", col_date_start)]] <- lubridate::wday(df[[col_date_start]], label = TRUE)
+
   cols <- colnames(df)
   kcols <- c()
   if ( 'fid' %in% cols ) {
@@ -158,7 +163,11 @@ detect_inconsistent_dates <- function(df,
   } else if ( 'prev_id' %in% cols ) {
     kcols <- c(kcols, "prev_id")
   }
-  kcols <- c(kcols, col_date_start, col_date_end)
+  kcols <- c(kcols,
+             col_date_start,
+             col_date_end,
+             paste0("day_", col_date_start),
+             paste0("day_", col_date_end))
   if ( col_date_start != "start" & col_date_end != "start" ) {
     kcols <- c(kcols, "start")
   }
@@ -167,6 +176,9 @@ detect_inconsistent_dates <- function(df,
   }
   if ( col_date_start != "submission_date" & col_date_end != "submission_date" & "submission_date" %in% cols ) {
     kcols <- c(kcols, "submission_date")
+  }
+  if ( length(list_of_cols) > 0 ) {
+    kcols <- c(kcols, list_of_cols)
   }
   kcols <- c(kcols, "diff", "uuid")
 
@@ -244,6 +256,9 @@ identify_nonvalid_ids <- function(df1,
     kcols <- c(kcols, "child_id")
   } else if ( "prev_id" %in% cols ) {
     kcols <- c(kcols, "prev_id")
+  }
+  if ( "child_name" %in% cols ) {
+    kcols <- c(kcols, "child_name")
   }
   if ( "deviceid" %in% cols ) {
     kcols <- c(kcols, "deviceid")
@@ -342,6 +357,9 @@ identify_nonvalid_ids_with_previous_duplicates <- function(df1,
     kcols <- c(kcols, "child_id")
   } else if ( "prev_id" %in% cols ) {
     kcols <- c(kcols, "prev_id")
+  }
+  if ( "name" %in% cols ) {
+    kcols <- c(kcols, "name")
   }
   if ( "deviceid" %in% cols ) {
     kcols <- c(kcols, "deviceid")

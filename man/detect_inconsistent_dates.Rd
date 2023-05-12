@@ -9,6 +9,7 @@ detect_inconsistent_dates(
   col_date_start,
   col_date_end,
   cleaning = "none",
+  list_of_cols = c(),
   date_format = "\%Y-\%m-\%d \%T"
 )
 }
@@ -20,6 +21,8 @@ detect_inconsistent_dates(
 \item{col_date_end}{column}
 
 \item{cleaning}{type of cleaning to be performed on inconsistent dates, by default set to "none" (i.e., no cleaning following the identification of inconsistent dates)}
+
+\item{list_of_cols}{list of columns to be exported if needed (default is set to an empty vector)}
 
 \item{date_format}{format of the date}
 }
