@@ -77,7 +77,7 @@ df <- day28fu_data %>%
         all.x = TRUE) %>%
   merge(day7fu_data %>%
           dplyr::select(child_id,
-                        date_hosp_day7)
+                        date_hosp_day7),
         by = "child_id",
         all.x = TRUE)
 
