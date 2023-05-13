@@ -775,7 +775,7 @@ detect_matched_names_between_fu_and_day0 <- function(df,
         if (min_date <= max_date) {
 
           sub_df <- day0_df %>%
-            dplyr::filter(district == df[row, "district"]) %>%
+            #dplyr::filter(district == df[row, "district"]) %>%
             dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
             dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
             dplyr::mutate(child_name = df[row, col_name]) %>%

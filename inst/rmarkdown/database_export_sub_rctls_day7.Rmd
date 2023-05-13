@@ -195,17 +195,17 @@ n_nonvalid_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
-```{r, eval=!is.null(qc_df), results='asis'}
+```{r, eval=!is.null(qc_reuse_df), results='asis'}
 qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day. Non-reconciled Day 7 follow-ups are searched for matched names."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "matched_names"
 df <- qc_reuse_df %>% 
   dplyr::mutate(name = tolower(name))
 refdf <- facility_data
-col_date <- "date_call"
+col_date <- "date_day0"
 col_name <- "name"
-ldate_diff <- -14
-udate_diff <- 0
+ldate_diff <- -2
+udate_diff <- 2
 qc_text <- "non-valid participant IDs and matched names"
 qc_idx <- qc_nonvalid_day7fu
 qc_export_label <- "nonvalid_pids_day7fu_with_matched_names"
