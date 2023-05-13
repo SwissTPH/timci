@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r}
 qc_df <- NULL
 qc_df2 <- NULL
+qc_reuse_df <- NULL # reuse non de-identified dataframe for subsequent checks
 cleaned_df <- NULL
 cols <- colnames(df)
 n_df <- nrow(df)
@@ -416,6 +417,7 @@ timci::quality_check_export(df = qc_df,
                             label = qc_export_label,
                             cdir = qc_dir,
                             description = qc_export_description)
+qc_reuse_df <- qc_df
 ```
 
 ```{r, eval=qc_df_is_not_empty}

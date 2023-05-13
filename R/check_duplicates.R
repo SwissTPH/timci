@@ -741,54 +741,61 @@ detect_matched_names_between_fu_and_day0 <- function(df,
   qc_df <- NULL
   cleaned_df <- NULL
 
-  thres <- 70
+  thres <- 75 # Threshold for Tanzania, check for other countries
 
   if (timci::is_not_empty(df) & timci::is_not_empty(day0_df)) {
 
     # Add derived column names that take into account country cultural specificity
     day0_df <- day0_df %>%
       timci::concatenate_names() %>%
+      dplyr::rename(uuid_day0 = uuid) %>%
       dplyr::select(date_visit,
                     district,
                     fid,
                     child_id,
-                    child_name,
+                    name,
                     mother_name,
-                    uuid)
+                    uuid_day0)
 
     columns <- colnames(day0_df)
     out <- data.frame(matrix(nrow = 0, ncol = length(columns)))
     colnames(out) <- columns
 
-    for (row in 1:nrow(df)) {
+    df_cols <- colnames(df)
 
-      # Extract constraints for restricting the search in day0_df
-      cdistrict <- df[row, "district"]
-      cdate <- as.Date(df[row, col_date])
-      min_date <- as.Date(cdate + ldate_diff)
-      max_date <- as.Date(cdate + udate_diff)
-      uuid <- df[row, "uuid"]
+    if (col_date %in% df_cols & col_name %in% df_cols & "uuid" %in% df_cols) {
 
-      child_name <- df[row, col_name]
+      for (row in 1:nrow(df)) {
 
-      if (min_date <= max_date) {
+        # Extract constraints for restricting the search in day0_df
+        cdate <- as.Date(df[row, col_date])
+        min_date <- as.Date(cdate + ldate_diff)
+        max_date <- as.Date(cdate + udate_diff)
 
-        sub_df <- day0_df %>%
-          dplyr::filter(district == cdistrict) %>%
-          dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
-          dplyr::mutate(matched_uuid = uuid) %>%
-          dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
-          dplyr::filter(lvr > thres)
+        if (min_date <= max_date) {
 
-        if ( nrows(sub_df) > 0 ) {
-          out <- rbind(out, sub_df)
+          sub_df <- day0_df %>%
+            dplyr::filter(district == df[row, "district"]) %>%
+            dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
+            dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
+            dplyr::mutate(child_name = df[row, col_name]) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
+            dplyr::ungroup() %>%
+            dplyr::filter(lvr > thres) %>%
+            dplyr::select(-child_name)
+
+          if ( nrow(sub_df) > 0 ) {
+            out <- rbind(out, sub_df)
+          }
+
         }
 
       }
 
     }
 
-    if ( nrows(out) > 0 ) {
+    if ( nrow(out) > 0 ) {
       qc_df <- df %>%
         merge(out,
               by.x = "uuid",

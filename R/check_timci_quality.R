@@ -353,10 +353,16 @@ identify_nonvalid_ids_with_previous_duplicates <- function(df1,
   } else if ( "date_call" %in% cols ) {
     kcols <- c(kcols, "date_call")
   }
+  if ( "district" %in% cols ) {
+    kcols <- c(kcols, "district")
+  }
   if ( "child_id" %in% cols ) {
     kcols <- c(kcols, "child_id")
   } else if ( "prev_id" %in% cols ) {
     kcols <- c(kcols, "prev_id")
+  }
+  if ( "date_day0" %in% cols ) {
+    kcols <- c(kcols, "date_day0")
   }
   if ( "name" %in% cols ) {
     kcols <- c(kcols, "name")

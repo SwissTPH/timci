@@ -39,10 +39,6 @@ repeat_data <- repeat_data %>%
                                 "fid_from_device")))
 ```
 
-```{r}
-write(colnames(repeat_data), stderr())
-```
-
 ### Participant identification
 
 #### Repeat visits corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_repeat`]

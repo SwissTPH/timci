@@ -343,7 +343,7 @@ pivot_duplicates_to_columns <- function(df) {
 is_not_empty <- function(df) {
 
   df_is_not_empty <- FALSE
-  if(!is.null(df)) {
+  if (!is.null(df)) {
     df_is_not_empty <- (nrow(df) > 0) & (length(df) > 0)
   }
   df_is_not_empty
@@ -362,6 +362,7 @@ normalised_levenshtein_ratio <- function(s1, s2) {
 
   n <- max(nchar(s1),nchar(s2))
   d <- stringdist(s1, s2, method = 'lv')
-  out <- 100 * (1-d/n)
+  out <- 100 * (1 - d/n)
+  out
 
 }
