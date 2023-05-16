@@ -97,7 +97,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
   hospitfu_end_date <- min(as.Date(end_date + 42), Sys.Date())
   day28fu_end_date <- min(as.Date(end_date + 42), Sys.Date())
   withdrawal_end_date <- min(as.Date(end_date + 42), Sys.Date())
-  drug_end_date <- min(as.Date(end_date + 42), Sys.Date())
+  drug_end_date <- Sys.Date()
   wfa_end_date <- min(as.Date(end_date + 6), Sys.Date())
 
   if (is.null(spa_start_date)) {
@@ -237,10 +237,13 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                     end_date = drug_end_date,
                                                     group = FALSE,
                                                     verbose = TRUE)
+      write(formats2h3("OK"), stderr())
       fn <- timci::export_df2xlsx(raw_drug_data,
                                   mdb_dir,
                                   "01z_drug_raw")
+      write(formats2h3("OK"), stderr())
       raw_drug_data <- timci::match_from_drug_xls_dict(raw_drug_data)
+      write(formats2h3("OK"), stderr())
       # Replace the space between different answers by a semicolon in multiple select questions
       sep <- ";"
       multi_cols <- c("rx_antibio_oth",
@@ -248,6 +251,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                       "rx_antibio_oth_hf",
                       "rx_antimalarials_hf")
       raw_drug_data <- timci::format_multiselect_asws(raw_drug_data, multi_cols, sep)
+      write(formats2h3("OK"), stderr())
     }
 
     # Load day 7 follow-up data

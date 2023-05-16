@@ -9,7 +9,9 @@ db_name <- "Day 7 follow-up"
 ```
 
 ```{r}
-day7fu_pii_drops <- c("name", "cg_name", "phone_nb")
+day7fu_pii_drops <- c("name",
+                      "cg_name",
+                      "phone_nb")
 ```
 
 ```{r format-RCT-LS-ODK-fu-day7-data}

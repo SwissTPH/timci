@@ -1,31 +1,81 @@
 \newpage
 
-## Day 28 data quality checks\n\n
-
 ```{r}
 write("Export Day 28 data and run corresponding quality checks", stderr())
 ```
 
+## Day 28 data quality checks\n\n
+
 ```{r}
 db_name <- "Day 28 follow-up"
-out <- timci::format_day28_data(raw_day28fu_data)
+```
+
+```{r}
+day28fu_pii_drops <- c("name",
+                       "cg_name",
+                       "phone_nb")
+```
+
+```{r}
+out <- timci::format_day28_data(raw_day28fu_data,
+                                is_deidentified = FALSE)
 raw_allday28fu_data <- out[[3]]
 n_raw_allday28fu_data_records <- nrow(raw_allday28fu_data)
 raw_successday28fu_data <- out[[1]]
+```
 
+```{r}
+n_raw_allday28fu_data_records <- nrow(raw_allday28fu_data)
 raw_allday28fu_is_not_empty <- timci::is_not_empty(raw_allday28fu_data)
-raw_day28_fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
 There are **`r n_raw_allday28fu_data_records`** records in the raw `r db_name` database.
 
-### Non-consistent finalisation and submission dates [Context check `r qc_nontimely_submission_day28fu`]
+### Format raw data
+
+```{r}
+day28fu_dictionary <- timci::import_country_specific_xls_dict("day28_dict.xlsx", Sys.getenv('TIMCI_COUNTRY'))
+n_day28fu_dictionary_vars <- nrow(day28fu_dictionary)
+```
+
+There are **`r n_day28fu_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+day28fu_dictionary %>%
+  dplyr::select(new,
+                old,
+                deidentified) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference",
+                             "Deidentified export"))
+```
+
+### Dates and times
+
+#### Late submissions [Compliance check `r qc_nontimely_submission_day28fu`]
 
 ```{r}
 write(" o Inconsistent finalisation and submission", stderr())
 ```
 
-```{r}
+```{r, eval=raw_allday7fu_is_not_empty, results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_allday28fu_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_submission_day28fu
+qc_export_label <- "nontimely_day28_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_caption <- "Submissions not transferred on the same day they were finalised"
 facility_col <- "hf_id"
 date_col <- "week"
@@ -33,15 +83,43 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "area"
 fill_col <- "Difference"
+
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff < 3 ~ "Less than 3 days",
+    diff >= 3 & diff < 7 ~ "3-6 days",
+    diff >= 7 ~ "7 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-### Non-timely completion [Context check `r qc_nontimely_completion_day7fu`]
+#### Late completions [Compliance check `r qc_nontimely_completion_day28fu`]
 
 ```{r}
 write(" o Non-timely completion", stderr())
 ```
 
-```{r}
+```{r, eval=raw_allday7fu_is_not_empty, results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_allday28fu_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_completion_day28fu
+qc_export_label <- "nontimely_day28_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_caption <- "Number of submissions not finalised on the same day they were started"
 facility_col <- "hf_id"
 date_col <- "week"
@@ -49,9 +127,22 @@ date_lbl <- "Weeks"
 date_format <- "%b%y"
 comparison <- "area"
 fill_col <- "Difference"
+
+fig_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff <= 1 ~ "1 day",
+    diff > 1 & diff < 3 ~ "1-2 days",
+    diff >= 3 ~ "3 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
 ```
 
-### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]\n\n
+### Participant identification
+
+#### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]\n\n
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
@@ -93,7 +184,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "nonvalid_ids_identify_duplicates"
 df <- allday28fu_data
 idcol1 <- "child_id"
-refdf <- day0_data
+refdf <- facility_data
 idcol2 <- "child_id"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_day28fu
