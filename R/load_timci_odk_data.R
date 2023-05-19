@@ -312,6 +312,7 @@ load_spapmtf_data <- function(odkc_project_list,
                                                   cfid = cgei_fid,
                                                   start_date = spa_start_date,
                                                   end_date = spa_end_date,
+                                                  group = FALSE,
                                                   verbose = TRUE)
 
     # Load SPA facility assessment data
@@ -321,6 +322,7 @@ load_spapmtf_data <- function(odkc_project_list,
                                                 cfid = fa_fid,
                                                 start_date = spa_start_date,
                                                 end_date = spa_end_date,
+                                                group = FALSE,
                                                 verbose = TRUE)
 
     # Load SPA healthcare provider interview data
