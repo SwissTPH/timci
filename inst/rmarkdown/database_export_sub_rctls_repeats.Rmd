@@ -85,7 +85,7 @@ qc_type <- "nonvalid_ids"
 df <- repeat_data %>%
   dplyr::filter(!is.na(prev_id))
 idcol1 <- "prev_id"
-refdf <- day0_data
+refdf <- allday0_data
 idcol2 <- "child_id"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_repeat
@@ -113,7 +113,7 @@ qc_description <- "Repeat visits are relevant only if they can be reconciled wit
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "matched_names"
 df <- qc_reuse_df
-refdf <- facility_data
+refdf <- allday0_data
 col_date <- "date_visit"
 col_name <- "child_name"
 ldate_diff <- -30

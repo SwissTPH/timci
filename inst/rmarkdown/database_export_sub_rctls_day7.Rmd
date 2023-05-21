@@ -178,7 +178,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "nonvalid_ids_identify_duplicates"
 df <- allday7fu_data
 idcol1 <- "child_id"
-refdf <- facility_data
+refdf <- allday0_data
 idcol2 <- "child_id"
 duplicatedf <- initial_duplicates_df
 idcol3 <- "id"
@@ -203,7 +203,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "matched_names"
 df <- qc_reuse_df %>% 
   dplyr::mutate(name = tolower(name))
-refdf <- facility_data
+refdf <- allday0_data
 col_date <- "date_day0"
 col_name <- "name"
 ldate_diff <- -2

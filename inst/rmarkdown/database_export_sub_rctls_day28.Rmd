@@ -154,7 +154,8 @@ qc_rule <- "Discard follow-up records of participants who are enrolled in the Da
 qc_type <- "nonvalid_ids2"
 df <- raw_allday28fu_data
 idcol1 <- "child_id"
-refdf <- facility_data_after_lock %>%
+refdf <- rbind(facility_data_before_start,
+               facility_data_after_lock) %>%
   dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
 col_date <- "date_call"
@@ -184,7 +185,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "nonvalid_ids_identify_duplicates"
 df <- allday28fu_data
 idcol1 <- "child_id"
-refdf <- facility_data
+refdf <- allday0_data
 idcol2 <- "child_id"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_day28fu
@@ -206,7 +207,7 @@ qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 data
 qc_type <- "matched_names"
 df <- qc_reuse_df %>% 
   dplyr::mutate(name = tolower(name))
-refdf <- facility_data
+refdf <- allday0_data
 col_date <- "date_day0"
 col_name <- "name"
 ldate_diff <- -2
