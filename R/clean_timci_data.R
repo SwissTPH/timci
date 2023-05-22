@@ -271,13 +271,12 @@ correct_day0_all <- function(df) {
 
 correct_day7_duplicates <- function(df) {
 
-  csv_filename <- NULL
-  if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-    csv_filename <- "day7_duplicate_correction_kenya.csv"
-  }
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day7_duplicate_correction_kenya.csv",
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day7_duplicate_correction_tanzania.csv",
+                                   TRUE ~ "")
 
   out <- list(df,NULL)
-  if (!is.null(csv_filename)) {
+  if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname)
     if ("a1-pid" %in% colnames(df))
@@ -286,7 +285,7 @@ correct_day7_duplicates <- function(df) {
         merge(edits[, c("old_child_id", "uuid", "new_child_id")],
               by.x = c("a1-pid", "meta-instanceID"),
               by.y = c("old_child_id", "uuid"),
-              all.x=TRUE)
+              all.x = TRUE)
       df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
       df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
     } else if ("child_id" %in% colnames(df))
@@ -295,7 +294,7 @@ correct_day7_duplicates <- function(df) {
         merge(edits[, c("old_child_id", "uuid", "new_child_id")],
               by.x = c("child_id", "uuid"),
               by.y = c("old_child_id", "uuid"),
-              all.x=TRUE)
+              all.x = TRUE)
       df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
       df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
     }
@@ -324,6 +323,66 @@ correct_day7_all <- function(df) {
 
 }
 
+#' Correct Day 28 duplicates (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_day28_duplicates <- function(df) {
+
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day28_duplicate_correction_tanzania.csv",
+                                   TRUE ~ "")
+
+  out <- list(df,NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::read_csv(csv_pathname)
+    if ("a1-pid" %in% colnames(df))
+    {
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("a1-pid", "meta-instanceID"),
+              by.y = c("old_child_id", "uuid"),
+              all.x = TRUE)
+      df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
+      df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
+    } else if ("child_id" %in% colnames(df))
+    {
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("old_child_id", "uuid"),
+              all.x = TRUE)
+      df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+    }
+
+    # Remove the column new_child_id from the dataframe
+    drop <- c("new_child_id")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, edits)
+  }
+  out
+
+}
+
+#' Edit Day 28 follow-up data for all errors that were detected by quality checks (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns an edited dataframe with corrections
+#' @import dplyr
+#' @export
+
+correct_day28_all <- function(df) {
+
+  # Correct duplicated child IDs
+  df <- timci::correct_day28_duplicates(df)[[1]]
+
+}
+
 #' Edit incorrect healthcare provider (HCP) IDs in SPA sick child observation entries (TIMCI-specific function)
 #' This function can be used to correct documented HCP IDs
 #'
@@ -334,8 +393,8 @@ correct_day7_all <- function(df) {
 
 correct_spa_sco_hcp_ids <- function(df) {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_hcp_correction_kenya.csv",
-                            TRUE ~ "")
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_hcp_correction_kenya.csv",
+                                   TRUE ~ "")
 
   out <- list(df, NULL)
   if ( csv_filename != "" ) {
