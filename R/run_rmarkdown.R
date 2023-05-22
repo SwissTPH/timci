@@ -603,7 +603,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (spa_cgei_is_not_null) {
       spa_cgei_data <- spa_cgei_data %>%
         merge(y = spa_facility_ids,
-              by.x = 'b1-fcode',
+              by.x = 'fcode',
               by.y = 'facility_id',
               all = FALSE)
     }
@@ -611,7 +611,7 @@ run_rmarkdown_reportonly <- function(rctls_pid,
     if (spa_fa_is_not_null) {
       spa_fa_data <- spa_fa_data %>%
         merge(y = spa_facility_ids,
-              by.x = 'facility_identification-a1_2',
+              by.x = 'a1_2',
               by.y = 'facility_id',
               all = FALSE)
     }

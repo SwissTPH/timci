@@ -23,9 +23,9 @@ timci::generate_calendar_heatmap2(spa_fa_data,
 
 ```{r, results="asis", eval=!is_tanzania}
 all <- spa_fa_data %>% 
-  rename(facility_name = "facility_identification-fname",
-         upgraded_from_designation = "facility_identification-b2_2",
-         inpatient_beds = "b2-b2_7")
+  rename(facility_name = "fname",
+         upgraded_from_designation = "b2_2",
+         inpatient_beds = "b2_7")
 
 summary <- list(
   "Summary" = list(

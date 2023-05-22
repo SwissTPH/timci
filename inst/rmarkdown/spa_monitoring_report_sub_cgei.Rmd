@@ -26,7 +26,7 @@ timci::heatmap_wday_hourofday(spa_cgei_data,
 
 ```{r, results = "asis"}
 all <- spa_cgei_data %>% 
-  rename(referral = "g5-i4_1",
+  rename(referral = "i4_1",
          facility_name = "fname")
 
 summary <- list(
