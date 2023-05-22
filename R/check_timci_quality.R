@@ -323,28 +323,34 @@ identify_nonvalid_ids2 <- function(df1,
 #' @param col_id1 The column name containing IDs in \code{df1}.
 #' @param df2 A reference dataframe containing the valid IDs to compare with.
 #' @param col_id2 The column name containing IDs in \code{df2}.
-#' @param df3 A dataframe containing additional information related to valid IDs.
-#' @param col_id3 The column name containing IDs in \code{df3}.
-#' @param col_val The column name containing values related to valid IDs in \code{df3}.
+#' @param col_date1 The name of the column containing the date in the \code{df1} dataframe.
+#' @param ldate_diff Lower date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#' @param udate_diff Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#' @param matched_names Boolean indicating whether to perform matching based on names.
+#' @param cleaning The cleaning option, which can be "drop_all" to remove non-valid IDs from \code{df1}.
 #'
 #' @return A list containing two data frames. The first data frame contains the IDs and dates at which the ID has been allocated in different columns. The second data frame contains the cleaned data.
 #
 #' @export
 
-identify_nonvalid_ids_with_previous_duplicates <- function(df1,
-                                                           col_id1,
-                                                           df2,
-                                                           col_id2,
-                                                           df3,
-                                                           col_id3,
-                                                           col_val) {
+identify_nonvalid_ids_with_matched_names <- function(df1,
+                                                     col_id1,
+                                                     df2,
+                                                     col_id2,
+                                                     col_date1,
+                                                     ldate_diff,
+                                                     udate_diff,
+                                                     matched_names = FALSE,
+                                                     cleaning = "none") {
 
-  qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ] %>%
-    merge(df3[c(col_id3, col_val),],
-          by.x = col_id1,
-          by.y = col_id3,
-          all.x = TRUE)
-  cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+  cleaned_df <- NULL
+
+  # Detect IDs in df1 that are not found in df2
+  qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  if (cleaning == "drop_all") {
+    cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ]
+  }
 
   cols <- colnames(qc_df)
   kcols <- c()
@@ -375,6 +381,19 @@ identify_nonvalid_ids_with_previous_duplicates <- function(df1,
   }
   qc_df <- qc_df %>%
     dplyr::select(kcols)
+
+  if (matched_names) {
+    out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
+                                                             dplyr::mutate(name = tolower(name)),
+                                                           day0_df = df2,
+                                                           col_date = col_date1,
+                                                           col_name = "name",
+                                                           ldate_diff = ldate_diff,
+                                                           udate_diff = udate_diff)
+    if ( !is.null(out[[1]]) ) {
+      qc_df <- out[[1]]
+    }
+  }
 
   list(qc_df, cleaned_df)
 

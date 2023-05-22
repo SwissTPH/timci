@@ -637,12 +637,20 @@ identify_multiple_enrolments <- function(df) {
 #'
 #' @param refdf reference dataframe
 #' @param fudf dataframe containing the follow-up data to check
+#' @param col_date The name of the column containing the date in the \code{df1} dataframe.
+#' @param ldate_diff Lower date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#' @param udate_diff Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
+#' @param matched_names Boolean indicating whether to perform matching based on names.
 #' @return This function returns a dataframe.
 #' @export
 #' @import dplyr
 
 detect_inconsistent_names_between_visits <- function(refdf,
-                                                     fudf) {
+                                                     fudf,
+                                                     col_date,
+                                                     ldate_diff,
+                                                     udate_diff,
+                                                     matched_names = FALSE) {
 
   qc_df <- NULL
   cleaned_df <- NULL
@@ -669,10 +677,12 @@ detect_inconsistent_names_between_visits <- function(refdf,
 
     if ( "name" %in% cols ) {
       fudf <- fudf %>%
-        dplyr::mutate(name = tolower(name))
+        dplyr::mutate(name = tolower(ifelse(name == "NA NA", "", name)))
     } else if ( "fs_name_check" %in% cols ) {
       fudf <- fudf %>%
-        dplyr::mutate(name = tolower(paste(fs_name_check, ls_name_check, sep = ' ')))
+        dplyr::mutate(name = tolower(paste(ifelse(fs_name_check == "NA", "", fs_name_check),
+                                           ifelse(ls_name_check == "NA", "", ls_name_check),
+                                           sep = ' ')))
     }
 
     qc_df <- refdf %>%
@@ -694,6 +704,7 @@ detect_inconsistent_names_between_visits <- function(refdf,
     }
 
     if ( "name" %in% colnames(qc_df)) {
+      qc_df$date_for_matching <- qc_df[[col_date]]
       qc_df <- qc_df %>%
         dplyr::rowwise() %>%
         dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
@@ -704,12 +715,26 @@ detect_inconsistent_names_between_visits <- function(refdf,
                       uuid,
                       name,
                       refname,
-                      lvr) %>%
+                      lvr,
+                      date_for_matching) %>%
         dplyr::filter(lvr < thres)
     } else {
       qc_df <- NULL
     }
 
+  }
+
+  if (matched_names) {
+    out <- timci::detect_matched_names_between_fu_and_day0(qc_df %>%
+                                                               dplyr::mutate(name = tolower(name)),
+                                                           refdf,
+                                                           "date_for_matching",
+                                                           "name",
+                                                           ldate_diff,
+                                                           udate_diff)
+    if ( !is.null(out[[1]]) ) {
+      qc_df <- out[[1]]
+    }
   }
 
   list(qc_df, cleaned_df)
@@ -741,7 +766,7 @@ detect_matched_names_between_fu_and_day0 <- function(df,
   qc_df <- NULL
   cleaned_df <- NULL
 
-  thres <- 75 # Threshold for Tanzania, check for other countries
+  thres <- 70 # Threshold for Tanzania, check for other countries
 
   if (timci::is_not_empty(df) & timci::is_not_empty(day0_df)) {
 
@@ -765,10 +790,13 @@ detect_matched_names_between_fu_and_day0 <- function(df,
 
     if (col_date %in% df_cols & col_name %in% df_cols & "uuid" %in% df_cols) {
 
+      df <- data.frame(df)
+
       for (row in 1:nrow(df)) {
 
         # Extract constraints for restricting the search in day0_df
-        cdate <- as.Date(df[row, col_date])
+        cdate <- df[row, col_date]#as.Date(df[row, "date_day0"])#as.Date(df[row, col_date], "%Y-%m-%d")
+        cdate <- as.Date(cdate)
         min_date <- as.Date(cdate + ldate_diff)
         max_date <- as.Date(cdate + udate_diff)
 

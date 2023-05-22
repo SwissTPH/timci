@@ -114,14 +114,16 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
-```{r, eval=(qc_type=="nonvalid_ids_identify_duplicates")}
-out <- timci::identify_nonvalid_ids_with_previous_duplicates(df,
-                                                             idcol1,
-                                                             refdf,
-                                                             idcol2,
-                                                             duplicatedf,
-                                                             idcol3,
-                                                             valcol)
+```{r, eval=(qc_type=="nonvalid_ids_identify_names")}
+out <- timci::identify_nonvalid_ids_with_matched_names(df1 = df,
+                                                       col_id1 = idcol1,
+                                                       df2 = refdf,
+                                                       col_id2 = idcol2,
+                                                       col_date1 = datecol,
+                                                       ldate_diff = ldate_diff,
+                                                       udate_diff = udate_diff,
+                                                       matched_names = matched_names,
+                                                       cleaning = cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
@@ -200,19 +202,6 @@ out <- timci::identify_true_duplicate(df,
                                       col_id,
                                       col_date,
                                       cleaning)
-qc_df <- out[[1]]
-cleaned_df <- out[[2]]
-```
-
-<!-- Detect matched names between follow-up and reference Day 0 database -->
-
-```{r, eval=(qc_type=="matched_names")}
-out <- timci::detect_matched_names_between_fu_and_day0(df,
-                                                       refdf,
-                                                       col_date,
-                                                       col_name,
-                                                       ldate_diff,
-                                                       udate_diff)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
@@ -375,7 +364,11 @@ qc_df <- rbind(drug_disp_df1,
 
 ```{r, eval=(qc_type=="inconsistent_names")}
 out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
-                                                       fudf = df)
+                                                       fudf = df,
+                                                       col_date = datecol,
+                                                       ldate_diff = ldate_diff,
+                                                       udate_diff = udate_diff,
+                                                       matched_names = matched_names)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```

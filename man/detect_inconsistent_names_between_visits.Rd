@@ -4,12 +4,27 @@
 \alias{detect_inconsistent_names_between_visits}
 \title{Detect inconsistent participant names between follow-up and baseline visits (TIMCI-specific function)}
 \usage{
-detect_inconsistent_names_between_visits(refdf, fudf)
+detect_inconsistent_names_between_visits(
+  refdf,
+  fudf,
+  col_date,
+  ldate_diff,
+  udate_diff,
+  matched_names = FALSE
+)
 }
 \arguments{
 \item{refdf}{reference dataframe}
 
 \item{fudf}{dataframe containing the follow-up data to check}
+
+\item{col_date}{The name of the column containing the date in the \code{df1} dataframe.}
+
+\item{ldate_diff}{Lower date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.}
+
+\item{udate_diff}{Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.}
+
+\item{matched_names}{Boolean indicating whether to perform matching based on names.}
 }
 \value{
 This function returns a dataframe.
