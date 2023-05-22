@@ -1,2 +1,13 @@
 old_child_id,uuid,new_child_id,reason,action
-K-F0214-P0534,uuid:7d3e6727-e925-417b-b4de-687c869f58ad,K-F0214-P0540,manual error,correct
+T-F0017-P1292,uuid:1866dc81-6e8e-4abf-aaa8-d0d429fd8d63,T-F0017-P1294,manual error,correct
+T-F0027-P0794,uuid:23402ba0-7908-47e2-b8f2-2493cebda9db,T-F9027-P0794,manual error,correct
+T-F0027-P0794,uuid:364867a8-65d4-4da8-95e0-cd2f694851f6,T-F9027-P0794,manual error,correct
+T-F0022-P0360,uuid:592fa3f9-362b-4ae4-b8ff-f25c9429a103,T-F0023-P0360,manual error,correct
+T-F0091-P0563,uuid:b1d88338-7554-4577-b34a-92fed826d846,T-F0091-P0562,manual error,correct
+T-F0091-P0563,uuid:b1d88338-7554-4577-b34a-92fed826d846,T-F0091-P0562,manual error,correct
+T-F0006-P0481,uuid:bb31fdbd-8cae-4aa5-9b28-7673d6b9bd92,T-R0006-P0481,manual error,correct
+T-F0022-P0360,uuid:bc7a45b8-f374-48af-bdff-05e4397ecd07,T-F0023-P0360,manual error,correct
+T-F0027-P0794,uuid:c3ae1b41-b7d7-4686-8b0a-93c08a91777b,T-F9027-P0794,manual error,correct
+T-F0022-P0395,uuid:c8dc5ce4-714d-4f2d-ae46-01576afe512a,T-F0023-P0395,manual error,correct
+T-F0022-P0360,uuid:dea9e7e0-8262-4b49-9258-5deac81a1ed8,T-F0023-P0360,manual error,correct
+T-F0022-P0360,uuid:f6ce9a6b-be12-41c2-9317-2eeb8ae3d6ae,T-F0023-P0360,manual error,correct
