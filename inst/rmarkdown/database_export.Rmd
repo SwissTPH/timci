@@ -412,11 +412,7 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 
 \newpage
 
-```{r}
-test <- FALSE
-```
-
-```{r db-export-repeats-subsection, child = if(test) 'database_export_sub_rctls_repeats.Rmd'}
+```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
 ```
 
 \newpage
