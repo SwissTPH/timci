@@ -1395,3 +1395,8 @@ day0_data <- day0_data %>%
 ```{r, results='asis'}
 skimr::skim(day0_data)
 ```
+
+```{r}
+rm(raw_day0_data)
+gc()
+```

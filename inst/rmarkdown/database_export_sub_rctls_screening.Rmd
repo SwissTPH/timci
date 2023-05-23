@@ -615,3 +615,10 @@ timci::dataset_export(facility_data_audit,
                       rctls_dir,
                       "Screening audit data")
 ```
+
+```{r}
+rm(raw_screening_data,
+   screening_data,
+   facility_data_audit)
+gc()
+```

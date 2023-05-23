@@ -372,6 +372,8 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
   }
   if ( "name" %in% cols ) {
     kcols <- c(kcols, "name")
+  } else if ( "child_name" %in% cols ) {
+    kcols <- c(kcols, "child_name")
   }
   if ( "deviceid" %in% cols ) {
     kcols <- c(kcols, "deviceid")
@@ -383,13 +385,23 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
     dplyr::select(kcols)
 
   if (matched_names) {
-    out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
-                                                             dplyr::mutate(name = tolower(name)),
-                                                           day0_df = df2,
-                                                           col_date = col_date1,
-                                                           col_name = "name",
-                                                           ldate_diff = ldate_diff,
-                                                           udate_diff = udate_diff)
+    if ( "name" %in% cols ) {
+      out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
+                                                               dplyr::mutate(name = tolower(name)),
+                                                             day0_df = df2,
+                                                             col_date = col_date1,
+                                                             col_name = "name",
+                                                             ldate_diff = ldate_diff,
+                                                             udate_diff = udate_diff)
+    } else if ( "child_name" %in% cols ) {
+      out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
+                                                               dplyr::mutate(child_name = tolower(child_name)),
+                                                             day0_df = df2,
+                                                             col_date = col_date1,
+                                                             col_name = "child_name",
+                                                             ldate_diff = ldate_diff,
+                                                             udate_diff = udate_diff)
+    }
     if ( !is.null(out[[1]]) ) {
       qc_df <- out[[1]]
     }

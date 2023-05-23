@@ -339,3 +339,8 @@ timci::dataset_export(allday7fu_data_no_pii,
                       locked_db_dir,
                       "Cleaned Day 7 follow-up data")
 ```
+
+```{r}
+rm(raw_allday7fu_data)
+gc()
+```

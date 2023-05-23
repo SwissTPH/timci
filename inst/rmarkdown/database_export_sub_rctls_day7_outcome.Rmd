@@ -437,3 +437,8 @@ if (!is.null(locked_ltfu)) {
 ```{r, results='asis'}
 skimr::skim(day7fu_data)
 ```
+
+```{r}
+rm(raw_successday7fu_data)
+gc()
+```
