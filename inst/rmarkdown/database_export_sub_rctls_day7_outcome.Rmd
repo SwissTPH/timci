@@ -391,7 +391,7 @@ if ( day7fu_is_not_null ) {
 ```{r locked-day7-lost-to-followup}
 locked_ltfu <- NULL
 if (!is.null(allday7fu_data)) {
-  if (nrow(allday7fu_data)>0) {
+  if (nrow(allday7fu_data) > 0) {
     locked_ltfu <- timci::generate_ltfu_log(df = day0_data,
                                             fudf = allday7fu_data,
                                             end_date = 12,
@@ -436,9 +436,4 @@ if (!is.null(locked_ltfu)) {
 
 ```{r, results='asis'}
 skimr::skim(day7fu_data)
-```
-
-```{r}
-rm(raw_successday7fu_data)
-gc()
 ```

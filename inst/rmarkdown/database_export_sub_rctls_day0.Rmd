@@ -144,6 +144,8 @@ if (!is.null(qc_inconsistent_facility)) {
 write(" o Discrepancy in facility IDs (vs. device)", stderr())
 ```
 
+`r if ( is_tanzania | is_senegal ) {'##### Initial check'}`
+
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
 qc_rule <- action_alert_no_modification
@@ -151,7 +153,61 @@ qc_type <- "inconsistent_facility_info1"
 df <- day0_data
 qc_text <- ""
 qc_idx <- qc_inconsistent_facility_info1
-qc_export_label <- "inconsistent_facility_info1"
+qc_export_label <- "inconsistent_facility_info1_01"
+qc_export_description <- "facility information between the child ID and the device is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_inconsistent_facility_info1 <- n_detected
+```
+
+`r if ( is_tanzania ) {'##### Child ID manual edits'}`
+
+```{r, eval=is_tanzania, results='asis'}
+correction_type <- "edit_day0_child_ids_to_correct_facilities"
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+day0_data <- edited_df
+```
+
+`r if ( is_tanzania ) {'##### Second check'}`
+
+```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info1"
+df <- day0_data
+qc_text <- ""
+qc_idx <- qc_inconsistent_facility_info1
+qc_export_label <- "inconsistent_facility_info1_02_after_childID_correction"
+qc_export_description <- "facility information between the child ID and the device is inconsistent"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_inconsistent_facility_info1 <- n_detected
+```
+
+`r if ( is_senegal | is_tanzania ) {'##### Facility ID manual edits'}`
+
+```{r, eval=is_senegal|is_tanzania, results='asis'}
+correction_type <- "correct_day0_inconsistent_facilities"
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+day0_data <- edited_df
+```
+
+`r if ( is_senegal | is_tanzania ) {'##### Final check'}`
+
+```{r, eval=facility_data_is_not_null&(is_senegal|is_tanzania), results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info1"
+df <- day0_data
+qc_text <- ""
+qc_idx <- qc_inconsistent_facility_info1
+qc_export_label <- "inconsistent_facility_info1_03_after_childID_and_facilityID_correction"
 qc_export_description <- "facility information between the child ID and the device is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
@@ -182,123 +238,9 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info2 <- n_detected
 ```
 
-`r if ( is_tanzania ) {'##### Child ID manual edits\n\n'}`
-
-```{r}
-edited_records <- NULL
-edited_df_status_update <- ""
-```
-
-```{r, eval=is_tanzania}
-out <- timci::edit_day0_child_ids(day0_data, wf = TRUE)
-day0_data <- out[[1]]
-edited_records <- out[[2]]
-```
-
-```{r}
-edits_is_not_empty <- timci::is_not_empty(edited_records)
-```
-
-```{r, eval=is_tanzania&edits_is_not_empty, results='asis'}
-edited_records %>%
-  dplyr::select(old_child_id, uuid, new_child_id) %>%
-  knitr::kable()
-```
-
-```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info1"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info1
-qc_export_label <- "inconsistent_facility_info1_after_childID_correction"
-qc_export_description <- "facility information between the child ID and the device is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_inconsistent_facility_info1 <- n_detected
-```
-
-```{r, eval=facility_data_is_not_null&(is_tanzania), results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the research assistant's manual entry."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info2"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info2
-qc_export_label <- "inconsistent_facility_info2_after_childID_correction"
-qc_export_description <- "facility information between the child ID and the research assistant's entry is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_inconsistent_facility_info2 <- n_detected
-```
-
-`r if ( is_senegal | is_tanzania ) {'##### Facility ID manual edits\n\n'}`
-
-```{r}
-edited_records <- NULL
-edited_df_status_update <- ""
-```
-
-```{r, eval=is_senegal}
-out <- timci::correct_day0_inconsistent_facilities(day0_data)
-day0_data <- out[[1]]
-edited_records <- out[[2]]
-```
-
-```{r, eval=is_tanzania}
-out <- timci::correct_day0_inconsistent_facilities(day0_data)
-day0_data <- out[[1]]
-edited_records <- out[[2]]
-```
-
-```{r, eval=(is_senegal)&!is.null(edited_records)}
-edited_df_status_update <- paste0('**', nrow(edited_records), '** record(s) were manually edited in the ', db_name, ' database.')
-```
-
-`r edited_df_status_update`
-
-```{r, eval=(is_senegal)&!is.null(edited_records), results='asis'}
-edited_records %>%
-  dplyr::select(child_id, uuid, new_fid) %>%
-  knitr::kable()
-```
-
-```{r, eval=facility_data_is_not_null&(is_senegal|is_tanzania), results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info1"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info1
-qc_export_label <- "inconsistent_facility_info1_after_facilityID_correction"
-qc_export_description <- "facility information between the child ID and the device is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_inconsistent_facility_info1 <- n_detected
-```
-
-```{r, eval=facility_data_is_not_null&(is_tanzania), results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the research assistant's manual entry."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info2"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info2
-qc_export_label <- "inconsistent_facility_info2_after_facilityID_correction"
-qc_export_description <- "facility information between the child ID and the research assistant's entry is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_inconsistent_facility_info2 <- n_detected
-```
-
 ### Participant identification
 
-#### Duplicated records [Compliance check `r qc_true_duplicates`]
+#### True duplicated records of same enrolment [Compliance check `r qc_true_duplicates`]
 
 ```{r}
 write(" o Management of duplicated records", stderr())
@@ -404,40 +346,12 @@ dropped_records %>%
 
 `r if ( !is_pilot ) { '#### Duplicated child IDs - Manual correction of duplicated IDs\n\n' }`
 
-```{r}
-edited_records_status_update <- ""
-out <- timci::edit_day0_child_ids(day0_data)
-day0_data <- out[[1]]
-duplicate_edits <- out[[2]]
-duplicate_edits_is_not_empty <- timci::is_not_empty(duplicate_edits)
-```
-
-```{r, eval=duplicate_edits_is_not_empty}
-edited_records_status_update <- paste0('**', nrow(duplicate_edits), '** record(s) manually corrected in the ', db_name, ' database.')
-```
-
-`r edited_records_status_update`
-
-```{r, eval=duplicate_edits_is_not_empty}
-n_duplicate_edits <- nrow(duplicate_edits)
-```
-
-```{r, eval=duplicate_edits_is_not_empty, results='asis'}
-duplicate_edits %>%
-  select(old_child_id, uuid, new_child_id) %>%
-  head(5) %>%
-  knitr::kable(row.names = FALSE,
-               caption = "Five first rows")
-```
-
-...
-
-```{r, eval=duplicate_edits_is_not_empty, results='asis'}
-duplicate_edits %>%
-  select(old_child_id, uuid, new_child_id) %>%
-  tail(5) %>%
-  knitr::kable(row.names = FALSE,
-               caption = "Five last rows")
+```{r, results='asis'}
+correction_type <- "edit_day0_child_ids_to_correct_duplicates"
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+day0_data <- edited_df
 ```
 
 `r if ( !is_pilot ) { paste0('#### Duplicated child IDs - Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
@@ -462,26 +376,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r, eval=!is.null(cleaned_df)}
 day0_data <- cleaned_df
-```
-
-```{r}
-fig_caption <- "Duplicated IDs (after manual edits)"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-fill_col <- ""
-comparison <- "type"
-```
-
-```{r, eval=timci::is_not_empty(qc_df), results='asis'}
-fig_df <- qc_df %>% 
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(date_2), "week", week_start = getOption("lubridate.week.start", 1)))) %>%
-  dplyr::mutate(fid = substr(id, 3, 7))
-
-cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
 ```
 
 #### Detection of multiple 28-disease episodes for the same children

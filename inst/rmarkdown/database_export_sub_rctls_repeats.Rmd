@@ -40,6 +40,10 @@ repeat_data <- repeat_data %>%
   dplyr::mutate(child_name = gsub('[0-9]+', '', tolower(paste(fs_name_check, ls_name_check, sep = ' '))))
 ```
 
+```{r}
+n_outlock_pids_repeat_records <- 0
+```
+
 ### Participant identification
 
 #### Repeat visits corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_repeat`]
@@ -68,7 +72,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_afterlock_pids_repeat_records <- n_detected
+n_outlock_pids_repeat_records <- n_detected
 repeat_data <- cleaned_df
 ```
 

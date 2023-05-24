@@ -393,6 +393,7 @@ n_detected <- nrow(qc_df)
 ```
 
 ```{r, eval=(qc_type=="duplicates")&!is.null(qc_df2)}
+#sum(!is.na(df1[colnames(df1[cols])]))
 n_detected <- nrow(qc_df2)
 ```
 
