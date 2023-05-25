@@ -2,10 +2,11 @@
 write("Export screening data and run corresponding quality checks", stderr())
 ```
 
+<!-- Parameters -->
+
 ```{r}
-###############################
-# Screening quality check IDs #
-###############################
+db_name <- "screening"
+
 qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
 qc_incorrect_date_setup <- "DQC_00_0SG_02"
 qc_nontimely_submission_id <- "DQC_00_0SG_03"
@@ -18,31 +19,26 @@ qc_underaged_cg_id <- "DQC_00_0SG_09"
 qc_dup_repeats_id <- "DQC_00_0SG_10"
 ```
 
+```{r}
+n_deviceid_edit_records <- 0
+n_nonvalid_deviceid_records <- 0
+n_other_fid_records <- 0
+n_incorrect_date_setup_records <- 0
+n_late_submissions <- 0
+n_late_completions <- 0
+n_before_startdate_records <- 0
+n_after_lockdate_records <- 0
+n_ineligible_cg_records <- 0
+n_repeat_edit_records <- 0
+n_inconsistent_age_info <- 0
+n_cleaned_screening_records <- 0
+```
+
 ## Screening data quality checks and cleaning
 
-```{r}
-db_name <- "screening"
-
-# Screening data
-raw_screening_data <- timci::extract_screening_data(facility_data, is_pilot)
-
-n_raw_screening_records <- nrow(raw_screening_data)
-
-# Split into PII and deidentified raw data
-out <- timci::extract_enrolled_participants(facility_data, is_pilot)
-raw_day0_data <- out[[1]]
-raw_pii <- out[[2]]
-raw_repeat_data <- facility_data %>%
-  dplyr::filter(repeat_consult == 1)
-```
-
-Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
-
-```{r}
-n_inconsistent_age_info <- 0
-```
-
 ### Format raw data
+
+<!-- Extract dictionary -->
 
 ```{r}
 dictionary <- timci::import_country_specific_xls_dict("main_dict.xlsx", Sys.getenv('TIMCI_COUNTRY'))
@@ -60,10 +56,48 @@ screening_dictionary %>%
                              "ODK reference"))
 ```
 
+<!-- Extract raw data -->
+
+```{r}
+# Screening data
+raw_screening_data <- timci::extract_screening_data(facility_data, is_pilot)
+
+n_raw_screening_records <- nrow(raw_screening_data)
+
+# Split into PII and deidentified raw data
+out <- timci::extract_enrolled_participants(facility_data, is_pilot)
+raw_day0_data <- out[[1]]
+raw_pii <- out[[2]]
+raw_repeat_data <- facility_data %>%
+  dplyr::filter(repeat_consult == 1)
+```
+
+Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
+
 ### Facilities
 
 ```{r}
 write(" o Facility checks", stderr())
+```
+
+#### Data from different facilities collected on the same device on the same day
+
+```{r}
+write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
+```
+
+```{r, eval=is_tanzania, results='asis'}
+# Parameters for manual corrections
+mc_description <- paste0('Manual correction of device IDs based on operational information from the field.')
+to_correct_df <- facility_data
+correction_type <- "correct_device_ids"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_deviceid_edit_records <- n_mc
+facility_data <- corrected_df
 ```
 
 #### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
@@ -81,9 +115,11 @@ qc_text <- "non-valid device IDs"
 qc_idx <- qc_screening_w_nonvalid_deviceid
 qc_export_label <- "nonvalid_deviceids"
 qc_export_description <- "the device ID is not valid"
+
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
 n_nonvalid_deviceid_records <- n_detected
 ```
 
@@ -97,12 +133,6 @@ facility_data <- cleaned_df
 write("\to Facility IDs from other facilities (India only)", stderr())
 ```
 
-```{r}
-qc_df <- NULL
-n_other_fid_records <- 0
-cleaned_df <- NULL
-```
-
 `r if ( !is_india ) { paste0('This check is only implemented for the India dataset.') }`
 
 ```{r, eval=facility_data_is_not_null&is_india, results='asis'}
@@ -114,23 +144,18 @@ qc_text <- "facility IDs corresponding to another TIMCI study"
 qc_idx <- qc_screening_other_fids
 qc_export_label <- "screening_other_fids"
 qc_export_description <- "the facility ID correspond to another TIMCI study"
+
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+other_timci_study_df <- qc_reuse_df
 n_other_fid_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
 facility_data <- cleaned_df
 ```
-
-#### Data from two different facilities collected on the same device on the same day
-
-```{r}
-write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
-```
-
-Add correction from the field (to be implemented asap)
 
 ### Dates and times
 
@@ -156,9 +181,11 @@ qc_text <- "an incorrect date setup on the tablet"
 qc_idx <- qc_incorrect_date_setup
 qc_export_label <- "incorrect_date_setup"
 qc_export_description <- "the date setup is not correct"
+
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
 n_incorrect_date_setup_records <- n_detected
 ```
 
@@ -393,7 +420,7 @@ facility_data <- cleaned_df
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania | is_ls ) { paste0('* Initial check ', qc_dup_repeats_id, 'a') }`
+`r if ( is_tanzania | is_ls ) { paste0('**Initial check ', qc_dup_repeats_id, 'a**') }`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
@@ -428,16 +455,12 @@ cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania | is_ls ) { '* Manual correction of repeat visits recorded as duplicated IDs' }`
+<!-- Manual corrections -->
 
-```{r}
-n_repeat_edit_records <- 0
-```
-
-```{r, eval = (is_tanzania | is_ls), results='asis'}
+```{r, eval=(is_tanzania|is_ls), results='asis'}
 # Parameters for manual corrections
-mc_description <- paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below: variable *repeat_consult* set to *1* variable *consent* set to *NA* variable *enrolled* set to *NA*')
-to_mc_df <- facility_data
+mc_description <- paste0('Manual correction of repeat visits recorded as duplicated IDs. Confirmed repeat records are manually edited in the ', db_name, ' database as described below: variable *repeat_consult* set to *1* variable *consent* set to *NA* variable *enrolled* set to *NA*')
+to_correct_df <- facility_data
 correction_type <- "convert_screening_from_day0_to_repeat"
 
 # Parameters for the quality check following manual corrections
@@ -447,8 +470,9 @@ qc_idx <- paste0(qc_dup_repeats_id, "b")
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-facility_data <- mc_df
+
 n_repeat_edit_records <- n_mc
+facility_data <- corrected_df
 ```
 
 ### Misc
@@ -618,5 +642,5 @@ timci::dataset_export(facility_data_audit,
 rm(raw_screening_data,
    screening_data,
    facility_data_audit)
-gc()
+gc(verbose = FALSE)
 ```

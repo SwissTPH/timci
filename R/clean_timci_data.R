@@ -5,6 +5,39 @@
 #' @import dplyr
 #' @export
 
+correct_device_ids <- function(df) {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_deviceid_correction_from_field_tanzania.csv",
+                            TRUE ~ "")
+
+  out <- list(df,NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+    df <- df %>%
+      merge(edits[, c("old_device_id", "uuid", "new_device_id")],
+            by.x = c("device_id", "uuid"),
+            by.y = c("old_device_id", "uuid"),
+            all.x = TRUE)
+    df$device_id <- ifelse(is.na(df$new_device_id), df$device_id, df$new_device_id)
+
+    # Remove the column new_device_id from the dataframe
+    drop <- c("new_device_id")
+    df <- df[,!(names(df) %in% drop)]
+
+    out <- list(df, edits)
+  }
+  out
+
+}
+
+#' Edit non-valid facilities in Day 0 data entries (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
 correct_day0_non_valid_facilities <- function(df) {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_non_valid_facility_correction_tanzania.csv",

@@ -7,8 +7,8 @@ date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 <!-- Initialisation -->
 
 ```{r}
-out <- to_mc_df
-mc_df <- NULL
+out <- to_correct_df
+corrected_df <- NULL
 edited_records <- NULL
 valid_edits <- NULL
 non_valid_edits <- NULL
@@ -19,47 +19,61 @@ non_valid_is_not_empty <- FALSE
 non_valid_partial_disp <- FALSE
 non_valid_full_disp <- FALSE
 n_mc <- 0
-mc_df_status_update <- ""
+mc_status_update <- ""
 ```
 
-**Manual correction description**: `r mc_description`
+```{r}
+corrections_from_field <- c("edit_day0_child_ids_to_correct_facilities_from_field_info",
+                            "correct_device_ids")
+is_not_from_field <- (!correction_type %in% corrections_from_field)
+```
+
+---
+
+**Manual corrections**
+
+**Description**: `r mc_description`
 
 <!-- Type of possible corrections -->
 
+```{r, eval=(correction_type=="correct_device_ids")}
+out <- timci::correct_device_ids(to_correct_df)
+```
+
 ```{r, eval=(correction_type=="convert_screening_from_day0_to_repeat")}
-out <- timci::edit_day0_to_repeat(to_mc_df)
+out <- timci::edit_day0_to_repeat(to_correct_df)
 
 # Parameters for the quality check following manual corrections
 qc_rule <- action_alert_no_modification
 ```
 
 ```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_check")}
-out <- timci::edit_day0_child_ids(to_mc_df, csv_prefix = "day0_childID_correction_inconsistent_facility_check")
+out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_childID_correction_inconsistent_facility_check")
 
 # Parameters for the quality check following manual corrections
 qc_rule <- action_alert_no_modification
 ```
 
 ```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_field_info")}
-out <- timci::edit_day0_child_ids(to_mc_df, csv_prefix = "day0_childID_correction_from_field")
+out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_childID_correction_from_field")
 ```
 
 ```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
-out <- timci::edit_day0_child_ids(to_mc_df, csv_prefix = "day0_duplicate_correction")
+out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_duplicate_correction")
 ```
 
 ```{r, eval=is_senegal&(correction_type=="correct_day0_inconsistent_facilities")}
-out <- timci::correct_day0_inconsistent_facilities(to_mc_df)
+out <- timci::correct_day0_inconsistent_facilities(to_correct_df)
 ```
 
 ```{r, eval=is_tanzania&(correction_type=="correct_day0_inconsistent_facilities")}
-out <- timci::correct_day0_inconsistent_facilities(to_mc_df)
+out <- timci::correct_day0_inconsistent_facilities(to_correct_df)
 ```
 
 <!-- Display summary of valid and non-valid edits that were done -->
 
 ```{r, eval=!is.null(out)}
-mc_df <- out[[1]]
+corrected_df <- out[[1]]
 edited_records <- out[[2]]
 ```
 
@@ -86,14 +100,14 @@ if ( 'new_fid' %in% cols ) {
 n_corrected <- nrow(edited_records)
 ```
 
-```{r, eval=edit_is_not_empty&(correction_type!="edit_day0_child_ids_to_correct_duplicates")}
+```{r, eval=edit_is_not_empty&is_not_from_field&(correction_type!="edit_day0_child_ids_to_correct_duplicates")}
 valid_edits <- edited_records[edited_records$uuid %in% qc_reuse_df$uuid,]
 valid_is_not_empty <- timci::is_not_empty(valid_edits)
 non_valid_edits <- edited_records[!edited_records$uuid %in% qc_reuse_df$uuid,]
 non_valid_is_not_empty <- timci::is_not_empty(non_valid_edits)
 ```
 
-```{r, eval=edit_is_not_empty&(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
+```{r, eval=edit_is_not_empty&is_not_from_field&(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
 uuid_cols <- grep("uuid", names(qc_reuse_df))
 valid_edits <- edited_records[edited_records$uuid %in% unname((unlist(qc_reuse_df[colnames(qc_reuse_df[uuid_cols])]))),]
 valid_is_not_empty <- timci::is_not_empty(valid_edits)
@@ -112,10 +126,10 @@ non_valid_full_disp <- non_valid_is_not_empty & ( nrow(non_valid_edits) <= 10 )
 ```
 
 ```{r, eval=edit_is_not_empty}
-mc_df_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
+mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
 ```
 
-`r mc_df_status_update`
+`r mc_status_update`
 
 ```{r, eval=valid_full_disp, results='asis'}
 valid_edits %>%
@@ -173,14 +187,12 @@ non_valid_edits %>%
 
 <!-- Quality check run after manual edits -->
 
-```{r}
-final_qc <- (correction_type!="edit_day0_child_ids_to_correct_facilities_from_field_info")
-```
+`r if (is_not_from_field) { paste0('---') }`
 
-`r if (final_qc) { paste0('* Final check after manual edits ', qc_idx) }`
+`r if (is_not_from_field) { paste0('**Final check after manual edits ', qc_idx, '**') }`
 
-```{r, eval=final_qc, results='asis'}
-df <- mc_df
+```{r, eval=is_not_from_field, results='asis'}
+df <- corrected_df
 qc_export_label <- paste0(qc_export_label, "_after_manual_edits")
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),

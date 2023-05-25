@@ -193,7 +193,7 @@ Add a check to already test if a duplicate exists
 
 ```{r, eval=is_tanzania, results='asis'}
 mc_description <- ""
-to_mc_df <- day0_data
+to_correct_df <- day0_data
 correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check"
 
 # Parameters for the quality check following manual corrections
@@ -202,14 +202,14 @@ qc_idx <- paste0(qc_inconsistent_facility_info1, "b")
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- mc_df
+day0_data <- corrected_df
 ```
 
 `r if ( is_senegal | is_tanzania ) {'* Manual correction of facility IDs'}`
 
 ```{r, eval=is_senegal|is_tanzania, results='asis'}
 mc_description <- ""
-to_mc_df <- day0_data
+to_correct_df <- day0_data
 correction_type <- "correct_day0_inconsistent_facilities"
 
 # Parameters for the quality check following manual corrections
@@ -218,7 +218,7 @@ qc_idx <- paste0(qc_inconsistent_facility_info1, "c")
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- mc_df
+day0_data <- corrected_df
 n_inconsistent_facility_info1 <- n_detected
 ```
 
@@ -253,12 +253,12 @@ Only for Tanzania at the moment
 
 ```{r, eval=is_tanzania, results='asis'}
 mc_description <- ""
-to_mc_df <- day0_data
+to_correct_df <- day0_data
 correction_type <- "edit_day0_child_ids_to_correct_facilities_from_field_info"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- mc_df
+day0_data <- corrected_df
 ```
 
 ### Participant identification
@@ -373,7 +373,7 @@ dropped_records %>%
 
 ```{r, eval=!is_pilot, results='asis'}
 mc_description <- ""
-to_mc_df <- day0_data
+to_correct_df <- day0_data
 correction_type <- "edit_day0_child_ids_to_correct_duplicates"
 
 # Parameters for the quality check following manual corrections
@@ -384,7 +384,7 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- mc_df
+day0_data <- corrected_df
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -1308,5 +1308,5 @@ skimr::skim(day0_data)
 
 ```{r}
 rm(raw_day0_data)
-gc()
+gc(verbose = FALSE)
 ```
