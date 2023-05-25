@@ -153,20 +153,6 @@ if (!is.null(params$facility_data)) {
 # Export settings #
 ###################
 
-# Screening quality check IDs
-##############################
-qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
-qc_incorrect_date_setup <- "DQC_00_0SG_02"
-qc_nontimely_submission_id <- "DQC_00_0SG_03"
-qc_nontimely_completion_id <- "DQC_00_0SG_04"
-qc_screening_before_startdate <- "DQC_00_0SG_05"
-qc_screening_after_lockdate <- "DQC_00_0SG_06"
-qc_screening_other_fids <- "DQC_00_0SG_07"
-qc_inconsistent_age_info <- "DQC_00_0SG_09"
-qc_underaged_cg_id <- "DQC_00_0SG_10"
-qc_dup_repeats_id1 <- "DQC_00_0SG_11a"
-qc_dup_repeats_id2 <- "DQC_00_0SG_11b"
-
 # Day 0 drug quality check IDs
 ###############################
 qc_duplicate_drug <- "DQC_00_1DG_01"
@@ -199,28 +185,6 @@ qc_ASAQ_consistency_drug <- "DQC_00_1DG_27"
 qc_DHAPPQ_consistency_drug <- "DQC_00_1DG_28"
 qc_primaquine_consistency_drug <- "DQC_00_1DG_29"
 qc_quinine_consistency_drug <- "DQC_00_1DG_30"
-
-# Day 0 quality check IDs
-##########################
-qc_inconsistent_facility_info1 <- "DQC_00_2ED_01a"
-qc_inconsistent_facility_info2 <- "DQC_00_2ED_01b"
-qc_nonvalid_fid1 <- "DQC_00_2ED_02a"
-qc_nonvalid_fid2 <- "DQC_00_2ED_02b"
-qc_true_duplicates <- "DQC_00_2ED_03"
-qc_duplicate_id1 <- "DQC_00_2ED_03a"
-qc_duplicate_id2 <- "DQC_00_2ED_03b"
-qc_ambiguous_enrolment_date1 <- "DQC_00_2ED_04"
-qc_ambiguous_enrolment_date2 <- "DQC_00_2ED_05"
-qc_multiple_enrolment_id <- "DQC_00_2ED_06"
-qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_2ED_07"
-qc_missing_cp_id <- "DQC_00_2ED_08"
-qc_missing_diagnosis_id <- "DQC_00_2ED_09"
-qc_missing_referral_id <- "DQC_00_2ED_10"
-qc_missing_treatment_id <- "DQC_00_2ED_11"
-qc_negative_nb_days_id <- "DQC_00_2ED_12"
-qc_free_text_rx_id <- "DQC_00_2ED_13"
-qc_pox_ <- "DQC_00_2ED_14"
-qc_summary_id <- "DQC_00_2ED_15"
 
 # Repeat visit check IDs
 #########################

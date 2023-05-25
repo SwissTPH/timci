@@ -136,6 +136,12 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ### Participant identification
 
+#### Follow-ups corresponding to participants enrolled in the CDSA pilot (India only)
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
+```
+
 #### Follow-ups corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_day7fu`]
 
 ```{r}

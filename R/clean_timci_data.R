@@ -79,17 +79,16 @@ correct_day0_inconsistent_facilities <- function(df) {
 #' This function can be used to correct documented child ID duplicates, incorrect facility codes, or typos in Day 0 data entries. It reads in a CSV file containing corrections and applies them to the input dataframe.
 #'
 #' @param df A dataframe containing the Day 0 data entries to be corrected.
-#' @param wf A logical value indicating whether to apply facility code corrections (default is FALSE).
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_duplicate_correction").
 #' @return A list containing the edited dataframe and the list of applied corrections.
 #' @import dplyr
 #' @import readr
 #' @export
 
 edit_day0_child_ids <- function(df,
-                                wf = FALSE) {
+                                csv_prefix = "day0_duplicate_correction") {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' & !wf ~ "day0_duplicate_correction_tanzania.csv",
-                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' & wf ~ "day0_duplicate_correction_winconsistency_facilityname_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_duplicate_correction_kenya.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_duplicate_correction_senegal.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'India' ~ "day0_duplicate_correction_india.csv",

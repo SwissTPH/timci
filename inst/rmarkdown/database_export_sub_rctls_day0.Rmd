@@ -2,6 +2,30 @@
 write("Export Day 0 data and run corresponding quality checks", stderr())
 ```
 
+```{r}
+###########################
+# Day 0 quality check IDs #
+###########################
+qc_inconsistent_facility_info1 <- "DQC_00_2ED_01"
+qc_inconsistent_facility_info2 <- "DQC_00_2ED_02"
+qc_nonvalid_fid1 <- "DQC_00_2ED_03"
+qc_nonvalid_fid2 <- "DQC_00_2ED_04"
+qc_true_duplicates <- "DQC_00_2ED_05"
+qc_duplicate_id <- "DQC_00_2ED_06"
+qc_ambiguous_enrolment_date1 <- "DQC_00_2ED_07"
+qc_ambiguous_enrolment_date2 <- "DQC_00_2ED_08"
+qc_multiple_enrolment_id <- "DQC_00_2ED_09"
+qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_2ED_10"
+qc_missing_cp_id <- "DQC_00_2ED_11"
+qc_missing_diagnosis_id <- "DQC_00_2ED_12"
+qc_missing_referral_id <- "DQC_00_2ED_13"
+qc_missing_treatment_id <- "DQC_00_2ED_14"
+qc_negative_nb_days_id <- "DQC_00_2ED_15"
+qc_free_text_rx_id <- "DQC_00_2ED_16"
+qc_pox_ <- "DQC_00_2ED_17"
+qc_summary_id <- "DQC_00_2ED_18"
+```
+
 ## Day 0 data quality checks and cleaning
 
 ```{r}
@@ -161,57 +185,40 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-`r if ( is_tanzania ) {'##### Child ID manual edits'}`
+Add the code of the closest facility
+
+`r if ( is_tanzania ) {'##### Manual correction of child IDs'}`
+
+Add a check to already test if a duplicate exists
 
 ```{r, eval=is_tanzania, results='asis'}
-correction_type <- "edit_day0_child_ids_to_correct_facilities"
+mc_description <- ""
+to_mc_df <- day0_data
+correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info1, "b")
+
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- edited_df
+day0_data <- mc_df
 ```
 
-`r if ( is_tanzania ) {'##### Second check'}`
-
-```{r, eval=facility_data_is_not_null&is_tanzania, results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info1"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info1
-qc_export_label <- "inconsistent_facility_info1_02_after_childID_correction"
-qc_export_description <- "facility information between the child ID and the device is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_inconsistent_facility_info1 <- n_detected
-```
-
-`r if ( is_senegal | is_tanzania ) {'##### Facility ID manual edits'}`
+`r if ( is_senegal | is_tanzania ) {'* Manual correction of facility IDs'}`
 
 ```{r, eval=is_senegal|is_tanzania, results='asis'}
+mc_description <- ""
+to_mc_df <- day0_data
 correction_type <- "correct_day0_inconsistent_facilities"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info1, "c")
+
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- edited_df
-```
-
-`r if ( is_senegal | is_tanzania ) {'##### Final check'}`
-
-```{r, eval=facility_data_is_not_null&(is_senegal|is_tanzania), results='asis'}
-qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from the device which is used (assuming 1 device is screening children in 1 unique facility per day)."
-qc_rule <- action_alert_no_modification
-qc_type <- "inconsistent_facility_info1"
-df <- day0_data
-qc_text <- ""
-qc_idx <- qc_inconsistent_facility_info1
-qc_export_label <- "inconsistent_facility_info1_03_after_childID_and_facilityID_correction"
-qc_export_description <- "facility information between the child ID and the device is inconsistent"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
+day0_data <- mc_df
 n_inconsistent_facility_info1 <- n_detected
 ```
 
@@ -236,6 +243,22 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_inconsistent_facility_info2 <- n_detected
+```
+
+#### Manual corrections from the field
+
+This includes information that cannot be detected (or very difficult to detect) using automated checks, for instance in the case QR codes were delivered to the wrong facility.
+
+Only for Tanzania at the moment
+
+```{r, eval=is_tanzania, results='asis'}
+mc_description <- ""
+to_mc_df <- day0_data
+correction_type <- "edit_day0_child_ids_to_correct_facilities_from_field_info"
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+day0_data <- mc_df
 ```
 
 ### Participant identification
@@ -263,7 +286,9 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( !is_pilot ) { paste0('#### Duplicated child IDs - Initial check [Compliance check ', qc_duplicate_id1, ']') }`
+#### Duplicated child IDs [Compliance check `r qc_duplicate_id` ]
+
+`r if ( !is_pilot ) { paste0('* Initial check ', qc_duplicate_id, 'a') }
 
 ```{r}
 write(" o Management of duplicated child IDs", stderr())
@@ -284,7 +309,7 @@ col_id <- "child_id"
 col_date <- "start"
 cleaning <- "none"
 qc_text <- "duplicated IDs"
-qc_idx <- qc_duplicate_id1
+qc_idx <- paste0(qc_duplicate_id, 'a')
 qc_export_label <- "timci_day0_data_id_duplicates"
 qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the databse"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -344,34 +369,22 @@ dropped_records %>%
   knitr::kable()
 ```
 
-`r if ( !is_pilot ) { '#### Duplicated child IDs - Manual correction of duplicated IDs\n\n' }`
+`r if ( !is_pilot ) { '#### Manual correction of duplicated child IDs' }`
 
-```{r, results='asis'}
+```{r, eval=!is_pilot, results='asis'}
+mc_description <- ""
+to_mc_df <- day0_data
 correction_type <- "edit_day0_child_ids_to_correct_duplicates"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_duplicate_id, "b")
+qc_rule <- "Remaining duplicated child IDs are deleted from the database."
+cleaning <- "drop_all"
+
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-day0_data <- edited_df
-```
-
-`r if ( !is_pilot ) { paste0('#### Duplicated child IDs - Final check after manual edits [Compliance check ', qc_duplicate_id2, ']') }`
-
-```{r, eval=(day0_is_not_null & !is_pilot), results='asis'}
-qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
-qc_rule <- "Remaining duplicated child IDs are deleted from the database."
-qc_type <- "day0_duplicates"
-df <- day0_data
-ref_df <- raw_successday7fu_data
-col_id <- "child_id"
-col_date <- "start"
-cleaning <- "drop_all"
-qc_text <- "duplicated IDs"
-qc_idx <- qc_duplicate_id2
-qc_export_label <- "timci_day0_data_id_duplicates"
-qc_export_description <- "the submission was allocated the same ID that has been used for another participant in the database"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
+day0_data <- mc_df
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -897,8 +910,11 @@ print_clean_drug_data_title <- "##### Update with reentered drug data"
 
 `r print_clean_drug_data_title`
 
-```{r, eval=is_ls}
+```{r}
 edited_records_status_update <- ""
+```
+
+```{r, eval=is_ls}
 out <- timci::correct_day0_drug_data(day0_data, drug_data)
 day0_data <- out[[1]]
 drug_edits <- out[[2]]

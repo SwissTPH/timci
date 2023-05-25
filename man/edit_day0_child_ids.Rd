@@ -4,12 +4,12 @@
 \alias{edit_day0_child_ids}
 \title{Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)}
 \usage{
-edit_day0_child_ids(df, wf = FALSE)
+edit_day0_child_ids(df, csv_prefix = "day0_duplicate_correction")
 }
 \arguments{
 \item{df}{A dataframe containing the Day 0 data entries to be corrected.}
 
-\item{wf}{A logical value indicating whether to apply facility code corrections (default is FALSE).}
+\item{csv_prefix}{A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_duplicate_correction").}
 }
 \value{
 A list containing the edited dataframe and the list of applied corrections.

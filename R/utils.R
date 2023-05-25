@@ -60,9 +60,10 @@ export_df2csvxlsx <- function(df, dirname, prefix) {
   t1 <- timci::export_df2xlsx(df,
                               dirname,
                               prefix)
-  t2 <- timci::export_df2csv(df,
-                             dirname,
-                             prefix)
+  t2 <- NULL # CSV export disabled for more efficiency during the cleaning phase
+  # t2 <- timci::export_df2csv(df,
+  #                            dirname,
+  #                            prefix)
   t <- list(t1, t2)
 
 }

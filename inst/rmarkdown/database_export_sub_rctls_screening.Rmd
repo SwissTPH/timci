@@ -2,6 +2,22 @@
 write("Export screening data and run corresponding quality checks", stderr())
 ```
 
+```{r}
+###############################
+# Screening quality check IDs #
+###############################
+qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
+qc_incorrect_date_setup <- "DQC_00_0SG_02"
+qc_nontimely_submission_id <- "DQC_00_0SG_03"
+qc_nontimely_completion_id <- "DQC_00_0SG_04"
+qc_screening_before_startdate <- "DQC_00_0SG_05"
+qc_screening_after_lockdate <- "DQC_00_0SG_06"
+qc_screening_other_fids <- "DQC_00_0SG_07"
+qc_inconsistent_age_info <- "DQC_00_0SG_08"
+qc_underaged_cg_id <- "DQC_00_0SG_09"
+qc_dup_repeats_id <- "DQC_00_0SG_10"
+```
+
 ## Screening data quality checks and cleaning
 
 ```{r}
@@ -107,6 +123,14 @@ n_other_fid_records <- n_detected
 ```{r, eval=!is.null(cleaned_df)}
 facility_data <- cleaned_df
 ```
+
+#### Data from two different facilities collected on the same device on the same day
+
+```{r}
+write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
+```
+
+Add correction from the field (to be implemented asap)
 
 ### Dates and times
 
@@ -363,13 +387,13 @@ n_ineligible_cg_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-#### Repeat visits incorrectly recorded as new enrolments [Compliance check `r qc_dup_repeats_id1`]
+#### Repeat visits incorrectly recorded as new enrolments [Compliance check `r paste0(qc_dup_repeats_id, "a")`]
 
 ```{r}
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania | is_ls ) { paste0('#### Initial check [compliance check ', qc_dup_repeats_id1, ']') }`
+`r if ( is_tanzania | is_ls ) { paste0('* Initial check ', qc_dup_repeats_id, 'a') }`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
@@ -380,7 +404,7 @@ col_id <- "child_id"
 col_date <- "start"
 cleaning <- "none"
 qc_text <- "duplicated IDs"
-qc_idx <- qc_dup_repeats_id1
+qc_idx <- paste0(qc_dup_repeats_id, "a")
 qc_export_label <- "timci_repeat_visit_duplicates"
 qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -404,53 +428,27 @@ cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania | is_ls ) { '#### Manual correction of repeat visits recorded as duplicated IDs' }`
-
-`r if ( is_tanzania | is_ls ) { paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below:* variable *repeat_consult* set to 1* variable *consent* set to NA* variable *enrolled* set to NA') }`
+`r if ( is_tanzania | is_ls ) { '* Manual correction of repeat visits recorded as duplicated IDs' }`
 
 ```{r}
-repeat_visit_edits_is_not_empty <- FALSE
-edited_records_status_update <- ""
 n_repeat_edit_records <- 0
 ```
 
-```{r, eval=(is_tanzania|is_ls)}
-out <- timci::edit_day0_to_repeat(facility_data)
-facility_data <- out[[1]]
-repeat_visit_edits <- out[[2]]
-repeat_visit_edits_is_not_empty <- timci::is_not_empty(repeat_visit_edits)
-n_repeat_edit_records <- nrow(repeat_visit_edits)
-```
+```{r, eval = (is_tanzania | is_ls), results='asis'}
+# Parameters for manual corrections
+mc_description <- paste0('Confirmed repeat records are manually edited in the ', db_name, ' database as described below: variable *repeat_consult* set to *1* variable *consent* set to *NA* variable *enrolled* set to *NA*')
+to_mc_df <- facility_data
+correction_type <- "convert_screening_from_day0_to_repeat"
 
-```{r, eval=repeat_visit_edits_is_not_empty}
-edited_records_status_update <- paste0('After correction of the **', n_repeat_edit_records, '**  record(s) detected by this check, there are still **', nrow(facility_data), '** record(s) in the ', db_name, ' database.')
-```
+# Parameters for the quality check following manual corrections
+qc_description <- "Remaining repeat visits incorrectly recorded as new enrolments are deleted from the database."
+qc_idx <- paste0(qc_dup_repeats_id, "b")
 
-`r edited_records_status_update`
-
-```{r, eval=repeat_visit_edits_is_not_empty, results='asis'}
-repeat_visit_edits %>%
-  select(old_child_id, uuid) %>%
-  knitr::kable()
-```
-
-`r if ( is_tanzania | is_ls ) { paste0('#### Final check after manual edits [compliance check ', qc_dup_repeats_id2, ']') }`
-
-```{r, eval=facility_data_is_not_null&(is_tanzania|is_ls), results='asis'}
-qc_description <- "Remaining repeat visits incorrectly recorded as new enrolments are deleted from the database." 
-qc_rule <- action_alert_no_modification
-qc_type <- "duplicates_check_pii"
-df <- facility_data
-col_id <- "child_id"
-col_date <- "start"
-cleaning <- "none"
-qc_text <- "duplicated IDs"
-qc_idx <- qc_dup_repeats_id2
-qc_export_label <- "timci_repeat_visit_duplicates"
-qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the databse"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+facility_data <- mc_df
+n_repeat_edit_records <- n_mc
 ```
 
 ### Misc
