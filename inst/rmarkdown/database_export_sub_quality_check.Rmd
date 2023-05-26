@@ -88,7 +88,7 @@ out <- timci::identify_ids_outside_lock_range(df = df,
 qc_df <- out[[1]]
 ```
 
-```{r, eval=(qc_type=="nonvalid_ids_no_cleaning")}
+```{r, eval=(qc_type=="nonvalid_facility_ids")}
 out <- timci::identify_nonvalid_ids(df,
                                     idcol1,
                                     refdf,
@@ -483,10 +483,6 @@ qc_df %>%
   head(5) %>%
   knitr::kable(row.names = FALSE,
                caption = "Five first rows")
-```
-
-```{r, eval=partial_disp, results='asis'}
-cat("...")
 ```
 
 ```{r, eval=partial_disp, results='asis'}

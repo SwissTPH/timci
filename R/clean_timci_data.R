@@ -31,7 +31,7 @@ correct_device_ids <- function(df) {
     drop <- c("new_device_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -70,7 +70,7 @@ correct_day0_non_valid_facilities <- function(df) {
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -107,7 +107,7 @@ correct_day0_inconsistent_facilities <- function(df) {
     drop <- c("new_fid")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -165,7 +165,7 @@ edit_day0_child_ids <- function(df,
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, found_edits)
+    out <- list(df, found_edits, NULL)
   }
   out
 
@@ -233,7 +233,7 @@ edit_day0_to_repeat <- function(df) {
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, found_edits)
+    out <- list(df, found_edits, NULL)
   }
   out
 
@@ -266,7 +266,7 @@ delete_day0_records <- function(df) {
             all.y = FALSE)
     df <- df[!(df$uuid %in% records_to_drop$uuid), ]
 
-    out <- list(df, found_records)
+    out <- list(df, found_records, NULL)
   }
   out
 
@@ -341,7 +341,7 @@ correct_day7_duplicates <- function(df) {
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -401,7 +401,7 @@ correct_day28_duplicates <- function(df) {
     drop <- c("new_child_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -449,7 +449,7 @@ correct_spa_sco_hcp_ids <- function(df) {
     drop <- c("new_hcp_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
@@ -485,7 +485,7 @@ correct_spa_sco_fids <- function(df) {
     drop <- c("new_fid")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits)
+    out <- list(df, edits, NULL)
   }
   out
 
