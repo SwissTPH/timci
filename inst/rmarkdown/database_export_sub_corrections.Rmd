@@ -140,11 +140,6 @@ valid_partial_disp <- valid_is_not_empty & ( nrow(valid_edits) > 10 )
 valid_full_disp <- valid_is_not_empty & ( nrow(valid_edits) <= 10 )
 ```
 
-```{r, eval=non_valid_is_not_empty}
-non_valid_partial_disp <- non_valid_is_not_empty & ( nrow(non_valid_edits) > 10 )
-non_valid_full_disp <- non_valid_is_not_empty & ( nrow(non_valid_edits) <= 10 )
-```
-
 ```{r, eval=edit_is_not_empty&!is_not_from_field}
 mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database.')
 ```
@@ -171,7 +166,7 @@ valid_edits %>%
   dplyr::select(disp_cols) %>%
   head(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five first rows of corrected records detected by the check")
+               caption = "Five first records detected by the check and corrected")
 ```
 
 ```{r, eval=valid_partial_disp, results='asis'}
@@ -179,30 +174,21 @@ valid_edits %>%
   dplyr::select(disp_cols) %>%
   tail(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five last rows of corrected records detected by the check")
+               caption = "Five last records detected by the check and corrected")
 ```
 
-```{r, eval=non_valid_full_disp, results='asis'}
+```{r, eval=non_valid_is_not_empty, results='asis'}
 non_valid_edits %>%
   dplyr::select(disp_cols) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Corrected records NOT detected by the check")
+               caption = "Records NOT detected by the check and corrected")
 ```
 
-```{r, eval=non_valid_partial_disp, results='asis'}
-non_valid_edits %>%
+```{r, eval=discarded_is_not_empty, results='asis'}
+discarded_edits %>%
   dplyr::select(disp_cols) %>%
-  head(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five first rows of corrected records NOT detected by the check")
-```
-
-```{r, eval=non_valid_partial_disp, results='asis'}
-non_valid_edits %>%
-  dplyr::select(disp_cols) %>%
-  tail(5) %>%
-  knitr::kable(row.names = FALSE,
-               caption = "Five last rows of corrected records NOT detected by the check")
+               caption = "Corrections entered but NOT done")
 ```
 
 <!-- Quality check run after manual edits -->

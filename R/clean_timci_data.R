@@ -22,7 +22,7 @@ correct_device_ids <- function(df) {
 
     # Discarded edits
     discarded_edit <- df %>%
-      dplyr::filter(is.na(device_id))
+      dplyr::filter(device_id == "")
 
     # Correct data
     df$device_id <- ifelse(is.na(df$new_device_id), df$device_id, df$new_device_id)
@@ -31,7 +31,7 @@ correct_device_ids <- function(df) {
     drop <- c("new_device_id")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits, NULL)
+    out <- list(df, edits, discarded_edit)
   }
   out
 

@@ -36,7 +36,7 @@ identify_duplicates_by_dates <- function(df,
 
   qc_df <- NULL
   qc_df2 <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   if ( timci::is_not_empty(df) ) {
 
@@ -97,7 +97,7 @@ identify_duplicates_with_names <- function(df,
 
   qc_df <- NULL
   qc_df2 <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   if ( timci::is_not_empty(df) ) {
 
@@ -162,7 +162,7 @@ identify_day0_duplicates_and_fu <- function(df,
 
   qc_df <- NULL
   qc_df2 <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   if ( timci::is_not_empty(df) ) {
 
@@ -389,7 +389,7 @@ check_name_consistency <- function(df,
   thres <- 75
 
   qc_df <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   if ( timci::is_not_empty(df) ) {
 
@@ -544,7 +544,7 @@ identify_repeat_duplicate <- function(df,
                                       col_date,
                                       cleaning = "none") {
 
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   qc_df <- identify_day0_duplicates(df, col_id, col_date)
 
@@ -577,7 +577,7 @@ identify_true_duplicate <- function(df,
                                     col_date,
                                     cleaning = "none") {
 
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   qc_df <- identify_day0_duplicates(df, col_id, col_date) %>%
     dplyr::filter(lvr1 > 85)
@@ -606,7 +606,7 @@ identify_true_duplicate <- function(df,
 identify_multiple_enrolments <- function(df) {
 
   qc_df <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   # Threshold to be determined exactly
   thres <- 75
@@ -765,7 +765,7 @@ detect_matched_names_between_fu_and_day0 <- function(df,
                                                      udate_diff = 0) {
 
   qc_df <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- df
 
   thres <- 70 # Threshold for Tanzania, check for other countries
 

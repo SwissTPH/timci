@@ -74,8 +74,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-`r if ( is_tanzania & !is_pilot ) { '#### Duplicated child IDs - Manual deletion of test/dummy data recorded as duplicated IDs\n\n' }`
-
 ```{r, eval=(is_tanzania&!is_pilot), results='asis'}
 mc_description <- ""
 to_correct_df <- day0_data
@@ -161,6 +159,22 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+```{r}
+timci::dataset_export(corrected_df,
+                      "02",
+                      "timci_day0_data_corrected",
+                      locked_db_dir,
+                      "Cleaned Day 0 data")
+```
+
+```{r}
+timci::dataset_export(cleaned_df,
+                      "02",
+                      "timci_day0_data_cleaned",
+                      locked_db_dir,
+                      "Cleaned Day 0 data")
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
