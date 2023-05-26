@@ -128,9 +128,9 @@ edit_day0_child_ids <- function(df,
                                 csv_prefix = "day0_duplicate_correction") {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
-                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_duplicate_correction_kenya.csv",
-                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_duplicate_correction_senegal.csv",
-                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ "day0_duplicate_correction_india.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
                             TRUE ~ "")
 
   out <- list(df, NULL)
@@ -303,14 +303,16 @@ correct_day0_all <- function(df) {
 #' Correct Day 7 duplicates (TIMCI-specific function)
 #'
 #' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day7_non_valid_pid_correction").
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
 #' @import dplyr
 #' @export
 
-correct_day7_duplicates <- function(df) {
+correct_day7_duplicates <- function(df,
+                                    csv_prefix = "day7_non_valid_pid_correction") {
 
-  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day7_duplicate_correction_kenya.csv",
-                                   Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day7_duplicate_correction_tanzania.csv",
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                                    TRUE ~ "")
 
   out <- list(df,NULL)

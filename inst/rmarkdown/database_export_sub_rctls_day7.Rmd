@@ -205,7 +205,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 mc_description <- ""
 to_correct_df <- allday7fu_data
-correction_type <- "correct_day7_all"
+correction_type <- "correct_day7_non_valid_ids"
 
 # Parameters for the quality check following manual corrections
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
@@ -239,12 +239,32 @@ ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
 qc_text <- "non-consistent participant names"
-qc_idx <- qc_nonconsistent_name_day7fu
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "a")
 qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
 qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+mc_description <- ""
+to_correct_df <- allday7fu_data
+correction_type <- "correct_day7_inconsistent_names"
+
+# Parameters for the quality check following manual corrections
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_inconsistent_names_day7fu_records <- n_detected
+allday7fu_data <- cleaned_df
 ```
 
 ### Data cleaning summary
@@ -328,5 +348,5 @@ timci::dataset_export(allday7fu_data_no_pii,
 
 ```{r}
 rm(raw_allday7fu_data)
-gc()
+gc(verbose = FALSE)
 ```
