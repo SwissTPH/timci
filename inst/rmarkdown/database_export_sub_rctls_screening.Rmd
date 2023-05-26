@@ -8,15 +8,18 @@ write("Export screening data and run corresponding quality checks", stderr())
 db_name <- "screening"
 
 qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
-qc_incorrect_date_setup <- "DQC_00_0SG_02"
-qc_nontimely_submission_id <- "DQC_00_0SG_03"
-qc_nontimely_completion_id <- "DQC_00_0SG_04"
-qc_screening_before_startdate <- "DQC_00_0SG_05"
-qc_screening_after_lockdate <- "DQC_00_0SG_06"
-qc_screening_other_fids <- "DQC_00_0SG_07"
-qc_inconsistent_age_info <- "DQC_00_0SG_08"
-qc_underaged_cg_id <- "DQC_00_0SG_09"
-qc_dup_repeats_id <- "DQC_00_0SG_10"
+qc_inconsistent_facility_info1 <- "DQC_00_0SG_02"
+qc_inconsistent_facility_info2 <- "DQC_00_0SG_03"
+qc_nonvalid_fid <- "DQC_00_0SG_04"
+qc_incorrect_date_setup <- "DQC_00_0SG_05"
+qc_nontimely_submission_id <- "DQC_00_0SG_06"
+qc_nontimely_completion_id <- "DQC_00_0SG_07"
+qc_screening_before_startdate <- "DQC_00_0SG_08"
+qc_screening_after_lockdate <- "DQC_00_0SG_09"
+qc_screening_other_fids <- "DQC_00_0SG_10"
+qc_inconsistent_age_info <- "DQC_00_0SG_11"
+qc_underaged_cg_id <- "DQC_00_0SG_12"
+qc_dup_repeats_id <- "DQC_00_0SG_13"
 ```
 
 ```{r}
@@ -76,85 +79,7 @@ Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_
 
 ### Facilities
 
-```{r}
-write(" o Facility checks", stderr())
-```
-
-#### Data from different facilities collected on the same device on the same day
-
-```{r}
-write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
-```
-
-```{r, eval=is_tanzania, results='asis'}
-# Parameters for manual corrections
-mc_description <- paste0('Manual correction of device IDs based on operational information from the field.')
-to_correct_df <- facility_data
-correction_type <- "correct_device_ids"
-
-cat(knitr::knit_child('database_export_sub_corrections.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-
-n_deviceid_edit_records <- n_mc
-facility_data <- corrected_df
-```
-
-#### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
-
-```{r}
-write("\to Non-valid device IDs", stderr())
-```
-
-```{r, eval=facility_data_is_not_null, results='asis'}
-qc_description <- "Devices different from the ones whose IDs are listed in Section 2.3 of this report are considered as *non-valid* and may have been used for instance for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
-qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted."
-qc_type <- "nonvalid_deviceids"
-df <- facility_data
-qc_text <- "non-valid device IDs"
-qc_idx <- qc_screening_w_nonvalid_deviceid
-qc_export_label <- "nonvalid_deviceids"
-qc_export_description <- "the device ID is not valid"
-
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-
-n_nonvalid_deviceid_records <- n_detected
-```
-
-```{r, eval=!is.null(cleaned_df)}
-facility_data <- cleaned_df
-```
-
-#### Facility IDs from other TIMCI studies [Context check `r qc_screening_other_fids`]
-
-```{r}
-write("\to Facility IDs from other facilities (India only)", stderr())
-```
-
-`r if ( !is_india ) { paste0('This check is only implemented for the India dataset.') }`
-
-```{r, eval=facility_data_is_not_null&is_india, results='asis'}
-qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
-qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
-qc_type <- "other_study_fids"
-df <- facility_data
-qc_text <- "facility IDs corresponding to another TIMCI study"
-qc_idx <- qc_screening_other_fids
-qc_export_label <- "screening_other_fids"
-qc_export_description <- "the facility ID correspond to another TIMCI study"
-
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-
-other_timci_study_df <- qc_reuse_df
-n_other_fid_records <- n_detected
-```
-
-```{r, eval=!is.null(cleaned_df)}
-facility_data <- cleaned_df
+```{r db-export-facility-subsection, child = 'database_export_sub_rctls_facilities.Rmd'}
 ```
 
 ### Dates and times

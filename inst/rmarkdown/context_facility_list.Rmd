@@ -7,7 +7,9 @@ facilities <- facilities[, c("lvl2",
                              "facility_id",
                              "facility_name",
                              "training_date",
-                             "rollout_date")]
+                             "rollout_date",
+                             "Latitude",
+                             "Longitude")]
 ```
 
 ```{r, eval=is_kenya}
@@ -16,7 +18,9 @@ facilities <- facilities[, c("lvl2",
                              "facility_name",
                              "type",
                              "training_date",
-                             "rollout_date")]
+                             "rollout_date",
+                             "Latitude",
+                             "Longitude")]
 ```
 
 ```{r, eval=is_tanzania}
@@ -24,7 +28,9 @@ facilities <- facilities[, c("lvl2",
                              "facility_id",
                              "facility_name",
                              "type",
-                             "intervention")]
+                             "intervention",
+                             "Latitude",
+                             "Longitude")]
 ```
 
 ```{r, eval=is_india}
@@ -33,7 +39,9 @@ facilities <- facilities[, c("lvl2",
                              "facility_name",
                              "type",
                              "intervention",
-                             "include")]
+                             "include",
+                             "Latitude",
+                             "Longitude")]
 all_facilities <- facilities
 excluded_facilities <- facilities %>%
   dplyr::filter(include == 0) %>% 

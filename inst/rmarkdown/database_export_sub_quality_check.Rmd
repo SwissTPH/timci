@@ -210,9 +210,15 @@ cleaned_df <- out[[2]]
 
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
-  dplyr::filter(!is.na(fid)) %>% 
-  dplyr::filter(fid != fid_from_device)
-outcols <- c("date_visit", "child_id", "fid", "district", "fid_from_device")
+  dplyr::filter(!is.na(fid)) %>%
+  dplyr::filter(fid != fid_from_device) %>%
+  timci::find_closest_facility(research_facilities)
+outcols <- c("date_visit",
+             "child_id",
+             "fid",
+             "district",
+             "fid_from_device",
+             "facility_id")
 if ( "fid_ra" %in%  cols ) {
   outcols <- c(outcols, "fid_ra", "district_ra")
 }
@@ -225,7 +231,13 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid", "device_id")
+if ( "gps_accuracy" %in%  cols ) {
+  outcols <- c(outcols, "gps_accuracy")
+}
+outcols <- c(outcols,
+             "d",
+             "uuid",
+             "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -234,8 +246,16 @@ qc_df <- qc_df %>%
 ```{r, eval=(qc_type=="inconsistent_facility_info2")}
 qc_df <- df %>% 
   dplyr::filter(!is.na(fid)) %>% 
-  dplyr::filter(!is.na(fid_ra) & (fid != fid_ra))
-outcols <- c("date_visit", "child_id", "fid", "district", "fid_from_device", "fid_ra", "district_ra")
+  dplyr::filter(!is.na(fid_ra) & (fid != fid_ra)) %>%
+  timci::find_closest_facility(research_facilities)
+outcols <- c("date_visit",
+             "child_id",
+             "fid",
+             "district",
+             "fid_from_device",
+             "fid_ra",
+             "district_ra",
+             "facility_id")
 if ( "child_id_manual" %in%  cols ) {
   outcols <- c(outcols, "child_id_manual")
 }
@@ -245,7 +265,13 @@ if ( "latitude" %in%  cols ) {
 if ( "longitude" %in%  cols ) {
   outcols <- c(outcols, "longitude")
 }
-outcols <- c(outcols, "uuid", "device_id")
+if ( "gps_accuracy" %in%  cols ) {
+  outcols <- c(outcols, "gps_accuracy")
+}
+outcols <- c(outcols,
+             "d",
+             "uuid",
+             "device_id")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)

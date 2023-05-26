@@ -1,0 +1,16 @@
+old_child_id,uuid,reason,action,date,author
+T-F0004-P0687,uuid:b4c35b57-d63a-4d81-9680-284df4edba50,training,delete,,
+T-F0025-P0524,uuid:9a235ea1-0cd7-4e02-b673-1ca71f0a6f57,non eligible - dummy data,delete,,
+T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-01-22,IHI
+T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-01-22,IHI
+T-F0082-P1432,uuid:088e7954-5be0-4678-9bef-864b2a59738e,,delete,16-Aug-22,IHI
+T-F0082-P1417,uuid:7a5fbe4b-7bb0-4f5b-9961-87de575fd8dc,Ra re-entered data with the correct ID - there was difference in these records so I retained the first informarion entered,delete,15-Aug-22,IHI
+T-F0082-P1420,uuid:206a9b2e-38d2-4f14-a29e-aa6b73faf890,Ra re-entered data with the correct ID - there was difference in these records so I retained the first informarion entered,delete,15-Aug-22,IHI
+T-F0102-P1321,uuid:048460ca-69d7-4d3a-af60-a35dcdcb6eb1,,delete,9/19/2022,IHI
+T-F0033-P0705,uuid:bbdd7161-2241-4b15-bbdb-20028532cc24,RA re entered information of the participants two times after mistakengly taking the picture,delete,12/16/2022,IHI
+T-F0018-P1505,uuid:4aaba3b4-aaef-4a21-83cc-b660350e14fd,,delete,1/23/2023,IHI
+T-F0087-P1688,uuid:3a28ca53-58dd-468a-9c41-2d949339726e,,delete,2/13/2023,IHI
+T-F0084-P1490,uuid:330cefd1-e39c-4be0-8573-ac4a92163caf,,delete,2/13/2023,IHI
+T-F0010-P1722,uuid:4992d02c-8108-4735-9923-905d67c24f3f,,delete,2023-05-26,DM
+T-F0025-P0997,uuid:9677ed58-643c-4ac7-af39-d2ff5167063d,,delete,2023-05-26,DM
+T-F0082-P0858,uuid:e1c015b8-6e68-4834-b8e7-a4350b8450b6,,delete,2023-05-26,DM

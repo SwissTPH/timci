@@ -579,7 +579,8 @@ identify_true_duplicate <- function(df,
 
   cleaned_df <- NULL
 
-  qc_df <- identify_day0_duplicates(df, col_id, col_date)
+  qc_df <- identify_day0_duplicates(df, col_id, col_date) %>%
+    dplyr::filter(lvr1 > 85)
 
   # Filter so that keep only duplicates that happened on the same day
   if ( timci::is_not_empty(qc_df) ) {

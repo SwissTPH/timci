@@ -19,6 +19,12 @@ correct_device_ids <- function(df) {
             by.x = c("device_id", "uuid"),
             by.y = c("old_device_id", "uuid"),
             all.x = TRUE)
+
+    # Discarded edits
+    discarded_edit <- df %>%
+      dplyr::filter(is.na(device_id))
+
+    # Correct data
     df$device_id <- ifelse(is.na(df$new_device_id), df$device_id, df$new_device_id)
 
     # Remove the column new_device_id from the dataframe
@@ -243,7 +249,7 @@ edit_day0_to_repeat <- function(df) {
 
 delete_day0_records <- function(df) {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_drop_dummy_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_true_duplicate_deletion_tanzania.csv",
                             TRUE ~ "")
 
   out <- list(df, NULL)

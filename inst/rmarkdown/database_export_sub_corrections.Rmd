@@ -10,6 +10,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 out <- to_correct_df
 corrected_df <- NULL
 edited_records <- NULL
+discarded_edits <- NULL
 valid_edits <- NULL
 non_valid_edits <- NULL
 valid_is_not_empty <- FALSE
@@ -23,9 +24,15 @@ mc_status_update <- ""
 ```
 
 ```{r}
-corrections_from_field <- c("edit_day0_child_ids_to_correct_facilities_from_field_info",
-                            "correct_device_ids")
+corrections_from_field <- c("correct_device_ids")
 is_not_from_field <- (!correction_type %in% corrections_from_field)
+
+deletions <- c("delete_day0_records")
+is_deletion <- (!correction_type %in% deletions)
+
+multiple_uuids <- c("edit_day0_child_ids_to_correct_duplicates",
+                    "convert_screening_from_day0_to_repeat")
+has_multiple_uuids <- (correction_type %in% multiple_uuids)
 ```
 
 ---
@@ -38,6 +45,10 @@ is_not_from_field <- (!correction_type %in% corrections_from_field)
 
 ```{r, eval=(correction_type=="correct_device_ids")}
 out <- timci::correct_device_ids(to_correct_df)
+```
+
+```{r, eval=(correction_type=="correct_non_valid_facilities")}
+out <- timci::correct_day0_non_valid_facilities(to_correct_df)
 ```
 
 ```{r, eval=(correction_type=="convert_screening_from_day0_to_repeat")}
@@ -58,6 +69,10 @@ qc_rule <- action_alert_no_modification
 out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_childID_correction_from_field")
 ```
 
+```{r, eval=(correction_type=="delete_day0_records")}
+out <- timci::delete_day0_records(to_correct_df)
+```
+
 ```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
 out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_duplicate_correction")
 ```
@@ -75,10 +90,12 @@ out <- timci::correct_day0_inconsistent_facilities(to_correct_df)
 ```{r, eval=!is.null(out)}
 corrected_df <- out[[1]]
 edited_records <- out[[2]]
+#discarded_edits <- out[[3]]
 ```
 
 ```{r}
 edit_is_not_empty <- timci::is_not_empty(edited_records)
+discarded_is_not_empty <- timci::is_not_empty(discarded_edits)
 ```
 
 ```{r, eval=edit_is_not_empty}
@@ -100,14 +117,14 @@ if ( 'new_fid' %in% cols ) {
 n_corrected <- nrow(edited_records)
 ```
 
-```{r, eval=edit_is_not_empty&is_not_from_field&(correction_type!="edit_day0_child_ids_to_correct_duplicates")}
+```{r, eval=(edit_is_not_empty&is_not_from_field&!has_multiple_uuids)}
 valid_edits <- edited_records[edited_records$uuid %in% qc_reuse_df$uuid,]
 valid_is_not_empty <- timci::is_not_empty(valid_edits)
 non_valid_edits <- edited_records[!edited_records$uuid %in% qc_reuse_df$uuid,]
 non_valid_is_not_empty <- timci::is_not_empty(non_valid_edits)
 ```
 
-```{r, eval=edit_is_not_empty&is_not_from_field&(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
+```{r, eval=(edit_is_not_empty&is_not_from_field&has_multiple_uuids)}
 uuid_cols <- grep("uuid", names(qc_reuse_df))
 valid_edits <- edited_records[edited_records$uuid %in% unname((unlist(qc_reuse_df[colnames(qc_reuse_df[uuid_cols])]))),]
 valid_is_not_empty <- timci::is_not_empty(valid_edits)
@@ -125,8 +142,12 @@ non_valid_partial_disp <- non_valid_is_not_empty & ( nrow(non_valid_edits) > 10 
 non_valid_full_disp <- non_valid_is_not_empty & ( nrow(non_valid_edits) <= 10 )
 ```
 
-```{r, eval=edit_is_not_empty}
+```{r, eval=edit_is_not_empty&!is_deletion}
 mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
+```
+
+```{r, eval=edit_is_not_empty&is_deletion}
+mc_status_update <- paste0('**', n_corrected, '** record(s) were manually deleted in the ', db_name, ' database: **', nrow(valid_edits), '** deletions that corrected instances detected by the check and **', nrow(non_valid_edits),'** deletions that corrected instances not detected by the check.')
 ```
 
 `r mc_status_update`
@@ -135,7 +156,7 @@ mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited
 valid_edits %>%
   dplyr::select(disp_cols) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Edits that correct records detected by the check")
+               caption = "Corrected records detected by the check")
 ```
 
 ```{r, eval=valid_partial_disp, results='asis'}
@@ -143,7 +164,7 @@ valid_edits %>%
   dplyr::select(disp_cols) %>%
   head(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five first rows of edits that correct records detected by the check")
+               caption = "Five first rows of corrected records detected by the check")
 ```
 
 ```{r, eval=valid_partial_disp, results='asis'}
@@ -155,14 +176,14 @@ valid_edits %>%
   dplyr::select(disp_cols) %>%
   tail(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five last rows of edits that correct records detected by the check")
+               caption = "Five last rows of corrected records detected by the check")
 ```
 
 ```{r, eval=non_valid_full_disp, results='asis'}
 non_valid_edits %>%
   dplyr::select(disp_cols) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Edits that correct records NOT detected by the check")
+               caption = "Corrected records NOT detected by the check")
 ```
 
 ```{r, eval=non_valid_partial_disp, results='asis'}
@@ -170,7 +191,7 @@ non_valid_edits %>%
   dplyr::select(disp_cols) %>%
   head(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five first rows of edits that correct records NOT detected by the check")
+               caption = "Five first rows of corrected records NOT detected by the check")
 ```
 
 ```{r, eval=non_valid_partial_disp, results='asis'}
@@ -182,7 +203,7 @@ non_valid_edits %>%
   dplyr::select(disp_cols) %>%
   tail(5) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Five last rows of edits that correct records NOT detected by the check")
+               caption = "Five last rows of corrected records NOT detected by the check")
 ```
 
 <!-- Quality check run after manual edits -->
@@ -193,7 +214,7 @@ non_valid_edits %>%
 
 ```{r, eval=is_not_from_field, results='asis'}
 df <- corrected_df
-qc_export_label <- paste0(qc_export_label, "_after_manual_edits")
+qc_export_label <- paste0(qc_export_label, "_after_manual_corrections")
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
