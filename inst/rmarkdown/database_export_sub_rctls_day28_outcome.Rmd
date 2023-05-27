@@ -1,10 +1,10 @@
 \newpage
 
-## Day 28 follow-up outcome data quality checks\n\n
-
 ```{r}
 write("Export Day 28 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
 ```
+
+## Day 28 follow-up outcome data quality checks
 
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 

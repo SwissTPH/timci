@@ -1,4 +1,13 @@
+\newpage
+
+## Detection of multiple 28-disease episodes for the same children
+
 ```{r}
+write(" o Detection of multiple 28-disease episodes for the same children", stderr())
+```
+
+```{r}
+day0data <- allday0_data
 qc_df <- NULL
 qc_df2 <- NULL
 cleaned_df <- NULL

@@ -1,3 +1,5 @@
+\newpage
+
 ```{r}
 write("Export Day 7 follow-up data and run corresponding quality checks", stderr())
 ```

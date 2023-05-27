@@ -146,7 +146,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ### Participant identification
 
-#### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]\n\n
+#### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
@@ -177,7 +177,7 @@ n_afterlock_pids_day28fu_records <- n_detected
 allday28fu_data <- cleaned_df
 ```
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]\n\n
+#### Non-valid participant IDs [compliance check `r qc_nonvalid_day28fu`]
 
 ```{r}
 write(" o Non-valid participant IDs", stderr())
@@ -197,39 +197,8 @@ udate_diff <- 2
 matched_names <- TRUE
 cleaning <- "none"
 qc_text <- "non-valid participant IDs"
-qc_idx <- qc_nonvalid_day28fu
-qc_export_label <- "nonvalid_pids_day28fu_with_matched_names"
-qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-##### Manual correction
-
-```{r, eval=FALSE}
-edited_records_status_update <- ""
-allday28fu_data <- timci::correct_day28_all(allday28fu_data)
-```
-
-##### Final check
-
-```{r, eval=FALSE, results='asis'}
-qc_description <- "Day 28 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled Day 28 follow-ups are searched for matched names."
-qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
-qc_type <- "nonvalid_ids_identify_names"
-df <- allday28fu_data
-idcol1 <- "child_id"
-refdf <- allday0_data
-idcol2 <- "child_id"
-datecol <- "date_day0"
-ldate_diff <- -2
-udate_diff <- 2
-matched_names <- FALSE
-cleaning <- "drop_all"
-qc_text <- "non-valid participant IDs"
 qc_idx <- paste0(qc_nonvalid_day28fu, "a")
-qc_export_label <- "nonvalid_pids_day28fu"
+qc_export_label <- "nonvalid_pids_day28fu_with_matched_names"
 qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
@@ -256,7 +225,7 @@ n_nonvalid_pids_day28fu_records <- n_detected
 allday28fu_data <- cleaned_df
 ```
 
-### Non-consistent participant names [Context check `r qc_nonconsistent_name_day28fu`]
+#### Non-consistent participant names [Context check `r qc_nonconsistent_name_day28fu`]
 
 ```{r}
 write(" o Non-consistent participant names", stderr())
@@ -342,5 +311,5 @@ timci::dataset_export(allday28fu_data,
 
 ```{r}
 rm(raw_allday28fu_data)
-gc()
+gc(verbose = FALSE)
 ```

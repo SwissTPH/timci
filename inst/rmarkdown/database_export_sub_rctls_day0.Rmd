@@ -1,3 +1,5 @@
+\newpage
+
 ```{r}
 write("Export Day 0 data and run corresponding quality checks", stderr())
 ```
@@ -179,21 +181,6 @@ timci::dataset_export(cleaned_df,
 
 ```{r, eval=!is.null(cleaned_df)}
 day0_data <- cleaned_df
-```
-
-#### Detection of multiple 28-disease episodes for the same children
-
-```{r}
-write(" o Detection of multiple 28-disease episodes for the same children", stderr())
-```
-
-```{r}
-multiple <- TRUE
-```
-
-`r if( !multiple) {'Only implemented for the final analysis - checks disabled for the soft lock'}`
-
-```{r child_duplicate-subsection, child = if ( multiple ) 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
 ### Dates and times

@@ -2,8 +2,6 @@
 write("Export death data for monitoring", stderr())
 ```
 
-\newpage
-
 ## Death data quality checks
 
 ```{r}

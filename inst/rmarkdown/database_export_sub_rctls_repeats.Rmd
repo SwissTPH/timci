@@ -1,3 +1,5 @@
+\newpage
+
 ```{r}
 write("Export repeat visit data and run corresponding quality checks", stderr())
 ```

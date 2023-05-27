@@ -353,46 +353,45 @@ day28fu_is_not_null <- !is.null(raw_day28fu_data)
 day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```
 
+<!-- Context -->
+
 ```{r db-export-context-subsection, child = 'database_export_sub_rctls_context.Rmd'}
 ```
 
-\newpage
+<!-- Screening -->
 
 ```{r db-export-screening-subsection, child = 'database_export_sub_rctls_screening.Rmd'}
 ```
 
+<!-- LS drug re-entry -->
+
 ```{r db-export-day0-drug-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug.Rmd'}
 ```
 
-\newpage
+<!-- Day 0 enrolments -->
 
 ```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
 ```
 
-\newpage
+<!-- Withdrawals -->
 
 ```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
 ```
 
-\newpage
-
-```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
-```
-
-\newpage
+<!-- Day 7 follow-up -->
 
 ```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
 ```
 
-\newpage
-
 ```{r db-export-successfulday7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7_outcome.Rmd'}
 ```
 
-\newpage
+<!-- Hospital follow-up -->
 
 ```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
 ```
+
+<!-- RCT Day 28 follow-up -->
 
 ```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
 ```
@@ -400,7 +399,19 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-successfulday28fu-subsection, child = if(is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28_outcome.Rmd'}
 ```
 
+<!-- Deaths -->
+
 ```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
+```
+
+<!-- Repeat scheduled and unscheduled visits -->
+
+```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
+```
+
+<!-- Multiple enrolments -->
+
+```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
 \newpage

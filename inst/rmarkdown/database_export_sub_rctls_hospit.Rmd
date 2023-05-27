@@ -1,4 +1,6 @@
-## Hospitalisation data quality checks\n\n
+\newpage
+
+## Hospitalisation data quality checks
 
 ```{r}
 write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())

@@ -1,8 +1,8 @@
+\newpage
+
 ```{r}
 write("Export drug re-entry data and run corresponding quality checks", stderr())
 ```
-
-\newpage
 
 ## Drug free text re-entry data quality checks and cleaning
 

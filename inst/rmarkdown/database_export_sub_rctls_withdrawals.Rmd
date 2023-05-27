@@ -1,3 +1,5 @@
+\newpage
+
 ```{r}
 write("Export withdrawal data and run corresponding quality checks", stderr())
 ```

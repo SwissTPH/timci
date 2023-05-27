@@ -1,3 +1,5 @@
+\newpage
+
 ```{r}
 write("Export screening data and run corresponding quality checks", stderr())
 ```
