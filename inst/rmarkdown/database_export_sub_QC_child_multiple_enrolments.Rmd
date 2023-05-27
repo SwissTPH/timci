@@ -7,7 +7,6 @@ write(" o Detection of multiple 28-disease episodes for the same children", stde
 ```
 
 ```{r}
-day0data <- allday0_data
 qc_df <- NULL
 qc_df2 <- NULL
 cleaned_df <- NULL

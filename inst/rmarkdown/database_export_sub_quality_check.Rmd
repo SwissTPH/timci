@@ -217,8 +217,10 @@ outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
-             "fid_from_device",
-             "facility_id")
+             "fid_from_device")
+if ( "facility_id" %in%  cols ) {
+  outcols <- c(outcols, "facility_id")
+}
 if ( "fid_ra" %in%  cols ) {
   outcols <- c(outcols, "fid_ra", "district_ra")
 }
@@ -234,8 +236,10 @@ if ( "longitude" %in%  cols ) {
 if ( "gps_accuracy" %in%  cols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
+if ( "dist" %in%  cols ) {
+  outcols <- c(outcols, "dist")
+}
 outcols <- c(outcols,
-             "d",
              "uuid",
              "device_id")
 qc_df <- qc_df %>%
@@ -254,8 +258,10 @@ outcols <- c("date_visit",
              "district",
              "fid_from_device",
              "fid_ra",
-             "district_ra",
-             "facility_id")
+             "district_ra")
+if ( "facility_id" %in%  cols ) {
+  outcols <- c(outcols, "facility_id")
+}
 if ( "child_id_manual" %in%  cols ) {
   outcols <- c(outcols, "child_id_manual")
 }
@@ -268,8 +274,10 @@ if ( "longitude" %in%  cols ) {
 if ( "gps_accuracy" %in%  cols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
+if ( "dist" %in%  cols ) {
+  outcols <- c(outcols, "dist")
+}
 outcols <- c(outcols,
-             "d",
              "uuid",
              "device_id")
 qc_df <- qc_df %>%
@@ -286,8 +294,10 @@ outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
-             "fid_from_device",
-             "facility_id")
+             "fid_from_device")
+if ( "facility_id" %in%  cols ) {
+  outcols <- c(outcols, "facility_id")
+}
 if ( "fid_ra" %in%  cols ) {
   outcols <- c(outcols, "fid_ra", "district_ra")
 }
@@ -303,8 +313,10 @@ if ( "longitude" %in%  cols ) {
 if ( "gps_accuracy" %in%  cols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
+if ( "dist" %in%  cols ) {
+  outcols <- c(outcols, "dist")
+}
 outcols <- c(outcols,
-             "d",
              "uuid",
              "device_id")
 qc_df <- qc_df %>%

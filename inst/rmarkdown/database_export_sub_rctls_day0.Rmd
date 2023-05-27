@@ -987,6 +987,11 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
+<!-- Multiple enrolments -->
+
+```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
+```
+
 ### Data cleaning summary
 
 ```{r}

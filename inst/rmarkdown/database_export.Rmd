@@ -402,11 +402,6 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
 ```
 
-<!-- Multiple enrolments -->
-
-```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
-```
-
 \newpage
 
 # Service Provision Assessment (SPA)

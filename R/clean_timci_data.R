@@ -315,7 +315,7 @@ correct_day7_duplicates <- function(df,
                                    Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                                    TRUE ~ "")
 
-  out <- list(df,NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname)
