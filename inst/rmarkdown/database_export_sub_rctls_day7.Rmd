@@ -176,11 +176,11 @@ allday7fu_data <- cleaned_df
 
 #### Non-valid participant IDs [Context check `r qc_nonvalid_day7fu`]
 
-##### Initial check
-
 ```{r}
-write(" o Non-valid participant IDs (initial check)", stderr())
+write(" o Non-valid participant IDs", stderr())
 ```
+
+##### Initial check
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled Day 7 follow-ups are searched for matched names."
@@ -229,6 +229,8 @@ allday7fu_data <- cleaned_df
 ```{r}
 write(" o Non-consistent participant names", stderr())
 ```
+
+##### Initial check
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 qc_description <- "Day 7 follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."

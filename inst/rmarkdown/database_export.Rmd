@@ -206,13 +206,6 @@ qc_missing_death_date_day7fu <- "DQC_07_09"
 qc_death_before_enrolment_day7fu <- "DQC_07_10"
 qc_death_before_hospit_day7fu <- "DQC_07_11"
 
-# Hospitalisation quality check IDs
-####################################
-qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
-qc_nonvalid_hospitfu <- "DQC_HS_02"
-qc_duplicated_hospitfu <- "DQC_HS_03"
-qc_hospit_before_enrolment <- "DQC_HS_04"
-
 # Day 28 quality check IDs
 ###########################
 qc_nontimely_submission_day28fu <- "DQC_28_01"

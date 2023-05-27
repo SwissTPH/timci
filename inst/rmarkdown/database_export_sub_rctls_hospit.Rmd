@@ -1,9 +1,19 @@
 \newpage
 
+```{r}
+write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())
+```
+
 ## Hospitalisation data quality checks
 
 ```{r}
-write("Export hospital/hospitalisation data and run corresponding quality checks", stderr())
+# Hospitalisation quality check IDs
+####################################
+qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
+qc_nonvalid_hospitfu <- "DQC_HS_02"
+qc_nonconsistent_name_hospitfu <- "DQC_HS_03"
+qc_duplicated_hospitfu <- "DQC_HS_04"
+qc_hospit_before_enrolment <- "DQC_HS_05"
 ```
 
 ```{r format-RCT-LS-ODK-fu-hospit-data}
@@ -53,6 +63,8 @@ hospit_data <- cleaned_df
 
 #### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]
 
+##### Initial check
+
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "Hospitalisation follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
 qc_rule <- "Keep only IDs of participant who are found in the locked Day 0 database."
@@ -73,6 +85,16 @@ n_nonvalid_pids_hospitfu <- n_detected
 
 ```{r, eval=!is.null(cleaned_df)}
 locked_hospit_data <- cleaned_df
+```
+
+#### Non-consistent participant names [Context check `r qc_nonconsistent_name_hospitfu`]
+
+```{r}
+write(" o Non-consistent participant names", stderr())
+```
+
+```{r, eval=!is.null(hospit_data), results='asis'}
+# To update
 ```
 
 #### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
