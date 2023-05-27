@@ -29,6 +29,11 @@ find_closest_facility <- function(df,
     dplyr::filter(d < 200) %>%
     dplyr::filter(fid != facility_id)
 
+  out <- out[order(out$d,
+                   na.last = TRUE,
+                   decreasing = FALSE),] %>%
+    dplyr::distinct(uuid, .keep_all = TRUE)
+
   out
 
 }

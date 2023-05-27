@@ -4,6 +4,10 @@
 write("Export repeat visit data and run corresponding quality checks", stderr())
 ```
 
+```{r}
+n_nonvalid_pids_repeat_records <- 0
+```
+
 ## Repeat visit quality checks
 
 ```{r}

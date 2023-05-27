@@ -95,7 +95,7 @@ write(" o Non-valid enrolling facility IDs", stderr())
 
 `r if ( is_kenya | is_tanzania ) { paste0('**Initial check ', qc_nonvalid_fid, 'a**') }`
 
-```{r, eval=(facility_data_is_not_null & (is_kenya|is_tanzania)), results='asis'}
+```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "The facility ID (Fxxxx) is extracted from the participant enrolment ID (X-Fxxxx-Pxxxx). It should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
 qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are detected and manually corrected before Day 7 follow-up is conducted where possible."
 qc_type <- "nonvalid_facility_ids"
@@ -237,4 +237,25 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       quiet = TRUE))
 
 facility_data <- corrected_df
+```
+
+#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info3`]
+
+This check is relevant and implemented only for Senegal.
+
+```{r, eval=facility_data_is_not_null&(is_senegal), results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID versus from fid_from_main_device."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info3"
+df <- facility_data
+qc_text <- "inconsistent facility information"
+qc_idx <- qc_inconsistent_facility_info3
+qc_export_label <- "inconsistent_facility_info3"
+qc_export_description <- "facility information between the child ID and fid_from_main_device is inconsistent"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_inconsistent_facility_info3 <- n_detected
 ```

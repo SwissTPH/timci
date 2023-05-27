@@ -259,6 +259,18 @@ identify_nonvalid_ids <- function(df1,
   } else if ( "date_call" %in% cols ) {
     kcols <- c(kcols, "date_call")
   }
+  if ( "fid" %in% cols ) {
+    kcols <- c(kcols, "fid")
+  }
+  if ( "fid_ra" %in% cols ) {
+    kcols <- c(kcols, "fid_ra")
+  }
+  if ( "fid_from_device" %in% cols ) {
+    kcols <- c(kcols, "fid_from_device")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  }
   if ( "child_id" %in% cols ) {
     kcols <- c(kcols, "child_id")
   } else if ( "prev_id" %in% cols ) {
@@ -393,21 +405,21 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
 
   if (matched_names) {
     if ( "name" %in% cols ) {
-      out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
-                                                               dplyr::mutate(name = tolower(name)),
-                                                             day0_df = df2,
-                                                             col_date = col_date1,
-                                                             col_name = "name",
-                                                             ldate_diff = ldate_diff,
-                                                             udate_diff = udate_diff)
+      out <- timci::find_best_matched_names_between_fu_and_day0(df = qc_df %>%
+                                                                  dplyr::mutate(name = tolower(name)),
+                                                                day0_df = df2,
+                                                                col_date = col_date1,
+                                                                col_name = "name",
+                                                                ldate_diff = ldate_diff,
+                                                                udate_diff = udate_diff)
     } else if ( "child_name" %in% cols ) {
-      out <- timci::detect_matched_names_between_fu_and_day0(df = qc_df %>%
-                                                               dplyr::mutate(child_name = tolower(child_name)),
-                                                             day0_df = df2,
-                                                             col_date = col_date1,
-                                                             col_name = "child_name",
-                                                             ldate_diff = ldate_diff,
-                                                             udate_diff = udate_diff)
+      out <- timci::find_best_matched_names_between_fu_and_day0(df = qc_df %>%
+                                                                  dplyr::mutate(child_name = tolower(child_name)),
+                                                                day0_df = df2,
+                                                                col_date = col_date1,
+                                                                col_name = "child_name",
+                                                                ldate_diff = ldate_diff,
+                                                                udate_diff = udate_diff)
     }
     if ( !is.null(out[[1]]) ) {
       qc_df <- out[[1]]

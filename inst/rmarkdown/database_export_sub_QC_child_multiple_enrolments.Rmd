@@ -20,11 +20,11 @@ multiple_enrolment_data <- day0_data %>%
 ```
 
 ```{r, eval=timci::is_not_empty(multiple_enrolment_data), results='asis'}
-qc_df <- multiple_enrolment_data %>%
+qc_df <- multiple_enrolment_data[order(multiple_enrolment_data$date_visit,
+                                       na.last = TRUE,
+                                       decreasing = FALSE),] %>%
+  dplyr::rename(date = date_visit) %>% 
   dplyr::group_by(prev_id) %>% 
-  dplyr::mutate(date = sort(date_visit,
-                            decreasing = FALSE, # order by ascending dates
-                            na.last = TRUE)) %>% # missing values in the data are put last
   dplyr::mutate(row_n = row_number()) %>%
   tidyr::pivot_wider(prev_id,
                      names_from = row_n,

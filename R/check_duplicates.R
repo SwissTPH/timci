@@ -40,17 +40,16 @@ identify_duplicates_by_dates <- function(df,
 
   if ( timci::is_not_empty(df) ) {
 
-    qc_df <- df %>%
+    qc_df <- df[order(df[[col_date]],
+                      na.last = TRUE,
+                      decreasing = FALSE),] %>%
       dplyr::rename(date_value1 = !!dplyr::enquo(col_date)) %>%
       dplyr::rename(id = !!dplyr::enquo(col_id)) %>%
       dplyr::group_by(id) %>%
-      dplyr::mutate(date_value2 = sort(date_value1,
-                                       decreasing = TRUE,
-                                       na.last = TRUE)) %>% # order by descending dates
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
-                         values_from = c(date_value2),
+                         values_from = c(date_value1),
                          names_prefix = "date_")
 
     if ( "date_2" %in% colnames(qc_df) ) {
@@ -111,10 +110,10 @@ identify_duplicates_with_names <- function(df,
         dplyr::mutate(name = paste(fs_name, ls_name, sep = " "))
     }
 
-    qc_df <- qc_df %>%
-      dplyr::mutate(date = sort(date_value,
-                                decreasing = TRUE,
-                                na.last = TRUE)) %>% # order by descending dates
+    qc_df <- qc_df[order(qc_df$date_value,
+                         na.last = TRUE,
+                         decreasing = FALSE),] %>%
+      dplyr::rename(date = date_value) %>%
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
@@ -166,13 +165,13 @@ identify_day0_duplicates_and_fu <- function(df,
 
   if ( timci::is_not_empty(df) ) {
 
-    qc_df <- df %>%
-      dplyr::rename(id = child_id) %>%
+    qc_df <- df[order(df$date_visit,
+                      na.last = TRUE,
+                      decreasing = FALSE),] %>%
+      dplyr::rename(id = child_id,
+                    date = date_visit) %>%
       dplyr::group_by(id) %>%
-        dplyr::mutate(name = paste(fs_name, ls_name, sep = " ")) %>%
-      dplyr::mutate(date = sort(date_visit,
-                                decreasing = TRUE,
-                                na.last = TRUE)) %>% # order by descending dates
+      dplyr::mutate(name = paste(fs_name, ls_name, sep = " ")) %>%
       dplyr::mutate(row_n = row_number()) %>%
       tidyr::pivot_wider(id,
                          names_from = row_n,
@@ -188,14 +187,14 @@ identify_day0_duplicates_and_fu <- function(df,
 
     if ( timci::is_not_empty(day7fu_df) ) {
 
-      day7fu_df <- day7fu_df %>%
+      day7fu_df <- day7fu_df[order(day7fu_df$date_call,
+                                   na.last = TRUE,
+                                   decreasing = FALSE),] %>%
         dplyr::rename(id = child_id) %>%
-        dplyr::rename(day7_name = name) %>%
-        dplyr::rename(day7_uuid = uuid) %>%
+        dplyr::rename(day7_name = name,
+                      day7_uuid = uuid,
+                      day7_date = date_call) %>%
         dplyr::group_by(id) %>%
-        dplyr::mutate(day7_date = sort(date_call,
-                                       decreasing = TRUE,
-                                       na.last = TRUE)) %>% # order by descending dates
         dplyr::mutate(row_n = row_number()) %>%
         tidyr::pivot_wider(id,
                            names_from = row_n,
@@ -726,13 +725,13 @@ detect_inconsistent_names_between_visits <- function(refdf,
   }
 
   if (matched_names) {
-    out <- timci::detect_matched_names_between_fu_and_day0(qc_df %>%
-                                                               dplyr::mutate(name = tolower(name)),
-                                                           refdf,
-                                                           "date_for_matching",
-                                                           "name",
-                                                           ldate_diff,
-                                                           udate_diff)
+    out <- timci::find_best_matched_names_between_fu_and_day0(qc_df %>%
+                                                                dplyr::mutate(name = tolower(name)),
+                                                              refdf,
+                                                              "date_for_matching",
+                                                              "name",
+                                                              ldate_diff,
+                                                              udate_diff)
     if ( !is.null(out[[1]]) ) {
       qc_df <- out[[1]]
     }
@@ -757,12 +756,12 @@ detect_inconsistent_names_between_visits <- function(refdf,
 #' @return A list with two dataframes: qc_df and cleaned_df.
 #' @export
 
-detect_matched_names_between_fu_and_day0 <- function(df,
-                                                     day0_df,
-                                                     col_date,
-                                                     col_name,
-                                                     ldate_diff = 0,
-                                                     udate_diff = 0) {
+find_best_matched_names_between_fu_and_day0 <- function(df,
+                                                        day0_df,
+                                                        col_date,
+                                                        col_name,
+                                                        ldate_diff = 0,
+                                                        udate_diff = 0) {
 
   qc_df <- NULL
   cleaned_df <- df
@@ -804,7 +803,6 @@ detect_matched_names_between_fu_and_day0 <- function(df,
         if (min_date <= max_date) {
 
           sub_df <- day0_df %>%
-            #dplyr::filter(district == df[row, "district"]) %>%
             dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
             dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
             dplyr::mutate(child_name = df[row, col_name]) %>%
@@ -815,6 +813,10 @@ detect_matched_names_between_fu_and_day0 <- function(df,
             dplyr::select(-child_name)
 
           if ( nrow(sub_df) > 0 ) {
+            sub_df <- sub_df[order(sub_df$lvr,
+                                   na.last = TRUE,
+                                   decreasing = TRUE),] %>%
+              dplyr::distinct(matched_uuid, .keep_all = TRUE)
             out <- rbind(out, sub_df)
           }
 
