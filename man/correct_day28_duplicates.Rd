@@ -4,10 +4,12 @@
 \alias{correct_day28_duplicates}
 \title{Correct Day 28 duplicates (TIMCI-specific function)}
 \usage{
-correct_day28_duplicates(df)
+correct_day28_duplicates(df, csv_prefix = "day28_non_valid_pid_correction")
 }
 \arguments{
 \item{df}{dataframe}
+
+\item{csv_prefix}{A string value indicating the prefix of the CSV file from which to read the corrections (default is "day28_non_valid_pid_correction").}
 }
 \value{
 This function returns a list that contains a dataframe with corrections and the list of edits

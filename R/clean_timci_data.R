@@ -367,12 +367,14 @@ correct_day7_all <- function(df) {
 #'
 #' @param df dataframe
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day28_non_valid_pid_correction").
 #' @import dplyr
 #' @export
 
-correct_day28_duplicates <- function(df) {
+correct_day28_duplicates <- function(df,
+                                     csv_prefix = "day28_non_valid_pid_correction") {
 
-  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day28_duplicate_correction_tanzania.csv",
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                                    TRUE ~ "")
 
   out <- list(df,NULL)
@@ -396,7 +398,7 @@ correct_day28_duplicates <- function(df) {
               by.y = c("old_child_id", "uuid"),
               all.x = TRUE)
       df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+      df$hf_id <- ifelse(is.na(df$new_child_id), df$hf_id, substr(df$new_child_id, 3,7))
     }
 
     # Remove the column new_child_id from the dataframe

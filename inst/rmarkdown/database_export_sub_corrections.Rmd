@@ -95,6 +95,18 @@ out <- timci::correct_day7_duplicates(to_correct_df,
                                       csv_prefix = "day7_inconsistent_names_correction")
 ```
 
+<!-- Day 28 follow-up corrections -->
+
+```{r, eval=(correction_type=="correct_day28_non_valid_ids")}
+out <- timci::correct_day28_duplicates(to_correct_df,
+                                      csv_prefix = "day28_non_valid_pid_correction")
+```
+
+```{r, eval=(correction_type=="correct_day28_inconsistent_names")}
+out <- timci::correct_day28_duplicates(to_correct_df,
+                                      csv_prefix = "day28_inconsistent_names_correction")
+```
+
 <!-- Display summary of valid and non-valid edits that were done -->
 
 ```{r, eval=!is.null(out)}

@@ -253,7 +253,6 @@ to_correct_df <- allday7fu_data
 correction_type <- "correct_day7_inconsistent_names"
 
 # Parameters for the quality check following manual corrections
-qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_idx <- paste0(qc_nonconsistent_name_day7fu, "b")
 cleaning <- "drop_all"
 

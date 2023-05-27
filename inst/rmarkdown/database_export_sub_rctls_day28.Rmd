@@ -4,7 +4,7 @@
 write("Export Day 28 data and run corresponding quality checks", stderr())
 ```
 
-## Day 28 data quality checks\n\n
+## Day 28 data quality checks
 
 ```{r}
 db_name <- "Day 28 follow-up"
@@ -228,10 +228,25 @@ udate_diff <- 2
 matched_names <- FALSE
 cleaning <- "drop_all"
 qc_text <- "non-valid participant IDs"
-qc_idx <- qc_nonvalid_day28fu
+qc_idx <- paste0(qc_nonvalid_day28fu, "a")
 qc_export_label <- "nonvalid_pids_day28fu"
 qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(allday28fu_data), results='asis'}
+mc_description <- ""
+to_correct_df <- allday28fu_data
+correction_type <- "correct_day28_non_valid_ids"
+
+# Parameters for the quality check following manual corrections
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_idx <- paste0(qc_nonvalid_day28fu, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 ```
@@ -258,12 +273,32 @@ ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
 qc_text <- "non-consistent participant names"
-qc_idx <- qc_nonconsistent_name_day28fu
+qc_idx <- paste0(qc_nonconsistent_name_day28fu, "a")
 qc_export_label <- "nonconsistent_names_day28fu_with_matched_names"
 qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
+
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+```{r, eval=!is.null(allday28fu_data), results='asis'}
+mc_description <- ""
+to_correct_df <- allday28fu_data
+correction_type <- "correct_day28_inconsistent_names"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_day28fu, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_inconsistent_names_day28fu_records <- n_detected
+allday28fu_data <- cleaned_df
 ```
 
 ### Data cleaning summary\n\n
