@@ -28,7 +28,7 @@ corrections_from_field <- c("correct_device_ids")
 is_not_from_field <- (!correction_type %in% corrections_from_field)
 
 deletions <- c("delete_day0_records")
-is_deletion <- (!correction_type %in% deletions)
+is_deletion <- (correction_type %in% deletions)
 
 multiple_uuids <- c("edit_day0_child_ids_to_correct_duplicates",
                     "convert_screening_from_day0_to_repeat")
@@ -160,15 +160,15 @@ valid_full_disp <- valid_is_not_empty & ( nrow(valid_edits) <= 10 )
 ```
 
 ```{r, eval=edit_is_not_empty&!is_not_from_field}
-mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database.')
+mc_status_update <- paste0('**', n_corrected, '** record(s) manually edited in the ', db_name, ' database.')
 ```
 
 ```{r, eval=edit_is_not_empty&is_not_from_field&!is_deletion}
-mc_status_update <- paste0('**', n_corrected, '** record(s) were manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
+mc_status_update <- paste0('**', n_corrected, '** record(s) manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
 ```
 
 ```{r, eval=edit_is_not_empty&is_not_from_field&is_deletion}
-mc_status_update <- paste0('**', n_corrected, '** record(s) were manually deleted in the ', db_name, ' database: **', nrow(valid_edits), '** deletions that corrected instances detected by the check and **', nrow(non_valid_edits),'** deletions that corrected instances not detected by the check.')
+mc_status_update <- paste0('**', n_corrected, '** record(s) manually deleted in the ', db_name, ' database: **', nrow(valid_edits), '** deletions that corrected instances detected by the check and **', nrow(non_valid_edits),'** deletions that corrected instances not detected by the check.')
 ```
 
 `r mc_status_update`
