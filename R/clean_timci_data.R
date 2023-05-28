@@ -11,27 +11,29 @@ correct_device_ids <- function(df) {
                             TRUE ~ "")
 
   out <- list(df,NULL)
-  if ( csv_filename != "" ) {
+  if ( csv_filename != "") {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
-    df <- df %>%
-      merge(edits[, c("old_device_id", "uuid", "new_device_id")],
-            by.x = c("device_id", "uuid"),
-            by.y = c("old_device_id", "uuid"),
-            all.x = TRUE)
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+      df <- df %>%
+        merge(edits[, c("old_device_id", "uuid", "new_device_id")],
+              by.x = c("device_id", "uuid"),
+              by.y = c("old_device_id", "uuid"),
+              all.x = TRUE)
 
-    # Discarded edits
-    discarded_edit <- df %>%
-      dplyr::filter(device_id == "")
+      # Discarded edits
+      discarded_edit <- df %>%
+        dplyr::filter(device_id == "")
 
-    # Correct data
-    df$device_id <- ifelse(is.na(df$new_device_id), df$device_id, df$new_device_id)
+      # Correct data
+      df$device_id <- ifelse(is.na(df$new_device_id), df$device_id, df$new_device_id)
 
-    # Remove the column new_device_id from the dataframe
-    drop <- c("new_device_id")
-    df <- df[,!(names(df) %in% drop)]
+      # Remove the column new_device_id from the dataframe
+      drop <- c("new_device_id")
+      df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits, discarded_edit)
+      out <- list(df, edits, discarded_edit)
+    }
   }
   out
 
@@ -53,24 +55,26 @@ correct_day0_non_valid_facilities <- function(df) {
   out <- list(df,NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
-    df <- df %>%
-      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-            by.x = c("child_id", "uuid"),
-            by.y = c("old_child_id", "uuid"),
-            all.x = TRUE)
-    df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-    df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
-    if ("fid_from_device" %in% colnames(df))
-    {
-      df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("old_child_id", "uuid"),
+              all.x = TRUE)
+      df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+      if ("fid_from_device" %in% colnames(df))
+      {
+        df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, NULL)
     }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, edits, NULL)
   }
   out
 
@@ -318,32 +322,34 @@ correct_day7_duplicates <- function(df,
   out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname)
-    if ("a1-pid" %in% colnames(df))
-    {
-      df <- df %>%
-        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-              by.x = c("a1-pid", "meta-instanceID"),
-              by.y = c("old_child_id", "uuid"),
-              all.x = TRUE)
-      df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
-      df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
-    } else if ("child_id" %in% colnames(df))
-    {
-      df <- df %>%
-        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-              by.x = c("child_id", "uuid"),
-              by.y = c("old_child_id", "uuid"),
-              all.x = TRUE)
-      df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname)
+      if ("a1-pid" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("a1-pid", "meta-instanceID"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
+        df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
+      } else if ("child_id" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("child_id", "uuid"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+        df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, NULL)
     }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, edits, NULL)
   }
   out
 
@@ -380,32 +386,34 @@ correct_day28_duplicates <- function(df,
   out <- list(df,NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname)
-    if ("a1-pid" %in% colnames(df))
-    {
-      df <- df %>%
-        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-              by.x = c("a1-pid", "meta-instanceID"),
-              by.y = c("old_child_id", "uuid"),
-              all.x = TRUE)
-      df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
-      df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
-    } else if ("child_id" %in% colnames(df))
-    {
-      df <- df %>%
-        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-              by.x = c("child_id", "uuid"),
-              by.y = c("old_child_id", "uuid"),
-              all.x = TRUE)
-      df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-      df$hf_id <- ifelse(is.na(df$new_child_id), df$hf_id, substr(df$new_child_id, 3,7))
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname)
+      if ("a1-pid" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("a1-pid", "meta-instanceID"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$"a1-pid" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
+        df$"a1-fid" <- ifelse(is.na(df$new_child_id), df$"a1-fid", substr(df$new_child_id, 3,7))
+      } else if ("child_id" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("child_id", "uuid"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+        df$hf_id <- ifelse(is.na(df$new_child_id), df$hf_id, substr(df$new_child_id, 3,7))
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, NULL)
     }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, edits, NULL)
   }
   out
 

@@ -282,7 +282,7 @@ timci::dataset_export(repeat_data,
                       "Cleaned Repeat visit data")
 ```
 
-```{r}
+```{r, results='hide'}
 rm(raw_repeat_data)
 gc()
 ```

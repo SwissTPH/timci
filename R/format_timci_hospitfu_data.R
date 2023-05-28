@@ -1,11 +1,13 @@
 #' Process hospital data (TIMCI-specific function)
 #'
 #' @param df dataframe containing the non de-identified (raw) ODK data collected at the referral level
+#' @param is_deidentified Boolean, flag to not export personally identifiable variable (default set to `TRUE`)
 #' @return This function returns a formatted dataframe for future display and analysis.
 #' @export
 #' @import dplyr
 
-format_hospital_data <- function(df) {
+format_hospital_data <- function(df,
+                                 is_deidentified = TRUE) {
 
   # Replace the space between different answers by a semicolon in multiple select questions
   sep <- ";"
@@ -16,7 +18,7 @@ format_hospital_data <- function(df) {
 
   df <- timci::match_from_filtered_xls_dict(df,
                                             "hospit_dict.xlsx",
-                                            is_deidentified = TRUE,
+                                            is_deidentified = is_deidentified,
                                             country = Sys.getenv('TIMCI_COUNTRY'))
   df
 

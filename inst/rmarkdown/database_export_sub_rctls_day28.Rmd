@@ -183,6 +183,10 @@ allday28fu_data <- cleaned_df
 write(" o Non-valid participant IDs", stderr())
 ```
 
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonvalid_day28fu`a
+:::
+
 ```{r, eval=!is.null(allday28fu_data), results='asis'}
 qc_description <- "Day 28 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled Day 28 follow-ups are searched for matched names."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
@@ -218,10 +222,11 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_nonvalid_pids_day28fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_nonvalid_pids_day28fu_records <- n_detected
 allday28fu_data <- cleaned_df
 ```
 
@@ -230,6 +235,10 @@ allday28fu_data <- cleaned_df
 ```{r}
 write(" o Non-consistent participant names", stderr())
 ```
+
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonconsistent_name_day28fu`a
+:::
 
 ```{r, eval=!is.null(allday28fu_data), results='asis'}
 qc_description <- "Day 28 follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."
@@ -263,10 +272,11 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_inconsistent_names_day28fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_inconsistent_names_day28fu_records <- n_detected
 allday28fu_data <- cleaned_df
 ```
 
@@ -309,7 +319,7 @@ timci::dataset_export(allday28fu_data,
                       "Cleaned Day 28 follow-up data")
 ```
 
-```{r}
+```{r, results='hide'}
 rm(raw_allday28fu_data)
-gc(verbose = FALSE)
+gc()
 ```

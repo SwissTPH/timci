@@ -37,9 +37,9 @@ has_multiple_uuids <- (correction_type %in% multiple_uuids)
 
 `r if (is_not_from_field) { paste0('---') }`
 
-**Manual corrections**
+`r if (is_not_from_field) { paste0('::: {custom-style="redparagraph"}\n\nManual corrections\n\n:::')}`
 
-**Description**: `r mc_description`
+[Correction description:]{custom-style="underlined"} `r mc_description`
 
 <!-- Screening/Day 0 corrections -->
 
@@ -214,7 +214,7 @@ discarded_edits %>%
 
 `r if (is_not_from_field) { paste0('---') }`
 
-`r if (is_not_from_field) { paste0('**Final check after manual edits ', qc_idx, '**') }`
+`r if (is_not_from_field) { paste0('::: {custom-style="redparagraph"}\n\nFinal check after manual edits ', qc_idx, '\n\n:::')}`
 
 ```{r, eval=is_not_from_field, results='asis'}
 df <- corrected_df

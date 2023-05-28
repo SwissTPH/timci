@@ -303,6 +303,22 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+```{r}
+day7fu_data <- day7fu_data[ , !(names(day7fu_data) %in% day7fu_pii_drops)]
+```
+
+```{r, results='asis'}
+day7fu_pii_drops %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Columns with PII dropped for cleaned data export")
+```
+
 ### Data cleaning summary
 
 ```{r}
@@ -319,27 +335,7 @@ timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
                                           n_cleaned_day7fu_records)
 ```
 
-### Data export
-
-```{r}
-write(" o Data export", stderr())
-```
-
-```{r}
-raw_successday7fu_data <- raw_successday7fu_data[ , !(names(raw_successday7fu_data) %in% day7fu_pii_drops)]
-```
-
-```{r, results = 'asis'}
-timci::dataset_export(raw_successday7fu_data,
-                      "04b",
-                      "timci_followup_successful_day7_data",
-                      rctls_dir,
-                      "Raw successful Day 7 follow-up only)")
-```
-
-```{r}
-day7fu_data <- day7fu_data[ , !(names(day7fu_data) %in% day7fu_pii_drops)]
-```
+### Data overview
 
 ```{r}
 day7fu_data <- day7fu_data %>%
@@ -370,6 +366,24 @@ if ( "location_death_day7" %in% colnames(day7fu_data) ) {
 day7fu_data <- day7fu_data %>%
   dplyr::mutate(across(c(call_ok),
                        factor))
+```
+
+```{r, results='asis'}
+skimr::skim(day7fu_data)
+```
+
+### Data export
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(raw_successday7fu_data,
+                      "04b",
+                      "timci_followup_successful_day7_data",
+                      rctls_dir,
+                      "Raw successful Day 7 follow-up only)")
 ```
 
 ```{r, results = 'asis'}
@@ -416,26 +430,4 @@ if (!is.null(locked_ltfu)) {
                               locked_db_dir,
                               "04c_day7_lost_to_followup")
 }
-```
-
-```{r}
-# if (!is.null(pii) & !is.null(raw_day7fu_data)) {
-#   fu7all <- timci::generate_fu_log(pii,
-#                                    raw_day7fu_data,
-#                                    0,
-#                                    12,
-#                                    7,
-#                                    10,
-#                                    ext = TRUE,
-#                                    deidentify = TRUE)
-#   fn <- timci::export_df2xlsx(fu7all,
-#                               params$rctls_dir,
-#                               "04d_timci_deidentified_day7_fu_weekly_log_all")
-# }
-```
-
-### Data summary statistics\n\n
-
-```{r, results='asis'}
-skimr::skim(day7fu_data)
 ```

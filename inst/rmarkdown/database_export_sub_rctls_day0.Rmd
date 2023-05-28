@@ -992,10 +992,10 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
 ```{r child_duplicate-subsection, child = 'database_export_sub_QC_child_multiple_enrolments.Rmd'}
 ```
 
-### Data cleaning summary
+### Pseudonymisation
 
 ```{r}
-write(" o Data cleaning summary", stderr())
+write(" o Pseudonymisation", stderr())
 ```
 
 ```{r}
@@ -1004,6 +1004,12 @@ out <- timci::extract_pii(day0_data,
                           is_pilot)
 day0_data <- out[[1]]
 n_cleaned_day0_records <- nrow(day0_data)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
@@ -1088,7 +1094,7 @@ day0_data <- day0_data %>%
 skimr::skim(day0_data)
 ```
 
-```{r}
+```{r, results='hide'}
 rm(raw_day0_data)
-gc(verbose = FALSE)
+gc()
 ```

@@ -2,7 +2,10 @@
 title: "Untitled"
 author: "Ifakara Health Institute / Swiss Tropical and Public Health Institute"
 date: "2023-05-25"
-output: word_document
+output:
+  word_document:
+    reference_docx: rmarkdown/word_styles1.docx
+    md_extensions: +raw_html-markdown_in_html_blocks
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +16,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+::: {custom-style="redparagraph"}
+Initial check
+:::
+
+```{r}
+is_not_from_field <- TRUE
+```
+
+[test2]{custom-style="underlined"}
+
+:white_check_mark:
 
 ```{r cars}
 summary(cars)

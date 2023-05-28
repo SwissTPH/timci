@@ -268,11 +268,12 @@ y_max <- NA
 ## Abbreviations
 
 | Abbreviation | Meaning                                                    |
-|-------------------|-----------------------------------------------------|
+|--------------|------------------------------------------------------------|
 | .CSV         | Comma-Separated Value                                      |
 | DB           | DataBase                                                   |
 | LS           | Longitudinal Observational Study                           |
 | ODK          | Open Data Toolkit                                          |
+| PII          | Personnally Identifiable Information                       |
 | RCT          | Randomised Controlled Trial                                |
 | SPA          | Service Provision Assessment                               |
 | TIMCI        | Tools for the Integrated Management of Childhood Illnesses |
@@ -281,7 +282,9 @@ y_max <- NA
 
 ## Definitions
 
--   **Example**: Definition
+-   **Anonymisation**: Process of completely destroying direct or indirect identifiers and thereby making it impossible to identify the data subject.
+-   **Pseudonymisation (EU GDPR)**: Processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person.
+-   **Standard Operating Procedure (ICH GCP 1.55)**: Detailed written instructions to achieve uniformity of the performance of a specific function.  In simple terms, a SOP is a written process for a clinical site to perform a task the same way each time it is completed.
 
 \newpage
 

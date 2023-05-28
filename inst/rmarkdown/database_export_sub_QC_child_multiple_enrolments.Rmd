@@ -1,6 +1,4 @@
-\newpage
-
-## Detection of multiple 28-disease episodes for the same children
+### Detection of multiple 28-disease episodes for the same children
 
 ```{r}
 write(" o Detection of multiple 28-disease episodes for the same children", stderr())
