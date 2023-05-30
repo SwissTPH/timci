@@ -354,7 +354,7 @@ facility_data <- cleaned_df
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania | is_ls ) { paste0('**Initial check ', qc_dup_repeats_id, 'a**') }`
+`r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_dup_repeats_id, 'a\n\n:::')}`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
@@ -368,6 +368,7 @@ qc_text <- "duplicated IDs"
 qc_idx <- paste0(qc_dup_repeats_id, "a")
 qc_export_label <- "timci_repeat_visit_duplicates"
 qc_export_description <- "the repeat visit was allocated the same ID that has been used for another participant in the database"
+
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
