@@ -57,7 +57,7 @@ n_incorrect_enroldate_records <- 0
 write(" o Management of true duplicates (same ID, same day, same name)", stderr())
 ```
 
-`r if ( is_tanzania & !is_pilot ) { paste0('**Initial check ', qc_true_duplicates, 'a**') }`
+`r if ( is_tanzania & !is_pilot ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_true_duplicates, 'a\n\n:::')}`
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "Participants who have been entered twice as new enrolments with the same ID on the same day, which creates duplicates in the database."
@@ -100,7 +100,7 @@ n_dropped_records <- n_mc
 write(" o Management of duplicated child IDs", stderr())
 ```
 
-`r if ( !is_pilot ) { paste0('**Initial check ', qc_duplicate_id, 'a**') }`
+`r if ( !is_pilot ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_duplicate_id, 'a\n\n:::')}`
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
@@ -146,8 +146,6 @@ initial_duplicates_df <- qc_df %>%
   dplyr::mutate(is_duplicate = 1)
 ```
 
-`r if ( !is_pilot ) { '#### Manual correction of duplicated child IDs' }`
-
 ```{r, eval=!is_pilot, results='asis'}
 mc_description <- ""
 to_correct_df <- day0_data
@@ -161,22 +159,6 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-```
-
-```{r}
-timci::dataset_export(corrected_df,
-                      "02",
-                      "timci_day0_data_corrected",
-                      locked_db_dir,
-                      "Cleaned Day 0 data")
-```
-
-```{r}
-timci::dataset_export(cleaned_df,
-                      "02",
-                      "timci_day0_data_cleaned",
-                      locked_db_dir,
-                      "Cleaned Day 0 data")
 ```
 
 ```{r, eval=!is.null(cleaned_df)}

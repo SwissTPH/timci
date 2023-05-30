@@ -257,7 +257,8 @@ qc_df <- df %>%
                 fid != fid_ra)
 if ( !is_kenya ) {
   qc_df <- qc_df %>%
-    timci::find_closest_facility(research_facilities)
+    timci::find_closest_facility(research_facilities) %>%
+    timci::filter(facility_id != "" & !is.na(facility_id))
 }
 
 qccols <- colnames(qc_df)
