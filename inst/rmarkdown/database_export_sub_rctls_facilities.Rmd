@@ -6,8 +6,8 @@ Facility information can be extracted in five different manners:
 
 * **fid_ra**: facility selected by the research assistant from a drop-down list - not implemented in Senegal;
 * **fid**: facility ID (Fxxxx) that is extracted from the first 5 characters of the child ID (X-Fxxxx-Pxxxx), e.g., X-F0001-Pxxxx corresponds to facility F0001; 
-* **fid_from_device**: calculation of the facility ID (*fid*) that is the most used on a specific day with a specific device, assuming 1 device is used to screen children in 1 unique facility each day;
-* **fid_from_main_device**
+* **fid_from_device**: derived calculation from the facility ID (*fid*) that is the most used on a specific day with a specific device, assuming 1 device is used to screen children in 1 unique facility each day;
+* **fid_from_main_device**: derived calculation from the facility ID (*fid*) that is the most used with a specific device (in Senegal, 1 unique device has been used to screen children in each facility);
 * **latitude** and **longitude** from the tablet GPS coordinates - not implemented in Kenya.
 
 ```{r}

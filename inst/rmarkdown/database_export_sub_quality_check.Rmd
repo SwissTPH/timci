@@ -210,7 +210,8 @@ cleaned_df <- out[[2]]
 
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
-  dplyr::filter(fid != "" & fid != fid_from_device) %>%
+  dplyr::filter(fid != "" & !is.na(fid),
+                fid != fid_from_device) %>%
   timci::find_closest_facility(research_facilities)
 
 qccols <- colnames(qc_df)
@@ -251,11 +252,12 @@ qc_df <- qc_df %>%
 
 ```{r, eval=(qc_type=="inconsistent_facility_info2")}
 qc_df <- df %>% 
-  dplyr::filter(fid != "" & fid_ra != "" & fid != fid_ra)
-if ( "longitude" %in% facility_cols ) {
+  dplyr::filter(fid != "" & !is.na(fid),
+                fid_ra != "" & !is.na(fid_ra),
+                fid != fid_ra)
+if ( !is_kenya ) {
   qc_df <- qc_df %>%
-    dplyr::filter(longitude != "" & !is.na(longitude)) %>%
-  timci::find_closest_facility(research_facilities)
+    timci::find_closest_facility(research_facilities)
 }
 
 qccols <- colnames(qc_df)

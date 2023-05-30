@@ -38,7 +38,9 @@ has_multiple_uuids <- (correction_type %in% multiple_uuids)
 
 `r if (is_not_from_field) { paste0('---') }`
 
-`r if (is_not_from_field) { paste0('::: {custom-style="redparagraph"}\n\nManual corrections\n\n:::')}`
+::: {custom-style="redparagraph"}
+Manual corrections
+:::
 
 [Correction description:]{custom-style="underlined"} `r mc_description`
 
