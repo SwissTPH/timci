@@ -39,12 +39,17 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
                   1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
-                  m2 [label = 'Automatically/manually edited (N = %s)\n%s record(s) corrected for the start date\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit']
-                  m3 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
+                  m2 [label = 'Automatically edited (N = %s)\n%s record(s) corrected for the start date\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit']
+                  m3 [label = 'Manually edited (N = XX)\n XX record(s) corrected (out of XX detected)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
                   2 [label = 'Cleaned screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p3 -> 2 [arrowhead='none']
+                  p4 -> 2 [arrowhead='none']
+                  {rank=same; p4 -> m4}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p3 -> p4 [arrowhead='none']
                   {rank=same; p3 -> m3}
 
                   node [shape=none, width=0, height=0, label='']

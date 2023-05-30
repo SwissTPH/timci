@@ -9,20 +9,20 @@ write("Export screening data and run corresponding quality checks", stderr())
 ```{r}
 db_name <- "screening"
 
-qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_01"
-qc_inconsistent_facility_info1 <- "DQC_00_0SG_02"
-qc_inconsistent_facility_info2 <- "DQC_00_0SG_03"
-qc_inconsistent_facility_info3 <- "DQC_00_0SG_03"
-qc_nonvalid_fid <- "DQC_00_0SG_04"
-qc_incorrect_date_setup <- "DQC_00_0SG_05"
-qc_nontimely_submission_id <- "DQC_00_0SG_06"
-qc_nontimely_completion_id <- "DQC_00_0SG_07"
-qc_screening_before_startdate <- "DQC_00_0SG_08"
-qc_screening_after_lockdate <- "DQC_00_0SG_09"
-qc_screening_other_fids <- "DQC_00_0SG_10"
-qc_inconsistent_age_info <- "DQC_00_0SG_11"
-qc_underaged_cg_id <- "DQC_00_0SG_12"
-qc_dup_repeats_id <- "DQC_00_0SG_13"
+qc_incorrect_date_setup <- "DQC_00_0SG_01"
+qc_nontimely_submission_id <- "DQC_00_0SG_02"
+qc_nontimely_completion_id <- "DQC_00_0SG_03"
+qc_screening_before_startdate <- "DQC_00_0SG_04"
+qc_screening_after_lockdate <- "DQC_00_0SG_05"
+qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_06"
+qc_nonvalid_fid <- "DQC_00_0SG_07"
+qc_screening_other_fids <- "DQC_00_0SG_08"
+qc_inconsistent_facility_info1 <- "DQC_00_0SG_09"
+qc_inconsistent_facility_info2 <- "DQC_00_0SG_10"
+qc_inconsistent_facility_info3 <- "DQC_00_0SG_11"
+qc_inconsistent_age_info <- "DQC_00_0SG_12"
+qc_underaged_cg_id <- "DQC_00_0SG_13"
+qc_dup_repeats_id <- "DQC_00_0SG_14"
 ```
 
 ```{r}
@@ -80,15 +80,16 @@ raw_repeat_data <- facility_data %>%
 
 Initially, there are **`r n_raw_screening_records`** record(s) in the raw `r db_name` database from the start of the study on **`r start_date`**.
 
-### Facilities
-
-```{r db-export-facility-subsection, child = 'database_export_sub_rctls_facilities.Rmd'}
-```
-
 ### Dates and times
 
 ```{r}
 write(" o Date and time checks", stderr())
+```
+
+```{r}
+facility_cols <- colnames(facility_data)
+facility_data <- facility_data %>% 
+  timci::allocate_screening_facility(research_facilities)
 ```
 
 #### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
@@ -313,6 +314,11 @@ comparison <- "type"
 cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+```
+
+### Facilities
+
+```{r db-export-facility-subsection, child = 'database_export_sub_rctls_facilities.Rmd'}
 ```
 
 ### Participant eligibility

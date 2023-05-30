@@ -15,21 +15,31 @@
 find_closest_facility <- function(df,
                                   facilities) {
 
-  if ( "longitude" %in% colnames(df) ) {
+  cols <- colnames(df)
+
+  if ( "longitude" %in% cols ) {
+
+    tmp1 <- df %>%
+      dplyr::filter(longitude == "" | is.na(longitude))
+
+    tmp2 <- df %>%
+      dplyr::filter(longitude != "" & !is.na(longitude))
 
     facilities2 <- facilities %>%
       dplyr::rename(lon = Longitude,
                     lat = Latitude) %>%
-      dplyr::slice(rep(row_number(), nrow(df)))
+      dplyr::slice(rep(row_number(), nrow(tmp2)))
 
-    out <- df %>%
+    out <- tmp2 %>%
       dplyr::slice(rep(row_number(), nrow(facilities))) %>%
       dplyr::bind_cols(facilities2) %>%
       dplyr::rowwise() %>%
       dplyr::mutate(dist = geosphere::distHaversine(c(as.numeric(longitude), as.numeric(latitude)),
                                                     c(as.numeric(lon), as.numeric(lat)))) %>%
+      dplyr::ungroup() %>%
       dplyr::filter(dist < 200) %>%
-      dplyr::filter(fid != facility_id)
+      dplyr::filter(fid != facility_id) %>%
+      dplyr::bind_rows(tmp1)
 
     out <- out[order(out$dist,
                      na.last = TRUE,

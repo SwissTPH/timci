@@ -27,7 +27,8 @@ mc_status_update <- ""
 corrections_from_field <- c("correct_device_ids")
 is_not_from_field <- (!correction_type %in% corrections_from_field)
 
-deletions <- c("delete_day0_records")
+deletions <- c("delete_training_data",
+               "delete_day0_records")
 is_deletion <- (correction_type %in% deletions)
 
 multiple_uuids <- c("edit_day0_child_ids_to_correct_duplicates",
@@ -51,6 +52,11 @@ out <- timci::correct_device_ids(to_correct_df)
 out <- timci::correct_day0_non_valid_facilities(to_correct_df)
 ```
 
+```{r, eval=(correction_type=="delete_training_data")}
+out <- timci::delete_day0_records(to_correct_df,
+                                  csv_prefix = "day0_training_deletion")
+```
+
 ```{r, eval=(correction_type=="convert_screening_from_day0_to_repeat")}
 out <- timci::edit_day0_to_repeat(to_correct_df)
 
@@ -58,20 +64,21 @@ out <- timci::edit_day0_to_repeat(to_correct_df)
 qc_rule <- action_alert_no_modification
 ```
 
-```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_check")}
-out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_childID_correction_inconsistent_facility_check")
+```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_check1")}
+out <- timci::edit_day0_child_ids(to_correct_df, csv_prefix = "day0_childID_correction_inconsistent_facility_check1")
 
 # Parameters for the quality check following manual corrections
 qc_rule <- action_alert_no_modification
 ```
 
-```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_field_info")}
+```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_facilities_from_check2")}
 out <- timci::edit_day0_child_ids(to_correct_df,
-                                  csv_prefix = "day0_childID_correction_from_field")
+                                  csv_prefix = "day0_childID_correction_inconsistent_facility_check2")
 ```
 
 ```{r, eval=(correction_type=="delete_day0_records")}
-out <- timci::delete_day0_records(to_correct_df)
+out <- timci::delete_day0_records(to_correct_df,
+                                  csv_prefix = "day0_true_duplicate_deletion")
 ```
 
 ```{r, eval=(correction_type=="edit_day0_child_ids_to_correct_duplicates")}
@@ -79,8 +86,14 @@ out <- timci::edit_day0_child_ids(to_correct_df,
                                   csv_prefix = "day0_duplicate_correction")
 ```
 
-```{r, eval=(correction_type=="correct_day0_inconsistent_facilities")}
-out <- timci::correct_day0_inconsistent_facilities(to_correct_df)
+```{r, eval=(correction_type=="correct_day0_inconsistent_facilities1")}
+out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
+                                                   csv_prefix = "day0_facility_correction1")
+```
+
+```{r, eval=(correction_type=="correct_day0_inconsistent_facilities2")}
+out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
+                                                   csv_prefix = "day0_facility_correction2")
 ```
 
 <!-- Day 7 follow-up corrections -->

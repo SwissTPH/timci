@@ -83,24 +83,37 @@ correct_day0_non_valid_facilities <- function(df) {
 #' Edit non-valid facilities in Day 0 data entries (TIMCI-specific function)
 #'
 #' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_facility_correction1").
 #' @return This function returns a list that contains a dataframe with corrections and the list of edits
 #' @import dplyr
 #' @export
 
-correct_day0_inconsistent_facilities <- function(df) {
+correct_day0_inconsistent_facilities <- function(df,
+                                                 csv_prefix = "day0_facility_correction1") {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_facility_correction_senegal.csv",
-                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_facility_correction_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                             TRUE ~ "")
 
   out <- list(df, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+
+    discarded_edits <- df %>%
+      merge(edits[, c("child_id", "uuid", "new_fid")],
+            by = c("child_id", "uuid"),
+            all.y = TRUE) %>%
+      dplyr::filter(fid == "") %>%
+      dplyr::select(child_id,
+                    uuid,
+                    new_fid)
+
     df <- df %>%
       merge(edits[, c("child_id", "uuid", "new_fid")],
             by = c("child_id", "uuid"),
             all.x = TRUE)
+
     df$fid <- ifelse(is.na(df$new_fid), df$fid, df$new_fid)
     if ( "fid_from_device" %in% colnames(df) )
     {
@@ -111,7 +124,7 @@ correct_day0_inconsistent_facilities <- function(df) {
     drop <- c("new_fid")
     df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, edits, NULL)
+    out <- list(df, edits, discarded_edits)
   }
   out
 
@@ -247,13 +260,15 @@ edit_day0_to_repeat <- function(df) {
 #' This function can be used to drop documented child IDs
 #'
 #' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_training_deletion").
 #' @return This function returns a list that contains a cleaned dataframe and the list of dropped records
 #' @import dplyr
 #' @export
 
-delete_day0_records <- function(df) {
+delete_day0_records <- function(df,
+                                csv_prefix = "day0_training_deletion") {
 
-  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_true_duplicate_deletion_tanzania.csv",
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                             TRUE ~ "")
 
   out <- list(df, NULL)

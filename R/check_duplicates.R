@@ -795,8 +795,8 @@ find_best_matched_names_between_fu_and_day0 <- function(df,
       for (row in 1:nrow(df)) {
 
         # Extract constraints for restricting the search in day0_df
-        cdate <- df[row, col_date]#as.Date(df[row, "date_day0"])#as.Date(df[row, col_date], "%Y-%m-%d")
-        cdate <- as.Date(cdate)
+        cdate <- df[row, col_date]
+        cdate <- as.Date(cdate, "%Y-%m-%d")
         min_date <- as.Date(cdate + ldate_diff)
         max_date <- as.Date(cdate + udate_diff)
 

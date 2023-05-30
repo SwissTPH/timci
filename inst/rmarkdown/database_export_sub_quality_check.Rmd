@@ -210,38 +210,41 @@ cleaned_df <- out[[2]]
 
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
-  dplyr::filter(!is.na(fid)) %>%
+  dplyr::filter(!is.na(fid) & fid != "") %>%
   dplyr::filter(fid != fid_from_device) %>%
   timci::find_closest_facility(research_facilities)
+
+qccols <- colnames(qc_df)
 outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
              "fid_from_device")
-if ( "facility_id" %in%  cols ) {
+if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }
-if ( "fid_ra" %in%  cols ) {
+if ( "fid_ra" %in%  qccols ) {
   outcols <- c(outcols, "fid_ra", "district_ra")
 }
-if ( "child_id_manual" %in%  cols ) {
+if ( "child_id_manual" %in%  qccols ) {
   outcols <- c(outcols, "child_id_manual")
 }
-if ( "latitude" %in%  cols ) {
+if ( "latitude" %in%  qccols ) {
   outcols <- c(outcols, "latitude")
 }
-if ( "longitude" %in%  cols ) {
+if ( "longitude" %in%  qccols ) {
   outcols <- c(outcols, "longitude")
 }
-if ( "gps_accuracy" %in%  cols ) {
+if ( "gps_accuracy" %in%  qccols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
-if ( "dist" %in%  cols ) {
+if ( "dist" %in%  qccols ) {
   outcols <- c(outcols, "dist")
 }
 outcols <- c(outcols,
              "uuid",
              "device_id")
+
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -249,9 +252,16 @@ qc_df <- qc_df %>%
 
 ```{r, eval=(qc_type=="inconsistent_facility_info2")}
 qc_df <- df %>% 
-  dplyr::filter(!is.na(fid)) %>% 
-  dplyr::filter(!is.na(fid_ra) & (fid != fid_ra)) %>%
+  dplyr::filter(!is.na(fid) & fid != "") %>% 
+  dplyr::filter(!is.na(fid_ra) & fid_ra != "") %>%
+  dplyr::filter(fid != fid_ra)
+if ( "longitude" %in% facility_cols ) {
+  qc_df <- qc_df %>%
+    dplyr::filter(longitude != "" & !is.na(longitude)) %>%
   timci::find_closest_facility(research_facilities)
+}
+
+qccols <- colnames(qc_df)
 outcols <- c("date_visit",
              "child_id",
              "fid",
@@ -259,27 +269,28 @@ outcols <- c("date_visit",
              "fid_from_device",
              "fid_ra",
              "district_ra")
-if ( "facility_id" %in%  cols ) {
+if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }
-if ( "child_id_manual" %in%  cols ) {
+if ( "child_id_manual" %in%  qccols ) {
   outcols <- c(outcols, "child_id_manual")
 }
-if ( "latitude" %in%  cols ) {
+if ( "latitude" %in%  qccols ) {
   outcols <- c(outcols, "latitude")
 }
-if ( "longitude" %in%  cols ) {
+if ( "longitude" %in%  qccols ) {
   outcols <- c(outcols, "longitude")
 }
-if ( "gps_accuracy" %in%  cols ) {
+if ( "gps_accuracy" %in%  qccols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
-if ( "dist" %in%  cols ) {
+if ( "dist" %in%  qccols ) {
   outcols <- c(outcols, "dist")
 }
 outcols <- c(outcols,
              "uuid",
              "device_id")
+
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -287,38 +298,41 @@ qc_df <- qc_df %>%
 
 ```{r, eval=(qc_type=="inconsistent_facility_info3")}
 qc_df <- df %>% 
-  dplyr::filter(!is.na(fid)) %>%
+  dplyr::filter(!is.na(fid) & fid != "") %>%
   dplyr::filter(fid != fid_from_main_device) %>%
   timci::find_closest_facility(research_facilities)
+
+qccols <- colnames(qc_df)
 outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
              "fid_from_device")
-if ( "facility_id" %in%  cols ) {
+if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }
-if ( "fid_ra" %in%  cols ) {
+if ( "fid_ra" %in%  qccols ) {
   outcols <- c(outcols, "fid_ra", "district_ra")
 }
-if ( "child_id_manual" %in%  cols ) {
+if ( "child_id_manual" %in%  qccols ) {
   outcols <- c(outcols, "child_id_manual")
 }
-if ( "latitude" %in%  cols ) {
+if ( "latitude" %in%  qccols ) {
   outcols <- c(outcols, "latitude")
 }
-if ( "longitude" %in%  cols ) {
+if ( "longitude" %in%  qccols ) {
   outcols <- c(outcols, "longitude")
 }
-if ( "gps_accuracy" %in%  cols ) {
+if ( "gps_accuracy" %in%  qccols ) {
   outcols <- c(outcols, "gps_accuracy")
 }
-if ( "dist" %in%  cols ) {
+if ( "dist" %in%  qccols ) {
   outcols <- c(outcols, "dist")
 }
 outcols <- c(outcols,
              "uuid",
              "device_id")
+
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
@@ -497,11 +511,11 @@ if ( length(names_to_remove) ) {
   qc_df <- qc_df %>% 
     dplyr::select(-names_to_remove)
 }
-uuids_to_remove <- grep("uuid", colnames(qc_df))
-if ( length(uuids_to_remove) ) {
-  qc_df <- qc_df %>% 
-    dplyr::select(-uuids_to_remove)
-}
+# uuids_to_remove <- grep("uuid", colnames(qc_df))
+# if ( length(uuids_to_remove) ) {
+#   qc_df <- qc_df %>% 
+#     dplyr::select(-uuids_to_remove)
+# }
 
 reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type != "date_discrepancy" )
 if ( reformat_cond ) {

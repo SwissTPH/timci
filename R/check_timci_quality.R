@@ -246,7 +246,7 @@ identify_nonvalid_ids <- function(df1,
     dplyr::filter(!!rlang::sym(col_id1) == "" | is.na(!!rlang::sym(col_id1)))
 
   df1 <- df1 %>%
-    dplyr::filter(!!rlang::sym(col_id1) != "" | !is.na(!!rlang::sym(col_id1)))
+    dplyr::filter(!!rlang::sym(col_id1) != "" & !is.na(!!rlang::sym(col_id1)))
   qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
 
   cleaned_df <- df1[df1[[col_id1]] %in% df2[[col_id2]], ] %>%

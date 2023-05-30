@@ -4,10 +4,15 @@
 \alias{correct_day0_inconsistent_facilities}
 \title{Edit non-valid facilities in Day 0 data entries (TIMCI-specific function)}
 \usage{
-correct_day0_inconsistent_facilities(df)
+correct_day0_inconsistent_facilities(
+  df,
+  csv_prefix = "day0_facility_correction1"
+)
 }
 \arguments{
 \item{df}{dataframe}
+
+\item{csv_prefix}{A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_facility_correction1").}
 }
 \value{
 This function returns a list that contains a dataframe with corrections and the list of edits
