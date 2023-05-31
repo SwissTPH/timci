@@ -149,7 +149,7 @@ n_correct_non_valid_facilities <- n_corrected
 facility_data <- cleaned_df
 ```
 
-#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info1`]
+#### Discrepancy in facility information 1 [Logic/Context check `r qc_inconsistent_facility_info1`]
 
 ```{r}
 write(" o Discrepancy in facility IDs (vs. device)", stderr())
@@ -207,7 +207,7 @@ facility_data <- corrected_df
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info2`]
+#### Discrepancy in facility information 2 [Logic/Context check `r qc_inconsistent_facility_info2`]
 
 ```{r}
 write(" o Discrepancy in facility IDs (vs. manual entry)", stderr())
@@ -267,7 +267,7 @@ facility_data <- corrected_df
 n_inconsistent_facility_info2 <- n_detected
 ```
 
-#### Discrepancy in facility information [Logic/Context check `r qc_inconsistent_facility_info3`]
+#### Discrepancy in facility information 3 [Logic/Context check `r qc_inconsistent_facility_info3`]
 
 This check is relevant and implemented only for Senegal.
 

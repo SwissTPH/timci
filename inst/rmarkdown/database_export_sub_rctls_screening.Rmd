@@ -23,6 +23,7 @@ qc_inconsistent_facility_info3 <- "DQC_00_0SG_11"
 qc_inconsistent_age_info <- "DQC_00_0SG_12"
 qc_underaged_cg_id <- "DQC_00_0SG_13"
 qc_dup_repeats_id <- "DQC_00_0SG_14"
+qc_other_repeats_id <- "DQC_00_0SG_15"
 ```
 
 ```{r}
@@ -92,14 +93,14 @@ facility_data <- facility_data %>%
   timci::allocate_screening_facility(research_facilities)
 ```
 
-#### Incorrect date and time setup on the device [Context check `r qc_incorrect_date_setup`]
+#### Incorrect creation dates [Context check `r qc_incorrect_date_setup`]
 
 ```{r}
 write(" o Incorrect data and time setup on the device", stderr())
 ```
 
 ```{r, results='asis'}
-qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not setup correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
+qc_description <- "The enrolment date is defined as the creation (start) date of the form. However if for any reason the date is not set up correctly on the tablet, the enrolment date is not correct and follow-up is not triggered on the right date."
 qc_rule <- "If the server submission date is anterior to the creation date (start of the form on the tablet) in the database, the creation date is considered incorrect and is replaced by the server submission date."
 qc_type <- "date_discrepancy"
 df <- facility_data
@@ -316,7 +317,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-### Facilities
+### Devices and facilities
 
 ```{r db-export-facility-subsection, child = 'database_export_sub_rctls_facilities.Rmd'}
 ```
@@ -348,7 +349,7 @@ n_ineligible_cg_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-#### Repeat visits incorrectly recorded as new enrolments [Compliance check `r paste0(qc_dup_repeats_id, "a")`]
+#### Repeat visits incorrectly recorded as new enrolments with a duplicated ID [Compliance check `r paste0(qc_dup_repeats_id, "a")`]
 
 ```{r}
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
@@ -356,7 +357,7 @@ write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 
 `r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_dup_repeats_id, 'a\n\n:::')}`
 
-```{r, eval=facility_data_is_not_null, results='asis'}
+```{r, eval=FALSE, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
 qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
 qc_type <- "duplicates_check_pii"
@@ -409,6 +410,16 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
 n_repeat_edit_records <- n_mc
 facility_data <- corrected_df
 ```
+
+#### Repeat visits incorrectly recorded as new enrolments with a new ID
+
+```{r}
+write(" o Repeat visits incorrectly recorded as new enrolments with a new ID", stderr())
+```
+
+`r if ( is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_other_repeats_id, 'a\n\n:::')}`
+
+To be added for the hard lock in Kenya and Senegal. Should only run on those children who reported they already came here
 
 ### Misc
 
