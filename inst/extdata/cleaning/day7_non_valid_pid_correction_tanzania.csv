@@ -2,10 +2,14 @@ old_child_id,uuid,new_child_id,reason,action
 T-F0017-P1292,uuid:1866dc81-6e8e-4abf-aaa8-d0d429fd8d63,T-F0017-P1294,manual error,correct
 T-F0022-P0360,uuid:592fa3f9-362b-4ae4-b8ff-f25c9429a103,T-F0023-P0360,manual error,correct
 T-F0091-P0563,uuid:b1d88338-7554-4577-b34a-92fed826d846,T-F0091-P0562,manual error,correct
-T-F0006-P0481,uuid:bb31fdbd-8cae-4aa5-9b28-7673d6b9bd92,T-R0006-P0481,manual error,correct
 T-F0022-P0360,uuid:bc7a45b8-f374-48af-bdff-05e4397ecd07,T-F0023-P0360,manual error,correct
 T-F0022-P0395,uuid:c8dc5ce4-714d-4f2d-ae46-01576afe512a,T-F0023-P0395,manual error,correct
 T-F0022-P0360,uuid:dea9e7e0-8262-4b49-9258-5deac81a1ed8,T-F0023-P0360,manual error,correct
 T-F0022-P0360,uuid:f6ce9a6b-be12-41c2-9317-2eeb8ae3d6ae,T-F0023-P0360,manual error,correct
 T-F0082-P0007,uuid:e3f7020e-5eb4-4505-8893-4e759c13883e,T-F0013-P0007,manual error,correct
 T-F0095-P2518,uuid:ebca16e0-31b1-49cd-bf13-fc24eebc01f8,T-F0095-C2518,manual error,correct
+T-F0004-P1197,uuid:2b809a0d-2118-46f6-9d87-cef5f25de959,T-F0004-P1180,manual error,correct
+T-F0095-P1679,uuid:6febe9da-a609-4cdd-924f-3292d05dc507,T-F0095-P1644,manual error,correct
+T-F0095-P1679,uuid:821dc36c-eeff-47e3-ba95-23894b771f51,T-F0095-P1644,manual error,correct
+T-R0006-P0481,uuid:bb31fdbd-8cae-4aa5-9b28-7673d6b9bd92,T-F0006-P0481,manual error,correct
+T-F0004-P1669,uuid:be0e1f70-8705-4e30-8444-185b641c7b70,T-F0004-P1668,manual error,correct
