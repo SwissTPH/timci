@@ -10,7 +10,7 @@ This section only focus on successful follow-ups, i.e. follow-ups where the part
 
 ```{r}
 day7fu_data <- allday7fu_data %>%
-  dplyr::filter ( proceed_day7 == 1 )
+  dplyr::filter( proceed_day7 == 1 )
 n_raw_successday7fu_records <- nrow(day7fu_data)
 day7fu_is_not_null <- !is.null(day7fu_data)
 day7fu_is_not_empty <- timci::is_not_empty(day7fu_data)
