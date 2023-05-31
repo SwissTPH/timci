@@ -142,7 +142,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
-n_correct_non_valid_facilities <- n_corrected
+n_correct_non_valid_facilities <- n_mc
 ```
 
 ```{r, eval=!is.null(cleaned_df)}

@@ -38,9 +38,9 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
-                  m2 [label = 'Automatically edited (N = %s)\n%s record(s) corrected for the start date\n%s record(s) with ineligible caregiver\n%s record(s) modified from new enrolment to repeat visit']
-                  m3 [label = 'Manually edited (N = XX)\n XX record(s) corrected (out of XX detected)']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid device IDs\n%s record(s) collected in a facility from other TIMCI studies\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
+                  m2 [label = 'Automatically edited (N = %s)\n%s record(s) corrected for the creation date\n%s record(s) with ineligible (underaged) caregiver']
+                  m3 [label = 'Manually edited (N = XX)\nXX record(s) corrected for non-valid facility IDs (out of XX detected)\nXX record(s) corrected for incorrect facility ID (out of XX detected)\nXX record(s) corrected for incorrect facility ID (out of XX detected)\nXX record(s) corrected for incorrect facility ID (out of XX detected)\n%s record(s) modified from new enrolment to repeat visit (out of XX detected)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
                   2 [label = 'Cleaned screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
 

@@ -152,7 +152,7 @@ if ( 'new_child_id' %in% cols ) {
 if ( 'new_fid' %in% cols ) {
   disp_cols <- c(disp_cols, "new_fid")
 }
-n_corrected <- nrow(edited_records)
+n_mc <- nrow(edited_records)
 ```
 
 ```{r, eval=(edit_is_not_empty&is_not_from_field&!has_multiple_uuids)}
@@ -176,15 +176,15 @@ valid_full_disp <- valid_is_not_empty & ( nrow(valid_edits) <= 10 )
 ```
 
 ```{r, eval=edit_is_not_empty&!is_not_from_field}
-mc_status_update <- paste0('**', n_corrected, '** record(s) manually edited in the ', db_name, ' database.')
+mc_status_update <- paste0('**', n_mc, '** record(s) manually edited in the ', db_name, ' database.')
 ```
 
 ```{r, eval=edit_is_not_empty&is_not_from_field&!is_deletion}
-mc_status_update <- paste0('**', n_corrected, '** record(s) manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
+mc_status_update <- paste0('**', n_mc, '** record(s) manually edited in the ', db_name, ' database: **', nrow(valid_edits), '** edits that corrected instances detected by the check and **', nrow(non_valid_edits),'** edits that corrected instances not detected by the check.')
 ```
 
 ```{r, eval=edit_is_not_empty&is_not_from_field&is_deletion}
-mc_status_update <- paste0('**', n_corrected, '** record(s) manually deleted in the ', db_name, ' database: **', nrow(valid_edits), '** deletions that corrected instances detected by the check and **', nrow(non_valid_edits),'** deletions that corrected instances not detected by the check.')
+mc_status_update <- paste0('**', n_mc, '** record(s) manually deleted in the ', db_name, ' database: **', nrow(valid_edits), '** deletions that corrected instances detected by the check and **', nrow(non_valid_edits),'** deletions that corrected instances not detected by the check.')
 ```
 
 `r mc_status_update`
