@@ -31,7 +31,8 @@ deletions <- c("delete_training_data",
                "delete_day0_records")
 is_deletion <- (correction_type %in% deletions)
 
-multiple_uuids <- c("edit_day0_child_ids_to_correct_duplicates",
+multiple_uuids <- c("delete_day0_records",
+                    "edit_day0_child_ids_to_correct_duplicates",
                     "convert_screening_from_day0_to_repeat")
 has_multiple_uuids <- (correction_type %in% multiple_uuids)
 ```
