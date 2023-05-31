@@ -550,8 +550,12 @@ identify_repeat_duplicate <- function(df,
   # Filter so that keep only repeat visits (between Day 1 and Day 28)
   if ( timci::is_not_empty(qc_df) ) {
     qc_df$diff <- as.Date(as.character(qc_df$date_2), format = "%Y-%m-%d") - as.Date(as.character(qc_df$date_1), format = "%Y-%m-%d")
+    qc_df$diff32 <- NA
+    if ( "date_3" %in% colnames(qc_df) ) {
+      qc_df$diff32 <- as.Date(as.character(qc_df$date_3), format = "%Y-%m-%d") - as.Date(as.character(qc_df$date_2), format = "%Y-%m-%d")
+    }
     qc_df <- qc_df %>%
-      dplyr::filter(diff > 0 & diff < 28) %>%
+      dplyr::filter( (diff > 0 & diff < 28) | ( !is.na(diff32) & diff32 > 0 & diff32 < 28 ) ) %>%
       dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
   } else {
     qc_df <- NULL
