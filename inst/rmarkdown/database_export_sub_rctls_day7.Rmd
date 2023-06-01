@@ -153,7 +153,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
 ```
 
-`r if (!is_india) {This check is only implemented for India.}`
+`r if (!is_india) {paste0("This check is only implemented for India.")}`
 
 ```{r, eval=!is.null(raw_allday7fu_data)&is_india, results='asis'}
 qc_description <- paste0("Exclude follow-ups that correspond to participants enrolled in the CDSA pilot.")
