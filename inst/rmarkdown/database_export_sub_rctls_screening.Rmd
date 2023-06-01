@@ -39,6 +39,15 @@ n_ineligible_cg_records <- 0
 n_repeat_edit_records <- 0
 n_inconsistent_age_info <- 0
 n_cleaned_screening_records <- 0
+n_edit_nonvalid_fid_records <- 0
+n_edit_inconsistent_fid_records <- 0
+n_edit_inconsistent_fid1 <- 0
+n_edit_inconsistent_fid2 <- 0
+n_edit_inconsistent_fid3 <- 0
+n_inconsistent_fid_records <- 0
+n_inconsistent_facility_info1 <- 0
+n_inconsistent_facility_info2 <- 0
+n_inconsistent_facility_info3 <- 0
 ```
 
 ## Screening data quality checks and cleaning
@@ -357,7 +366,7 @@ write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 
 `r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_dup_repeats_id, 'a\n\n:::')}`
 
-```{r, eval=FALSE, results='asis'}
+```{r, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
 qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
 qc_type <- "duplicates_check_pii"
@@ -373,6 +382,8 @@ qc_export_description <- "the repeat visit was allocated the same ID that has be
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_repeat_visit_records <- n_detected
 ```
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
@@ -475,6 +486,11 @@ timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_before_startdate_records,
                                      n_after_lockdate_records,
                                      n_ineligible_cg_records,
+                                     n_nonvalid_fid_records,
+                                     n_edit_nonvalid_fid_records,
+                                     n_inconsistent_fid_records,
+                                     n_edit_inconsistent_fid_records,
+                                     n_repeat_visit_records,
                                      n_repeat_edit_records,
                                      n_incorrect_date_setup_records,
                                      n_late_submissions,

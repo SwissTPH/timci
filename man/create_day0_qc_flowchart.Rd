@@ -8,8 +8,12 @@ create_day0_qc_flowchart(
   n_raw_day0_records,
   n_nonvalid_fid_records,
   n_incorrect_enroldate_records,
+  n_dropped_true_duplicate_records,
   n_dropped_duplicate_records,
   n_edited_duplicate_records,
+  n_missing_cp,
+  n_missing_diagnosis,
+  n_missing_referral_cg,
   n_cleaned_day0_records
 )
 }
@@ -18,11 +22,11 @@ create_day0_qc_flowchart(
 
 \item{n_nonvalid_fid_records}{Number of Day 0 records with a non-valid device ID}
 
-\item{n_incorrect_enroldate_records}{Number of Day 0 records with an entry date posterior to the lock date}
+\item{n_incorrect_enroldate_records}{Number of Day 0 records with an incorrect enrolment date}
 
 \item{n_dropped_duplicate_records}{Number of Day 0 records that were dropped}
 
-\item{n_edited_duplicate_records}{Number of Day 0 records with an entry date posterior to the lock date}
+\item{n_edited_duplicate_records}{Number of Day 0 records with a duplicated child ID that were edited}
 
 \item{n_cleaned_day0_records}{TBD}
 }

@@ -156,9 +156,11 @@ n_mc <- nrow(edited_records)
 ```
 
 ```{r, eval=(edit_is_not_empty&is_not_from_field&!has_multiple_uuids)}
-valid_edits <- edited_records[edited_records$uuid %in% qc_reuse_df$uuid,]
+valid_edits <- edited_records[edited_records$uuid %in% qc_reuse_df$uuid,] %>%
+  distinct(uuid, .keep_all = TRUE)
 valid_is_not_empty <- timci::is_not_empty(valid_edits)
-non_valid_edits <- edited_records[!edited_records$uuid %in% qc_reuse_df$uuid,]
+non_valid_edits <- edited_records[!edited_records$uuid %in% qc_reuse_df$uuid,] %>%
+  distinct(uuid, .keep_all = TRUE)
 non_valid_is_not_empty <- timci::is_not_empty(non_valid_edits)
 ```
 

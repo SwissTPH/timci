@@ -10,7 +10,7 @@ correct_device_ids <- function(df) {
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_deviceid_correction_from_field_tanzania.csv",
                             TRUE ~ "")
 
-  out <- list(df,NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "") {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     if ( file.exists(csv_pathname) ) {
@@ -95,36 +95,39 @@ correct_day0_inconsistent_facilities <- function(df,
                             Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                             TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    discarded_edits <- df %>%
-      merge(edits[, c("child_id", "uuid", "new_fid")],
-            by = c("child_id", "uuid"),
-            all.y = TRUE) %>%
-      dplyr::filter(fid == "") %>%
-      dplyr::select(child_id,
-                    uuid,
-                    new_fid)
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    df <- df %>%
-      merge(edits[, c("child_id", "uuid", "new_fid")],
-            by = c("child_id", "uuid"),
-            all.x = TRUE)
+      discarded_edits <- df %>%
+        merge(edits[, c("child_id", "uuid", "new_fid")],
+              by = c("child_id", "uuid"),
+              all.y = TRUE) %>%
+        dplyr::filter(fid == "") %>%
+        dplyr::select(child_id,
+                      uuid,
+                      new_fid)
 
-    df$fid <- ifelse(is.na(df$new_fid), df$fid, df$new_fid)
-    if ( "fid_from_device" %in% colnames(df) )
-    {
-      df$fid_from_device <- ifelse(is.na(df$new_fid), df$fid_from_device, df$new_fid)
+      df <- df %>%
+        merge(edits[, c("child_id", "uuid", "new_fid")],
+              by = c("child_id", "uuid"),
+              all.x = TRUE)
+
+      df$fid <- ifelse(is.na(df$new_fid), df$fid, df$new_fid)
+      if ( "fid_from_device" %in% colnames(df) )
+      {
+        df$fid_from_device <- ifelse(is.na(df$new_fid), df$fid_from_device, df$new_fid)
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_fid")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, discarded_edits)
     }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_fid")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, edits, discarded_edits)
   }
   out
 
@@ -150,7 +153,7 @@ edit_day0_child_ids <- function(df,
                             Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
                             TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
@@ -203,7 +206,7 @@ edit_day0_to_repeat <- function(df) {
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_repeat_correction_kenya.csv",
                             TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
@@ -271,7 +274,7 @@ delete_day0_records <- function(df,
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
                             TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
@@ -461,7 +464,7 @@ correct_spa_sco_hcp_ids <- function(df) {
   csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_hcp_correction_kenya.csv",
                                    TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname)
@@ -495,7 +498,7 @@ correct_spa_sco_fids <- function(df) {
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "spa_sco_facility_correction_kenya.csv",
                             TRUE ~ "")
 
-  out <- list(df, NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     edits <- readr::read_csv(csv_pathname)

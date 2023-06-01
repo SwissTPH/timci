@@ -770,7 +770,7 @@ find_best_matched_names_between_fu_and_day0 <- function(df,
   qc_df <- NULL
   cleaned_df <- df
 
-  thres <- 20 # Threshold for Tanzania, check for other countries
+  thres <- 50 # Threshold for Tanzania, check for other countries
 
   if (timci::is_not_empty(df) & timci::is_not_empty(day0_df)) {
 

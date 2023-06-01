@@ -25,8 +25,9 @@ qc_summary_id <- "DQC_00_2ED_18"
 ```
 
 ```{r}
-n_dropped_records <- 0
+n_dropped_true_duplicate_records <- 0
 n_duplicate_edits <- 0
+n_dropped_duplicate_records <- 0
 ```
 
 ## Day 0 data quality checks and cleaning
@@ -91,7 +92,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       quiet = TRUE))
 
 day0_data <- corrected_df
-n_dropped_records <- n_mc
+n_dropped_true_duplicate_records <- n_mc
 ```
 
 #### Duplicated child IDs [Compliance check `r qc_duplicate_id` ]
@@ -159,10 +160,13 @@ cleaning <- "drop_all"
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_duplicate_edits <- n_mc
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
 day0_data <- cleaned_df
+n_dropped_duplicate_records <- n_detected
 ```
 
 ### Dates and times
@@ -998,8 +1002,12 @@ write(" o Data cleaning summary", stderr())
 timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fid_records,
                                 n_incorrect_enroldate_records,
-                                n_dropped_records,
+                                n_dropped_true_duplicate_records,
+                                n_dropped_duplicate_records,
                                 n_duplicate_edits,
+                                n_missing_cp,
+                                n_missing_diagnosis,
+                                n_missing_referral_cg,
                                 n_cleaned_day0_records)
 ```
 

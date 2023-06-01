@@ -113,6 +113,8 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Data cleaning summary
+
 ### Data export
 
 ```{r}

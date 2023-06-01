@@ -6,6 +6,10 @@ write("Export Day 7 follow-up outcome data (successful follow-ups only) and run 
 
 ## Day 7 follow-up outcome data quality checks
 
+```{r}
+n_death_prior_day0_dayfu <- 0
+```
+
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 
 ```{r}
@@ -280,6 +284,8 @@ qc_export_description <- "the reported date of death was before the enrolment da
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_death_prior_day0_dayfu <- n_detected
 ```
 
 ### Deaths anterior to hospitalisation [Context check `r qc_death_before_hospit_day7fu`]

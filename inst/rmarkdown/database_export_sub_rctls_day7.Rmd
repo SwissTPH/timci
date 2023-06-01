@@ -11,6 +11,15 @@ db_name <- "Day 7 follow-up"
 ```
 
 ```{r}
+n_nonvalid_pid_day7fu_records <- 0
+n_edit_nonvalid_pid_day7fu_records <- 0
+n_drop_nonvalid_pid_day7fu_records <- 0
+n_inconsistent_name_day7fu_records <- 0
+n_edit_inconsistent_name_day7fu_records <- 0
+```
+
+
+```{r}
 day7fu_pii_drops <- c("name",
                       "cg_name",
                       "phone_nb")
@@ -144,6 +153,8 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
 ```
 
+`r if (!is_india) {This check is only implemented for India.}`
+
 ```{r, eval=!is.null(raw_allday7fu_data)&is_india, results='asis'}
 qc_description <- paste0("Exclude follow-ups that correspond to participants enrolled in the CDSA pilot.")
 qc_rule <- "Discard follow-up records of participants who are enrolled in CDSA pilot facilities."
@@ -211,6 +222,8 @@ qc_export_description <- "the child ID does not correspond to any ID found in th
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_nonvalid_pid_day7fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
@@ -227,7 +240,8 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
-n_nonvalid_pids_day7fu_records <- n_detected
+n_edit_nonvalid_pid_day7fu_records <- n_mc
+n_drop_nonvalid_pid_day7fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -261,6 +275,8 @@ qc_export_description <- paste0("the child name found in the ", db_name, " is no
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_inconsistent_name_day7fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
@@ -276,7 +292,8 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
-n_inconsistent_names_day7fu_records <- n_detected
+n_edit_inconsistent_name_day7fu_records <- n_mc
+n_inconsistent_names_day7fu_records2 <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -297,7 +314,11 @@ n_cleaned_allday7fu_records <- nrow(allday7fu_data)
 ```{r}
 timci::create_day7fu_qc_flowchart(n_raw_allday7fu_data_records,
                                   n_afterlock_pids_day7fu_records,
-                                  n_nonvalid_pids_day7fu_records,
+                                  n_nonvalid_pid_day7fu_records,
+                                  n_edit_nonvalid_pid_day7fu_records,
+                                  n_drop_nonvalid_pid_day7fu_records,
+                                  n_inconsistent_name_day7fu_records,
+                                  n_edit_inconsistent_name_day7fu_records,
                                   n_cleaned_allday7fu_records)
 ```
 

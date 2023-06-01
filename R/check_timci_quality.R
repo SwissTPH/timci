@@ -62,18 +62,30 @@ dataset_export <- function(df,
 
     filename <- paste(idx, label, sep = "_")
     timestamps <- timci::export_df2csvxlsx(df, cdir, filename)
-    msg <- paste0(description,
-                  " have been exported to **",
-                  filename,
-                  ".xslx** (**",
-                  timestamps[[1]],
-                  "**) and to **",
-                  filename,
-                  ".csv** (**",
-                  timestamps[[2]],
-                  "**) in the **",
-                  basename(cdir),
-                  "** folder.")
+    if ( !is.null(timestamps[[2]]) ) {
+      msg <- paste0(description,
+                    " have been exported to **",
+                    filename,
+                    ".xslx** (**",
+                    timestamps[[1]],
+                    "**) and to **",
+                    filename,
+                    ".csv** (**",
+                    timestamps[[2]],
+                    "**) in the **",
+                    basename(cdir),
+                    "** folder.")
+    } else{
+      msg <- paste0(description,
+                    " have been exported to **",
+                    filename,
+                    ".xslx** (**",
+                    timestamps[[1]],
+                    "**) in the **",
+                    basename(cdir),
+                    "** folder.")
+    }
+
   }
 
   cat(msg)
