@@ -119,6 +119,10 @@ n_missing_hospit_date <- n_detected
 
 ### Dates of hospitalisation
 
+```{r}
+write(" o Visualisation of dates of hospitalisation", stderr())
+```
+
 ```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
   merge(day0_data %>%
