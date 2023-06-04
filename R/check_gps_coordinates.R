@@ -15,6 +15,8 @@
 find_closest_facility <- function(df,
                                   facilities) {
 
+  out <- df
+
   cols <- colnames(df)
   facilities <- facilities %>%
     dplyr::distinct(facility_id, .keep_all = TRUE)
@@ -36,25 +38,27 @@ find_closest_facility <- function(df,
     tmp2 <- tmp2 %>%
       dplyr::slice(rep(row_number(), nrow(facilities)))
 
-    out <- tmp2[order(tmp2$uuid,
-                      na.last = TRUE,
-                      decreasing = FALSE),] %>%
-      dplyr::bind_cols(facilities2) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(dist = geosphere::distHaversine(c(as.numeric(longitude), as.numeric(latitude)),
-                                                    c(as.numeric(lon), as.numeric(lat)))) %>%
-      dplyr::ungroup() %>%
-      dplyr::filter(dist < 200) %>%
-      dplyr::filter(fid != facility_id) %>%
-      dplyr::bind_rows(wo_gps_df)
+    if ( nrow(tmp2) > 0 ) {
 
-    out <- out[order(out$dist,
-                     na.last = TRUE,
-                     decreasing = FALSE),] %>%
-      dplyr::distinct(uuid, .keep_all = TRUE)
+      out <- tmp2[order(tmp2$uuid,
+                        na.last = TRUE,
+                        decreasing = FALSE),] %>%
+        dplyr::bind_cols(facilities2) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(dist = geosphere::distHaversine(c(as.numeric(longitude), as.numeric(latitude)),
+                                                      c(as.numeric(lon), as.numeric(lat)))) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(dist < 200) %>%
+        dplyr::filter(fid != facility_id) %>%
+        dplyr::bind_rows(wo_gps_df)
 
-  } else {
-      out <- df
+      out <- out[order(out$dist,
+                       na.last = TRUE,
+                       decreasing = FALSE),] %>%
+        dplyr::distinct(uuid, .keep_all = TRUE)
+
+    }
+
   }
 
   out

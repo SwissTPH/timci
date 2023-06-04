@@ -804,26 +804,28 @@ find_best_matched_names_between_fu_and_day0 <- function(df,
         min_date <- as.Date(cdate + ldate_diff)
         max_date <- as.Date(cdate + udate_diff)
 
-        if (min_date <= max_date) {
+        if ( !is.na(cdate) ) {
+          if ( min_date <= max_date ) {
 
-          sub_df <- day0_df %>%
-            dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
-            dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
-            dplyr::mutate(child_name = df[row, col_name]) %>%
-            dplyr::rowwise() %>%
-            dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
-            dplyr::ungroup() %>%
-            dplyr::filter(lvr > thres) %>%
-            dplyr::select(-child_name)
+            sub_df <- day0_df %>%
+              dplyr::filter(date_visit >= min_date & date_visit <= max_date) %>%
+              dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
+              dplyr::mutate(child_name = df[row, col_name]) %>%
+              dplyr::rowwise() %>%
+              dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
+              dplyr::ungroup() %>%
+              dplyr::filter(lvr > thres) %>%
+              dplyr::select(-child_name)
 
-          if ( nrow(sub_df) > 0 ) {
-            sub_df <- sub_df[order(sub_df$lvr,
-                                   na.last = TRUE,
-                                   decreasing = TRUE),] %>%
-              dplyr::distinct(matched_uuid, .keep_all = TRUE)
-            out <- rbind(out, sub_df)
+            if ( nrow(sub_df) > 0 ) {
+              sub_df <- sub_df[order(sub_df$lvr,
+                                     na.last = TRUE,
+                                     decreasing = TRUE),] %>%
+                dplyr::distinct(matched_uuid, .keep_all = TRUE)
+              out <- rbind(out, sub_df)
+            }
+
           }
-
         }
 
       }
