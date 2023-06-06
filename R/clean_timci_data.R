@@ -401,6 +401,7 @@ correct_day28_duplicates <- function(df,
                                      csv_prefix = "day28_non_valid_pid_correction") {
 
   csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
                                    TRUE ~ "")
 
   out <- list(df,NULL)
