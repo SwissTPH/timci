@@ -195,7 +195,7 @@ allday7fu_data <- cleaned_df
 #### Non-valid participant IDs [Context check `r qc_nonvalid_day7fu`]
 
 ```{r}
-write(" o Non-valid participant IDs", stderr())
+write(" o Non-valid participant IDs - Initial check", stderr())
 ```
 
 ::: {custom-style="redparagraph"}
@@ -224,6 +224,10 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 
 n_nonvalid_pid_day7fu_records <- n_detected
+```
+
+```{r}
+write(" o Non-valid participant IDs - Corrections", stderr())
 ```
 
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
