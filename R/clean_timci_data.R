@@ -404,7 +404,7 @@ correct_day28_duplicates <- function(df,
                                    Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
                                    TRUE ~ "")
 
-  out <- list(df,NULL)
+  out <- list(df, NULL, NULL)
   if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     if ( file.exists(csv_pathname) ) {
