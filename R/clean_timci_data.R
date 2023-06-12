@@ -11,7 +11,7 @@ correct_device_ids <- function(df) {
                             TRUE ~ "")
 
   out <- list(df, NULL, NULL)
-  if ( csv_filename != "") {
+  if ( csv_filename != "" ) {
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
     if ( file.exists(csv_pathname) ) {
       edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
@@ -157,35 +157,38 @@ edit_day0_child_ids <- function(df,
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    found_edits <- edits[, c("old_child_id", "uuid", "new_child_id")] %>%
-      merge(df[, c("child_id", "uuid")],
-            by.x = c("old_child_id", "uuid"),
-            by.y = c("child_id", "uuid"),
-            all.x = FALSE,
-            all.y = FALSE)
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    df <- df %>%
-      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-            by.x = c("child_id", "uuid"),
-            by.y = c("old_child_id", "uuid"),
-            all.x = TRUE)
-    df$child_id <- ifelse(is.na(df$new_child_id),
-                          df$child_id,
-                          df$new_child_id)
-    df$child_id <- as.character(df$child_id)
-    df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
-    if ("fid_from_device" %in% colnames(df))
-    {
-      df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
+      found_edits <- edits[, c("old_child_id", "uuid", "new_child_id")] %>%
+        merge(df[, c("child_id", "uuid")],
+              by.x = c("old_child_id", "uuid"),
+              by.y = c("child_id", "uuid"),
+              all.x = FALSE,
+              all.y = FALSE)
+
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("old_child_id", "uuid"),
+              all.x = TRUE)
+      df$child_id <- ifelse(is.na(df$new_child_id),
+                            df$child_id,
+                            df$new_child_id)
+      df$child_id <- as.character(df$child_id)
+      df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
+      if ("fid_from_device" %in% colnames(df))
+      {
+        df$fid_from_device <- ifelse(is.na(df$new_child_id), df$fid_from_device, substr(df$new_child_id, 3,7))
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, found_edits, NULL)
     }
-
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
-
-    out <- list(df, found_edits, NULL)
   }
   out
 
@@ -210,50 +213,53 @@ edit_day0_to_repeat <- function(df) {
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    found_edits <- edits[, c("old_child_id", "uuid")] %>%
-      merge(df[, c("child_id", "uuid")],
-            by.x = c("old_child_id", "uuid"),
-            by.y = c("child_id", "uuid"),
-            all.x = FALSE,
-            all.y = FALSE)
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    df <- df %>%
-      merge(edits[, c("old_child_id", "uuid", "new_child_id")],
-            by.x=c("child_id", "uuid"),
-            by.y=c("old_child_id", "uuid"),
-            all.x=TRUE)
-    df$prev_enrl <- ifelse(is.na(df$new_child_id),
-                           df$prev_enrl,
-                           1)
-    df$prev_id <- ifelse(is.na(df$new_child_id),
-                         df$prev_id,
-                         df$child_id)
-    df$prev_hf_name_card <- ifelse(is.na(df$new_child_id),
-                                   df$prev_hf_name_card,
-                                   df$facility)
-    df$repeat_consult <- as.integer( ifelse(is.na(df$new_child_id),
-                                            df$repeat_consult,
-                                            1) )
-    df$consent <- ifelse(is.na(df$new_child_id),
-                         df$consent,
-                         NA)
-    df$enrolled <- ifelse(is.na(df$new_child_id),
-                          df$enrolled,
-                          NA)
-    df$child_id_scan <- as.integer( ifelse(is.na(df$new_child_id),
-                                           df$child_id_scan,
-                                           0) )
-    df$child_id_manual <- as.integer( ifelse(is.na(df$new_child_id),
-                                             df$child_id_manual,
+      found_edits <- edits[, c("old_child_id", "uuid")] %>%
+        merge(df[, c("child_id", "uuid")],
+              by.x = c("old_child_id", "uuid"),
+              by.y = c("child_id", "uuid"),
+              all.x = FALSE,
+              all.y = FALSE)
+
+      df <- df %>%
+        merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+              by.x=c("child_id", "uuid"),
+              by.y=c("old_child_id", "uuid"),
+              all.x=TRUE)
+      df$prev_enrl <- ifelse(is.na(df$new_child_id),
+                             df$prev_enrl,
+                             1)
+      df$prev_id <- ifelse(is.na(df$new_child_id),
+                           df$prev_id,
+                           df$child_id)
+      df$prev_hf_name_card <- ifelse(is.na(df$new_child_id),
+                                     df$prev_hf_name_card,
+                                     df$facility)
+      df$repeat_consult <- as.integer( ifelse(is.na(df$new_child_id),
+                                              df$repeat_consult,
+                                              1) )
+      df$consent <- ifelse(is.na(df$new_child_id),
+                           df$consent,
+                           NA)
+      df$enrolled <- ifelse(is.na(df$new_child_id),
+                            df$enrolled,
+                            NA)
+      df$child_id_scan <- as.integer( ifelse(is.na(df$new_child_id),
+                                             df$child_id_scan,
                                              0) )
+      df$child_id_manual <- as.integer( ifelse(is.na(df$new_child_id),
+                                               df$child_id_manual,
+                                               0) )
 
-    # Remove the column new_child_id from the dataframe
-    drop <- c("new_child_id")
-    df <- df[,!(names(df) %in% drop)]
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
 
-    out <- list(df, found_edits, NULL)
+      out <- list(df, found_edits, NULL)
+    }
   }
   out
 
