@@ -420,11 +420,11 @@ outcols <- c("child_id", "fid", "date_visit", "uuid")
 ```{r, eval=(qc_type=="drug_reentry_accuracy1")}
 drug_disp_df1 <- df %>%
   dplyr::filter(!!rlang::sym(col_id) == 1) %>%
-  dplyr::select(free_text1, uuid) %>%
+  dplyr::select(free_text1, uuid, start) %>%
   dplyr::rename(free_text = free_text1)
 drug_disp_df2 <- df %>%
   dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) == 1) %>%
-  dplyr::select(free_text2, uuid) %>%
+  dplyr::select(free_text2, uuid, start) %>%
   dplyr::rename(free_text = free_text2)
 qc_df <- rbind(drug_disp_df1,
                drug_disp_df2)
@@ -485,9 +485,10 @@ qc_df <- df2[!df2$child_id %in% df1$child_id, ]
 n_detected <- nrow(qc_df)
 ```
 
-```{r, eval=(qc_type=="duplicates")&!is.null(qc_df2)}
-#sum(!is.na(df1[colnames(df1[cols])]))
-n_detected <- nrow(qc_df2)
+```{r, eval=(qc_type=="duplicates")&!is.null(qc_df)}
+uuid_cols <- grep("uuid", names(qc_df))
+x <- unname((unlist(qc_df[colnames(qc_df[uuid_cols])])))
+n_detected <- sum(!is.na(x)) / length(x)
 ```
 
 [Check output:]{custom-style="underlined"} The check has detected **`r n_detected`** record(s) (i.e. **`r sprintf('%.1f', 100 * n_detected / n_df)` %** of all records) with `r qc_text` in the `r db_name` database.

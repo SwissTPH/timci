@@ -17,6 +17,8 @@ facility_data <- facility_data %>%
 
 #### Data from different facilities collected on the same device on the same day
 
+This check is implemented for Tanzania only.
+
 ```{r}
 write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
 ```
@@ -155,7 +157,7 @@ facility_data <- cleaned_df
 write(" o Discrepancy in facility IDs (vs. device)", stderr())
 ```
 
-`r if ( is_tanzania | is_senegal ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info1, 'a\n\n:::')}`
+`r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info1, 'a\n\n:::')}`
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the device(s) which has(ve) been used in this facility on that day (**fid_from_device**)."
@@ -174,7 +176,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-```{r, eval=is_tanzania, results='asis'}
+```{r, eval=(is_tanzania|is_ls), results='asis'}
 mc_description <- ""
 to_correct_df <- facility_data
 correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check1"
@@ -191,7 +193,7 @@ n_edit_inconsistent_fid1 <- n_mc
 facility_data <- corrected_df
 ```
 
-```{r, eval=is_tanzania, results='asis'}
+```{r, eval=(is_tanzania|is_ls), results='asis'}
 mc_description <- ""
 to_correct_df <- facility_data
 correction_type <- "correct_day0_inconsistent_facilities1"
