@@ -211,7 +211,8 @@ cleaned_df <- out[[2]]
 ```{r, eval=(qc_type=="inconsistent_facility_info1")}
 qc_df <- df %>% 
   dplyr::filter(fid != "" & !is.na(fid),
-                fid != fid_from_device)
+                fid != fid_from_device,
+                fid != fid_from_main_device) # This row has been added for the Tanzania
 if ( "longitude" %in% cols ) {
   qc_df <- qc_df %>%
   timci::find_closest_facility(research_facilities)
@@ -222,7 +223,8 @@ outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
-             "fid_from_device")
+             "fid_from_device",
+             "fid_from_main_device")
 if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }
@@ -270,6 +272,7 @@ outcols <- c("date_visit",
              "fid",
              "district",
              "fid_from_device",
+             "fid_from_main_device",
              "fid_ra",
              "district_ra")
 if ( "facility_id" %in%  qccols ) {
@@ -313,7 +316,8 @@ outcols <- c("date_visit",
              "child_id",
              "fid",
              "district",
-             "fid_from_device")
+             "fid_from_device",
+             "fid_from_main_device")
 if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }

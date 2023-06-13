@@ -99,6 +99,11 @@ out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
                                                    csv_prefix = "day0_facility_correction2")
 ```
 
+```{r, eval=(correction_type=="correct_day0_inconsistent_facilities3")}
+out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
+                                                   csv_prefix = "day0_facility_correction3")
+```
+
 <!-- Day 7 follow-up corrections -->
 
 ```{r, eval=(correction_type=="correct_day7_non_valid_ids")}

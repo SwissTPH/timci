@@ -176,7 +176,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-```{r, eval=(is_tanzania|is_ls), results='asis'}
+```{r, eval=(is_tanzania|is_kenya), results='asis'}
 mc_description <- ""
 to_correct_df <- facility_data
 correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check1"
@@ -189,7 +189,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
-n_edit_inconsistent_fid1 <- n_mc
+n_edit_inconsistent_fid1a <- n_mc
 facility_data <- corrected_df
 ```
 
@@ -206,8 +206,8 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
+n_edit_inconsistent_fid1b <- n_mc
 facility_data <- corrected_df
-n_inconsistent_facility_info1 <- n_detected
 ```
 
 #### Discrepancy in facility information 2 [Logic/Context check `r qc_inconsistent_facility_info2`]
@@ -298,8 +298,25 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info3 <- n_detected
 ```
 
+```{r, eval=is_senegal, results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "correct_day0_inconsistent_facilities3"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info3, "b")
+qc_export_label <- "inconsistent_facility_info3"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_inconsistent_fid3 <- n_mc
+facility_data <- corrected_df
+```
+
 ```{r}
-n_edit_inconsistent_fid_records <- n_edit_inconsistent_fid1 + n_edit_inconsistent_fid2
+n_edit_inconsistent_fid_records <- n_edit_inconsistent_fid1a + n_edit_inconsistent_fid1b + n_edit_inconsistent_fid2 + n_edit_inconsistent_fid3
 n_inconsistent_fid_records <- n_inconsistent_facility_info1 + n_inconsistent_facility_info2 + n_inconsistent_facility_info3
 ```
 

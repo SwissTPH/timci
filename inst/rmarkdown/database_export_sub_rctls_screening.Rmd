@@ -41,7 +41,8 @@ n_inconsistent_age_info <- 0
 n_cleaned_screening_records <- 0
 n_edit_nonvalid_fid_records <- 0
 n_edit_inconsistent_fid_records <- 0
-n_edit_inconsistent_fid1 <- 0
+n_edit_inconsistent_fid1a <- 0
+n_edit_inconsistent_fid1b <- 0
 n_edit_inconsistent_fid2 <- 0
 n_edit_inconsistent_fid3 <- 0
 n_inconsistent_fid_records <- 0
