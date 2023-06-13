@@ -1,7 +1,6 @@
 child_id,uuid,new_fid,reason,action,date
 S-F0015-P1298,uuid:fbc64af1-f013-440b-809e-656d343d1bdb,F0030,manual entry,correct,2023-05-02
 S-F0027-P1075,uuid:38e1d775-fdb3-4621-829c-647fce76a9af,F0030,manual entry,correct,2023-05-02
-S-F0009-P1182,uuid:0823d2e5-a76f-4996-9ba1-0d1e96c594ae,F0015,manual entry,correct,2023-05-02
 S-F0019-P1491,uuid:981fe7c9-2086-4362-b0e1-2ca867ce7da8,F0034,manual entry,correct,2023-05-02
 S-F0027-P1177,uuid:e6380d02-c19b-4ff8-9992-8c24daa12cad,F0034,manual entry,correct,2023-05-02
 S-F0030-P1045,uuid:badfee9e-b8b4-4404-a8a2-d44823169e21,F0034,manual entry,correct,2023-05-02
