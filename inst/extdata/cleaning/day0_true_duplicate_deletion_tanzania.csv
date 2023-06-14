@@ -1,4 +1,4 @@
-old_child_id,uuid,reason,action,date,author
+child_id,uuid,reason,action,date,author
 T-F0004-P0687,uuid:b4c35b57-d63a-4d81-9680-284df4edba50,training,delete,,
 T-F0025-P0524,uuid:9a235ea1-0cd7-4e02-b673-1ca71f0a6f57,non eligible - dummy data,delete,,
 T-F0021-P0376,uuid:fc1b858c-893a-49c8-b832-9ffb84ee5b3f,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,2022-01-22,IHI
