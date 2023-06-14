@@ -319,7 +319,8 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 allday7fu_data <- allday7fu_data %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo)) %>%
+                child_id = digest(child_id, algo = crypto_algo),
+                device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```
 

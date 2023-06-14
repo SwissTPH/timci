@@ -461,7 +461,11 @@ identify_day0_duplicates <- function(df,
 
   # Threshold for fuzzy matching
   thres1 <- 50 # threshold to be applied when matching child names
-  thres2 <- 40 # threshold to be applied when matching mother names
+  if ( Sys.getenv("TIMCI_COUNTRY") != "Senegal" ) {
+    thres2 <- 40 # threshold to be applied when matching mother names
+  } else {
+    thres2 <- 60 # threshold to be applied when matching mother names
+  }
   thres3 <- 60 # threshold to be applied when matching child name roots (2 names only so that threshold should be more restrictive)
   thres4 <- 70 # threshold to be applied when matching mother name roots (1 name only so that threshold should be more restrictive)
 

@@ -409,6 +409,9 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
   } else if ( "child_name" %in% cols ) {
     kcols <- c(kcols, "child_name")
   }
+  if ( "cg_name" %in% cols ) {
+    kcols <- c(kcols, "cg_name")
+  }
   if ( "deviceid" %in% cols ) {
     kcols <- c(kcols, "deviceid")
   }

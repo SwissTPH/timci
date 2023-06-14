@@ -93,6 +93,7 @@ correct_day0_inconsistent_facilities <- function(df,
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
                             Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
                             TRUE ~ "")
 
   out <- list(df, NULL, NULL)

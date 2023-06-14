@@ -13,11 +13,12 @@ db_name <- "hospitalisation follow-up"
 <!-- Hospitalisation quality check IDs -->
 
 ```{r}
-qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
-qc_nonvalid_hospitfu <- "DQC_HS_02"
-qc_nonconsistent_name_hospitfu <- "DQC_HS_03"
-qc_duplicated_hospitfu <- "DQC_HS_04"
-qc_hospit_before_enrolment <- "DQC_HS_05"
+qc_root <- "DQC_HS"
+qc_pids_out_lock_range_hospitfu <- paste(qc_root, "01", sep = "_")
+qc_nonvalid_hospitfu <- paste(qc_root, "02", sep = "_")
+qc_nonconsistent_name_hospitfu <- paste(qc_root, "03", sep = "_")
+qc_duplicated_hospitfu <- paste(qc_root, "04", sep = "_")
+qc_hospit_before_enrolment <- paste(qc_root, "05", sep = "_")
 ```
 
 ```{r}
@@ -296,7 +297,8 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 hospit_data_no_pii <- hospit_data_no_pii %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo)) %>%
+                child_id = digest(child_id, algo = crypto_algo),
+                device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```
 

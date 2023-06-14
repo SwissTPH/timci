@@ -608,7 +608,7 @@ n_cleaned_df <- nrow(cleaned_df)
 ```{r, eval=!is.null(cleaned_df)}
 cleaned_df_status_update <- ifelse(n_cleaned_df < n_df,
                                    paste0('After deletion of all the records detected by this check, there are now **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'),
-                                   paste0('After automated correction of the **', n_detected, '**  record(s) detected by this check, there are still **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'))
+                                   paste0('There are still **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'))
 ```
 
 `r cleaned_df_status_update`

@@ -207,7 +207,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_facility_info1 <- n_detected
 ```
 
-```{r, eval=(is_tanzania|is_kenya), results='asis'}
+```{r, eval=(is_tanzania), results='asis'}
 mc_description <- ""
 to_correct_df <- facility_data
 correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check1"
