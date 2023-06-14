@@ -278,6 +278,9 @@ delete_day0_records <- function(df,
                                 csv_prefix = "day0_training_deletion") {
 
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
                             TRUE ~ "")
 
   out <- list(df, NULL, NULL)
@@ -288,7 +291,7 @@ delete_day0_records <- function(df,
 
     found_records <- records_to_drop %>%
       merge(df[, c("child_id", "uuid")],
-            by.x = c("old_child_id", "uuid"),
+            by.x = c("child_id", "uuid"),
             by.y = c("child_id", "uuid"),
             all.x = FALSE,
             all.y = FALSE)
