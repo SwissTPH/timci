@@ -215,7 +215,7 @@ qc_df2 <- out[[3]]
 
 <!-- Duplicated child IDs - repeat visits -->
 
-```{r, eval=(qc_type=="duplicates_check_pii")}
+```{r, eval=(qc_type=="repeat_duplicates")}
 out <- timci::identify_repeat_duplicate(df,
                                         col_id,
                                         col_date,

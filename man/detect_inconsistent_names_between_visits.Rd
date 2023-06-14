@@ -10,7 +10,8 @@ detect_inconsistent_names_between_visits(
   col_date,
   ldate_diff,
   udate_diff,
-  matched_names = FALSE
+  matched_names = FALSE,
+  cleaning = "none"
 )
 }
 \arguments{

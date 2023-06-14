@@ -373,7 +373,7 @@ write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```{r, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
 qc_rule <- "Repeat visits incorrectly recorded as new enrolments are detected and corrected proactively were possible."
-qc_type <- "duplicates_check_pii"
+qc_type <- "repeat_duplicates"
 df <- facility_data
 col_id <- "child_id"
 col_date <- "start"
@@ -425,16 +425,6 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
 n_repeat_edit_records <- n_mc
 facility_data <- corrected_df
 ```
-
-#### Repeat visits incorrectly recorded as new enrolments with a new ID
-
-```{r}
-write(" o Repeat visits incorrectly recorded as new enrolments with a new ID", stderr())
-```
-
-`r if ( is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_other_repeats_id, 'a\n\n:::')}`
-
-To be added for the hard lock in Kenya and Senegal. Should only run on those children who reported they already came here
 
 ### Misc
 

@@ -284,20 +284,24 @@ delete_day0_records <- function(df,
                             TRUE ~ "")
 
   out <- list(df, NULL, NULL)
+
   if ( csv_filename != "" ) {
 
     csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
-    records_to_drop <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    found_records <- records_to_drop %>%
-      merge(df[, c("child_id", "uuid")],
-            by.x = c("child_id", "uuid"),
-            by.y = c("child_id", "uuid"),
-            all.x = FALSE,
-            all.y = FALSE)
-    df <- df[!(df$uuid %in% records_to_drop$uuid), ]
+    if ( file.exists(csv_pathname) ) {
+      records_to_drop <- readr::read_csv(csv_pathname, show_col_types = FALSE)
 
-    out <- list(df, found_records, NULL)
+      found_records <- records_to_drop %>%
+        merge(df[, c("child_id", "uuid")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("child_id", "uuid"),
+              all.x = FALSE,
+              all.y = FALSE)
+      df <- df[!(df$uuid %in% records_to_drop$uuid), ]
+
+      out <- list(df, found_records, NULL)
+    }
   }
   out
 
@@ -315,7 +319,8 @@ correct_day0_all <- function(df) {
   # Correct incorrect facility of enrolment
   df <- timci::correct_day0_non_valid_facilities(df)[[1]]
   # Delete dummy/test data
-  df <- timci::delete_day0_records(df)[[1]]
+  df <- timci::delete_day0_records(df,
+                                   csv_prefix = "day0_training_deletion")[[1]]
   # Correct duplicated child IDs
   df <- timci::edit_day0_child_ids(df,
                                    csv_prefix = "day0_duplicate_correction")[[1]]

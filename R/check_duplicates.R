@@ -661,7 +661,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
   cleaned_df <- fudf
 
   # Threshold to be determined exactly
-  thres <- 75
+  thres1 <- 75
+  thres2 <- 50
 
   if ( timci::is_not_empty(refdf) & timci::is_not_empty(fudf)) {
 
@@ -722,7 +723,7 @@ detect_inconsistent_names_between_visits <- function(refdf,
                       refname,
                       lvr,
                       date_for_matching) %>%
-        dplyr::filter(lvr < thres)
+        dplyr::filter(lvr < thres1)
     } else {
       qc_df <- NULL
     }
@@ -737,8 +738,10 @@ detect_inconsistent_names_between_visits <- function(refdf,
                                                               "name",
                                                               ldate_diff,
                                                               udate_diff)
+
     if ( !is.null(out[[1]]) ) {
-      qc_df <- out[[1]]
+      qc_df <- out[[1]] %>%
+        dplyr::filter(is.na(bestlvr) | (!is.na(bestlvr) & (lvr > thres2) & (lvr < bestlvr)) | (!is.na(bestlvr) & (lvr <= thres2)))
     }
   }
 
@@ -817,13 +820,13 @@ find_best_matched_names_between_fu_and_day0 <- function(df,
               dplyr::mutate(matched_uuid = df[row, "uuid"]) %>%
               dplyr::mutate(child_name = df[row, col_name]) %>%
               dplyr::rowwise() %>%
-              dplyr::mutate(lvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
+              dplyr::mutate(bestlvr = timci::normalised_levenshtein_ratio(name, child_name)) %>%
               dplyr::ungroup() %>%
-              dplyr::filter(lvr > thres) %>%
+              dplyr::filter(bestlvr > thres) %>%
               dplyr::select(-child_name)
 
             if ( nrow(sub_df) > 0 ) {
-              sub_df <- sub_df[order(sub_df$lvr,
+              sub_df <- sub_df[order(sub_df$bestlvr,
                                      na.last = TRUE,
                                      decreasing = TRUE),] %>%
                 dplyr::distinct(matched_uuid, .keep_all = TRUE)
