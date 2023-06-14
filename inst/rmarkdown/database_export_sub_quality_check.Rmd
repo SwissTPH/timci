@@ -494,7 +494,8 @@ out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
                                                        col_date = datecol,
                                                        ldate_diff = ldate_diff,
                                                        udate_diff = udate_diff,
-                                                       matched_names = matched_names)
+                                                       matched_names = matched_names,
+                                                       cleaning = cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```

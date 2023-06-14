@@ -272,6 +272,7 @@ datecol <- "date_day0"
 ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
+cleaning = "none"
 qc_text <- "non-consistent participant names"
 qc_idx <- paste0(qc_nonconsistent_name_day7fu, "a")
 qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"

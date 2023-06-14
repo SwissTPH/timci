@@ -654,10 +654,11 @@ detect_inconsistent_names_between_visits <- function(refdf,
                                                      col_date,
                                                      ldate_diff,
                                                      udate_diff,
-                                                     matched_names = FALSE) {
+                                                     matched_names = FALSE,
+                                                     cleaning = "none") {
 
   qc_df <- NULL
-  cleaned_df <- NULL
+  cleaned_df <- fudf
 
   # Threshold to be determined exactly
   thres <- 75
@@ -739,6 +740,10 @@ detect_inconsistent_names_between_visits <- function(refdf,
     if ( !is.null(out[[1]]) ) {
       qc_df <- out[[1]]
     }
+  }
+
+  if ( !is.null(qc_df) & cleaning == "drop_all" ) {
+    cleaned_df <- fudf[!fudf$uuid %in% qc_df$uuid, ]
   }
 
   list(qc_df, cleaned_df)

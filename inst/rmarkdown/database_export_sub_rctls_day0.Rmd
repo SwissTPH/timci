@@ -994,7 +994,8 @@ day0_data <- out[[1]]
 day0_data <- day0_data %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo)) %>%
+                child_id = digest(child_id, algo = crypto_algo),
+                device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```
 
