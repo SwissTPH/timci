@@ -16,6 +16,7 @@ n_edit_nonvalid_pid_day7fu_records <- 0
 n_drop_nonvalid_pid_day7fu_records <- 0
 n_inconsistent_name_day7fu_records <- 0
 n_edit_inconsistent_name_day7fu_records <- 0
+n_drop_inconsistent_names_day7fu_records <- 0
 ```
 
 
@@ -298,7 +299,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       quiet = TRUE))
 
 n_edit_inconsistent_name_day7fu_records <- n_mc
-n_inconsistent_names_day7fu_records2 <- n_detected
+n_drop_inconsistent_names_day7fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -340,6 +341,7 @@ timci::create_day7fu_qc_flowchart(n_raw_allday7fu_data_records,
                                   n_drop_nonvalid_pid_day7fu_records,
                                   n_inconsistent_name_day7fu_records,
                                   n_edit_inconsistent_name_day7fu_records,
+                                  n_drop_inconsistent_names_day7fu_records,
                                   n_cleaned_allday7fu_records)
 ```
 

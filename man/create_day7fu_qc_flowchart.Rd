@@ -12,6 +12,7 @@ create_day7fu_qc_flowchart(
   n_drop_nonvalid_pid_records,
   n_inconsistent_name_records,
   n_edit_inconsistent_name_records,
+  n_drop_inconsistent_names_day7fu_records,
   n_cleaned_allday7fu_records
 )
 }
