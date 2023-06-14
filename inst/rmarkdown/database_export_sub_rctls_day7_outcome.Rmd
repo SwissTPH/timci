@@ -329,6 +329,16 @@ day7fu_pii_drops %>%
                caption = "Columns with PII dropped for cleaned data export")
 ```
 
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+day7fu_data <- day7fu_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                child_id = digest(child_id, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
 ### Data cleaning summary
 
 ```{r}
@@ -402,42 +412,4 @@ timci::dataset_export(day7fu_data,
                       "timci_followup_successful_day7_data",
                       locked_db_dir,
                       "Cleaned successful Day 7 follow-up data")
-```
-
-```{r day7-lost-to-followup}
-ltfu <- NULL
-if ( day7fu_is_not_null ) {
-  ltfu <- timci::generate_ltfu_log(df = day0_data,
-                                   fudf = allday7fu_data,
-                                   end_date = 12,
-                                   raw = FALSE)
-}
-```
-
-```{r locked-day7-lost-to-followup}
-locked_ltfu <- NULL
-if (!is.null(allday7fu_data)) {
-  if (nrow(allday7fu_data) > 0) {
-    locked_ltfu <- timci::generate_ltfu_log(df = day0_data,
-                                            fudf = allday7fu_data,
-                                            end_date = 12,
-                                            raw = FALSE)
-  }
-}
-```
-
-```{r}
-if (!is.null(ltfu)) {
-  fn <- timci::export_df2xlsx(ltfu,
-                              rctls_dir,
-                              "04c_day7_lost_to_followup")
-}
-```
-
-```{r}
-if (!is.null(locked_ltfu)) {
-  fn <- timci::export_df2xlsx(locked_ltfu,
-                              locked_db_dir,
-                              "04c_day7_lost_to_followup")
-}
 ```

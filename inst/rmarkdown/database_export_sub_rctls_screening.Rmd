@@ -9,21 +9,23 @@ write("Export screening data and run corresponding quality checks", stderr())
 ```{r}
 db_name <- "screening"
 
-qc_incorrect_date_setup <- "DQC_00_0SG_01"
-qc_nontimely_submission_id <- "DQC_00_0SG_02"
-qc_nontimely_completion_id <- "DQC_00_0SG_03"
-qc_screening_before_startdate <- "DQC_00_0SG_04"
-qc_screening_after_lockdate <- "DQC_00_0SG_05"
-qc_screening_w_nonvalid_deviceid <- "DQC_00_0SG_06"
-qc_nonvalid_fid <- "DQC_00_0SG_07"
-qc_screening_other_fids <- "DQC_00_0SG_08"
-qc_inconsistent_facility_info1 <- "DQC_00_0SG_09"
-qc_inconsistent_facility_info2 <- "DQC_00_0SG_10"
-qc_inconsistent_facility_info3 <- "DQC_00_0SG_11"
-qc_inconsistent_age_info <- "DQC_00_0SG_12"
-qc_underaged_cg_id <- "DQC_00_0SG_13"
-qc_dup_repeats_id <- "DQC_00_0SG_14"
-qc_other_repeats_id <- "DQC_00_0SG_15"
+qc_root <- "DQC_00_0SG"
+qc_incorrect_date_setup <- paste(qc_root, "01")
+qc_nontimely_submission_id <- paste(qc_root, "02")
+qc_nontimely_completion_id <- paste(qc_root, "03")
+qc_screening_before_startdate <- paste(qc_root, "04")
+qc_screening_after_lockdate <- paste(qc_root, "05")
+qc_screening_w_nonvalid_deviceid <- paste(qc_root, "06")
+qc_screening_before_facility_startdate <- paste(qc_root, "07")
+qc_nonvalid_fid <- paste(qc_root, "08")
+qc_screening_other_fids <- paste(qc_root, "09")
+qc_inconsistent_facility_info1 <- paste(qc_root, "10")
+qc_inconsistent_facility_info2 <- paste(qc_root, "11")
+qc_inconsistent_facility_info3 <- paste(qc_root, "12")
+qc_inconsistent_age_info <- paste(qc_root, "13")
+qc_underaged_cg_id <- paste(qc_root, "14")
+qc_dup_repeats_id <- paste(qc_root, "15")
+qc_other_repeats_id <- paste(qc_root, "16")
 ```
 
 ```{r}
@@ -34,6 +36,7 @@ n_incorrect_date_setup_records <- 0
 n_late_submissions <- 0
 n_late_completions <- 0
 n_before_startdate_records <- 0
+n_before_facility_startdate_records <- 0
 n_after_lockdate_records <- 0
 n_ineligible_cg_records <- 0
 n_repeat_edit_records <- 0
@@ -468,16 +471,36 @@ ggplot2::ggplot(facility_data,
                    panel.grid.minor.x = element_blank())
 ```
 
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+facility_data$fid <- facility_data$fid_from_device
+screening_data <- timci::extract_screening_data(facility_data,
+                                                is_pilot) %>%
+  dplyr::select(-fid_from_device)
+```
+
+```{r}
+screening_data <- screening_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_screening_records <- nrow(screening_data)
+```
+
 ### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
-```
-
-```{r}
-screening_data <- timci::extract_screening_data(facility_data,
-                                                is_pilot)
-n_cleaned_screening_records <- nrow(screening_data)
 ```
 
 ```{r, fig.asp=1}
@@ -485,6 +508,7 @@ timci::create_screening_qc_flowchart(n_raw_screening_records,
                                      n_nonvalid_deviceid_records,
                                      n_other_fid_records,
                                      n_before_startdate_records,
+                                     n_before_facility_startdate_records,
                                      n_after_lockdate_records,
                                      n_ineligible_cg_records,
                                      n_nonvalid_fid_records,
@@ -517,7 +541,7 @@ fig_df <- screening_data %>%
                                              week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Screening data overview over time by facility"
-facility_col <- "fid_from_device"
+facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
@@ -531,14 +555,9 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ```{r}
 screening_data <- screening_data %>%
-  dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
-                         form_version,
+  dplyr::mutate(across(c(form_version,
                          fid,
-                         fid_from_device,
                          who_age_ctg,
-                         district,
-                         facility,
                          dob_knwn,
                          age_mo_knwn,
                          consult_reason,
@@ -554,8 +573,7 @@ screening_data <- screening_data %>%
   dplyr::mutate(across(c(date_visit),
                        ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
   dplyr::mutate(across(c(start,
-                         end,
-                         submission_date),
+                         end),
                        as.POSIXct))
 ```
 

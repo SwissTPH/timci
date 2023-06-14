@@ -4,6 +4,7 @@
 #' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID
 #' @param n_other_fid_records Number of screening records corresponding to facility involved in another TIMCI study (India-specific)
 #' @param n_before_startdate_records Number of screening records with an entry date anterior to the start date
+#' @param n_before_facility_startdate_records Number of screening records with an entry date anterior to the specific facility start date
 #' @param n_after_lockdate_records Number of screening records with an entry date posterior to the lock date
 #' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
 #' @param n_nonvalid_fid_records
@@ -25,6 +26,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_nonvalid_deviceid_records,
                                           n_other_fid_records,
                                           n_before_startdate_records,
+                                          n_before_facility_startdate_records,
                                           n_after_lockdate_records,
                                           n_ineligible_cg_records,
                                           n_nonvalid_fid_records,
@@ -39,7 +41,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                                           n_inconsistent_age_info,
                                           n_cleaned_screening_records) {
 
-  n_excluded <- n_nonvalid_deviceid_records + n_other_fid_records + n_before_startdate_records + n_after_lockdate_records
+  n_excluded <- n_nonvalid_deviceid_records + n_other_fid_records + n_before_startdate_records + n_before_facility_startdate_records + n_after_lockdate_records
   n_auto_edited <- n_incorrect_date_setup_records + n_ineligible_cg_records
   n_manual_edited <- n_edited_nonvalid_fid_records + n_edited_inconsistent_fid_records + n_edited_repeat_visit_records
   n_informed <- n_late_submissions + n_late_completions + n_inconsistent_age_info
@@ -49,7 +51,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-valid device ID\n%s record(s) with a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) posterior to the lock date']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-valid device ID\n%s record(s) with a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) anterior to the specific facility start date\n%s record(s) posterior to the lock date']
                   m2 [label = 'Automatically edited (N = %s)\n%s record(s) with an incorrect creation date\n%s record(s) with an ineligible caregiver']
                   m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for non-valid facility IDs (out of %s detected)\n%s record(s) corrected for inconsistent facility ID (out of %s detected)\n%s record(s) modified from new enrolment to repeat visit (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
@@ -79,6 +81,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                 n_nonvalid_deviceid_records,
                 n_other_fid_records,
                 n_before_startdate_records,
+                n_before_facility_startdate_records,
                 n_after_lockdate_records,
                 n_auto_edited,
                 n_incorrect_date_setup_records,

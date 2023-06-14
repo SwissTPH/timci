@@ -290,6 +290,16 @@ hospitfu_pii_drops %>%
                caption = "Columns with PII dropped for cleaned data export")
 ```
 
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+hospit_data_no_pii <- hospit_data_no_pii %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                child_id = digest(child_id, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
 ### Data cleaning summary
 
 ```{r}

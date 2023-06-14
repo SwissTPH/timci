@@ -69,6 +69,7 @@ library(ggplot2)
 library(extrafont)
 library(lubridate)
 library(rlang)
+library(digest)
 ```
 
 ```{r setup-options, include=FALSE}
@@ -245,9 +246,9 @@ if (is_india) {
 ```
 
 ```{r}
-#################
-# Plot settings #
-#################
+
+# Plot settings
+
 tsize <- 7
 tfont <- "Cambria"
 if (is_senegal) {
@@ -260,6 +261,13 @@ time_break_str <- "4 hours"
 time_format <- "%H:%M"
 y_min <- NA
 y_max <- NA
+```
+
+```{r}
+
+# Cryptographic settings
+
+crypto_algo <- "md5"
 ```
 
 \newpage

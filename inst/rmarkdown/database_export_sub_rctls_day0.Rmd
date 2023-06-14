@@ -76,7 +76,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=(is_tanzania&!is_pilot), results='asis'}
+```{r, eval=((is_tanzania|is_senegal)&!is_pilot), results='asis'}
 mc_description <- ""
 to_correct_df <- day0_data
 correction_type <- "delete_day0_records"
@@ -988,6 +988,17 @@ allday0_data <- day0_data
 out <- timci::extract_pii(day0_data,
                           is_pilot)
 day0_data <- out[[1]]
+```
+
+```{r}
+day0_data <- day0_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                child_id = digest(child_id, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
+```{r}
 n_cleaned_day0_records <- nrow(day0_data)
 ```
 
@@ -1046,9 +1057,7 @@ zip(params$participant_zip,
 
 ```{r}
 day0_data <- day0_data %>%
-  dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
-                         form_version,
+  dplyr::mutate(across(c(form_version,
                          fid,
                          who_age_ctg,
                          district,

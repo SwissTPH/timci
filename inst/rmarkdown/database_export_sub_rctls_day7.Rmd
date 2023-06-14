@@ -305,14 +305,30 @@ n_inconsistent_names_day7fu_records2 <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
-### Data cleaning summary
+### Pseudonymisation
 
 ```{r}
-write(" o Data cleaning summary", stderr())
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+allday7fu_data <- allday7fu_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                child_id = digest(child_id, algo = crypto_algo)) %>%
+  dplyr::ungroup()
 ```
 
 ```{r}
 n_cleaned_allday7fu_records <- nrow(allday7fu_data)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}

@@ -280,6 +280,9 @@ identify_nonvalid_ids <- function(df1,
   if ( "fid_from_device" %in% cols ) {
     kcols <- c(kcols, "fid_from_device")
   }
+  if ( "fid_from_main_device" %in% cols ) {
+    kcols <- c(kcols, "fid_from_main_device")
+  }
   if ( "child_id" %in% cols ) {
     kcols <- c(kcols, "child_id")
   }

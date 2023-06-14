@@ -58,6 +58,35 @@ cleaned_df <- df %>%
   dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
 ```
 
+<!-- Check submissions anterior to a specific facility start date -->
+
+```{r, eval=(qc_type=="anterior_to_facility_startdate"), results='asis'}
+research_facilities %>%
+          dplyr::select(facility_id,
+                        facility_start) %>% 
+  filter(!is.na(facility_start)) %>%
+  knitr::kable()
+```
+
+```{r, eval=(qc_type=="anterior_to_facility_startdate")}
+df <- df %>%
+  merge(research_facilities %>%
+          dplyr::select(facility_id,
+                        facility_start),
+        by.x = "fid_from_device",
+        by.y = "facility_id") %>% 
+  dplyr::mutate(days_since_start = floor(difftime(as.Date(date_visit, "%Y-%m-%d"), facility_start, units = "days")))
+qc_df <- df %>%
+  dplyr::filter(!is.na(days_since_start) & days_since_start < 0) %>%
+  dplyr::select(date_visit, child_id, uuid, days_since_start) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+cleaned_df <- df %>%
+  dplyr::filter(is.na(days_since_start) | (!is.na(days_since_start) & days_since_start >= 0)) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+```
+
+<!-- Check submissions posterior to the lock date -->
+
 ```{r, eval=(qc_type=="posterior_to_lockdate")}
 df <- df %>%
   dplyr::mutate(study_lock_date = lock_date) %>%

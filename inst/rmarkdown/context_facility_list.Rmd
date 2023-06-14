@@ -6,6 +6,7 @@ facilities <- params$research_facilities
 facilities <- facilities[, c("lvl2",
                              "facility_id",
                              "facility_name",
+                             "facility_start",
                              "training_date",
                              "rollout_date",
                              "Latitude",

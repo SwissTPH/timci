@@ -227,10 +227,8 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ```{r}
 repeat_data <- repeat_data %>%
-  dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
-                         form_version,
-                         fid_from_device,
+  dplyr::mutate(across(c(form_version,
+                         fid,
                          who_age_ctg,
                          dob_knwn,
                          age_mo_knwn,
