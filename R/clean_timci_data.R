@@ -317,7 +317,8 @@ correct_day0_all <- function(df) {
   # Delete dummy/test data
   df <- timci::delete_day0_records(df)[[1]]
   # Correct duplicated child IDs
-  df <- timci::edit_day0_child_ids(df)[[1]]
+  df <- timci::edit_day0_child_ids(df,
+                                   csv_prefix = "day0_duplicate_correction")[[1]]
 
   if (Sys.getenv("TIMCI_COUNTRY") == "Kenya") {
     out <- timci::detect_inconsistent_dates(df,
