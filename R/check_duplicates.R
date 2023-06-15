@@ -459,11 +459,12 @@ identify_day0_duplicates <- function(df,
                                      col_id,
                                      col_date) {
 
-  # Threshold for fuzzy matching
-  thres1 <- 50 # threshold to be applied when matching child names
   if ( Sys.getenv("TIMCI_COUNTRY") != "Senegal" ) {
+    # Threshold for fuzzy matching
+    thres1 <- 50 # threshold to be applied when matching child names
     thres2 <- 40 # threshold to be applied when matching mother names
   } else {
+    thres1 <- 75
     thres2 <- 60 # threshold to be applied when matching mother names
   }
   thres3 <- 60 # threshold to be applied when matching child name roots (2 names only so that threshold should be more restrictive)
@@ -510,6 +511,8 @@ identify_day0_duplicates <- function(df,
       if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
         qc_df <- qc_df %>%
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+          dplyr::mutate(count1 = lengths(gregexpr("\\W+", name_1)) + 1) %>%
+          dplyr::mutate(count2 = lengths(gregexpr("\\W+", name_2)) + 1) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(name_1, name_switch_2)) %>%
           dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(name_root_1, name_root_2)) %>%
           dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
@@ -519,8 +522,11 @@ identify_day0_duplicates <- function(df,
       } else{
         qc_df <- qc_df %>%
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+          dplyr::mutate(count1 = lengths(gregexpr("\\W+", name_1)) + 1) %>%
+          dplyr::mutate(count2 = lengths(gregexpr("\\W+", name_2)) + 1) %>%
+          dplyr::mutate(nthres1 = thres1 * min(count1, count2) / max(count1, count2)) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
-          dplyr::filter((lvr1 > thres1) & (lvr2 > thres2))
+          dplyr::filter(lvr1 > nthres1)
       }
     } else {
       qc_df <- NULL

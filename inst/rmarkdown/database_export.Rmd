@@ -407,7 +407,11 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 
 <!-- Deaths -->
 
-```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
+```{r}
+disable <- FALSE
+```
+
+```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty & disable) 'database_export_sub_rctls_deaths.Rmd'}
 ```
 
 <!-- Repeat scheduled and unscheduled visits -->

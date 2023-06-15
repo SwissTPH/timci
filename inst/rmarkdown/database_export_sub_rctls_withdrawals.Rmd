@@ -11,7 +11,7 @@ write("Export withdrawal data and run corresponding quality checks", stderr())
 **Rule:** withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.
 
 ```{r, results='asis'}
-if (nrow(facility_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) { 
       raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
@@ -23,7 +23,7 @@ if (nrow(facility_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(facility_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) { 
       cat(paste0("**", nrow(raw_withdrawal_data), "** withdrawal(s) reported (among which **", nrow(withdrawal_data2),"** withdrawals with documented child IDs)."))
@@ -41,15 +41,15 @@ day0_data_id_withdrawal <- NULL
 non_reconciled_withdrawn_ids <- NULL
 `%!in%` <- Negate(`%in%`)
 
-if (nrow(facility_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) {
       
       # Non reconciled withdrawn IDs
-      non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% facility_data$child_id, ]
+      non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% allday0_data$child_id, ]
       
       # Reconciled withdrawn IDs
-      day0_data_id_withdrawal <- facility_data[facility_data$child_id %in% withdrawal_data2$child_id, ] %>%
+      day0_data_id_withdrawal <- allday0_data[allday0_data$child_id %in% withdrawal_data2$child_id, ] %>%
           dplyr::select(child_id,
                         fid,
                         date_visit,
@@ -65,7 +65,7 @@ if (nrow(facility_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(facility_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(day0_data_id_withdrawal)) {
     cat(paste0("**", nrow(day0_data_id_withdrawal), "** participant(s) who withdrew found in the locked Day 0 database."))
   }
@@ -73,7 +73,7 @@ if (nrow(facility_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(facility_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(non_reconciled_withdrawn_ids)) {
     non_reconciled_withdrawn_ids %>%
       dplyr::select(c("child_id", "date", "page-withdrawal_reason")) %>%
