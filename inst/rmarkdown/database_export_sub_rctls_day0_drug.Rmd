@@ -23,6 +23,7 @@ raw_drug_data <- raw_drug_data %>%
 
 ```{r}
 n_dropped_duplicate_records <- 0
+n_manual_edits <- 0
 n_amox_records <- 0
 n_aclav_records <- 0
 n_metro_records <- 0
@@ -65,7 +66,7 @@ write(" o Duplicate check", stderr())
 ```
 
 ```{r, results='asis', eval=drug_is_not_null}
-qc_description <- "All participants should have a distinct ID. Duplicated IDs may generate errors for the conduct of follow-ups in the field and results in ambiguous outcomes for duplicated participants once the database is deidentified."
+qc_description <- "All records should have a distinct ID. Duplicated IDs may generate errors."
 qc_rule <- "Remaining duplicated record IDs are deleted from the database."
 qc_type <- "duplicates"
 df <- raw_drug_data
@@ -86,6 +87,27 @@ n_dropped_duplicate_records <- n_detected
 drug_data <- cleaned_df
 drug_is_not_null <- timci::is_not_empty(raw_drug_data)
 n_cleaned_drug_records <- nrow(drug_data)
+```
+
+### Manual edits [Compliance check `r qc_manual_edits_drug`]
+
+```{r}
+write(" o Manual edits", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "Some records have been corrected in the ODK database following the review by the clinical team."
+qc_rule <- "Display records that have been manually corrected in the ODK database after their initial entry."
+qc_type <- "select_edits"
+df <- drug_data
+qc_text <- "manually corrected after initial entry"
+qc_idx <- qc_manual_edits_drug
+qc_export_label <- "drug_manual_edits"
+qc_export_description <- "the submission was done twice for the same record ID"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_manual_edits <- n_detected
 ```
 
 <!-- Variables common to all following antimicrobials checks -->
@@ -709,6 +731,7 @@ n_antimalarials_records <- n_artesunate_records + n_arthemeter_records + n_AL_re
 ```{r, fig.asp=1}
 timci::create_drug_qc_flowchart(n_raw_drug_records,
                                 n_dropped_duplicate_records,
+                                n_manual_edits,
                                 n_amox_records,
                                 n_aclav_records,
                                 n_metro_records,

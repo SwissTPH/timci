@@ -26,6 +26,7 @@ qc_summary_id <- "DQC_00_2ED_18"
 
 ```{r}
 n_dropped_true_duplicate_records <- 0
+n_duplicate_records <- 0
 n_duplicate_edits <- 0
 n_dropped_duplicate_records <- 0
 n_nonvalid_fid_records <- 0
@@ -118,6 +119,8 @@ qc_export_description <- "the submission was allocated the same ID that has been
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_duplicate_records <- n_detected
 ```
 
 ```{r}
@@ -623,9 +626,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Structured entries
-
-##### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
+#### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r}
 write("   o Missing structured treatment - check 1", stderr())
@@ -684,7 +685,11 @@ drug_edits_is_not_empty <- timci::is_not_empty(drug_edits)
 ```
 
 ```{r, eval=drug_edits_is_not_empty}
-edited_records_status_update <- paste0('**', nrow(drug_edits), '** record(s) manually corrected in the ', db_name, ' database.')
+n_drug_edits <- nrow(drug_edits)
+```
+
+```{r, eval=drug_edits_is_not_empty}
+edited_records_status_update <- paste0('**', n_drug_edits, '** record(s) manually corrected in the ', db_name, ' database.')
 ```
 
 `r edited_records_status_update`
@@ -715,7 +720,7 @@ drug_edits %>%
   knitr::kable()
 ```
 
-##### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
+#### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r}
 write("   o Missing structured treatment - check 2", stderr())
@@ -755,10 +760,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 n_free_text_rx_cg <- n_detected
 ```
-
-##### Discrepancies between drug re-entry and initial entries
-
-To be added only for Kenya and Senegal
 
 ### Clinical measurements
 
@@ -1016,8 +1017,11 @@ timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fid_records,
                                 n_incorrect_enroldate_records,
                                 n_dropped_true_duplicate_records,
+                                n_duplicate_records,
                                 n_dropped_duplicate_records,
                                 n_duplicate_edits,
+                                n_drug_edits,
+                                n_negative_illness_onset,
                                 n_missing_cp,
                                 n_missing_diagnosis,
                                 n_missing_referral_cg,

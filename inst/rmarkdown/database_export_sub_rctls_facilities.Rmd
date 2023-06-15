@@ -364,5 +364,7 @@ facility_data <- facility_data %>%
 ```{r}
 facility_data <- facility_data %>% 
   timci::allocate_screening_facility(research_facilities) %>%
-  dplyr::select(c(facility_cols, "fid_from_device"))
+  dplyr::select(c(facility_cols,
+                  "fid_from_device",
+                  "fid_from_main_device"))
 ```
