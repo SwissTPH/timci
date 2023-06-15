@@ -460,7 +460,7 @@ identify_day0_duplicates <- function(df,
                                      col_date) {
 
   # Threshold for fuzzy matching
-  thres1 <- 50 # threshold to be applied when matching child names
+  thres1 <- 70 # threshold to be applied when matching child names
   if ( Sys.getenv("TIMCI_COUNTRY") != "Senegal" ) {
     thres2 <- 40 # threshold to be applied when matching mother names
   } else {
@@ -519,8 +519,10 @@ identify_day0_duplicates <- function(df,
       } else{
         qc_df <- qc_df %>%
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
+          dplyr::mutate(count1 = lengths(gregexpr("\\W+", name_1)) + 1) %>%
+          dplyr::mutate(count2 = lengths(gregexpr("\\W+", name_2)) + 1) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
-          dplyr::filter((lvr1 > thres1) & (lvr2 > thres2))
+          dplyr::filter((lvr1 > thres1 * min(count1, count2) / max(count1,count2)) & (lvr2 > thres2))
       }
     } else {
       qc_df <- NULL
@@ -587,7 +589,7 @@ identify_true_duplicate <- function(df,
   cleaned_df <- df
 
   qc_df <- identify_day0_duplicates(df, col_id, col_date) %>%
-    dplyr::filter(lvr1 > 85)
+    dplyr::filter(lvr1 > 70)
 
   # Filter so that keep only duplicates that happened on the same day
   if ( timci::is_not_empty(qc_df) ) {
@@ -666,7 +668,6 @@ detect_inconsistent_names_between_visits <- function(refdf,
 
   # Threshold to be determined exactly
   thres1 <- 75
-  thres2 <- 50
 
   if ( timci::is_not_empty(refdf) & timci::is_not_empty(fudf)) {
 
@@ -718,6 +719,9 @@ detect_inconsistent_names_between_visits <- function(refdf,
       qc_df <- qc_df %>%
         dplyr::rowwise() %>%
         dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
+        dplyr::mutate(countref = lengths(gregexpr("\\W+", refname)) + 1) %>%
+        dplyr::mutate(count = lengths(gregexpr("\\W+", name)) + 1) %>%
+        dplyr::mutate(thres2 = thres1 * min(countref, count) / max(countref,count)) %>%
         dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
         dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
         dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
@@ -746,6 +750,7 @@ detect_inconsistent_names_between_visits <- function(refdf,
     if ( !is.null(out[[1]]) ) {
       qc_df <- out[[1]] %>%
         dplyr::filter(is.na(bestlvr) | (!is.na(bestlvr) & (lvr > thres2) & (lvr < bestlvr)) | (!is.na(bestlvr) & (lvr <= thres2)))
+
     }
   }
 
@@ -796,7 +801,8 @@ find_best_matched_names_between_fu_and_day0 <- function(df,
                     child_id,
                     name,
                     mother_name,
-                    uuid_day0)
+                    uuid_day0,
+                    thresh2)
 
     columns <- colnames(day0_df)
     out <- data.frame(matrix(nrow = 0, ncol = length(columns)))
