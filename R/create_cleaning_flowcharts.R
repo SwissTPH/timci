@@ -113,6 +113,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 #'
 #' @param n_raw_drug_records The initial number of drug records.
 #' @param n_dropped_duplicate_records The number of drug records dropped due to duplicate IDs.
+#' @param n_manual_edits
 #' @param n_amox_records The number of records that passed the cleaning check for amoxicillin.
 #' @param n_aclav_records The number of records that passed the cleaning check for amoxicillin + clavulanic acid.
 #' @param n_metro_records The number of records that passed the cleaning check for metronidazole.
@@ -136,6 +137,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
 
 create_drug_qc_flowchart <- function(n_raw_drug_records,
                                      n_dropped_duplicate_records,
+                                     n_manual_edits,
                                      n_amox_records,
                                      n_aclav_records,
                                      n_metro_records,
@@ -174,11 +176,16 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 
                   1 [label = 'Raw drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-unique ID']
-                  m2 [label = 'Other checks (N = %s)\n%s record(s) with Amoxicillin\n%s record(s) with Amoxicillin + Clavulanic Acid\n%s record(s) with Metronidazole\n%s record(s) with Cotrimoxazole\n%s record(s) with Ciprofloxacin\n%s record(s) with Gentamicin\n%s record(s) with Benzylpenicillin\n%s record(s) with Ceftriaxone\n%s record(s) with Cefixime\n%s record(s) with Ampicillin\n%s record(s) with Azithromycin\n%s record(s) with Benzathine Benzylpenicillin\n%s record(s) with other antibiotics\n%s record(s) with antimalarials']
+                  m2 [label = 'Manually edited (N = %s)']
+                  m3 [label = 'Other checks (N = %s)\n%s record(s) with Amoxicillin\n%s record(s) with Amoxicillin + Clavulanic Acid\n%s record(s) with Metronidazole\n%s record(s) with Cotrimoxazole\n%s record(s) with Ciprofloxacin\n%s record(s) with Gentamicin\n%s record(s) with Benzylpenicillin\n%s record(s) with Ceftriaxone\n%s record(s) with Cefixime\n%s record(s) with Ampicillin\n%s record(s) with Azithromycin\n%s record(s) with Benzathine Benzylpenicillin\n%s record(s) with other antibiotics\n%s record(s) with antimalarials']
                   2 [label = 'Cleaned drug records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p2 -> 2 [arrowhead='none']
+                  p3 -> 2 [arrowhead='none']
+                {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
                   {rank=same; p2 -> m2}
 
                   node [shape=none, width=0, height=0, label='']
@@ -191,6 +198,7 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
                 n_raw_drug_records,
                 n_excluded,
                 n_dropped_duplicate_records,
+                n_manual_edits,
                 n_informed,
                 n_amox_records,
                 n_aclav_records,
@@ -218,8 +226,11 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 #' @param n_nonvalid_fid_records Number of Day 0 records with a non-valid device ID
 #' @param n_incorrect_enroldate_records Number of Day 0 records with an incorrect enrolment date
 #' @param n_dropped_true_duplicate_records
+#' @param n_duplicate_records
 #' @param n_dropped_duplicate_records Number of Day 0 records that were dropped
 #' @param n_edited_duplicate_records Number of Day 0 records with a duplicated child ID that were edited
+#' @param n_drug_edits
+#' @param n_negative_illness_onset
 #' @param n_missing_cp
 #' @param n_missing_diagnosis
 #' @param n_missing_referral_cg
@@ -232,16 +243,19 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                                      n_nonvalid_fid_records,
                                      n_incorrect_enroldate_records,
                                      n_dropped_true_duplicate_records,
+                                     n_duplicate_records,
                                      n_dropped_duplicate_records,
                                      n_edited_duplicate_records,
+                                     n_drug_edits,
+                                     n_negative_illness_onset,
                                      n_missing_cp,
                                      n_missing_diagnosis,
                                      n_missing_referral_cg,
                                      n_cleaned_day0_records) {
 
   n_excluded <- n_nonvalid_fid_records + n_dropped_true_duplicate_records + n_dropped_duplicate_records
-  n_auto_edited <- n_incorrect_enroldate_records
-  n_manual_edited <- n_edited_duplicate_records
+  n_auto_edited <- n_incorrect_enroldate_records + n_negative_illness_onset
+  n_manual_edited <- n_edited_duplicate_records + n_drug_edits
   n_informed <- n_missing_cp + n_missing_diagnosis + n_missing_referral_cg
 
   gr <- sprintf("digraph flowchart {
@@ -250,9 +264,9 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
                   1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with a duplicated record\n%s record(s) with a duplicated child ID']
-                  m2 [label = 'Automatically edited (N = %s)\n%s record(s) with incorrect enrolment date']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for a duplicated child ID (out of XX detected)\nXX record(s) with re-entered structured drug data']
-                  m4 [label = 'Other checks triggered (N = %s)\nXX record(s) with a negative illness onset\n%s record(s) with a missing clinical presentation\n%s record(s) with a missing diagnosis\n%s record(s) with no referral info from caregiver']
+                  m2 [label = 'Automatically edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a negative illness onset']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a missing clinical presentation\n%s record(s) with a missing diagnosis\n%s record(s) with no referral info from caregiver']
                   2 [label = 'Cleaned Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -281,8 +295,11 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                 n_dropped_duplicate_records,
                 n_auto_edited,
                 n_incorrect_enroldate_records,
+                n_negative_illness_onset,
                 n_manual_edited,
                 n_edited_duplicate_records,
+                n_duplicate_records,
+                n_drug_edits,
                 n_informed,
                 n_missing_cp,
                 n_missing_diagnosis,

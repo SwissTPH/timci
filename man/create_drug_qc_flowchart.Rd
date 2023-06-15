@@ -7,6 +7,7 @@
 create_drug_qc_flowchart(
   n_raw_drug_records,
   n_dropped_duplicate_records,
+  n_manual_edits,
   n_amox_records,
   n_aclav_records,
   n_metro_records,
