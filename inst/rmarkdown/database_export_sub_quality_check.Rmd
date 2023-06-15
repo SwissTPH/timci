@@ -22,6 +22,7 @@ cleaned_df <- NULL
 cols <- colnames(df)
 n_df <- nrow(df)
 n_detected <- 0
+n_to_remove <- 0
 cleaned_df_status_update <- ""
 ```
 
@@ -453,11 +454,15 @@ outcols <- c("child_id", "fid", "date_visit", "uuid")
 ```{r, eval=(qc_type=="drug_reentry_accuracy1")}
 drug_disp_df1 <- df %>%
   dplyr::filter(!!rlang::sym(col_id) == 1) %>%
-  dplyr::select(free_text1, uuid, start) %>%
+  dplyr::select(free_text1,
+                uuid,
+                submission_date) %>%
   dplyr::rename(free_text = free_text1)
 drug_disp_df2 <- df %>%
   dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) == 1) %>%
-  dplyr::select(free_text2, uuid, start) %>%
+  dplyr::select(free_text2,
+                uuid,
+                submission_date) %>%
   dplyr::rename(free_text = free_text2)
 qc_df <- rbind(drug_disp_df1,
                drug_disp_df2)
@@ -471,7 +476,9 @@ drug_disp_df1 <- df %>%
                                   0)) %>% 
   ungroup() %>% 
   dplyr::filter(selected == 1) %>%
-  dplyr::select(free_text1, uuid) %>%
+  dplyr::select(free_text1,
+                uuid,
+                submission_date) %>%
   dplyr::rename(free_text = free_text1)
 drug_disp_df2 <- df %>%
   dplyr::rowwise() %>%
@@ -480,7 +487,9 @@ drug_disp_df2 <- df %>%
                                   0)) %>% 
   ungroup() %>% 
   dplyr::filter(selected == 1) %>%
-  dplyr::select(free_text2, uuid) %>%
+  dplyr::select(free_text2,
+                uuid,
+                submission_date) %>%
   dplyr::rename(free_text = free_text2)
 qc_df <- rbind(drug_disp_df1,
                drug_disp_df2)
@@ -498,6 +507,13 @@ out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
                                                        cleaning = cleaning)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
+```
+
+<!-- Edits in ODK Central -->
+
+```{r, eval=(qc_type=="select_edits")}
+qc_df <- df %>% 
+  dplyr::filter(edits > 0)
 ```
 
 <!-- Incomplete SPA observations -->
@@ -520,9 +536,10 @@ n_detected <- nrow(qc_df)
 ```
 
 ```{r, eval=(qc_type=="duplicates")&!is.null(qc_df)}
-uuid_cols <- grep("uuid", names(qc_df))
-x <- unname((unlist(qc_df[colnames(qc_df[uuid_cols])])))
-n_detected <- sum(!is.na(x)) / length(x)
+date_cols <- grep("date", names(qc_df))
+x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
+n_detected <- sum(!is.na(x))
+n_to_remove <- n_detected - nrow(qc_df)
 ```
 
 [Check output:]{custom-style="underlined"} The check has detected **`r n_detected`** record(s) (i.e. **`r sprintf('%.1f', 100 * n_detected / n_df)` %** of all records) with `r qc_text` in the `r db_name` database.
