@@ -21,7 +21,7 @@ spa_sco_data_hcp_edits %>%
   knitr::kable(caption = "Healthcare provider ID to be corrected")
 ```
 
-### Non-valid participant IDs [compliance check `r qc_spa_sco_nonvalid_ids`]\n\n
+### Non-valid participant IDs [compliance check `r qc_spa_sco_nonvalid_ids`]
 
 ```{r}
 cleaned_df <- NULL
@@ -33,7 +33,7 @@ qc_rule <- "Keep only IDs of children who are found in the locked Day 0 database
 qc_type <- "nonvalid_ids"
 df <- locked_spa_sco_data
 idcol1 <- "child_identification-pid"
-refdf <- day0_data
+refdf <- facility_data
 idcol2 <- "child_id"
 qc_text <- "participant ID not valid"
 qc_idx <- qc_spa_sco_nonvalid_ids
