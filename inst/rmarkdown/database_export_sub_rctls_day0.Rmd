@@ -82,7 +82,7 @@ n_true_duplicate_detected <- n_detected
 ```
 
 ```{r, eval=(!is_pilot), results='asis'}
-mc_description <- ""
+mc_description <- "Unless advised otherwise by the in-country data manager, the oldest record is deleted. This is assuming the research assistant created a new record because they felt a specific information was missing."
 to_correct_df <- day0_data
 correction_type <- "delete_day0_records"
 
