@@ -637,7 +637,7 @@ correct_day0_drug_data <- function(day0_df,
     selective_multi_replace("rx_consumables", cols) %>%
     dplyr::select(cols)
 
-  out <- list(df, drug_df)
+  out <- list(df, drug_df, NULL)
   out
 
 }

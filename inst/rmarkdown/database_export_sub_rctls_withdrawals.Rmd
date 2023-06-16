@@ -6,6 +6,21 @@ write("Export withdrawal data and run corresponding quality checks", stderr())
 
 ## Withdrawal quality checks
 
+```{r}
+db_name <- "withdrawal"
+```
+
+```{r}
+n_raw_withdrawal_records <- 0
+raw_withdrawal_is_not_empty <- timci::is_not_empty(raw_withdrawal_data)
+```
+
+```{r, eval=raw_withdrawal_is_not_empty}
+n_raw_withdrawal_records <- nrow(raw_withdrawal_data)
+```
+
+There are **`r n_raw_withdrawal_records`** records in the raw `r db_name` database.
+
 ### Participant identification
 
 **Rule:** withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.
@@ -122,6 +137,30 @@ write(" o Pseudonymisation", stderr())
 ```
 
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                child_id = digest(child_id, algo = crypto_algo),
+                `page-a1_a_4` = digest(`page-a1_a_4`, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_withdrawal_records <- nrow(day0_data_id_withdrawal)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+timci::create_withdrawal_qc_flowchart(n_raw_withdrawal_records,
+                                      n_cleaned_withdrawal_records)
+```
 
 ### Data export
 

@@ -19,6 +19,8 @@ qc_nonvalid_hospitfu <- paste(qc_root, "02", sep = "_")
 qc_nonconsistent_name_hospitfu <- paste(qc_root, "03", sep = "_")
 qc_duplicated_hospitfu <- paste(qc_root, "04", sep = "_")
 qc_hospit_before_enrolment <- paste(qc_root, "05", sep = "_")
+qc_death_before_enrolment <- paste(qc_root, "06", sep = "_")
+qc_discharge_before_enrolment <- paste(qc_root, "07", sep = "_")
 ```
 
 ```{r}
@@ -26,6 +28,13 @@ hospit_data_uids <- NULL
 locked_hospit_data <- NULL
 hospit_fu <- NULL
 hospitfu_pii_drops_is_not_empty <- NULL
+```
+
+```{r}
+n_inconsistent_names_day7fu_records <- 0
+n_death_prior_day0_hospitfu <- 0
+n_hospit_prior_day0_hospitfu <- 0
+n_discharge_prior_day0_hospitfu <- 0
 ```
 
 ### Format raw data
@@ -164,7 +173,7 @@ write(" o Duplicate management", stderr())
 ```
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
-qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
+qc_description <- "It is possible to have more than one successful follow-up records (**found** = 1) available for the same participant."
 qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
 df <- hospit_data %>% 
@@ -175,7 +184,7 @@ cleaning <- "none"
 qc_text <- "duplicated IDs"
 qc_idx <- qc_duplicated_hospitfu
 qc_export_label <- "duplicated_hospitfu"
-qc_export_description <- "hospitalisation follow-ups are duplicated"
+qc_export_description <- "successful hospitalisation follow-ups are duplicated"
 
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
@@ -198,7 +207,7 @@ qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- hospit_data %>%
   dplyr::filter(found == 1) %>% 
-  merge(day0_data %>%
+  merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
                         date_visit),
@@ -214,9 +223,10 @@ qc_export_description <- "the reported date of hospitalisation was before the en
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_hospit_prior_day0_hospitfu <- n_detected
 ```
 
-#### Invalid date of death [Context check `r qc_hospit_before_enrolment`]
+#### Invalid date of death [Context check `r qc_death_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of death", stderr())
@@ -228,7 +238,7 @@ qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- hospit_data %>%
   dplyr::filter(found == 1) %>% 
-  merge(day0_data %>%
+  merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
                         date_visit),
@@ -236,16 +246,17 @@ df <- hospit_data %>%
         all.x = TRUE)
 col_date1 <- "date_death"
 col_date2 <- "date_visit"
-qc_text <- "a date of hospitalisation before the enrolment date"
-qc_idx <- qc_hospit_before_enrolment
+qc_text <- "a date of death before the enrolment date"
+qc_idx <- qc_death_before_enrolment
 qc_export_label <- "death_before_enrolment"
 qc_export_description <- "the reported date of death was before the enrolment date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_death_prior_day0_hospitfu <- n_detected
 ```
 
-#### Invalid date of discharge [Context check `r qc_hospit_before_enrolment`]
+#### Invalid date of discharge [Context check `r qc_discharge_before_enrolment`]
 
 ```{r}
 write(" o Invalid date of discharge", stderr())
@@ -257,7 +268,7 @@ qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
 df <- hospit_data %>%
   dplyr::filter(found == 1) %>% 
-  merge(day0_data %>%
+  merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
                         date_visit),
@@ -265,13 +276,14 @@ df <- hospit_data %>%
         all.x = TRUE)
 col_date1 <- "date_discharge"
 col_date2 <- "date_visit"
-qc_text <- "a date of hospitalisation before the enrolment date"
-qc_idx <- qc_hospit_before_enrolment
+qc_text <- "a date of discharge before the enrolment date"
+qc_idx <- qc_discharge_before_enrolment
 qc_export_label <- "discharge_before_enrolment"
 qc_export_description <- "the reported date of discharge was before the enrolment date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_discharge_prior_day0_hospitfu <- n_detected
 ```
 
 ### Pseudonymisation
@@ -308,7 +320,11 @@ hospit_data_no_pii <- hospit_data_no_pii %>%
 timci::create_hospit_qc_flowchart(nrow(raw_hospit_data),
                                   n_afterlock_pids_hospitfu_records,
                                   n_nonvalid_pids_hospitfu,
+                                  n_inconsistent_names_day7fu_records,
                                   n_duplicates_hospitfu,
+                                  n_death_prior_day0_hospitfu,
+                                  n_hospit_prior_day0_hospitfu,
+                                  n_discharge_prior_day0_hospitfu,
                                   nrow(hospit_data))
 ```
 
@@ -317,7 +333,6 @@ timci::create_hospit_qc_flowchart(nrow(raw_hospit_data),
 ```{r}
 hospit_data_no_pii <- hospit_data_no_pii %>%
   dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
                          form_version,
                          rhf_id,
                          rhf_name,

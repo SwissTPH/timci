@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Data Quality Report"
+title: "TIMCI `r Sys.getenv('TIMCI_COUNTRY')` Data Quality Report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 output:
@@ -193,6 +193,7 @@ qc_quinine_consistency_drug <- "DQC_00_1DG_31"
 qc_pids_out_lock_range_repeat <- "DQC_00_3RV_01"
 qc_nonvalid_repeat <- "DQC_00_3RV_02"
 qc_nonconsistent_name_repeat <- "DQC_00_3RV_03"
+qc_visit_before_enrolment <- "DQC_00_3RV_04"
 
 # Day 7 quality check IDs
 ##########################

@@ -626,139 +626,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-#### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
-
-```{r}
-write("   o Missing structured treatment - check 1", stderr())
-```
-
-```{r, results='asis', eval=day0_is_not_null&!is_rct}
-qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
-qc_rule <- action_alert_no_modification
-qc_type <- "missing_treatment"
-df <- day0_data
-qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
-qc_idx <- qc_missing_treatment_id
-qc_export_label <- "missing_treatment"
-qc_export_description <- "the treatment information is missing"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_missing_treatment <- n_detected
-```
-
-```{r, eval=timci::is_not_empty(day0_data)&!is_rct, results='asis'}
-fig_df <- day0_data %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate("Structured treatment entry" = dplyr::case_when(
-    ( !is.na(rx_amoxicillin) & !is.na(rx_misc) & rx_misc != "996" ) | ( is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996" ) ) ~ "a) Yes",
-    .default                                                                                                                                     = "b) No"))
-
-fig_caption <- "Spatiotemporal pattern of treatments"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-fill_col <- "Structured treatment entry"
-
-cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r, eval=is_ls}
-print_clean_drug_data_title <- "##### Update with reentered drug data"
-```
-
-`r print_clean_drug_data_title`
-
-```{r}
-edited_records_status_update <- ""
-```
-
-```{r, eval=is_ls}
-out <- timci::correct_day0_drug_data(day0_data, drug_data)
-day0_data <- out[[1]]
-drug_edits <- out[[2]]
-drug_edits_is_not_empty <- timci::is_not_empty(drug_edits)
-```
-
-```{r, eval=drug_edits_is_not_empty}
-n_drug_edits <- nrow(drug_edits)
-```
-
-```{r, eval=drug_edits_is_not_empty}
-edited_records_status_update <- paste0('**', n_drug_edits, '** record(s) manually corrected in the ', db_name, ' database.')
-```
-
-`r edited_records_status_update`
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-drug_edits %>%
-  select(start,
-         uuid,
-         child_id,
-         free_text1,
-         free_text2) %>%
-  head(10) %>%
-  knitr::kable()
-```
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-cat("...")
-```
-
-```{r, eval=drug_edits_is_not_empty, results='asis'}
-drug_edits %>%
-  select(start,
-         uuid,
-         child_id,
-         free_text1,
-         free_text2) %>%
-  tail(10) %>%
-  knitr::kable()
-```
-
-#### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
-
-```{r}
-write("   o Missing structured treatment - check 2", stderr())
-```
-
-```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
-fig_df <- day0_data %>%
-  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
-  dplyr::mutate("Structured treatment entry" = dplyr::case_when(
-    ( !is.na(rx_amoxicillin) & !is.na(rx_misc) & rx_misc != "996" ) | ( is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996" ) ) ~ "a) Yes",
-    .default                                                                                                                                     = "b) No"))
-
-fig_caption <- "Spatiotemporal pattern of treatments"
-facility_col <- "fid"
-date_col <- "week"
-date_lbl <- "Weeks"
-date_format <- "%b%y"
-comparison <- "type"
-fill_col <- "Structured treatment entry"
-
-cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-```
-
-```{r, results='asis', eval=day0_is_not_null}
-qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
-qc_rule <- action_alert_no_modification
-qc_type <- "free_text_missing_structured_entry"
-df <- day0_data
-qc_text <- "free text drug"
-qc_idx <- qc_free_text_rx_id
-qc_export_label <- "free_text_drug"
-qc_export_description <- "the treatments should have been entered in a structured manner"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_free_text_rx_cg <- n_detected
+```{r db-export-screening-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug_integration.Rmd'}
 ```
 
 ### Clinical measurements
@@ -998,6 +866,7 @@ day0_data <- day0_data %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
                 child_id = digest(child_id, algo = crypto_algo),
+                prev_id = digest(prev_id, algo = crypto_algo),
                 device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```

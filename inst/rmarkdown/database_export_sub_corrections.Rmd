@@ -104,6 +104,13 @@ out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
                                                    csv_prefix = "day0_facility_correction3")
 ```
 
+<!-- Drug corrections -->
+
+```{r, eval=(correction_type=="correct_day0_drugs")}
+out <- timci::correct_day0_drug_data(to_correct_df,
+                                     drug_data)
+```
+
 <!-- Day 7 follow-up corrections -->
 
 ```{r, eval=(correction_type=="correct_day7_non_valid_ids")}

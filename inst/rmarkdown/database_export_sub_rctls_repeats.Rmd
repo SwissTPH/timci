@@ -6,6 +6,8 @@ write("Export repeat visit data and run corresponding quality checks", stderr())
 
 ```{r}
 n_nonvalid_pids_repeat_records <- 0
+n_nonconsistent_names_repeat_records <- 0
+n_visit_before_enrolment <- 0
 ```
 
 ## Repeat visit quality checks
@@ -68,6 +70,7 @@ refdf <- rbind(facility_data_before_start,
                facility_data_after_lock) %>%
   dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
+cleaning <- "drop_all"
 qc_text <- "participant IDs outside the lock date range"
 qc_idx <- qc_pids_out_lock_range_repeat
 qc_export_label <- "pids_outside_lock_range"
@@ -102,6 +105,7 @@ col_name <- "child_name"
 ldate_diff <- -29
 udate_diff <- -1
 matched_names <- TRUE
+cleaning <- "drop_all"
 qc_text <- "non-valid participant IDs"
 qc_idx <- qc_nonvalid_repeat
 qc_export_label <- "nonvalid_pids_repeat_with_matched_names"
@@ -144,9 +148,14 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+```{r, eval=!is.null(cleaned_df)}
+n_nonconsistent_names_repeat_records <- n_detected
+repeat_data <- cleaned_df
+```
+
 ### Dates and times
 
-#### Repeat visit anterior to enrolment [Context check]
+#### Repeat visit anterior to enrolment [Context check `r qc_visit_before_enrolment`]
 
 ```{r}
 write(" o Check for date of repeat visit anterior to date of enrolment", stderr())
@@ -154,7 +163,7 @@ write(" o Check for date of repeat visit anterior to date of enrolment", stderr(
 
 ```{r, eval=!is.null(repeat_data), results='asis'}
 df <- repeat_data %>% 
-  merge(day0_data %>%
+  merge(allday0_data %>%
           dplyr::select(child_id,
                         date_visit) %>%
           dplyr::rename(date_day0 = date_visit),
@@ -164,18 +173,40 @@ df <- repeat_data %>%
 ```
 
 ```{r, eval=!is.null(repeat_data), results='asis'}
-# qc_description <- "Repeat visit should have happened after enrolment on Day 0."
-# qc_rule <- action_alert_no_modification
-# qc_type <- "date_discrepancy"
-# col_date1 <- "date_visit"
-# col_date2 <- "date_day0"
-# qc_text <- "a date of repeat visit before the enrolment date"
-# qc_idx <- qc_death_before_enrolment_day7fu
-# qc_export_label <- "repeat_visit_before_enrolment"
-# qc_export_description <- "the reported date of repeat visit was before the enrolment date"
-# cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-#                       envir = environment(),
-#                       quiet = TRUE))
+qc_description <- "Repeat visit should have happened after enrolment on Day 0."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+col_date1 <- "date_visit"
+col_date2 <- "date_day0"
+qc_text <- "a date of repeat visit before the enrolment date"
+qc_idx <- qc_visit_before_enrolment
+qc_export_label <- "repeat_visit_before_enrolment"
+qc_export_description <- "the reported date of repeat visit was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_visit_before_enrolment <- n_detected
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+repeat_data <- repeat_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                prev_id = digest(prev_id, algo = crypto_algo),
+                device_id = digest(device_id, algo = crypto_algo)) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_repeat_records <- nrow(repeat_data)
 ```
 
 ### Data cleaning summary
@@ -185,12 +216,10 @@ write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
-n_cleaned_repeat_records <- nrow(repeat_data)
-```
-
-```{r}
 timci::create_repeat_qc_flowchart(n_raw_repeat_records,
                                   n_nonvalid_pids_repeat_records,
+                                  n_nonconsistent_names_repeat_records,
+                                  n_visit_before_enrolment,
                                   n_cleaned_repeat_records)
 ```
 
@@ -243,8 +272,7 @@ repeat_data <- repeat_data %>%
   dplyr::mutate(across(c(date_visit),
                        ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
   dplyr::mutate(across(c(start,
-                         end,
-                         submission_date),
+                         end),
                        as.POSIXct))
 ```
 

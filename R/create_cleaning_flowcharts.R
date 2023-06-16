@@ -314,6 +314,8 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 #'
 #' @param n_raw_repeat_records Number of records
 #' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participan ID
+#' @param n_nonconsistent_names_repeat_records
+#' @param n_visit_before_enrolment
 #' @param n_cleaned_repeat_records TBD
 #' @return This function returns a graph object
 #' @export
@@ -321,22 +323,24 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
 create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                                        n_nonvalid_pids_repeat_records,
+                                       n_nonconsistent_names_repeat_records,
+                                       n_visit_before_enrolment,
                                        n_cleaned_repeat_records) {
 
-  n_excluded <- n_nonvalid_pids_repeat_records
+  n_excluded <- n_nonvalid_pids_repeat_records + n_nonconsistent_names_repeat_records
   n_auto_edited <- 0
   n_manual_edited <- 0
-  n_informed <- 0
+  n_informed <- n_visit_before_enrolment
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs\n']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs\n%s record(s) with non consistent names']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
-                  m4 [label = 'Other checks triggered (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a date of visit prior to enrolment']
                   2 [label = 'Cleaned repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -361,9 +365,11 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                 n_raw_repeat_records,
                 n_excluded,
                 n_nonvalid_pids_repeat_records,
+                n_nonconsistent_names_repeat_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_visit_before_enrolment,
                 n_cleaned_repeat_records)
 
   DiagrammeR::grViz(gr)
@@ -452,6 +458,9 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 #'
 #' @param n_raw_day7fu_records Number of records
 #' @param n_dropped_duplicate_records TBD
+#' @param n_death_prior_day0_day7fu
+#' @param n_hospit_prior_day0_day7fu
+#' @param n_death_prior_hospit_day7fu
 #' @param n_cleaned_day7fu_records TBD
 #' @return This function returns a graph object
 #' @export
@@ -459,12 +468,15 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 
 create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                                                n_dropped_duplicate_records,
+                                               n_death_prior_day0_day7fu,
+                                               n_hospit_prior_day0_day7fu,
+                                               n_death_prior_hospit_day7fu,
                                                n_cleaned_day7fu_records) {
 
   n_excluded <- n_dropped_duplicate_records
   n_auto_edited <- 0
   n_manual_edited <- 0
-  n_informed <- 0
+  n_informed <- n_death_prior_day0_day7fu + n_hospit_prior_day0_day7fu + n_death_prior_hospit_day7fu
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
@@ -474,7 +486,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
-                  m4 [label = 'Other checks triggered (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with death prior to hospitalisation']
                   2 [label = 'Cleaned successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -502,6 +514,9 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_death_prior_day0_day7fu,
+                n_hospit_prior_day0_day7fu,
+                n_death_prior_hospit_day7fu,
                 n_cleaned_day7fu_records)
 
   DiagrammeR::grViz(gr)
@@ -643,8 +658,12 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 #' @param n_raw_hospit_records Initial number of hospitalisation records
 #' @param n_afterlock_pids_hospitfu_records Number of records outside of lock range
 #' @param n_nonvalid_pid_records Number of screening records with a non-valid device ID
+#' @param n_inconsistent_names_day7fu_records
 #' @param n_duplicated_records Number of screening records with an entry date posterior to the lock date
-#' @param n_cleaned_hospit_records Number of cleaned screening records
+#' @param n_death_prior_day0_hospitfu,
+#' @param n_hospit_prior_day0_hospitfu,
+#' @param n_discharge_prior_day0_hospitfu,
+#' @param n_cleaned_hospit_records Number of cleaned hospitalisation records
 #' @return This function returns a graph object
 #' @export
 #' @import DiagrammeR
@@ -652,23 +671,27 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 create_hospit_qc_flowchart <- function(n_raw_hospit_records,
                                        n_afterlock_pids_hospitfu_records,
                                        n_nonvalid_pid_records,
+                                       n_inconsistent_names_day7fu_records,
                                        n_duplicated_records,
+                                       n_death_prior_day0_hospitfu,
+                                       n_hospit_prior_day0_hospitfu,
+                                       n_discharge_prior_day0_hospitfu,
                                        n_cleaned_hospit_records) {
 
-  n_excluded <- n_afterlock_pids_hospitfu_records + n_nonvalid_pid_records
+  n_excluded <- n_afterlock_pids_hospitfu_records + n_nonvalid_pid_records + n_inconsistent_names_day7fu_records
   n_auto_edited <- 0
   n_manual_edited <- 0
-  n_informed <- 0
+  n_informed <- n_death_prior_day0_hospitfu + n_hospit_prior_day0_hospitfu + n_discharge_prior_day0_hospitfu
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\n%s record(s) with non consistent names']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
-                  m4 [label = 'Other checks triggered (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with discharge prior to enrolment']
                   2 [label = 'Cleaned hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -694,10 +717,71 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
                 n_excluded,
                 n_afterlock_pids_hospitfu_records,
                 n_nonvalid_pid_records,
+                n_inconsistent_names_day7fu_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_death_prior_day0_hospitfu,
+                n_hospit_prior_day0_hospitfu,
+                n_discharge_prior_day0_hospitfu,
                 n_cleaned_hospit_records)
+
+  DiagrammeR::grViz(gr)
+
+}
+
+#' Create cleaning flowchart for withdrawal data (TIMCI-specific)
+#'
+#' @param n_raw_wd_records Initial number of withdrawal records
+#' @param n_cleaned_wd_records Number of cleaned withdrawal records
+#' @return This function returns a graph object
+#' @export
+#' @import DiagrammeR
+
+create_withdrawal_qc_flowchart <- function(n_raw_wd_records,
+                                           n_cleaned_wd_records) {
+
+  n_excluded <- 0
+  n_auto_edited <- 0
+  n_manual_edited <- 0
+  n_informed <- 0
+
+  gr <- sprintf("digraph flowchart {
+                  # node definitions with substituted label text
+                  node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
+
+                  1 [label = 'Raw withdrawal records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+                  m1 [label = 'Excluded (N = %s)']
+                  m2 [label = 'Automatically edited (N = %s)']
+                  m3 [label = 'Manually edited (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)']
+                  2 [label = 'Cleaned withdrawal records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
+
+                  node [shape=none, width=0, height=0, label='']
+                  p4 -> 2 [arrowhead='none']
+                  {rank=same; p4 -> m4}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p3 -> p4 [arrowhead='none']
+                  {rank=same; p3 -> m3}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p2 -> p3 [arrowhead='none']
+                  {rank=same; p2 -> m2}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p1 -> p2 [arrowhead='none']
+                  {rank=same; p1 -> m1}
+
+                  edge [dir=none]
+                  1 -> p1
+                }",
+                n_raw_wd_records,
+                n_excluded,
+                n_auto_edited,
+                n_manual_edited,
+                n_informed,
+                n_cleaned_wd_records)
 
   DiagrammeR::grViz(gr)
 
