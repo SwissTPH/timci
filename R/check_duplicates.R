@@ -459,7 +459,7 @@ identify_day0_duplicates <- function(df,
                                      col_id,
                                      col_date) {
 
-  if ( Sys.getenv("TIMCI_COUNTRY") != "Senegal" ) {
+  if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
     # Threshold for fuzzy matching
     thres1 <- 50 # threshold to be applied when matching child names
     thres2 <- 40 # threshold to be applied when matching mother names
@@ -524,9 +524,9 @@ identify_day0_duplicates <- function(df,
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(name_1, name_2)) %>%
           dplyr::mutate(count1 = lengths(gregexpr("\\W+", name_1)) + 1) %>%
           dplyr::mutate(count2 = lengths(gregexpr("\\W+", name_2)) + 1) %>%
-          dplyr::mutate(nthres1 = thres1 * min(count1, count2) / max(count1, count2)) %>%
+          #dplyr::mutate(nthres1 = thres1 * min(count1, count2) / max(count1, count2)) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(mother_name_1, mother_name_2)) %>%
-          dplyr::filter(lvr1 > nthres1)
+          dplyr::filter(lvr1 > thres1)
       }
     } else {
       qc_df <- NULL
