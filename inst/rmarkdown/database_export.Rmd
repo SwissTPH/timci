@@ -204,11 +204,12 @@ qc_pids_out_lock_range_day7fu <- "DQC_07_04"
 qc_nonvalid_day7fu <- "DQC_07_05"
 qc_nonconsistent_name_day7fu <- "DQC_07_06"
 qc_duplicated_day7fu <- "DQC_07_07"
-qc_missing_hospit_date_day7fu <- "DQC_07_08"
-qc_hospit_before_enrolment_day7fu <- "DQC_07_09"
-qc_missing_death_date_day7fu <- "DQC_07_10"
-qc_death_before_enrolment_day7fu <- "DQC_07_11"
-qc_death_before_hospit_day7fu <- "DQC_07_12"
+qc_call_before_enrolment_day7fu <- "DQC_07_08"
+qc_missing_hospit_date_day7fu <- "DQC_07_09"
+qc_hospit_before_enrolment_day7fu <- "DQC_07_10"
+qc_missing_death_date_day7fu <- "DQC_07_11"
+qc_death_before_enrolment_day7fu <- "DQC_07_12"
+qc_death_before_hospit_day7fu <- "DQC_07_13"
 
 # Day 28 quality check IDs
 ###########################

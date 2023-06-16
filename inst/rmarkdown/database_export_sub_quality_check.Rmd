@@ -560,13 +560,10 @@ n_detected <- nrow(qc_df)
 ```
 
 ```{r, eval=is_duplicate_check&!is.null(qc_df)}
-if ( "uuid" %in% colnames(qc_df) ) {
-  uuid_cols <- grep("uuid", names(qc_df))
-  x <- unname((unlist(qc_df[colnames(qc_df[uuid_cols])])))
-} else{
-  date_cols <- grep("date", names(qc_df))
-  x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
-}
+date_cols <- grep("date", names(qc_df))
+remove_date_cols <- grep("_date", names(qc_df))
+date_cols <- date_cols[!date_cols %in% remove_date_cols]
+x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
 n_detected <- sum(!is.na(x))
 n_to_remove <- n_detected - nrow(qc_df)
 ```

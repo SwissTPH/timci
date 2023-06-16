@@ -270,7 +270,7 @@ fig_df <- repeat_data %>%
                                              week_start = getOption("lubridate.week.start", 1)))
 
 fig_caption <- "Repeat data overview"
-facility_col <- "fid_from_device"
+facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"

@@ -93,7 +93,62 @@ n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
 day7fu_data <- cleaned_df
 ```
 
-### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day7fu`]
+### Dates
+
+#### Dates of follow-up
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+df <- day7fu_data %>% 
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit),
+        by = "child_id",
+        all.x = TRUE)
+```
+
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_call, date_visit, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and Day 7 follow-up") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+#### Follow-up anterior to enrolment [Context check `r qc_call_before_enrolment_day7fu`]
+
+```{r}
+write(" o Check for follow-up date anterior to date of enrolment", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "Follow-up should have happened 7 days after enrolment on Day 0 and cannot have happened before the date of enrolment."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+col_date1 <- "date_call"
+col_date2 <- "date_visit"
+qc_text <- "a date of call before the enrolment date"
+qc_idx <- qc_call_before_enrolment_day7fu
+qc_export_label <- "followup_before_enrolment"
+qc_export_description <- "the follow-up was conducted before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_fu_prior_day0_day7fu <- n_detected
+```
+
+#### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day7fu`]
 
 ```{r}
 write(" o Missing date of hospitalisation", stderr())
@@ -119,7 +174,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_hospit_date <- n_detected
 ```
 
-### Dates of hospitalisation
+#### Dates of hospitalisation
 
 ```{r}
 write(" o Visualisation of dates of hospitalisation", stderr())
@@ -167,7 +222,7 @@ ggplot2::ggplot(df %>%
                  panel.grid.minor.x = element_blank())
 ```
 
-### Hospitalisations anterior to enrolment [Context check `r qc_hospit_before_enrolment_day7fu`]
+#### Hospitalisations anterior to enrolment [Context check `r qc_hospit_before_enrolment_day7fu`]
 
 ```{r}
 write(" o Invalid date of hospitalisation", stderr())
@@ -200,7 +255,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_hospit_prior_day0_day7fu <- n_detected
 ```
 
-### Missing date of death [Mandatory check `r qc_missing_death_date_day7fu`]
+#### Missing date of death [Mandatory check `r qc_missing_death_date_day7fu`]
 
 ```{r}
 write(" o Missing date of death", stderr())
@@ -223,7 +278,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_missing_death_date <- n_detected
 ```
 
-### Dates of death
+#### Dates of death
 
 ```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
@@ -272,7 +327,7 @@ ggplot2::ggplot(df %>%
                  panel.grid.minor.x = element_blank())
 ```
 
-### Deaths anterior to enrolment [Context check `r qc_death_before_enrolment_day7fu`]
+#### Deaths anterior to enrolment [Context check `r qc_death_before_enrolment_day7fu`]
 
 ```{r}
 write(" o Check for date of death anterior to date of enrolment", stderr())
@@ -295,7 +350,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_death_prior_day0_day7fu <- n_detected
 ```
 
-### Deaths anterior to hospitalisation [Context check `r qc_death_before_hospit_day7fu`]
+#### Deaths anterior to hospitalisation [Context check `r qc_death_before_hospit_day7fu`]
 
 ```{r}
 write(" o Check for date of death anterior to date of hospitalisation", stderr())
@@ -356,6 +411,7 @@ n_cleaned_day7fu_records <- nrow(day7fu_data)
 ```{r}
 timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
                                           n_dropped_duplicate_day7fu_records,
+                                          n_fu_prior_day0_day7fu,
                                           n_death_prior_day0_day7fu,
                                           n_hospit_prior_day0_day7fu,
                                           n_death_prior_hospit_day7fu,

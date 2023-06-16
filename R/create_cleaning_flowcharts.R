@@ -467,6 +467,7 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 #'
 #' @param n_raw_day7fu_records Number of records
 #' @param n_dropped_duplicate_records TBD
+#' @param n_fu_prior_day0_day7fu
 #' @param n_death_prior_day0_day7fu
 #' @param n_hospit_prior_day0_day7fu
 #' @param n_death_prior_hospit_day7fu
@@ -477,6 +478,7 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 
 create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                                                n_dropped_duplicate_records,
+                                               n_fu_prior_day0_day7fu,
                                                n_death_prior_day0_day7fu,
                                                n_hospit_prior_day0_day7fu,
                                                n_death_prior_hospit_day7fu,
@@ -485,7 +487,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
   n_excluded <- n_dropped_duplicate_records
   n_auto_edited <- 0
   n_manual_edited <- 0
-  n_informed <- n_death_prior_day0_day7fu + n_hospit_prior_day0_day7fu + n_death_prior_hospit_day7fu
+  n_informed <- n_fu_prior_day0_day7fu + n_death_prior_day0_day7fu + n_hospit_prior_day0_day7fu + n_death_prior_hospit_day7fu
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
@@ -495,7 +497,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
-                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with death prior to hospitalisation']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with follow-up prior to enrolment\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with death prior to hospitalisation']
                   2 [label = 'Cleaned successful Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -523,6 +525,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_fu_prior_day0_day7fu,
                 n_death_prior_day0_day7fu,
                 n_hospit_prior_day0_day7fu,
                 n_death_prior_hospit_day7fu,
