@@ -26,6 +26,15 @@ n_to_remove <- 0
 cleaned_df_status_update <- ""
 ```
 
+```{r}
+duplicate_checks <- c("duplicates",
+                      "duplicates_with_names",
+                      "true_duplicates",
+                      "day0_duplicates",
+                      "repeat_duplicates")
+is_duplicate_check <- (qc_type %in% duplicate_checks)
+```
+
 <!-- Each check has a specific code chunk that will be executed only when the check is selected, i.e. eval=(qc_type=="check_name") -->
 
 ```{r, eval=(qc_type=="other_study_fids")}
@@ -495,6 +504,21 @@ qc_df <- rbind(drug_disp_df1,
                drug_disp_df2)
 ```
 
+```{r, eval=(qc_type=="missing_structured_entry_for_specific_drug")}
+qc_df <- timci::detect_drug(df,
+                            drug_val_col,
+                            drug_text_col,
+                            drug_vec)
+outcols <- c("child_id",
+             "fid",
+             "date_visit",
+             drug_val_col,
+             drug_text_col,
+             "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols)
+```
+
 <!-- Inconsistent names -->
 
 ```{r, eval=(qc_type=="inconsistent_names")}
@@ -531,13 +555,18 @@ qc_df <- df2[!df2$child_id %in% df1$child_id, ]
 
 <!-- For all checks -->
 
-```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}
+```{r, eval=!is_duplicate_check&!is.null(qc_df)}
 n_detected <- nrow(qc_df)
 ```
 
-```{r, eval=(qc_type=="duplicates")&!is.null(qc_df)}
-date_cols <- grep("date", names(qc_df))
-x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
+```{r, eval=is_duplicate_check&!is.null(qc_df)}
+if ( "uuid" %in% colnames(qc_df) ) {
+  uuid_cols <- grep("uuid", names(qc_df))
+  x <- unname((unlist(qc_df[colnames(qc_df[uuid_cols])])))
+} else{
+  date_cols <- grep("date", names(qc_df))
+  x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
+}
 n_detected <- sum(!is.na(x))
 n_to_remove <- n_detected - nrow(qc_df)
 ```
@@ -569,11 +598,6 @@ if ( length(names_to_remove) ) {
   qc_df <- qc_df %>% 
     dplyr::select(-names_to_remove)
 }
-# uuids_to_remove <- grep("uuid", colnames(qc_df))
-# if ( length(uuids_to_remove) ) {
-#   qc_df <- qc_df %>% 
-#     dplyr::select(-uuids_to_remove)
-# }
 
 reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type != "date_discrepancy" )
 if ( reformat_cond ) {

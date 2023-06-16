@@ -4,7 +4,13 @@
 \alias{create_withdrawal_qc_flowchart}
 \title{Create cleaning flowchart for withdrawal data (TIMCI-specific)}
 \usage{
-create_withdrawal_qc_flowchart(n_raw_wd_records, n_cleaned_wd_records)
+create_withdrawal_qc_flowchart(
+  n_raw_wd_records,
+  n_no_doc_child_id_withdrawal,
+  n_drop_nonvalid_ids,
+  n_invalid_date_of_withdrawal,
+  n_cleaned_wd_records
+)
 }
 \arguments{
 \item{n_raw_wd_records}{Initial number of withdrawal records}

@@ -9,6 +9,7 @@ create_day0_qc_flowchart(
   n_nonvalid_fid_records,
   n_incorrect_enroldate_records,
   n_dropped_true_duplicate_records,
+  n_true_duplicate_detected,
   n_duplicate_records,
   n_dropped_duplicate_records,
   n_edited_duplicate_records,

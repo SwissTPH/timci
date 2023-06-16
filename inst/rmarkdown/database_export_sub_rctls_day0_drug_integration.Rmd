@@ -1,22 +1,22 @@
 #### Missing structured treatment [Mandatory check `r qc_missing_treatment_id`]
 
 ```{r}
-write("   o Missing structured treatment - check 1", stderr())
+write(" o Missing structured treatment", stderr())
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(day0_data)}
-qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
+```{r, results='asis', eval=day0_is_not_null}
+qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
 qc_rule <- action_alert_no_modification
-qc_type <- "missing_treatment"
+qc_type <- "free_text_missing_structured_entry"
 df <- day0_data
-qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
-qc_idx <- paste0(qc_missing_treatment_id, "a")
-qc_export_label <- "missing_treatment"
-qc_export_description <- "the treatment information is missing"
+qc_text <- "free text drug"
+qc_idx <- paste0(qc_free_text_rx_id, 'a')
+qc_export_label <- "missing_structured_treatment"
+qc_export_description <- "the treatments should have been entered in a structured manner"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-n_missing_treatment <- n_detected
+n_free_text_rx_cg <- n_detected
 ```
 
 ```{r, eval=timci::is_not_empty(day0_data), results='asis'}
@@ -39,13 +39,13 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, eval=((is_tanzania|is_senegal)&!is_pilot), results='asis'}
+```{r, results='asis'}
 mc_description <- "Update with reentered drug data"
 to_correct_df <- day0_data
 correction_type <- "correct_day0_drugs"
 
 # Parameters for the quality check following manual corrections
-qc_idx <- paste0(qc_missing_treatment_id, "b")
+qc_idx <- paste0(qc_free_text_rx_id, 'b')
 
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
@@ -53,12 +53,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
 
 day0_data <- corrected_df
 n_drug_edits <- n_mc
-```
-
-#### Missing structured treatments after manual entries [Mandatory check `r qc_missing_treatment_id`]
-
-```{r}
-write("   o Missing structured treatment - check 2", stderr())
+n_free_text_rx_cg <- n_detected
 ```
 
 ```{r, eval=timci::is_not_empty(day0_data)&is_ls, results='asis'}
@@ -79,19 +74,4 @@ fill_col <- "Structured treatment entry"
 cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       envir = environment(),
                       quiet = TRUE))
-```
-
-```{r, results='asis', eval=day0_is_not_null}
-qc_description <- "All participants should have their antimicrobials entered in a structured way and not in free text to facilitate the statistical analysis."
-qc_rule <- action_alert_no_modification
-qc_type <- "free_text_missing_structured_entry"
-df <- day0_data
-qc_text <- "free text drug"
-qc_idx <- qc_free_text_rx_id
-qc_export_label <- "free_text_drug"
-qc_export_description <- "the treatments should have been entered in a structured manner"
-cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
-                      envir = environment(),
-                      quiet = TRUE))
-n_free_text_rx_cg <- n_detected
 ```

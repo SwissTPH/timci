@@ -19,13 +19,6 @@ n_edit_inconsistent_name_day7fu_records <- 0
 n_drop_inconsistent_names_day7fu_records <- 0
 ```
 
-
-```{r}
-day7fu_pii_drops <- c("name",
-                      "cg_name",
-                      "phone_nb")
-```
-
 ```{r format-RCT-LS-ODK-fu-day7-data}
 n_raw_allday7fu_data_records <- nrow(raw_allday7fu_data)
 raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
@@ -50,6 +43,11 @@ day7fu_dictionary %>%
   knitr::kable(col.names = c("Database reference",
                              "ODK reference",
                              "Deidentified export"))
+```
+
+```{r}
+day7fu_pii_drops <- day7fu_dictionary %>%
+  dplyr::filter(deidentified == 0)
 ```
 
 ### Dates and times
@@ -227,10 +225,6 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_nonvalid_pid_day7fu_records <- n_detected
 ```
 
-```{r}
-write(" o Non-valid participant IDs - Corrections", stderr())
-```
-
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
 mc_description <- ""
 to_correct_df <- allday7fu_data
@@ -292,19 +286,33 @@ correction_type <- "correct_day7_inconsistent_names"
 
 # Parameters for the quality check following manual corrections
 qc_idx <- paste0(qc_nonconsistent_name_day7fu, "b")
-cleaning <- "drop_all"
+qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
 
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 
+allday7fu_data <- corrected_df
 n_edit_inconsistent_name_day7fu_records <- n_mc
-n_drop_inconsistent_names_day7fu_records <- n_detected
 ```
 
-```{r, eval=!is.null(cleaned_df)}
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- allday7fu_data
+correction_type <- "delete_day7_records"
 
-allday7fu_data <- cleaned_df
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "c")
+qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
+cleaning <- "none"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+allday7fu_data <- corrected_df
+n_drop_inconsistent_names_day7fu_records <- n_mc
 ```
 
 ### Pseudonymisation
@@ -320,7 +328,9 @@ raw_allday7fu_data <- raw_allday7fu_data[ , !(names(raw_allday7fu_data) %in% day
 ```
 
 ```{r}
-allday7fu_data_no_pii <- allday7fu_data[ , !(names(allday7fu_data) %in% day7fu_pii_drops)]
+allday7fu_data_no_pii <- allday7fu_data[ , !(names(allday7fu_data) %in% day7fu_pii_drops)] %>% 
+  dplyr::select(-days,
+                -`na.rm`)
 ```
 
 ```{r}

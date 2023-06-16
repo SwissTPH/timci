@@ -7,6 +7,7 @@ write("Export repeat visit data and run corresponding quality checks", stderr())
 ```{r}
 n_nonvalid_pids_repeat_records <- 0
 n_nonconsistent_names_repeat_records <- 0
+n_drop_inconsistent_names_repeat_records <- 0
 n_visit_before_enrolment <- 0
 ```
 
@@ -82,7 +83,8 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r, eval=!is.null(cleaned_df)}
 n_outlock_pids_repeat_records <- n_detected
-repeat_data <- cleaned_df
+repeat_data <- cleaned_df %>%
+  dplyr::rename(date_repeat = date_visit)
 ```
 
 #### Non-valid participant IDs [Context check `r qc_nonvalid_repeat`]
@@ -100,7 +102,7 @@ df <- repeat_data %>%
 idcol1 <- "prev_id"
 refdf <- allday0_data
 idcol2 <- "child_id"
-datecol <- "date_visit"
+datecol <- "date_repeat"
 col_name <- "child_name"
 ldate_diff <- -29
 udate_diff <- -1
@@ -133,24 +135,45 @@ write(" o Non-consistent participant names", stderr())
 qc_description <- "Repeat visits are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually. Detected repeat visits are then searched for matched names."
 qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
 qc_type <- "inconsistent_names"
-df <- repeat_data
+df <- repeat_data %>% 
+  dplyr::filter(child_name != "na na")
 refdf <- allday0_data
-datecol <- "date_visit"
+datecol <- "date_repeat"
 ldate_diff <- -29
 udate_diff <- -1
 matched_names <- FALSE
+cleaning <- "none"
 qc_text <- "non-consistent participant names"
-qc_idx <- qc_nonconsistent_name_repeat
-qc_export_label <- "nonconsistent_names_repeat_with_names"
+qc_idx <- paste0(qc_nonconsistent_name_repeat, "a")
+qc_export_label <- "nonconsistent_names_repeat_with_matched_names"
 qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_nonconsistent_names_repeat_records <- n_detected
 ```
 
-```{r, eval=!is.null(cleaned_df)}
-n_nonconsistent_names_repeat_records <- n_detected
-repeat_data <- cleaned_df
+```{r, eval=!is.null(repeat_data), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- repeat_data %>% 
+  dplyr::filter(child_name != "na na")
+correction_type <- "delete_repeat_records"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_repeat, "b")
+qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+cleaning <- "none"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+repeat_data <- repeat_data %>% 
+  dplyr::filter(child_name == "na na") %>%
+  dplyr::bind_rows(corrected_df) %>%
+  dplyr::rename(date_visit = date_repeat)
+
+n_drop_inconsistent_names_repeat_records <- n_mc
 ```
 
 ### Dates and times
@@ -197,6 +220,16 @@ write(" o Pseudonymisation", stderr())
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
 
 ```{r}
+raw_repeat_data <- raw_repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new)))
+```
+
+```{r}
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new)))
+```
+
+```{r}
 repeat_data <- repeat_data %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
@@ -218,6 +251,7 @@ write(" o Data cleaning summary", stderr())
 ```{r}
 timci::create_repeat_qc_flowchart(n_raw_repeat_records,
                                   n_nonvalid_pids_repeat_records,
+                                  n_drop_inconsistent_names_repeat_records,
                                   n_nonconsistent_names_repeat_records,
                                   n_visit_before_enrolment,
                                   n_cleaned_repeat_records)
@@ -227,12 +261,6 @@ timci::create_repeat_qc_flowchart(n_raw_repeat_records,
 
 ```{r}
 write(" o Data overview", stderr())
-```
-
-```{r, eval = FALSE}
-repeat_data <- repeat_data %>% 
-  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
-                                "fid_from_device")))
 ```
 
 ```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
@@ -271,8 +299,7 @@ repeat_data <- repeat_data %>%
                        as.integer)) %>% 
   dplyr::mutate(across(c(date_visit),
                        ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end),
+  dplyr::mutate(across(c(start),
                        as.POSIXct))
 ```
 
@@ -284,12 +311,6 @@ skimr::skim(repeat_data)
 
 ```{r}
 write(" o Data export", stderr())
-```
-
-```{r, eval = FALSE}
-raw_repeat_data <- raw_repeat_data %>% 
-  dplyr::select(dplyr::any_of(c(repeat_dictionary$new,
-                                "fid_from_device")))
 ```
 
 ```{r, eval=!deidentification_on, results = 'asis'}

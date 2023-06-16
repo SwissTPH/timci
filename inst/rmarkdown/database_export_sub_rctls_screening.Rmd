@@ -589,8 +589,7 @@ screening_data <- screening_data %>%
                        as.integer)) %>% 
   dplyr::mutate(across(c(date_visit),
                        ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end),
+  dplyr::mutate(across(c(start),
                        as.POSIXct))
 ```
 

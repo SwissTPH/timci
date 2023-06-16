@@ -299,9 +299,51 @@ delete_day0_records <- function(df,
               by.y = c("child_id", "uuid"),
               all.x = FALSE,
               all.y = FALSE)
-      df <- df[!(df$uuid %in% records_to_drop$uuid), ]
+      df <- df[!(df$uuid %in% found_records$uuid), ]
 
       out <- list(df, found_records, NULL)
+    }
+  }
+  out
+
+}
+
+#' Drop incorrect child IDs in repeat data entries (TIMCI-specific function)
+#' This function can be used to drop documented child IDs
+#'
+#' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_repeat_inconsistent_names_deletion").
+#' @return This function returns a list that contains a cleaned dataframe and the list of dropped records
+#' @import dplyr
+#' @export
+
+delete_repeat_records <- function(df,
+                                  csv_prefix = "day0_repeat_inconsistent_names_deletion") {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
+                            TRUE ~ "")
+
+  out <- list(df, NULL, NULL)
+
+  if ( csv_filename != "" ) {
+
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+
+    if ( file.exists(csv_pathname) ) {
+      records_to_drop <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+
+      found_records <- records_to_drop %>%
+        merge(df[, c("prev_id", "uuid")],
+              by.x = c("child_id", "uuid"),
+              by.y = c("prev_id", "uuid"),
+              all.x = FALSE,
+              all.y = FALSE)
+      df <- df[!(df$uuid %in% found_records$uuid), ]
+
+      out <- list(df, records_to_drop, NULL)
     }
   }
   out

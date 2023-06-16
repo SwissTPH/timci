@@ -21,6 +21,27 @@ n_raw_withdrawal_records <- nrow(raw_withdrawal_data)
 
 There are **`r n_raw_withdrawal_records`** records in the raw `r db_name` database.
 
+```{r, eval=raw_withdrawal_is_not_empty}
+raw_withdrawal_data <- raw_withdrawal_data %>%
+  dplyr::select(date,
+                start,
+                end,
+                deviceid,
+                `page-qr_code_avail`,
+                `page-a1_a_4`,
+                `page-a1_a_4a`,
+                `page-study`,
+                `page-withdrawal`,
+                `page-withdrawal_reason`,
+                `meta-instanceID`)
+```
+
+```{r}
+n_drop_nonvalid_ids <- 0
+n_no_doc_child_id_withdrawal <- 0
+n_invalid_date_of_withdrawal <- 0
+```
+
 ### Participant identification
 
 **Rule:** withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.
@@ -31,6 +52,8 @@ if (nrow(allday0_data) > 0) {
     if (nrow(raw_withdrawal_data) > 0) { 
       raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
       withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
+      withdrawal_data_no_doc <- raw_withdrawal_data[is.na(raw_withdrawal_data$child_id), ]
+      n_no_doc_child_id_withdrawal <- nrow(withdrawal_data_no_doc)
       withdrawal_data2$child_id <- gsub("O", "0", withdrawal_data2$child_id)
     }
   }
@@ -62,6 +85,7 @@ if (nrow(allday0_data) > 0) {
       
       # Non reconciled withdrawn IDs
       non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% allday0_data$child_id, ]
+      n_drop_nonvalid_ids <- nrow(non_reconciled_withdrawn_ids)
       
       # Reconciled withdrawn IDs
       day0_data_id_withdrawal <- allday0_data[allday0_data$child_id %in% withdrawal_data2$child_id, ] %>%
@@ -91,7 +115,9 @@ if (nrow(allday0_data) > 0) {
 if (nrow(allday0_data) > 0) {
   if (!is.null(non_reconciled_withdrawn_ids)) {
     non_reconciled_withdrawn_ids %>%
-      dplyr::select(c("child_id", "date", "page-withdrawal_reason")) %>%
+      dplyr::select(c("child_id",
+                      "date",
+                      "page-withdrawal_reason")) %>%
       knitr::kable(col.names = c("Child ID",
                                  "Withdrawal date",
                                  "Documented reason"),
@@ -128,6 +154,7 @@ qc_export_description <- "the date of withdrawal was before the enrolment date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_invalid_date_of_withdrawal <- n_detected
 ```
 
 ### Pseudonymisation
@@ -140,10 +167,14 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 
 ```{r}
 day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+  dplyr::select(-`page-a1_a_4`) %>% 
+  dplyr::rename(uuid_day0 = uuid) %>%
+  dplyr::rename(uuid = `meta-instanceID`) %>% 
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                uuid_day0 = digest(uuid_day0, algo = crypto_algo),
                 child_id = digest(child_id, algo = crypto_algo),
-                `page-a1_a_4` = digest(`page-a1_a_4`, algo = crypto_algo)) %>%
+                deviceid = digest(deviceid, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```
 
@@ -159,6 +190,9 @@ write(" o Data cleaning summary", stderr())
 
 ```{r}
 timci::create_withdrawal_qc_flowchart(n_raw_withdrawal_records,
+                                      n_no_doc_child_id_withdrawal,
+                                      n_drop_nonvalid_ids,
+                                      n_invalid_date_of_withdrawal,
                                       n_cleaned_withdrawal_records)
 ```
 

@@ -377,8 +377,7 @@ day7fu_data <- day7fu_data %>%
   dplyr::mutate(across(c(date_call,
                          date_hosp_day7),
                        ~format(as.Date(.), "%Y-%m-%d"))) %>% 
-  dplyr::mutate(dplyr::across(c(start,
-                                end),
+  dplyr::mutate(dplyr::across(c(start),
                               ~format(as.POSIXct(.))))
 
 if ( "location_death_day7" %in% colnames(day7fu_data) ) {

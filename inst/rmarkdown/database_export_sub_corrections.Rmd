@@ -4,6 +4,10 @@ author: "H. LANGET"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 ---
 
+```{r}
+write("   o Manual corrections", stderr())
+```
+
 <!-- Initialisation -->
 
 ```{r}
@@ -28,7 +32,9 @@ corrections_from_field <- c("correct_device_ids")
 is_not_from_field <- (!correction_type %in% corrections_from_field)
 
 deletions <- c("delete_training_data",
-               "delete_day0_records")
+               "delete_day0_records",
+               "delete_day7_records",
+               "delete_repeat_records")
 is_deletion <- (correction_type %in% deletions)
 
 multiple_uuids <- c("delete_day0_records",
@@ -123,6 +129,11 @@ out <- timci::correct_day7_duplicates(to_correct_df,
                                       csv_prefix = "day7_inconsistent_names_correction")
 ```
 
+```{r, eval=(correction_type=="delete_day7_records")}
+out <- timci::delete_day0_records(to_correct_df,
+                                  csv_prefix = "day7_inconsistent_names_deletion")
+```
+
 <!-- Day 28 follow-up corrections -->
 
 ```{r, eval=(correction_type=="correct_day28_non_valid_ids")}
@@ -133,6 +144,13 @@ out <- timci::correct_day28_duplicates(to_correct_df,
 ```{r, eval=(correction_type=="correct_day28_inconsistent_names")}
 out <- timci::correct_day28_duplicates(to_correct_df,
                                       csv_prefix = "day28_inconsistent_names_correction")
+```
+
+<!-- Repeat visit corrections -->
+
+```{r, eval=(correction_type=="delete_repeat_records")}
+out <- timci::delete_repeat_records(to_correct_df,
+                                    csv_prefix = "day0_repeat_inconsistent_names_deletion")
 ```
 
 <!-- Display summary of valid and non-valid edits that were done -->
@@ -243,12 +261,12 @@ discarded_edits %>%
 <!-- Quality check run after manual edits -->
 
 ```{r}
-write(" o Final check", stderr())
+write("   o Check after manual corrections", stderr())
 ```
 
 `r if (is_not_from_field) { paste0('---') }`
 
-`r if (is_not_from_field) { paste0('::: {custom-style="redparagraph"}\n\nFinal check after manual edits ', qc_idx, '\n\n:::')}`
+`r if (is_not_from_field) { paste0('::: {custom-style="redparagraph"}\n\nCheck after manual edits ', qc_idx, '\n\n:::')}`
 
 ```{r, eval=is_not_from_field, results='asis'}
 df <- corrected_df

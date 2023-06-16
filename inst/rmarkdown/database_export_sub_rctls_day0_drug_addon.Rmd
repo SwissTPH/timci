@@ -1,0 +1,72 @@
+#### Detection of brand names for Amoxicillin in free text entries [`r qc_missing_structured_entry_amox`]
+
+```{r}
+qc_description <- "All participants should have where possible a structured entry of their treatment at the facility for their Day 0 visit."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_structured_entry_for_specific_drug"
+df <- day0_data
+```
+
+```{r}
+write(" o Detection of brand names for Amoxicillin in free text entries", stderr())
+```
+
+Clamoxyl, Bactox, Alfamox, Teramox and Hiconcil in Senegal
+
+```{r, results='asis', eval=timci::is_not_empty(day0_data)}
+drug_val_col <- "rx_amoxicillin"
+drug_text_col <- "rx_misc_oth"
+drug_vec <- c("alfamox", "bactox", "clamoxyl", "teramox", "hiconcil")
+qc_text <- "missing structured entry for Amoxicillin"
+qc_idx <- qc_missing_structured_entry_amox
+qc_export_label <- "missing_str_entry_amox"
+qc_export_description <- "the structured entry for Amoxicillin is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Detection of brand names for amoxicillin + clavulanic acid in free text entries
+
+```{r}
+write(" o Detection of brand names for amoxicillin + clavulanic acid in free text entries", stderr())
+```
+
+Fleming, Amoxiclav, Soclav, Augmentin in Senegal
+
+#### Detection of brand names for cotrimoxazole in free text entries [`r qc_missing_structured_entry_ctx`]
+
+```{r}
+write(" o Detection of brand names for cotrimoxazole in free text entries", stderr())
+```
+
+Phartrim and Bactrim in Senegal
+
+```{r, results='asis', eval=timci::is_not_empty(day0_data)}
+drug_val_col <- "rx_cotrimoxazole"
+drug_text_col <- "rx_misc_oth"
+drug_vec <- c("phartrim", "bactrim")
+qc_text <- "missing structured entry for Cotrimoxazole"
+qc_idx <- qc_missing_structured_entry_ctx
+qc_export_label <- "missing_str_entry_ctx"
+qc_export_description <- "the structured entry for Cotrimoxazole is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Detection of brand names for metronidazole in free text entries
+
+```{r}
+write(" o Detection of brand names for metronidazole in free text entries", stderr())
+```
+
+Flagyl
+
+#### Detection of brand names for ampicillin in free text entries
+
+```{r}
+write(" o Detection of brand names for ampicillin in free text entries", stderr())
+```
+
+Totapen in Senegal

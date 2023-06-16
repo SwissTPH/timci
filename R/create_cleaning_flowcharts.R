@@ -226,6 +226,7 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 #' @param n_nonvalid_fid_records Number of Day 0 records with a non-valid device ID
 #' @param n_incorrect_enroldate_records Number of Day 0 records with an incorrect enrolment date
 #' @param n_dropped_true_duplicate_records
+#' @param n_true_duplicate_detected
 #' @param n_duplicate_records
 #' @param n_dropped_duplicate_records Number of Day 0 records that were dropped
 #' @param n_edited_duplicate_records Number of Day 0 records with a duplicated child ID that were edited
@@ -243,6 +244,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                                      n_nonvalid_fid_records,
                                      n_incorrect_enroldate_records,
                                      n_dropped_true_duplicate_records,
+                                     n_true_duplicate_detected,
                                      n_duplicate_records,
                                      n_dropped_duplicate_records,
                                      n_edited_duplicate_records,
@@ -263,7 +265,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with a duplicated record\n%s record(s) with a duplicated child ID']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with a duplicated record (out of %s detected)\n%s record(s) with a duplicated child ID (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a negative illness onset']
                   m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a missing clinical presentation\n%s record(s) with a missing diagnosis\n%s record(s) with no referral info from caregiver']
@@ -292,7 +294,9 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                 n_excluded,
                 n_nonvalid_fid_records,
                 n_dropped_true_duplicate_records,
+                n_true_duplicate_detected,
                 n_dropped_duplicate_records,
+                n_duplicate_records,
                 n_auto_edited,
                 n_incorrect_enroldate_records,
                 n_negative_illness_onset,
@@ -314,6 +318,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 #'
 #' @param n_raw_repeat_records Number of records
 #' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participan ID
+#' @param n_drop_inconsistent_names_repeat_records
 #' @param n_nonconsistent_names_repeat_records
 #' @param n_visit_before_enrolment
 #' @param n_cleaned_repeat_records TBD
@@ -323,11 +328,12 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
 create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                                        n_nonvalid_pids_repeat_records,
+                                       n_drop_inconsistent_names_repeat_records,
                                        n_nonconsistent_names_repeat_records,
                                        n_visit_before_enrolment,
                                        n_cleaned_repeat_records) {
 
-  n_excluded <- n_nonvalid_pids_repeat_records + n_nonconsistent_names_repeat_records
+  n_excluded <- n_nonvalid_pids_repeat_records + n_drop_inconsistent_names_repeat_records
   n_auto_edited <- 0
   n_manual_edited <- 0
   n_informed <- n_visit_before_enrolment
@@ -337,7 +343,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs\n%s record(s) with non consistent names']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs\n%s record(s) with non consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a date of visit prior to enrolment']
@@ -365,6 +371,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                 n_raw_repeat_records,
                 n_excluded,
                 n_nonvalid_pids_repeat_records,
+                n_drop_inconsistent_names_repeat_records,
                 n_nonconsistent_names_repeat_records,
                 n_auto_edited,
                 n_manual_edited,
@@ -411,7 +418,7 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\n%s record(s) with non-consistent names']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for non-valid child IDs (out of %s detected)\n%s record(s) edited for non-consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)']
@@ -440,7 +447,9 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                 n_excluded,
                 n_after_lockdate_records,
                 n_drop_nonvalid_pid_records,
+                n_nonvalid_pid_records,
                 n_drop_inconsistent_names_day7fu_records,
+                n_inconsistent_name_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_edit_nonvalid_pid_records,
@@ -733,28 +742,34 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
 #' Create cleaning flowchart for withdrawal data (TIMCI-specific)
 #'
 #' @param n_raw_wd_records Initial number of withdrawal records
+#' @param n_no_doc_child_id_withdrawal
+#' @param n_drop_nonvalid_ids
+#' @param n_invalid_date_of_withdrawal
 #' @param n_cleaned_wd_records Number of cleaned withdrawal records
 #' @return This function returns a graph object
 #' @export
 #' @import DiagrammeR
 
 create_withdrawal_qc_flowchart <- function(n_raw_wd_records,
+                                           n_no_doc_child_id_withdrawal,
+                                           n_drop_nonvalid_ids,
+                                           n_invalid_date_of_withdrawal,
                                            n_cleaned_wd_records) {
 
-  n_excluded <- 0
+  n_excluded <- n_no_doc_child_id_withdrawal + n_drop_nonvalid_ids
   n_auto_edited <- 0
   n_manual_edited <- 0
-  n_informed <- 0
+  n_informed <- n_invalid_date_of_withdrawal
 
   gr <- sprintf("digraph flowchart {
                   # node definitions with substituted label text
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw withdrawal records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) with no child ID\n%s record(s) with a non-valid child ID']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)']
-                  m4 [label = 'Other checks triggered (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a date of withdrawal prior to enrolment']
                   2 [label = 'Cleaned withdrawal records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
@@ -778,9 +793,12 @@ create_withdrawal_qc_flowchart <- function(n_raw_wd_records,
                 }",
                 n_raw_wd_records,
                 n_excluded,
+                n_no_doc_child_id_withdrawal,
+                n_drop_nonvalid_ids,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_invalid_date_of_withdrawal,
                 n_cleaned_wd_records)
 
   DiagrammeR::grViz(gr)

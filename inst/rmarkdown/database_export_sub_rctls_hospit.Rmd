@@ -104,6 +104,10 @@ hospit_data <- cleaned_df
 
 #### Non-valid participant IDs [compliance check `r qc_nonvalid_hospitfu`]
 
+```{r}
+write(" o Non-valid participant IDs", stderr())
+```
+
 `r paste0('[Initial check ', qc_nonvalid_hospitfu, 'a]{custom-style="underlined"}')`
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
@@ -118,7 +122,7 @@ datecol <- "date_enrol"
 ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
-cleaning <- "none"
+cleaning <- "drop_all"
 qc_text <- "non-valid participant IDs"
 qc_idx <- paste0(qc_nonvalid_hospitfu, "a")
 qc_export_label <- "nonvalid_pids_hospitfu_and_matched_names"
@@ -140,6 +144,8 @@ hospit_data <- cleaned_df
 write(" o Non-consistent participant names", stderr())
 ```
 
+`r paste0('[Initial check ', qc_nonconsistent_name_hospitfu, 'a]{custom-style="underlined"}')`
+
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "Hospital follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."
 qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
@@ -150,6 +156,7 @@ datecol <- "date_enrol"
 ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
+cleaning <- "drop_all"
 qc_text <- "non-consistent participant names"
 qc_idx <- paste0(qc_nonconsistent_name_hospitfu, "a")
 qc_export_label <- "nonconsistent_names_hospitfu_with_matched_names"
@@ -166,18 +173,27 @@ n_inconsistent_names_day7fu_records <- n_detected
 hospit_data <- cleaned_df
 ```
 
+```{r}
+found_hospit_data <- hospit_data %>% 
+  dplyr::filter(found == 1)
+found_hospit_data_is_not_empty <- timci::is_not_empty(found_hospit_data)
+```
+
 #### Duplicate management [compliance check `r qc_duplicated_hospitfu`]
 
 ```{r}
 write(" o Duplicate management", stderr())
 ```
 
-```{r, eval=!is.null(hospit_data), results='asis'}
+```{r, eval=!found_hospit_data_is_not_empty, results='asis'}
+cat("The dataset is empty. No check performed")
+```
+
+```{r, eval=found_hospit_data_is_not_empty, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records (**found** = 1) available for the same participant."
 qc_rule <- action_alert_no_modification
 qc_type <- "duplicates"
-df <- hospit_data %>% 
-  dplyr::filter(found == 1)
+df <- found_hospit_data
 col_id <- "child_id"
 col_date <- "start"
 cleaning <- "none"
@@ -201,12 +217,15 @@ n_duplicates_hospitfu <- n_detected
 write(" o Invalid date of hospitalisation", stderr())
 ```
 
-```{r, eval=!is.null(hospit_data), results='asis'}
+```{r, eval=!found_hospit_data_is_not_empty, results='asis'}
+cat("The dataset is empty. No check performed")
+```
+
+```{r, eval=found_hospit_data_is_not_empty, results='asis'}
 qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the hospitalisation follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- hospit_data %>%
-  dplyr::filter(found == 1) %>% 
+df <- found_hospit_data %>% 
   merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
@@ -232,12 +251,15 @@ n_hospit_prior_day0_hospitfu <- n_detected
 write(" o Invalid date of death", stderr())
 ```
 
-```{r, eval=!is.null(hospit_data), results='asis'}
+```{r, eval=!found_hospit_data_is_not_empty, results='asis'}
+cat("The dataset is empty. No check performed")
+```
+
+```{r, eval=found_hospit_data_is_not_empty, results='asis'}
 qc_description <- "The reported death should have happened between enrolment at Day 0 and the hospitalisation follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- hospit_data %>%
-  dplyr::filter(found == 1) %>% 
+df <- found_hospit_data %>% 
   merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
@@ -262,12 +284,15 @@ n_death_prior_day0_hospitfu <- n_detected
 write(" o Invalid date of discharge", stderr())
 ```
 
-```{r, eval=!is.null(hospit_data), results='asis'}
+```{r, eval=!found_hospit_data_is_not_empty, results='asis'}
+cat("The dataset is empty. No check performed")
+```
+
+```{r, eval=found_hospit_data_is_not_empty, results='asis'}
 qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the hospitalisation follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- hospit_data %>%
-  dplyr::filter(found == 1) %>% 
+df <- found_hospit_data %>% 
   merge(allday0_data %>%
           dplyr::select(child_id,
                         fid,
@@ -362,8 +387,7 @@ hospit_data_no_pii <- hospit_data_no_pii %>%
                          date_discharge,
                          date_death),
                        ~format(as.Date(.), "%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end),
+  dplyr::mutate(across(c(start),
                        ~format(as.Date(.), "%Y-%m-%d %H:%M:%S"))) %>%
   dplyr::mutate(across(c(dx_admission_oth,
                          dx_discharge_oth,

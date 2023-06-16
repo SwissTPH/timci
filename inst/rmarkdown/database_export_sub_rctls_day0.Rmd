@@ -14,17 +14,20 @@ qc_ambiguous_enrolment_date1 <- "DQC_00_2ED_07"
 qc_ambiguous_enrolment_date2 <- "DQC_00_2ED_08"
 qc_multiple_enrolment_id <- "DQC_00_2ED_09"
 qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_2ED_10"
-qc_missing_cp_id <- "DQC_00_2ED_11"
-qc_missing_diagnosis_id <- "DQC_00_2ED_12"
-qc_missing_referral_id <- "DQC_00_2ED_13"
-qc_missing_treatment_id <- "DQC_00_2ED_14"
-qc_negative_nb_days_id <- "DQC_00_2ED_15"
+qc_negative_nb_days_id <- "DQC_00_2ED_11"
+qc_missing_cp_id <- "DQC_00_2ED_12"
+qc_missing_diagnosis_id <- "DQC_00_2ED_13"
+qc_missing_referral_id <- "DQC_00_2ED_14"
+qc_missing_treatment_id <- "DQC_00_2ED_15"
 qc_free_text_rx_id <- "DQC_00_2ED_16"
-qc_pox_ <- "DQC_00_2ED_17"
-qc_summary_id <- "DQC_00_2ED_18"
+qc_missing_structured_entry_amox <- "DQC_00_2ED_17"
+qc_missing_structured_entry_ctx <- "DQC_00_2ED_18"
+qc_pox_ <- "DQC_00_2ED_19"
+qc_summary_id <- "DQC_00_2ED_20"
 ```
 
 ```{r}
+n_true_duplicate_detected <- 0
 n_dropped_true_duplicate_records <- 0
 n_duplicate_records <- 0
 n_duplicate_edits <- 0
@@ -58,7 +61,7 @@ Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there
 write(" o Management of true duplicates (same ID, same day, same name)", stderr())
 ```
 
-`r if ( is_tanzania & !is_pilot ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_true_duplicates, 'a\n\n:::')}`
+`r if ( !is_pilot ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_true_duplicates, 'a\n\n:::')}`
 
 ```{r, eval=day0_is_not_null, results='asis'}
 qc_description <- "Participants who have been entered twice as new enrolments with the same ID on the same day, which creates duplicates in the database."
@@ -75,9 +78,10 @@ qc_export_description <- "the data was entered in two different records on the s
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_true_duplicate_detected <- n_detected
 ```
 
-```{r, eval=((is_tanzania|is_senegal)&!is_pilot), results='asis'}
+```{r, eval=(!is_pilot), results='asis'}
 mc_description <- ""
 to_correct_df <- day0_data
 correction_type <- "delete_day0_records"
@@ -594,17 +598,34 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ### Treatments
 
+#### Missing treatment [Mandatory check `r qc_missing_treatment_id`]
+
 ```{r}
-write(" o Treatments", stderr())
+write(" o Missing treatment", stderr())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(day0_data)}
+qc_description <- "All participants should have complete information about the treatment at the facility for their Day 0 visit."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_treatment"
+df <- day0_data
+qc_text <- "missing treatment information (source: caregiver at the exit of the consultation)"
+qc_idx <- paste0(qc_missing_treatment_id, "a")
+qc_export_label <- "missing_treatment"
+qc_export_description <- "the treatment information is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_treatment <- n_detected
 ```
 
 #### Free text entries
 
 ```{r}
-write("   o Free text entries", stderr())
+write(" o Treatment free text entries", stderr())
 ```
 
-```{r, eval=day0_is_not_null&is_ls, results='asis'}
+```{r, eval=day0_is_not_null, results='asis'}
 fig_df <- day0_data %>%
   dplyr::mutate("Free text available" = dplyr::case_when(
     !is.na(rx_misc_oth) | !is.na(rx_misc_oth_hf) ~ "a) Yes",
@@ -626,14 +647,17 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r db-export-screening-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug_integration.Rmd'}
+```{r db-export-drug-integration-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug_integration.Rmd'}
+```
+
+```{r}
+drug_enable <- FALSE
+```
+
+```{r db-export-drug-addon-subsection, child = if(drug_enable) 'database_export_sub_rctls_day0_drug_addon.Rmd'}
 ```
 
 ### Clinical measurements
-
-```{r}
-write(" o Clinical measurements", stderr())
-```
 
 ```{r}
 day0_data <- day0_data %>%
@@ -657,7 +681,7 @@ day0_data <- day0_data %>%
 #### Temperature [Reasonability checks]
 
 ```{r}
-write("   o Temperature", stderr())
+write(" o Temperature", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null&!is_india}
@@ -742,7 +766,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
 #### Pulse oximetry [Reasonability checks]
 
 ```{r}
-write("   o Pulse oximetry", stderr())
+write(" o Pulse oximetry", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
@@ -794,7 +818,7 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
 #### Respiratory rate [Reasonability checks]
 
 ```{r}
-write("   o Respiratory rate", stderr())
+write(" o Respiratory rate", stderr())
 ```
 
 ```{r, results='asis', eval=day0_is_not_null}
@@ -886,6 +910,7 @@ timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_nonvalid_fid_records,
                                 n_incorrect_enroldate_records,
                                 n_dropped_true_duplicate_records,
+                                n_true_duplicate_detected,
                                 n_duplicate_records,
                                 n_dropped_duplicate_records,
                                 n_duplicate_edits,
@@ -944,8 +969,7 @@ day0_data <- day0_data %>%
                          mother_education),
                        factor)) %>%
   dplyr::mutate(across(c(date_visit), ~format(as.Date(.), "%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
+  dplyr::mutate(across(c(start), ~format(as.Date(.), "%Y-%m-%d %H:%M:%S")))
 ```
 
 ```{r, eval = (is_tanzania | is_kenya | is_senegal)}
