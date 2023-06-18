@@ -215,14 +215,15 @@ qc_death_before_hospit_day7fu <- "DQC_07_13"
 ###########################
 qc_nontimely_submission_day28fu <- "DQC_28_01"
 qc_nontimely_completion_day28fu <- "DQC_28_02"
-qc_pids_out_lock_range_day28fu <- "DQC_28_03"
-qc_nonvalid_day28fu <- "DQC_28_04"
-qc_nonconsistent_name_day28fu <- "DQC_28_05"
-qc_duplicated_day28fu <- "DQC_28_06"
-qc_missing_hospit_date_day28fu <- "DQC_28_07"
-qc_hospit_before_enrolment_day28fu <- "DQC_28_08"
-qc_missing_death_date_day28fu <- "DQC_28_09"
-qc_death_before_enrolment_day28fu <- "DQC_28_10"
+qc_other_fids_day28fu <- "DQC_28_03"
+qc_pids_out_lock_range_day28fu <- "DQC_28_04"
+qc_nonvalid_day28fu <- "DQC_28_05"
+qc_nonconsistent_name_day28fu <- "DQC_28_06"
+qc_duplicated_day28fu <- "DQC_28_07"
+qc_missing_hospit_date_day28fu <- "DQC_28_08"
+qc_hospit_before_enrolment_day28fu <- "DQC_28_09"
+qc_missing_death_date_day28fu <- "DQC_28_10"
+qc_death_before_enrolment_day28fu <- "DQC_28_11"
 
 # Withdrawals quality check IDs
 ################################

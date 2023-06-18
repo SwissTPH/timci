@@ -64,10 +64,10 @@ n_nonvalid_deviceid_records <- n_detected
 facility_data <- cleaned_df
 ```
 
-#### Facility IDs from other TIMCI studies [Context check `r qc_screening_other_fids`]
+#### Facility IDs for the CDSA pilot [Context check `r qc_screening_other_fids`]
 
 ```{r}
-write("\to Facility IDs from other facilities (India only)", stderr())
+write("\to Facility IDs for the CDSA pilot (India only)", stderr())
 ```
 
 `r if ( !is_india ) { paste0('This check is only implemented in TIMCI India.') }`

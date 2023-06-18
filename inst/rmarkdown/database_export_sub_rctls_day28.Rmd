@@ -150,17 +150,53 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 
 ### Participant identification
 
+```{r}
+allday28fu_data <- raw_allday28fu_data
+```
+
+#### Follow-ups corresponding to participants enrolled in the CDSA pilot (India only) [Context check `r qc_other_fids_day28fu`]
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
+```
+
+`r if (!is_india) {paste0("This check is only implemented for India.")}`
+
+```{r, eval=!is.null(allday28fu_data)&is_india, results='asis'}
+qc_description <- paste0("Exclude follow-ups that correspond to participants enrolled in the CDSA pilot.")
+qc_rule <- "Discard follow-up records of participants who are enrolled in CDSA pilot facilities."
+qc_type <- "nonvalid_ids2"
+df <- allday28fu_data
+idcol1 <- "child_id"
+refdf <- rbind(other_timci_study_df) %>%
+  dplyr::filter( !is.na(child_id) )
+idcol2 <- "child_id"
+qc_text <- "follow-up records corresponding to participants enrolled for the CDSA pilot"
+qc_idx <- qc_other_fids_day28fu
+qc_export_label <- "pids_from_cdsa_pilot"
+qc_export_description <- "the follow-up corresponds to a child who has been enrolled in the CDSA pilot"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_cdsa_pilot_day28fu_records <- n_detected
+allday28fu_data <- cleaned_df
+```
+
 #### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day28fu`]
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
 ```
 
-```{r, eval=!is.null(raw_allday28fu_data), results='asis'}
+```{r, eval=!is.null(allday28fu_data), results='asis'}
 qc_description <- paste0("Day 28 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
 qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
 qc_type <- "nonvalid_ids2"
-df <- raw_allday28fu_data
+df <- allday28fu_data
 idcol1 <- "child_id"
 refdf <- rbind(facility_data_before_start,
                facility_data_after_lock) %>%
