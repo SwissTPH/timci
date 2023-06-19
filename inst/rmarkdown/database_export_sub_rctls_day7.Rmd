@@ -348,13 +348,14 @@ n_drop_inconsistent_names_day7fu_records <- n_mc
 write(" o Pseudonymisation", stderr())
 ```
 
-The columns listed in the table below are dropped from the cleaned `db_name` database.
+The columns listed in the table below are dropped from the cleaned `r db_name` database.
 
 ```{r, eval=day7fu_pii_drops_is_not_empty, results='asis'}
 day7fu_pii_drops %>%
   dplyr::select(new) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Columns with PII dropped for cleaned data export")
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
 ```
 
 ```{r}

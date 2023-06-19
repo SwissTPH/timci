@@ -320,7 +320,8 @@ There are **`r nrow(hospitfu_pii_drops)`** variables deleted from the anonymised
 hospitfu_pii_drops %>%
   dplyr::select(new) %>%
   knitr::kable(row.names = FALSE,
-               caption = "Columns with PII dropped for cleaned data export")
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
 ```
 
 ```{r}
