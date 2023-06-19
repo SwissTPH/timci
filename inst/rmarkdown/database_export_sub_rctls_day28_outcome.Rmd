@@ -4,19 +4,27 @@
 write("Export Day 28 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
 ```
 
+```{r}
+n_fu_prior_day0_day28fu <- 0
+n_death_prior_day0_day28fu <- 0
+n_hospit_prior_day0_day28fu <- 0
+n_death_prior_hospit_day28fu <- 0
+```
+
+
 ## Day 28 follow-up outcome data quality checks
 
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 
 ```{r}
 day28fu_data <- allday28fu_data %>%
-  dplyr::filter ( proceed_day28 == 1 )
+  dplyr::filter( proceed_day28 == 1 )
 n_raw_successday28fu_records <- nrow(day28fu_data)
 day28fu_is_not_null <- !is.null(day28fu_data)
 day28fu_is_not_empty <- timci::is_not_empty(day28fu_data)
 ```
 
-Among the **`r n_cleaned_allday28fu_records`** cleaned **`r db_name`** record(s), there are **`r n_raw_successday7fu_records`** record(s) corresponding to successful Day 28 follow-up(s).
+Among the **`r n_cleaned_allday28fu_records`** cleaned **`r db_name`** record(s), there are **`r n_raw_successday28fu_records`** record(s) corresponding to successful Day 28 follow-up(s).
 
 ```{r, eval=day28fu_is_not_empty}
 day28fu_data <- day28fu_data %>%
@@ -139,6 +147,10 @@ n_cleaned_day28fu_records <- nrow(day28fu_data)
 ```{r}
 timci::create_day7fu_outcome_qc_flowchart(n_raw_successday28fu_records,
                                           n_dropped_duplicate_day28fu_records,
+                                          n_fu_prior_day0_day28fu,
+                                          n_death_prior_day0_day28fu,
+                                          n_hospit_prior_day0_day28fu,
+                                          n_death_prior_hospit_day28fu,
                                           n_cleaned_day28fu_records)
 ```
 
