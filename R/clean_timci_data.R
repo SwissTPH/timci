@@ -208,6 +208,7 @@ edit_day0_to_repeat <- function(df) {
   csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ "day0_repeat_correction_same_id_tanzania.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ "day0_repeat_correction_senegal.csv",
                             Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ "day0_repeat_correction_kenya.csv",
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ "day0_repeat_correction_india.csv",
                             TRUE ~ "")
 
   out <- list(df, NULL, NULL)

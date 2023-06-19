@@ -369,7 +369,9 @@ facility_data <- cleaned_df
 write(" o Repeat visits incorrectly recorded as new enrolments", stderr())
 ```
 
-`r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_dup_repeats_id, 'a\n\n:::')}`
+::: {custom-style="redparagraph"}
+Initial check `r qc_dup_repeats_id`a
+:::
 
 ```{r, results='asis'}
 qc_description <- "Participants who came back to the facility between 1 and 28 days after their enrolment should be recorded as repeat visits. If they are recorded as new enrolments with the same participant ID they were initially given, this artificially creates duplicates in the database."
@@ -409,7 +411,7 @@ cat(knitr::knit_child('database_export_sub_bar_plot.Rmd',
 
 <!-- Manual corrections -->
 
-```{r, eval=(is_tanzania|is_ls), results='asis'}
+```{r, results='asis'}
 # Parameters for manual corrections
 mc_description <- paste0('Manual correction of repeat visits recorded as duplicated IDs. Confirmed repeat records are manually edited in the ', db_name, ' database as described below: variable *repeat_consult* set to *1* variable *consent* set to *NA* variable *enrolled* set to *NA*')
 to_correct_df <- facility_data
