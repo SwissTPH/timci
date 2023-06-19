@@ -16,7 +16,7 @@ deidentify_data <- function(df, mapping = NULL) {
     df$country_id <- ifelse(df$child_id != '',
                             substr(df$child_id, 1, 1),
                             substr(df$prev_id, 1, 1))
-    df$hf_id <- ifelse(df$child_id != '',
+    df$fid <- ifelse(df$child_id != '',
                        substr(df$child_id, 3, 7),
                        substr(df$prev_id, 3, 7))
     df$child_id <- ifelse(df$child_id != '',
@@ -32,9 +32,9 @@ deidentify_data <- function(df, mapping = NULL) {
     df$country_id <- ifelse(df$child_id != '',
                             substr(df$child_id, 1, 1),
                             substr(df$prev_id, 1, 1))
-    df$hf_id <- ifelse(df$child_id != '',
-                       substr(df$child_id, 3, 7),
-                       substr(df$prev_id, 3, 7))
+    df$fid <- ifelse(df$child_id != '',
+                     substr(df$child_id, 3, 7),
+                     substr(df$prev_id, 3, 7))
     df$child_id <- ifelse(df$child_id != '',
                           anonymise_dataframe(df, 'child_id'),
                           '')
@@ -52,8 +52,8 @@ deidentify_data <- function(df, mapping = NULL) {
   }
 
   df <- dplyr::relocate(df, 'country_id')
-  df <- dplyr::relocate(df, 'hf_id', .after = 'country_id')
-  df <- dplyr::relocate(df, 'child_id', .after = 'hf_id')
+  df <- dplyr::relocate(df, 'fid', .after = 'country_id')
+  df <- dplyr::relocate(df, 'child_id', .after = 'fid')
 
 }
 

@@ -901,10 +901,10 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 ```{r}
 day0_data <- day0_data %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo),
-                prev_id = digest(prev_id, algo = crypto_algo),
-                device_id = digest(device_id, algo = crypto_algo)) %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                prev_id = ifelse(prev_id != "", digest(prev_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
   dplyr::ungroup()
 ```
 
@@ -993,8 +993,7 @@ day0_data <- day0_data %>%
 
 ```{r, eval = (is_tanzania)}
 day0_data <- day0_data %>%
-  dplyr::mutate(across(c(district_ra,
-                         location_lvl1,
+  dplyr::mutate(across(c(location_lvl1,
                          location_lvl2,
                          location_lvl3,
                          location_lvl4),

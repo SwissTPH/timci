@@ -164,8 +164,6 @@ detect_inconsistent_dates <- function(df,
   kcols <- c()
   if ( 'fid' %in% cols ) {
     kcols <- c(kcols,"fid")
-  } else if ( 'hf_id' %in% cols ) {
-    kcols <- c(kcols, "hf_id")
   }
   if ( 'fid_from_device' %in% cols ) {
     kcols <- c(kcols, "fid_from_device")
@@ -206,9 +204,6 @@ detect_inconsistent_dates <- function(df,
     } else if ( 'fid' %in% cols ) {
       qc_df <- qc_df %>%
         dplyr::arrange(diff, fid)
-    } else if ( 'hf_id' %in% cols ) {
-      qc_df <- qc_df %>%
-        dplyr::arrange(diff, hf_id)
     } else{
       qc_df <- qc_df %>%
         dplyr::arrange(diff)

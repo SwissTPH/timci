@@ -88,7 +88,7 @@ if (!is.null(raw_day28fu_data)) {
 ```{r, eval=timci::is_not_empty(succ_day28fu_data)}
 succ_day28fu_data <- merge(x = succ_day28fu_data,
                            y = params$research_facilities[, c("facility_id", "facility_name")],
-                           by.x = 'hf_id',
+                           by.x = 'fid',
                            by.y = 'facility_id',
                            all = FALSE)
 ```

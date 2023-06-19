@@ -378,34 +378,39 @@ n_death_prior_hospit_day7fu <- n_detected
 write(" o Pseudonymisation", stderr())
 ```
 
-```{r}
-day7fu_data <- day7fu_data[ , !(names(day7fu_data) %in% day7fu_pii_drops)]
-```
+The columns listed in the table below are dropped from the cleaned `db_name` database.
 
-```{r, results='asis'}
+```{r, eval=day7fu_pii_drops_is_not_empty, results='asis'}
 day7fu_pii_drops %>%
+  dplyr::select(new) %>%
   knitr::kable(row.names = FALSE,
                caption = "Columns with PII dropped for cleaned data export")
 ```
 
-Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+```{r}
+day7fu_data_no_pii <- day7fu_data %>%
+  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
 
 ```{r}
-day7fu_data <- day7fu_data %>%
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo)) %>%
+                child_id = digest(child_id, algo = crypto_algo),
+                device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_day7fu_records <- nrow(day7fu_data_no_pii)
 ```
 
 ### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
-```
-
-```{r}
-n_cleaned_day7fu_records <- nrow(day7fu_data)
 ```
 
 ```{r}
@@ -421,7 +426,7 @@ timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
 ### Data overview
 
 ```{r}
-day7fu_data <- day7fu_data %>%
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
   dplyr::mutate(across(c(device_id,
                          sys_submit_id,
                          cg_reached,
@@ -436,8 +441,8 @@ day7fu_data <- day7fu_data %>%
   dplyr::mutate(dplyr::across(c(start),
                               ~format(as.POSIXct(.))))
 
-if ( "location_death_day7" %in% colnames(day7fu_data) ) {
-  day7fu_data <- day7fu_data %>%
+if ( "location_death_day7" %in% colnames(day7fu_data_no_pii) ) {
+  day7fu_data_no_pii <- day7fu_data_no_pii %>%
     dplyr::mutate(dplyr::across(c(location_death_day7),
                                 as.character))
 }
@@ -445,13 +450,13 @@ if ( "location_death_day7" %in% colnames(day7fu_data) ) {
 ```
 
 ```{r, eval=!is_tanzania}
-day7fu_data <- day7fu_data %>%
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
   dplyr::mutate(across(c(call_ok),
                        factor))
 ```
 
 ```{r, results='asis'}
-skimr::skim(day7fu_data)
+skimr::skim(day7fu_data_no_pii)
 ```
 
 ### Data export
@@ -469,7 +474,7 @@ timci::dataset_export(raw_successday7fu_data,
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(day7fu_data,
+timci::dataset_export(day7fu_data_no_pii,
                       "04b",
                       "timci_followup_successful_day7_data",
                       locked_db_dir,

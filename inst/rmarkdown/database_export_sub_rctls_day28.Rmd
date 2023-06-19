@@ -85,7 +85,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_caption <- "Submissions not transferred on the same day they were finalised"
-facility_col <- "hf_id"
+facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"
@@ -129,7 +129,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ```{r, eval=timci::is_not_empty(qc_df), results='asis'}
 fig_caption <- "Number of submissions not finalised on the same day they were started"
-facility_col <- "hf_id"
+facility_col <- "fid"
 date_col <- "week"
 date_lbl <- "Weeks"
 date_format <- "%b%y"

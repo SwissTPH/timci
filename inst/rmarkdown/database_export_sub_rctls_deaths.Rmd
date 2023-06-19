@@ -90,7 +90,7 @@ dropped_cols_day7 <- c(dropped_cols_fu,
 dropped_cols_day28 <- c(dropped_cols_fu,
                         "date_day0",
                         "cure_day28",
-                        "hf_id",
+                        "fid",
                         "rhf_loc_oth",
                         "call_ok")
 dropped_cols_hosp <- c(dropped_cols,

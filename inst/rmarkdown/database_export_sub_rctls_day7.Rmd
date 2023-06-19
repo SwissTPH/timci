@@ -53,6 +53,7 @@ day7fu_deidentified_dict <- day7fu_dictionary %>%
 ```{r}
 day7fu_pii_drops <- day7fu_dictionary %>%
   dplyr::filter(deidentified == 0)
+day7fu_pii_drops_is_not_empty <- timci::is_not_empty(day7fu_pii_drops)
 ```
 
 ### Dates and times
@@ -347,17 +348,21 @@ n_drop_inconsistent_names_day7fu_records <- n_mc
 write(" o Pseudonymisation", stderr())
 ```
 
-Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+The columns listed in the table below are dropped from the cleaned `db_name` database.
 
-```{r}
-raw_allday7fu_data <- raw_allday7fu_data %>%
-  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
+```{r, eval=day7fu_pii_drops_is_not_empty, results='asis'}
+day7fu_pii_drops %>%
+  dplyr::select(new) %>%
+  knitr::kable(row.names = FALSE,
+               caption = "Columns with PII dropped for cleaned data export")
 ```
 
 ```{r}
 allday7fu_data_no_pii <- allday7fu_data %>%
   dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
 ```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
 
 ```{r}
 allday7fu_data_no_pii <- allday7fu_data_no_pii %>%

@@ -486,7 +486,7 @@ correct_day28_duplicates <- function(df,
                 by.y = c("old_child_id", "uuid"),
                 all.x = TRUE)
         df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
-        df$hf_id <- ifelse(is.na(df$new_child_id), df$hf_id, substr(df$new_child_id, 3,7))
+        df$fid <- ifelse(is.na(df$new_child_id), df$fid, substr(df$new_child_id, 3,7))
       }
 
       # Remove the column new_child_id from the dataframe
