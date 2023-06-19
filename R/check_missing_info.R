@@ -193,22 +193,30 @@ detect_missing_referral <- function(facility_df) {
 
 #' Detect missing treatment (TIMCI-specific function)
 #'
-#' @param facility_df dataframe containing the processed facility data
+#' @param df dataframe containing the processed facility data
 #' @return This function returns a dataframe containing only participants with no treatment
 #' @export
 #' @import dplyr
 
-detect_missing_treatment <- function(facility_df) {
+detect_missing_treatment <- function(df) {
 
   out <- NULL
 
-  if ( timci::is_not_empty(facility_df) ) {
+  if ( timci::is_not_empty(df) ) {
 
-    out <- facility_df %>%
-      dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & ( is.na(rx_misc) | rx_misc == "996" ) & is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996"),
-                                     1,
-                                     0)) %>%
-      dplyr::filter(missing == 1)
+    if ( "rx_amoxicillin_hf" %in% colnames(df) ) {
+      out <- df %>%
+        dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & ( is.na(rx_misc) | rx_misc == "996" ) & is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996"),
+                                       1,
+                                       0)) %>%
+        dplyr::filter(missing == 1)
+    } else{
+      out <- df %>%
+        dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & ( is.na(rx_misc) | rx_misc == "996" ),
+                                       1,
+                                       0)) %>%
+        dplyr::filter(missing == 1)
+    }
 
   }
 

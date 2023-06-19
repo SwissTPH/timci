@@ -29,7 +29,8 @@ There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` da
 ### Format raw data
 
 ```{r}
-day7fu_dictionary <- timci::import_country_specific_xls_dict("day7_dict.xlsx", Sys.getenv('TIMCI_COUNTRY'))
+day7fu_dictionary <- timci::import_country_specific_xls_dict("day7_dict.xlsx",
+                                                             Sys.getenv('TIMCI_COUNTRY'))
 n_day7fu_dictionary_vars <- nrow(day7fu_dictionary)
 ```
 
@@ -37,11 +38,16 @@ There are **`r n_day7fu_dictionary_vars`** variables exported from the raw `r db
 
 ```{r, results='asis'}
 day7fu_dictionary %>%
+  dplyr::filter(deidentified == 1) %>%
   dplyr::select(new,
                 old) %>%
   knitr::kable(col.names = c("Database reference",
-                             "ODK reference",
-                             "Deidentified export"))
+                             "ODK reference"))
+```
+
+```{r}
+day7fu_deidentified_dict <- day7fu_dictionary %>%
+  dplyr::filter(deidentified == 1)
 ```
 
 ```{r}
@@ -344,18 +350,13 @@ write(" o Pseudonymisation", stderr())
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
 
 ```{r}
-raw_allday7fu_data <- raw_allday7fu_data[ , !(names(raw_allday7fu_data) %in% day7fu_pii_drops)]
+raw_allday7fu_data <- raw_allday7fu_data %>%
+  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
 ```
 
 ```{r}
-allday7fu_data_no_pii <- allday7fu_data[ , !(names(allday7fu_data) %in% day7fu_pii_drops)] %>% 
-  dplyr::select(-days,
-                -`na.rm`)
-```
-
-```{r}
-# allday7fu_data_no_pii <- allday7fu_data %>% 
-#   dplyr::select(dplyr::any_of(c(day7_dictionary$new)))
+allday7fu_data_no_pii <- allday7fu_data %>%
+  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
 ```
 
 ```{r}
@@ -368,7 +369,7 @@ allday7fu_data_no_pii <- allday7fu_data_no_pii %>%
 ```
 
 ```{r}
-n_cleaned_allday7fu_records <- nrow(allday7fu_data)
+n_cleaned_allday7fu_records <- nrow(allday7fu_data_no_pii)
 ```
 
 ### Data cleaning summary
@@ -418,7 +419,7 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 ```
 
 ```{r, results='asis'}
-skimr::skim(allday7fu_data)
+skimr::skim(allday7fu_data_no_pii)
 ```
 
 ### Data export

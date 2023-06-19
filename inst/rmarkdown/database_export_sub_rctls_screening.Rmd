@@ -508,6 +508,7 @@ screening_data <- timci::extract_screening_data(facility_data,
 screening_data <- screening_data %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
+                prev_id = digest(prev_id, algo = crypto_algo),
                 device_id = digest(device_id, algo = crypto_algo)) %>%
   dplyr::ungroup()
 ```

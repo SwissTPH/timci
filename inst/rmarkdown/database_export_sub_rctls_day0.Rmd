@@ -36,6 +36,7 @@ n_nonvalid_fid_records <- 0
 n_incorrect_enroldate_records <- 0
 n_missing_cp <- 0
 n_missing_diagnosis <- 0
+n_drug_edits <- 0
 ```
 
 ## Day 0 data quality checks and cleaning
@@ -625,7 +626,7 @@ n_missing_treatment <- n_detected
 write(" o Treatment free text entries", stderr())
 ```
 
-```{r, eval=day0_is_not_null, results='asis'}
+```{r, eval=!is_tanzania&day0_is_not_null}
 fig_df <- day0_data %>%
   dplyr::mutate("Free text available" = dplyr::case_when(
     !is.na(rx_misc_oth) | !is.na(rx_misc_oth_hf) ~ "a) Yes",
@@ -633,7 +634,19 @@ fig_df <- day0_data %>%
   dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
                                              "week",
                                              week_start = getOption("lubridate.week.start", 1)))
+```
 
+```{r, eval=is_tanzania&day0_is_not_null}
+fig_df <- day0_data %>%
+  dplyr::mutate("Free text available" = dplyr::case_when(
+    !is.na(rx_misc_oth) ~ "a) Yes",
+    .default            = "b) No")) %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(date_visit),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+```
+
+```{r, eval=day0_is_not_null, results='asis'}
 fig_caption <- "Treatment free text entries"
 facility_col <- "fid"
 date_col <- "week"

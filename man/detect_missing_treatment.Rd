@@ -4,10 +4,10 @@
 \alias{detect_missing_treatment}
 \title{Detect missing treatment (TIMCI-specific function)}
 \usage{
-detect_missing_treatment(facility_df)
+detect_missing_treatment(df)
 }
 \arguments{
-\item{facility_df}{dataframe containing the processed facility data}
+\item{df}{dataframe containing the processed facility data}
 }
 \value{
 This function returns a dataframe containing only participants with no treatment
