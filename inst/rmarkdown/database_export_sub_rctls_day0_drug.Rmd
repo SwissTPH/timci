@@ -716,6 +716,22 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_quinine_records <- n_detected
 ```
 
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+drug_data_deidentify <- drug_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
 ### Data cleaning summary
 
 ```{r}
@@ -756,7 +772,7 @@ write(" o Data overview", stderr())
 ```
 
 ```{r, results='asis'}
-skimr::skim(drug_data)
+skimr::skim(drug_data_deidentify)
 ```
 
 ### Data export
@@ -774,7 +790,7 @@ timci::dataset_export(raw_drug_data,
 ```
 
 ```{r export-locked-drug-data, results = 'asis'}
-timci::dataset_export(drug_data,
+timci::dataset_export(drug_data_deidentify,
                       "02z",
                       "timci_day0_drug_data",
                       locked_db_dir,
