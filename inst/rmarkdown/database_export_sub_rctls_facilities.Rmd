@@ -188,7 +188,9 @@ facility_data <- cleaned_df
 write(" o Discrepancy in facility IDs (vs. device)", stderr())
 ```
 
-`r if ( is_tanzania | is_ls ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info1, 'a\n\n:::')}`
+:::
+Initial check `r qc_inconsistent_facility_info1`a
+:::
 
 ```{r, eval=facility_data_is_not_null, results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the device(s) which has(ve) been used in this facility on that day (**fid_from_device**)."
@@ -224,7 +226,7 @@ n_edit_inconsistent_fid1a <- n_mc
 facility_data <- corrected_df
 ```
 
-```{r, eval=(is_tanzania|is_ls), results='asis'}
+```{r, results='asis'}
 mc_description <- ""
 to_correct_df <- facility_data
 correction_type <- "correct_day0_inconsistent_facilities1"
@@ -247,11 +249,11 @@ facility_data <- corrected_df
 write(" o Discrepancy in facility IDs (vs. manual entry)", stderr())
 ```
 
-This check is relevant and implemented only for Kenya and Tanzania.
+This check is not relevant and not implemented for Senegal.
 
-`r if ( is_tanzania | is_kenya ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info2, 'a\n\n:::')}`
+`r if ( is_rct | is_kenya ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info2, 'a\n\n:::')}`
 
-```{r, eval=facility_data_is_not_null&(is_kenya|is_tanzania), results='asis'}
+```{r, eval=facility_data_is_not_null&(is_kenya|is_rct), results='asis'}
 qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the research assistant's manual entry (**fid_ra**)."
 qc_rule <- action_alert_no_modification
 qc_type <- "inconsistent_facility_info2"
