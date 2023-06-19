@@ -474,7 +474,9 @@ identify_day0_duplicates <- function(df,
 
   if ( timci::is_not_empty(df) ) {
 
-    qc_df <- df %>%
+    qc_df <- df[order(df[[col_date]],
+                      na.last = TRUE,
+                      decreasing = FALSE),] %>%
       dplyr::filter(enrolled == 1) %>%
       dplyr::arrange(!!dplyr::enquo(col_date)) %>% # Sort data by dates
       timci::concatenate_names() %>% # Concatenate names

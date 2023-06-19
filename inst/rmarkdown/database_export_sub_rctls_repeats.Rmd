@@ -232,9 +232,9 @@ repeat_data <- repeat_data %>%
 ```{r}
 repeat_data <- repeat_data %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                prev_id = digest(prev_id, algo = crypto_algo),
-                device_id = digest(device_id, algo = crypto_algo)) %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                prev_id = ifelse(prev_id != "", digest(prev_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
   dplyr::ungroup()
 ```
 

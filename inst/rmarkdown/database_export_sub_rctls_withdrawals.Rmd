@@ -171,10 +171,10 @@ day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
   dplyr::rename(uuid_day0 = uuid) %>%
   dplyr::rename(uuid = `meta-instanceID`) %>% 
   dplyr::rowwise() %>%
-  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                uuid_day0 = digest(uuid_day0, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo),
-                deviceid = digest(deviceid, algo = crypto_algo)) %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                uuid_day0 = ifelse(uuid_day0 != "", digest(uuid_day0, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                deviceid = ifelse(deviceid != "", digest(deviceid, algo = crypto_algo), "")) %>%
   dplyr::ungroup()
 ```
 

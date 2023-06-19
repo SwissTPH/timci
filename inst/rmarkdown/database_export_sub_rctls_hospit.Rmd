@@ -57,17 +57,9 @@ There are **`r n_hospitfu_dictionary_vars`** variables exported from the raw `r 
 ```{r, results='asis'}
 hospitfu_dictionary %>%
   dplyr::select(new,
-                old,
-                deidentified) %>%
+                old) %>%
   knitr::kable(col.names = c("Database reference",
-                             "ODK reference",
-                             "Deidentified export"))
-```
-
-```{r}
-hospitfu_pii_drops <- hospitfu_dictionary %>%
-  dplyr::filter(deidentified == 0)
-hospitfu_pii_drops_is_not_empty <- timci::is_not_empty(hospitfu_pii_drops)
+                             "ODK reference"))
 ```
 
 ### Participant identification
@@ -318,14 +310,29 @@ write(" o Pseudonymisation", stderr())
 ```
 
 ```{r}
-hospit_data_no_pii <- hospit_data[ , !(names(hospit_data) %in% hospitfu_pii_drops$new)]
+hospitfu_pii_drops <- hospitfu_dictionary %>%
+  dplyr::filter(deidentified == 0)
 ```
 
-```{r, eval=hospitfu_pii_drops_is_not_empty, results='asis'}
+There are **`r nrow(hospitfu_pii_drops)`** variables deleted from the anonymised cleaned `r db_name` database.
+
+```{r, results='asis'}
 hospitfu_pii_drops %>%
   dplyr::select(new) %>%
   knitr::kable(row.names = FALSE,
                caption = "Columns with PII dropped for cleaned data export")
+```
+
+```{r}
+hospitfu_deidentified_dict <- hospitfu_dictionary %>%
+  dplyr::filter(deidentified == 1)
+```
+
+There are **`r nrow(hospitfu_deidentified_dict)`** variables exported from the cleaned anonymised `r db_name` database.
+
+```{r}
+hospit_data_no_pii <- hospit_data %>%
+  dplyr::select(dplyr::any_of(c(hospitfu_deidentified_dict$new)))
 ```
 
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
@@ -333,9 +340,9 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 ```{r}
 hospit_data_no_pii <- hospit_data_no_pii %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(uuid = digest(uuid, algo = crypto_algo),
-                child_id = digest(child_id, algo = crypto_algo),
-                device_id = digest(device_id, algo = crypto_algo)) %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
   dplyr::ungroup()
 ```
 
@@ -361,7 +368,6 @@ hospit_data_no_pii <- hospit_data_no_pii %>%
                          form_version,
                          rhf_id,
                          rhf_name,
-                         sex,
                          sex_hf,
                          dob_knwn_hf,
                          found,
