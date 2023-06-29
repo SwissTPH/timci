@@ -1,23 +1,64 @@
-## Day 7 follow-up data quality checks\n\n
+\newpage
 
 ```{r}
 write("Export Day 7 follow-up data and run corresponding quality checks", stderr())
 ```
 
-```{r format-RCT-LS-ODK-fu-day7-data}
+## Day 7 follow-up data quality checks
+
+```{r}
 db_name <- "Day 7 follow-up"
-out <- timci::format_day7_data(raw_day7fu_data)
-raw_allday7fu_data <- out[[3]]
+```
+
+```{r}
+n_nonvalid_pid_day7fu_records <- 0
+n_edit_nonvalid_pid_day7fu_records <- 0
+n_drop_nonvalid_pid_day7fu_records <- 0
+n_inconsistent_name_day7fu_records <- 0
+n_edit_inconsistent_name_day7fu_records <- 0
+n_drop_inconsistent_names_day7fu_records <- 0
+```
+
+```{r format-RCT-LS-ODK-fu-day7-data}
 n_raw_allday7fu_data_records <- nrow(raw_allday7fu_data)
-raw_successday7fu_data <- out[[1]]
 raw_allday7fu_is_not_empty <- timci::is_not_empty(raw_allday7fu_data)
 ```
 
 There are **`r n_raw_allday7fu_data_records`** records in the raw `r db_name` database.
 
-### Inconsistent dates
+### Format raw data
 
-#### Inconsistent finalisation and submission dates [compliance check `r qc_nontimely_day7_submission_id`]\n\n
+```{r}
+day7fu_dictionary <- timci::import_country_specific_xls_dict("day7_dict.xlsx",
+                                                             Sys.getenv('TIMCI_COUNTRY'))
+n_day7fu_dictionary_vars <- nrow(day7fu_dictionary)
+```
+
+There are **`r n_day7fu_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+day7fu_dictionary %>%
+  dplyr::filter(deidentified == 1) %>%
+  dplyr::select(new,
+                old) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference"))
+```
+
+```{r}
+day7fu_deidentified_dict <- day7fu_dictionary %>%
+  dplyr::filter(deidentified == 1)
+```
+
+```{r}
+day7fu_pii_drops <- day7fu_dictionary %>%
+  dplyr::filter(deidentified == 0)
+day7fu_pii_drops_is_not_empty <- timci::is_not_empty(day7fu_pii_drops)
+```
+
+### Dates and times
+
+#### Late submissions [Compliance check `r qc_nontimely_submission_day7fu`]
 
 ```{r}
 write(" o Inconsistent finalisation and submission", stderr())
@@ -32,7 +73,7 @@ col_date1 <- "end"
 col_date2 <- "submission_date"
 cleaning <- "none"
 qc_text <- "the submission was not transferred on the same day it was finalised"
-qc_idx <- qc_nontimely_day7_submission_id
+qc_idx <- qc_nontimely_submission_day7fu
 qc_export_label <- "nontimely_day7_submission"
 qc_export_description <- "the submission was not transferred on the same day it was finalised"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -40,15 +81,30 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-hist(as.numeric(qc_df$diff),
-     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Number of days between submission finalisation and transfer" ,
-     ylab="Occurences",
-     main="")
+```{r}
+fig_caption <- "Submissions not transferred on the same day they were finalised"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
 ```
 
-#### Non-timely completion [compliance check `r qc_nontimely_day7_completion_id`]\n\n
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff < 3 ~ "Less than 3 days",
+    diff >= 3 & diff < 7 ~ "3-6 days",
+    diff >= 7 ~ "7 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Late completions [Compliance check `r qc_nontimely_completion_day7fu`]
 
 ```{r}
 write(" o Non-timely completion", stderr())
@@ -63,7 +119,7 @@ col_date1 <- "start"
 col_date2 <- "end"
 cleaning <- "none"
 qc_text <- "the submission was not finalised on the same day it was started"
-qc_idx <- qc_nontimely_day7_completion_id
+qc_idx <- qc_nontimely_completion_day7fu
 qc_export_label <- "nontimely_day7_completion"
 qc_export_description <- "the submission was not finalised on the same day it was started"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -71,34 +127,87 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=timci::is_not_empty(qc_df)}
-hist(as.numeric(qc_df$diff),
-     breaks = c(1:max(as.numeric(qc_df$diff), na.rm = TRUE)),
-     xlab="Number of days between submission start and finalisation" ,
-     ylab="Occurences",
-     main="")
+```{r}
+fig_caption <- "Number of submissions not finalised on the same day they were started"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
 ```
 
-### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_day7fu`]\n\n
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff <= 1 ~ "1 day",
+    diff > 1 & diff < 3 ~ "1-2 days",
+    diff >= 3 ~ "3 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+### Participant identification
+
+```{r}
+allday7fu_data <- raw_allday7fu_data
+```
+
+#### Follow-ups corresponding to participants enrolled in the CDSA pilot (India only) [Context check `r qc_other_fids_day7fu`]
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
+```
+
+`r if (!is_india) {paste0("This check is only implemented for India.")}`
+
+```{r, eval=!is.null(allday7fu_data)&is_india, results='asis'}
+qc_description <- paste0("Exclude follow-ups that correspond to participants enrolled in the CDSA pilot.")
+qc_rule <- "Discard follow-up records of participants who are enrolled in CDSA pilot facilities."
+qc_type <- "nonvalid_ids2"
+df <- allday7fu_data
+idcol1 <- "child_id"
+refdf <- rbind(other_timci_study_df) %>%
+  dplyr::filter( !is.na(child_id) )
+idcol2 <- "child_id"
+qc_text <- "follow-up records corresponding to participants enrolled for the CDSA pilot"
+qc_idx <- qc_other_fids_day7fu
+qc_export_label <- "pids_from_cdsa_pilot"
+qc_export_description <- "the follow-up corresponds to a child who has been enrolled in the CDSA pilot"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_cdsa_pilot_day7fu_records <- n_detected
+allday7fu_data <- cleaned_df
+```
+
+#### Follow-ups corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_day7fu`]
 
 ```{r}
 write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
 ```
 
-```{r, eval=!is.null(raw_allday7fu_data), results='asis'}
+```{r, eval=!is.null(allday7fu_data), results='asis'}
 qc_description <- paste0("Day 7 follow-ups are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
 qc_rule <- "Discard follow-up records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
 qc_type <- "nonvalid_ids2"
-df <- raw_allday7fu_data
+df <- allday7fu_data
 idcol1 <- "child_id"
-refdf <- facility_data_after_lock %>%
-  filter( !is.na(child_id) )
+refdf <- rbind(facility_data_before_start,
+               facility_data_after_lock) %>%
+  dplyr::filter( !is.na(child_id) )
 idcol2 <- "child_id"
-col_date <- "date_call"
 qc_text <- "participant IDs outside the lock date range"
 qc_idx <- qc_pids_out_lock_range_day7fu
 qc_export_label <- "pids_outside_lock_range"
-qc_export_description <- "the follow-up correspond to a child who has been enrolled outside the date range for the lock"
+qc_export_description <- "the follow-up corresponds to a child who has been enrolled outside the date range for the lock"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
@@ -109,52 +218,217 @@ n_afterlock_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
-### Non-valid participant IDs [compliance check `r qc_nonvalid_day7fu`]\n\n
+#### Non-valid participant IDs [Context check `r qc_nonvalid_day7fu`]
 
 ```{r}
-write(" o Non-valid participant IDs", stderr())
+write(" o Non-valid participant IDs - Initial check", stderr())
 ```
 
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonvalid_day7fu`a
+:::
+
 ```{r, eval=!is.null(allday7fu_data), results='asis'}
-qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
-qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
-qc_type <- "nonvalid_ids"
+qc_description <- "Day 7 follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled Day 7 follow-ups are searched for matched names."
+qc_rule <- "IDs of children who cannot be found in the initial Day 0 database are detected and corrected where possible."
+qc_type <- "nonvalid_ids_identify_names"
 df <- allday7fu_data
 idcol1 <- "child_id"
-refdf <- day0_data
+refdf <- allday0_data
 idcol2 <- "child_id"
+datecol <- "date_day0"
+ldate_diff <- -2
+udate_diff <- 2
+matched_names <- TRUE
+cleaning <- "none"
 qc_text <- "non-valid participant IDs"
-qc_idx <- qc_nonvalid_day7fu
-qc_export_label <- "nonvalid_pids_day7fu"
-qc_export_description <- "the child ID does not correspond to any ID found the locked Day 0 database"
+qc_idx <- paste0(qc_nonvalid_day7fu, "a")
+qc_export_label <- "nonvalid_pids_day7fu_with_matched_names"
+qc_export_description <- "the child ID does not correspond to any ID found in the locked Day 0 database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_nonvalid_pid_day7fu_records <- n_detected
+```
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+mc_description <- ""
+to_correct_df <- allday7fu_data
+correction_type <- "correct_day7_non_valid_ids"
+
+# Parameters for the quality check following manual corrections
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_idx <- paste0(qc_nonvalid_day7fu, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_nonvalid_pid_day7fu_records <- n_mc
+n_drop_nonvalid_pid_day7fu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_nonvalid_pids_day7fu_records <- n_detected
 allday7fu_data <- cleaned_df
 ```
 
-### Data cleaning summary\n\n
+#### Non-consistent participant names [Context check `r qc_nonconsistent_name_day7fu`]
+
+```{r}
+write(" o Non-consistent participant names", stderr())
+```
+
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonconsistent_name_day7fu`a
+:::
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+qc_description <- "Day 7 follow-ups are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually."
+qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
+qc_type <- "inconsistent_names"
+df <- allday7fu_data
+refdf <- allday0_data
+datecol <- "date_day0"
+ldate_diff <- -2
+udate_diff <- 2
+matched_names <- TRUE
+cleaning = "none"
+qc_text <- "non-consistent participant names"
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "a")
+qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
+qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_inconsistent_name_day7fu_records <- n_detected
+```
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+mc_description <- ""
+to_correct_df <- allday7fu_data
+correction_type <- "correct_day7_inconsistent_names"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "b")
+qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+allday7fu_data <- corrected_df
+n_edit_inconsistent_name_day7fu_records <- n_mc
+```
+
+```{r, eval=!is.null(allday7fu_data), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- allday7fu_data
+correction_type <- "delete_day7_records"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_day7fu, "c")
+qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+qc_export_label <- "nonconsistent_names_day7fu_with_matched_names"
+cleaning <- "none"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+allday7fu_data <- corrected_df
+n_drop_inconsistent_names_day7fu_records <- n_mc
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+The columns listed in the table below are dropped from the cleaned `r db_name` database.
+
+```{r, eval=day7fu_pii_drops_is_not_empty, results='asis'}
+day7fu_pii_drops %>%
+  dplyr::select(new) %>%
+  knitr::kable(row.names = FALSE,
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
+```
+
+```{r}
+allday7fu_data_no_pii <- allday7fu_data %>%
+  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
+
+```{r}
+allday7fu_data_no_pii <- allday7fu_data_no_pii %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_allday7fu_records <- nrow(allday7fu_data_no_pii)
+```
+
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
-n_cleaned_allday7fu_records <- nrow(allday7fu_data)
-```
-
-```{r}
 timci::create_day7fu_qc_flowchart(n_raw_allday7fu_data_records,
                                   n_afterlock_pids_day7fu_records,
-                                  n_nonvalid_pids_day7fu_records,
+                                  n_nonvalid_pid_day7fu_records,
+                                  n_edit_nonvalid_pid_day7fu_records,
+                                  n_drop_nonvalid_pid_day7fu_records,
+                                  n_inconsistent_name_day7fu_records,
+                                  n_edit_inconsistent_name_day7fu_records,
+                                  n_drop_inconsistent_names_day7fu_records,
                                   n_cleaned_allday7fu_records)
 ```
 
-### Data export\n\n
+### Data overview
+
+```{r}
+write(" o Data overview", stderr())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(allday7fu_data), results='asis'}
+fig_df <- allday7fu_data %>%
+  dplyr::mutate(Status = dplyr::case_when(
+    proceed_day7 == 1 ~ "Done",
+    .default     = "Not done")) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
+fig_caption <- "Day 7 follow-up data overview over time by facility"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis'}
+skimr::skim(allday7fu_data_no_pii)
+```
+
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -169,9 +443,15 @@ timci::dataset_export(raw_allday7fu_data,
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(allday7fu_data,
+timci::dataset_export(allday7fu_data_no_pii,
                       "04a",
                       "timci_followup_day7_data",
                       locked_db_dir,
                       "Cleaned Day 7 follow-up data")
+```
+
+```{r, results='hide'}
+rm(raw_allday7fu_data,
+   allday7fu_data_no_pii)
+gc()
 ```

@@ -2,18 +2,18 @@
 % Please edit documentation in R/clean_timci_data.R
 \name{edit_day0_child_ids}
 \alias{edit_day0_child_ids}
-\title{Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
-This function can be used to correct documented child ID duplicates, incorrect facility codes or typos}
+\title{Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)}
 \usage{
-edit_day0_child_ids(df)
+edit_day0_child_ids(df, csv_prefix = "day0_duplicate_correction")
 }
 \arguments{
-\item{df}{dataframe}
+\item{df}{A dataframe containing the Day 0 data entries to be corrected.}
+
+\item{csv_prefix}{A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_duplicate_correction").}
 }
 \value{
-This function returns a list that contains an edited dataframe and the list of edits
+A list containing the edited dataframe and the list of applied corrections.
 }
 \description{
-Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
-This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
+This function can be used to correct documented child ID duplicates, incorrect facility codes, or typos in Day 0 data entries. It reads in a CSV file containing corrections and applies them to the input dataframe.
 }

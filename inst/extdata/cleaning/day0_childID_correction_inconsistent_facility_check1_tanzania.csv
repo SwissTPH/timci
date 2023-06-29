@@ -1,0 +1,10 @@
+old_child_id,uuid,new_child_id,reason,action,date,author,date_ihi
+T-F0001-P0376,uuid:5ff0643e-8ab3-4a38-ad5d-64cfbc142c5c,T-F0021-P0376,manual entry with incorrect facility code,edit,08.02.2022,IHI,1/22/2022
+T-F0001-P0377,uuid:53ac17b0-edea-4144-9df7-5fa28c5b17d2,T-F0021-P0377,manual entry with incorrect facility code,edit,08.02.2022,IHI,1/22/2022
+T-F0014-P1045,uuid:431b77f9-40ae-42a2-bb63-41aee528b534,T-F0008-P1045,RA scanned previous enrollment ID instead of the new one,edit,,IHI,11/21/2022
+T-F0022-P0360,uuid:521823cd-ca5e-498f-b825-14a75c721393,T-F0023-P0360,Ra entered manually pid and wrote wrongly the pid,edit,08.12.2022,IHI,08.12.2022
+T-F0022-P0395,uuid:e1c987d7-17ce-4ff6-8b15-d3eabcf6affa,T-F0023-P0395,Ra entered manually pid and wrote wrongly the pidedit,,08.12.2022,IHI,08.12.2022
+T-F0024-P0052,uuid:2e054620-5218-4c28-bf1a-80327448c75d,T-F0024-C0052,,,,,
+T-F0039-P0671,uuid:84e4e42a-cdc5-47f1-8738-e74a54ff4728,T-F0043-P1814,,edit,08.09.2022,IHI,08.01.2022
+T-F0042-P3250,uuid:3412d821-66b7-46f3-b418-f2c30aad14dc,T-F0043-P3250,Incorrect facility ID instead of ngamiani code they entered Duga facility code,edit,,IHI,11/18/2022
+T-F0085-P0554,uuid:b28d393d-1179-41d9-9240-64a331891b75,T-F0087-P0554,manual entry,edit,,,

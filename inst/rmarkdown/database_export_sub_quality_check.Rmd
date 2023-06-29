@@ -10,17 +10,32 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
-**Check description:** `r qc_description`
+[Check description:]{custom-style="underlined"} `r qc_description`
 
-**Action:** `r qc_rule`
+[Action:]{custom-style="underlined"} `r qc_rule`
 
 ```{r}
 qc_df <- NULL
 qc_df2 <- NULL
+qc_reuse_df <- NULL # reuse non de-identified dataframe for subsequent checks
 cleaned_df <- NULL
+cols <- colnames(df)
+n_df <- nrow(df)
 n_detected <- 0
+n_to_remove <- 0
 cleaned_df_status_update <- ""
 ```
+
+```{r}
+duplicate_checks <- c("duplicates",
+                      "duplicates_with_names",
+                      "true_duplicates",
+                      "day0_duplicates",
+                      "repeat_duplicates")
+is_duplicate_check <- (qc_type %in% duplicate_checks)
+```
+
+<!-- Each check has a specific code chunk that will be executed only when the check is selected, i.e. eval=(qc_type=="check_name") -->
 
 ```{r, eval=(qc_type=="other_study_fids")}
 out <- timci::remove_facilities_for_other_studies(df,
@@ -35,14 +50,63 @@ out <- timci::allocate_screening_facility2(df,
                                            research_facilities)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
+# outcols <- c("date_visit", "child_id", "fid_from_device", "child_id_manual", "device_id", "uuid")
+# qc_df <- qc_df %>%
+#   dplyr::select(outcols)
 ```
 
-```{r, eval=(qc_type=="posterior_to_lockdate")}
+```{r, eval=(qc_type=="anterior_to_startdate")}
+df <- df %>%
+  dplyr::mutate(study_start_date = start_date) %>%
+  dplyr::mutate(days_since_start = floor(difftime(as.Date(date_visit, "%Y-%m-%d"), study_start_date, units = "days")))
 qc_df <- df %>%
-  dplyr::filter(date_visit > as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::filter(days_since_start < 0) %>%
+  dplyr::select(date_visit, child_id, uuid, days_since_start) %>%
   dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
 cleaned_df <- df %>%
-  dplyr::filter(date_visit <= as.Date(lock_date, "%Y-%m-%d")) %>%
+  dplyr::filter(days_since_start >= 0) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+```
+
+<!-- Check submissions anterior to a specific facility start date -->
+
+```{r, eval=(qc_type=="anterior_to_facility_startdate"), results='asis'}
+research_facilities %>%
+          dplyr::select(facility_id,
+                        facility_start) %>% 
+  filter(!is.na(facility_start)) %>%
+  knitr::kable()
+```
+
+```{r, eval=(qc_type=="anterior_to_facility_startdate")}
+df <- df %>%
+  merge(research_facilities %>%
+          dplyr::select(facility_id,
+                        facility_start),
+        by.x = "fid_from_device",
+        by.y = "facility_id") %>% 
+  dplyr::mutate(days_since_start = floor(difftime(as.Date(date_visit, "%Y-%m-%d"), facility_start, units = "days")))
+qc_df <- df %>%
+  dplyr::filter(!is.na(days_since_start) & days_since_start < 0) %>%
+  dplyr::select(date_visit, child_id, uuid, days_since_start) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+cleaned_df <- df %>%
+  dplyr::filter(is.na(days_since_start) | (!is.na(days_since_start) & days_since_start >= 0)) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+```
+
+<!-- Check submissions posterior to the lock date -->
+
+```{r, eval=(qc_type=="posterior_to_lockdate")}
+df <- df %>%
+  dplyr::mutate(study_lock_date = lock_date) %>%
+  dplyr::mutate(days_to_lock = floor(difftime(as.Date(date_visit, "%Y-%m-%d"), study_lock_date, units = "days")))
+qc_df <- df %>%
+  dplyr::filter(days_to_lock > 0) %>%
+  dplyr::select(date_visit, child_id, uuid, days_to_lock) %>%
+  dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
+cleaned_df <- df %>%
+  dplyr::filter(days_to_lock <= 0) %>%
   dplyr::arrange(date_visit = as.Date(date_visit, "%Y-%m-%d")) # Order entries by date
 ```
 
@@ -63,7 +127,7 @@ out <- timci::identify_ids_outside_lock_range(df = df,
 qc_df <- out[[1]]
 ```
 
-```{r, eval=(qc_type=="nonvalid_ids_no_cleaning")}
+```{r, eval=(qc_type=="nonvalid_facility_ids")}
 out <- timci::identify_nonvalid_ids(df,
                                     idcol1,
                                     refdf,
@@ -84,12 +148,26 @@ cleaned_df <- out[[2]]
 out <- timci::identify_nonvalid_ids2(df,
                                      idcol1,
                                      refdf,
-                                     idcol2,
-                                     col_date,
-                                     lock_date = lock_date)
+                                     idcol2)
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
+
+```{r, eval=(qc_type=="nonvalid_ids_identify_names")}
+out <- timci::identify_nonvalid_ids_with_matched_names(df1 = df,
+                                                       col_id1 = idcol1,
+                                                       df2 = refdf,
+                                                       col_id2 = idcol2,
+                                                       col_date1 = datecol,
+                                                       ldate_diff = ldate_diff,
+                                                       udate_diff = udate_diff,
+                                                       matched_names = matched_names,
+                                                       cleaning = cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+<!-- Date discrepancies -->
 
 ```{r, eval=(qc_type=="date_discrepancy")}
 out <- timci::detect_inconsistent_dates(df,
@@ -99,6 +177,18 @@ out <- timci::detect_inconsistent_dates(df,
 qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
+
+```{r, eval=(qc_type=="date_discrepancy_fu")}
+out <- timci::detect_inconsistent_dates(df,
+                                        col_date_start = col_date1,
+                                        col_date_end = col_date2,
+                                        cleaning,
+                                        list_of_cols = fu_cols)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+<!-- Duplicated IDs -->
 
 ```{r, eval=(qc_type=="duplicates")}
 out <- timci::identify_duplicates_by_dates(df,
@@ -110,7 +200,32 @@ cleaned_df <- out[[2]]
 qc_df2 <- out[[3]]
 ```
 
-```{r, eval=(qc_type=="duplicates_check_pii")}
+<!-- Duplicated child IDs with names -->
+
+```{r, eval=(qc_type=="duplicates_with_names")}
+out <- timci::identify_duplicates_with_names(df,
+                                             col_id,
+                                             col_date,
+                                             cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
+```
+
+<!-- Duplicated child IDs at Day 0 -->
+
+```{r, eval=(qc_type=="day0_duplicates")}
+out <- timci::identify_day0_duplicates_and_fu(df = df,
+                                              day7fu_df = ref_df,
+                                              cleaning = cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+qc_df2 <- out[[3]]
+```
+
+<!-- Duplicated child IDs - repeat visits -->
+
+```{r, eval=(qc_type=="repeat_duplicates")}
 out <- timci::identify_repeat_duplicate(df,
                                         col_id,
                                         col_date,
@@ -119,13 +234,196 @@ qc_df <- out[[1]]
 cleaned_df <- out[[2]]
 ```
 
-```{r, eval=(qc_type=="missing_clinical_presentation")}
-qc_df <- timci::detect_missing_clinical_presentation(df)
-outcols <- c("child_id", "fid", "date_visit", "uuid")
+<!-- Duplicated child IDs - true duplicates -->
+
+```{r, eval=(qc_type=="true_duplicates")}
+out <- timci::identify_true_duplicate(df,
+                                      col_id,
+                                      col_date,
+                                      cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+<!-- Inconsistent facility -->
+
+```{r, eval=(qc_type=="inconsistent_facility_info1")}
+qc_df <- df %>% 
+  dplyr::filter(fid != "" & !is.na(fid),
+                fid != fid_from_device,
+                fid != fid_from_main_device) # This row has been added for the Tanzania
+if ( "longitude" %in% cols ) {
+  qc_df <- qc_df %>%
+  timci::find_closest_facility(research_facilities)
+}
+
+qccols <- colnames(qc_df)
+outcols <- c("date_visit",
+             "child_id",
+             "fid",
+             "district",
+             "fid_from_device",
+             "fid_from_main_device")
+if ( "facility_id" %in%  qccols ) {
+  outcols <- c(outcols, "facility_id")
+}
+if ( "fid_ra" %in%  qccols ) {
+  outcols <- c(outcols, "fid_ra", "district_ra")
+}
+if ( "child_id_manual" %in%  qccols ) {
+  outcols <- c(outcols, "child_id_manual")
+}
+if ( "latitude" %in%  qccols ) {
+  outcols <- c(outcols, "latitude")
+}
+if ( "longitude" %in%  qccols ) {
+  outcols <- c(outcols, "longitude")
+}
+if ( "gps_accuracy" %in%  qccols ) {
+  outcols <- c(outcols, "gps_accuracy")
+}
+if ( "dist" %in%  qccols ) {
+  outcols <- c(outcols, "dist")
+}
+outcols <- c(outcols,
+             "uuid",
+             "device_id")
+
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
 ```
+
+```{r, eval=(qc_type=="inconsistent_facility_info2")}
+qc_df <- df %>% 
+  dplyr::filter(fid != "" & !is.na(fid),
+                fid_ra != "" & !is.na(fid_ra),
+                fid != fid_ra)
+if ( "longitude" %in% cols ) {
+  qc_df <- qc_df %>%
+    timci::find_closest_facility(research_facilities) %>%
+    dplyr::filter(facility_id != "" & !is.na(facility_id))
+}
+
+qccols <- colnames(qc_df)
+outcols <- c("date_visit",
+             "child_id",
+             "fid",
+             "district",
+             "fid_from_device",
+             "fid_from_main_device",
+             "fid_ra",
+             "district_ra")
+if ( "facility_id" %in%  qccols ) {
+  outcols <- c(outcols, "facility_id")
+}
+if ( "child_id_manual" %in%  qccols ) {
+  outcols <- c(outcols, "child_id_manual")
+}
+if ( "latitude" %in%  qccols ) {
+  outcols <- c(outcols, "latitude")
+}
+if ( "longitude" %in%  qccols ) {
+  outcols <- c(outcols, "longitude")
+}
+if ( "gps_accuracy" %in%  qccols ) {
+  outcols <- c(outcols, "gps_accuracy")
+}
+if ( "dist" %in%  qccols ) {
+  outcols <- c(outcols, "dist")
+}
+outcols <- c(outcols,
+             "uuid",
+             "device_id")
+
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="inconsistent_facility_info3")}
+qc_df <- df %>% 
+  dplyr::filter(!is.na(fid) & fid != "") %>%
+  dplyr::filter(fid != fid_from_main_device)
+if ( "longitude" %in% cols ) {
+  qc_df <- qc_df %>%
+  timci::find_closest_facility(research_facilities)
+}
+
+qccols <- colnames(qc_df)
+outcols <- c("date_visit",
+             "child_id",
+             "fid",
+             "district",
+             "fid_from_device",
+             "fid_from_main_device")
+if ( "facility_id" %in%  qccols ) {
+  outcols <- c(outcols, "facility_id")
+}
+if ( "fid_ra" %in%  qccols ) {
+  outcols <- c(outcols, "fid_ra", "district_ra")
+}
+if ( "child_id_manual" %in%  qccols ) {
+  outcols <- c(outcols, "child_id_manual")
+}
+if ( "latitude" %in%  qccols ) {
+  outcols <- c(outcols, "latitude")
+}
+if ( "longitude" %in%  qccols ) {
+  outcols <- c(outcols, "longitude")
+}
+if ( "gps_accuracy" %in%  qccols ) {
+  outcols <- c(outcols, "gps_accuracy")
+}
+if ( "dist" %in%  qccols ) {
+  outcols <- c(outcols, "dist")
+}
+outcols <- c(outcols,
+             "uuid",
+             "device_id")
+
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Missing value (NA) -->
+
+```{r, eval=(qc_type=="missing_value")}
+qc_df <- timci::detect_missing_value(df, col_value)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Blank value ("") -->
+
+```{r, eval=(qc_type=="blank_value")}
+qc_df <- timci::detect_blank_value(df, col_value)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Negative value -->
+
+```{r, eval=(qc_type=="negative_value")}
+qc_df <- timci::detect_negative_value(df, col_value)
+outcols <- c("child_id", "fid", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Missing clinical presentation -->
+
+```{r, eval=(qc_type=="missing_clinical_presentation")}
+qc_df <- timci::detect_missing_clinical_presentation(df)
+```
+
+<!-- Missing diagnosis -->
 
 ```{r, eval=(qc_type=="missing_diagnosis")}
 qc_df <- timci::detect_missing_diagnosis(df)
@@ -135,6 +433,8 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
+<!-- Missing referral -->
+
 ```{r, eval=(qc_type=="missing_referral")}
 qc_df <- timci::detect_missing_referral(df)
 outcols <- c("child_id", "fid", "date_visit", "uuid")
@@ -142,6 +442,105 @@ qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
 ```
+
+<!-- Missing treatment -->
+
+```{r, eval=(qc_type=="missing_treatment")}
+qc_df <- timci::detect_missing_treatment(df)
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(fid)
+```
+
+<!-- Re-entry of free text treatments -->
+
+```{r, eval=(qc_type=="free_text_missing_structured_entry")}
+qc_df <- df[(is.na(df$rx_amoxicillin) & !is.na(df$rx_misc_oth)) & (is.na(df$rx_amoxicillin_hf) & !is.na(df$rx_misc_oth_hf)),]
+outcols <- c("child_id", "fid", "date_visit", "uuid")
+```
+
+```{r, eval=(qc_type=="drug_reentry_accuracy1")}
+drug_disp_df1 <- df %>%
+  dplyr::filter(!!rlang::sym(col_id) == 1) %>%
+  dplyr::select(free_text1,
+                uuid,
+                submission_date) %>%
+  dplyr::rename(free_text = free_text1)
+drug_disp_df2 <- df %>%
+  dplyr::filter(!!rlang::sym(paste0(col_id, "_hf")) == 1) %>%
+  dplyr::select(free_text2,
+                uuid,
+                submission_date) %>%
+  dplyr::rename(free_text = free_text2)
+qc_df <- rbind(drug_disp_df1,
+               drug_disp_df2)
+```
+
+```{r, eval=(qc_type=="drug_reentry_accuracy2")}
+drug_disp_df1 <- df %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(selected = ifelse(value %in% as.integer(unlist(strsplit(!!rlang::sym(col_id), split = ";"))),
+                                  1,
+                                  0)) %>% 
+  ungroup() %>% 
+  dplyr::filter(selected == 1) %>%
+  dplyr::select(free_text1,
+                uuid,
+                submission_date) %>%
+  dplyr::rename(free_text = free_text1)
+drug_disp_df2 <- df %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(selected = ifelse(value %in% as.integer(unlist(strsplit(!!rlang::sym(paste0(col_id, "_hf")), split = ";"))),
+                                  1,
+                                  0)) %>% 
+  ungroup() %>% 
+  dplyr::filter(selected == 1) %>%
+  dplyr::select(free_text2,
+                uuid,
+                submission_date) %>%
+  dplyr::rename(free_text = free_text2)
+qc_df <- rbind(drug_disp_df1,
+               drug_disp_df2)
+```
+
+```{r, eval=(qc_type=="missing_structured_entry_for_specific_drug")}
+qc_df <- timci::detect_drug(df,
+                            drug_val_col,
+                            drug_text_col,
+                            drug_vec)
+outcols <- c("child_id",
+             "fid",
+             "date_visit",
+             drug_val_col,
+             drug_text_col,
+             "uuid")
+qc_df <- qc_df %>%
+  dplyr::select(outcols)
+```
+
+<!-- Inconsistent names -->
+
+```{r, eval=(qc_type=="inconsistent_names")}
+out <- timci::detect_inconsistent_names_between_visits(refdf = refdf,
+                                                       fudf = df,
+                                                       col_date = datecol,
+                                                       ldate_diff = ldate_diff,
+                                                       udate_diff = udate_diff,
+                                                       matched_names = matched_names,
+                                                       cleaning = cleaning)
+qc_df <- out[[1]]
+cleaned_df <- out[[2]]
+```
+
+<!-- Edits in ODK Central -->
+
+```{r, eval=(qc_type=="select_edits")}
+qc_df <- df %>% 
+  dplyr::filter(edits > 0)
+```
+
+<!-- Incomplete SPA observations -->
 
 ```{r, eval=(qc_type=="incomplete_spa_observation")}
 df <- df %>% 
@@ -154,15 +553,22 @@ df2 <- df %>%
 qc_df <- df2[!df2$child_id %in% df1$child_id, ]
 ```
 
-```{r, eval=(qc_type!="duplicates")&!is.null(qc_df)}
+<!-- For all checks -->
+
+```{r, eval=!is_duplicate_check&!is.null(qc_df)}
 n_detected <- nrow(qc_df)
 ```
 
-```{r, eval=(qc_type=="duplicates")&!is.null(qc_df2)}
-n_detected <- nrow(qc_df2)
+```{r, eval=is_duplicate_check&!is.null(qc_df)}
+date_cols <- grep("date", names(qc_df))
+remove_date_cols <- grep("_date", names(qc_df))
+date_cols <- date_cols[!date_cols %in% remove_date_cols]
+x <- unname((unlist(qc_df[colnames(qc_df[date_cols])])))
+n_detected <- sum(!is.na(x))
+n_to_remove <- n_detected - nrow(qc_df)
 ```
 
-**Check output:** The check has detected **`r n_detected`** record(s) with `r qc_text` in the `r db_name` database.
+[Check output:]{custom-style="underlined"} The check has detected **`r n_detected`** record(s) (i.e. **`r sprintf('%.1f', 100 * n_detected / n_df)` %** of all records) with `r qc_text` in the `r db_name` database.
 
 ```{r}
 partial_disp <- FALSE
@@ -170,18 +576,42 @@ full_disp <- FALSE
 qc_df_is_not_empty <- timci::is_not_empty(qc_df)
 ```
 
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_idx,
+                            label = qc_export_label,
+                            cdir = qc_dir,
+                            description = qc_export_description)
+qc_reuse_df <- qc_df
+```
+
 ```{r, eval=qc_df_is_not_empty}
 partial_disp <- qc_df_is_not_empty & ( nrow(qc_df) > 10 )
 full_disp <- qc_df_is_not_empty & ( nrow(qc_df) <= 10 )
 cols <- colnames(qc_df)
-if ( length(qc_df) > 5 ) {
+
+names_to_remove <- grep("name", colnames(qc_df))
+if ( length(names_to_remove) ) {
+  qc_df <- qc_df %>% 
+    dplyr::select(-names_to_remove)
+}
+
+reformat_cond <- ( length(qc_df) > 10 ) & ( qc_type != "date_discrepancy" )
+if ( reformat_cond ) {
   if ( 'date_visit' %in% cols ) {
-    if ( 'fid' %in% cols ) {
-      kcols <- c("fid", "date_visit", "child_id", "uuid")
-    } else {
-      kcols <- c("date_visit", "child_id", "uuid")
+    kcols <- c("date_visit")
+    if ( 'child_id' %in% cols ) {
+      kcols <- c(kcols, "child_id")
+    } else if ( 'prev_id' %in% cols ) {
+      kcols <- c(kcols, "prev_id")
     }
-    qc_df <- qc_df[kcols]
+    if ( 'fid' %in% cols ) {
+      kcols <- c(kcols,"fid")
+    } else if ( 'fid_from_device' %in% cols ) {
+      kcols <- c(kcols, "fid_from_device")
+    }
+    qc_df <- qc_df %>% 
+      dplyr::select(kcols)
   }
 }
 n_cols <- length(qc_df)
@@ -193,10 +623,6 @@ qc_df %>%
   head(5) %>%
   knitr::kable(row.names = FALSE,
                caption = "Five first rows")
-```
-
-```{r, eval=partial_disp, results='asis'}
-cat("...")
 ```
 
 ```{r, eval=partial_disp, results='asis'}
@@ -213,16 +639,14 @@ qc_df %>%
   knitr::kable(row.names = FALSE)
 ```
 
-```{r, results = 'asis'}
-timci::quality_check_export(df = qc_df,
-                            idx = qc_idx,
-                            label = qc_export_label,
-                            cdir = qc_dir,
-                            description = qc_export_description)
+```{r, eval=!is.null(cleaned_df)}
+n_cleaned_df <- nrow(cleaned_df)
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-cleaned_df_status_update <- paste0('After deletion of all the records detected by this check, there are now **', nrow(cleaned_df), '** record(s) in the ', db_name, ' database.')
+cleaned_df_status_update <- ifelse(n_cleaned_df < n_df,
+                                   paste0('After deletion of all the records detected by this check, there are now **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'),
+                                   paste0('There are still **', n_cleaned_df, '** record(s) in the ', db_name, ' database.'))
 ```
 
 `r cleaned_df_status_update`

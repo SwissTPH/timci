@@ -1,0 +1,372 @@
+```{r}
+write(" o Facility checks", stderr())
+```
+
+Facility information can be extracted in five different manners:
+
+* **fid_ra**: facility selected by the research assistant from a drop-down list - not implemented in Senegal;
+* **fid**: facility ID (Fxxxx) that is extracted from the first 5 characters of the child ID (X-Fxxxx-Pxxxx), e.g., X-F0001-Pxxxx corresponds to facility F0001; 
+* **fid_from_device**: derived calculation from the facility ID (*fid*) that is the most used on a specific day with a specific device, assuming 1 device is used to screen children in 1 unique facility each day;
+* **fid_from_main_device**: derived calculation from the facility ID (*fid*) that is the most used with a specific device (in Senegal, 1 unique device has been used to screen children in each facility);
+* **latitude** and **longitude** from the tablet GPS coordinates - not implemented in Kenya.
+
+```{r}
+facility_data <- facility_data %>% 
+  dplyr::select(facility_cols)
+```
+
+#### Data from different facilities collected on the same device on the same day
+
+This check is implemented for Tanzania only.
+
+```{r}
+write("\to Data from two different facilities collected on the same device on the same day (Tanzania only)", stderr())
+```
+
+```{r, eval=is_tanzania, results='asis'}
+# Parameters for manual corrections
+mc_description <- paste0('Manual correction of device IDs based on operational information from the field.')
+to_correct_df <- facility_data
+correction_type <- "correct_device_ids"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_deviceid_edit_records <- n_mc
+facility_data <- corrected_df
+```
+
+#### Non-valid device IDs [Context check `r qc_screening_w_nonvalid_deviceid`]
+
+```{r}
+write("\to Non-valid device IDs", stderr())
+```
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Devices different from the ones whose IDs are listed in Section 2.3 of this report are considered as *non-valid* and may have been used for instance for training purposes. Records submitted by non-valid devices should not be considered as part of the main database."
+qc_rule <- "Records submitted by devices different from the ones listed in Section 2.3 of this report are deleted."
+qc_type <- "nonvalid_deviceids"
+df <- facility_data
+qc_text <- "non-valid device IDs"
+qc_idx <- qc_screening_w_nonvalid_deviceid
+qc_export_label <- "nonvalid_deviceids"
+qc_export_description <- "the device ID is not valid"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_nonvalid_deviceid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+#### Facility IDs for the CDSA pilot [Context check `r qc_screening_other_fids`]
+
+```{r}
+write("\to Facility IDs for the CDSA pilot (India only)", stderr())
+```
+
+`r if ( !is_india ) { paste0('This check is only implemented in TIMCI India.') }`
+
+```{r, eval=facility_data_is_not_null&is_india, results='asis'}
+qc_description <- "Records submitted by facilities which are part of a different TIMCI study and stored in the same ODK Central project should not be considered as part of the main database."
+qc_rule <- "Records submitted by non-study facilities listed in Section 2.3 of this report are deleted."
+qc_type <- "other_study_fids"
+df <- facility_data
+qc_text <- "facility IDs corresponding to another TIMCI study"
+qc_idx <- qc_screening_other_fids
+qc_export_label <- "screening_other_fids"
+qc_export_description <- "the facility ID correspond to another TIMCI study"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+other_timci_study_df <- qc_reuse_df
+n_other_fid_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+#### Facility start date [Context check `r qc_screening_before_facility_startdate`]
+
+```{r}
+write(" o Facility start date context", stderr())
+```
+
+This check is implemented for Senegal only.
+
+```{r, eval=facility_data_is_not_null&is_senegal, results='asis'}
+qc_description <- "Screening data are considered valid only from the specific facility start date, when a facility started recruiting after the study start date. Data may have been entered before this date for training purposes."
+qc_rule <- paste0("Records entered before the specific facility start date are deleted")
+qc_type <- "anterior_to_facility_startdate"
+df <- facility_data
+qc_text <- "an entry date anterior to the specific facility start date"
+qc_idx <- qc_screening_before_facility_startdate
+qc_export_label <- "anterior_to_facility_startdate"
+qc_export_description <- "the entry date is anterior to the specific facility start date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+facility_data_before_start <- facility_data_before_start %>%
+  dplyr::bind_rows(qc_df %>%
+                     dplyr::select(date_visit, child_id))
+n_before_facility_startdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+#### Non-valid enrolling facility IDs [Compliance check `r qc_nonvalid_fid`]
+
+```{r}
+write(" o Non-valid enrolling facility IDs", stderr())
+```
+
+`r if ( is_kenya | is_tanzania ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_nonvalid_fid, 'a\n\n:::')}`
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "The facility ID **fid** should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
+qc_rule <- "Records corresponding to facility IDs not listed in Section 2.2 of this report are detected and manually corrected where possible."
+qc_type <- "nonvalid_facility_ids"
+df <- facility_data
+idcol1 <- "fid"
+refdf <- research_facilities
+idcol2 <- "facility_id"
+qc_text <- "facility ID not valid"
+qc_idx <- paste0(qc_nonvalid_fid, 'a')
+qc_export_label <- "nonvalid_fids"
+qc_export_description <- "the facility ID is not valid"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_nonvalid_fid_records <- n_detected
+```
+
+```{r, eval=(is_kenya|is_tanzania), results='asis'}
+# Parameters for manual corrections
+mc_description <- "Correction of the facility ID"
+to_correct_df <- facility_data
+correction_type <- "correct_non_valid_facilities"
+
+qc_description <- "The facility ID **fid** should correspond to the ID of one of the research facility listed in Section 2.2 of this report."
+qc_rule <- "Records corresponding to training data are deleted."
+qc_type <- "nonvalid_ids"
+df <- facility_data
+idcol1 <- "fid"
+refdf <- research_facilities
+idcol2 <- "facility_id"
+qc_text <- "facility ID not valid"
+qc_idx <- paste0(qc_nonvalid_fid, 'b')
+qc_export_label <- "nonvalid_fids"
+qc_export_description <- "the facility ID is not valid"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_nonvalid_fid_records <- n_mc
+```
+
+```{r, eval=!is.null(cleaned_df)}
+facility_data <- cleaned_df
+```
+
+#### Discrepancy in facility information 1 [Logic/Context check `r qc_inconsistent_facility_info1`]
+
+```{r}
+write(" o Discrepancy in facility IDs (vs. device)", stderr())
+```
+
+:::
+Initial check `r qc_inconsistent_facility_info1`a
+:::
+
+```{r, eval=facility_data_is_not_null, results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the device(s) which has(ve) been used in this facility on that day (**fid_from_device**)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info1"
+df <- facility_data
+qc_text <- "inconsistent facility info"
+qc_idx <- paste0(qc_inconsistent_facility_info1, "a")
+qc_export_label <- "inconsistent_facility_info1"
+qc_export_description <- "facility information between the child ID and the device is inconsistent"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_inconsistent_facility_info1 <- n_detected
+```
+
+```{r, eval=(is_tanzania), results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check1"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info1, "b")
+qc_export_label <- "inconsistent_facility_info1"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_inconsistent_fid1a <- n_mc
+facility_data <- corrected_df
+```
+
+```{r, results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "correct_day0_inconsistent_facilities1"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info1, "c")
+qc_export_label <- "inconsistent_facility_info1"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_inconsistent_fid1b <- n_mc
+facility_data <- corrected_df
+```
+
+#### Discrepancy in facility information 2 [Logic/Context check `r qc_inconsistent_facility_info2`]
+
+```{r}
+write(" o Discrepancy in facility IDs (vs. manual entry)", stderr())
+```
+
+This check is not relevant and not implemented for Senegal.
+
+`r if ( is_rct | is_kenya ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info2, 'a\n\n:::')}`
+
+```{r, eval=facility_data_is_not_null&(is_kenya|is_rct), results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the research assistant's manual entry (**fid_ra**)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info2"
+df <- facility_data
+qc_text <- "inconsistent facility info"
+qc_idx <- qc_inconsistent_facility_info2
+qc_export_label <- "inconsistent_facility_info2"
+qc_export_description <- "facility information between the child ID and the research assistant's entry is inconsistent"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_inconsistent_facility_info2 <- n_detected
+```
+
+```{r, eval=is_tanzania, results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "edit_day0_child_ids_to_correct_facilities_from_check2"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info2, "b")
+qc_export_label <- "inconsistent_facility_info2"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_inconsistent_fid2 <- n_mc
+facility_data <- corrected_df
+```
+
+```{r, eval=is_tanzania, results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "correct_day0_inconsistent_facilities2"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info2, "c")
+qc_export_label <- "inconsistent_facility_info2"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+facility_data <- corrected_df
+n_inconsistent_facility_info2 <- n_detected
+```
+
+#### Discrepancy in facility information 3 [Logic/Context check `r qc_inconsistent_facility_info3`]
+
+This check is relevant and implemented only for Senegal.
+
+```{r}
+write(" o Discrepancy in facility IDs (vs. main device) - Senegal only", stderr())
+```
+
+`r if ( is_senegal ) { paste0('::: {custom-style="redparagraph"}\n\nInitial check ', qc_inconsistent_facility_info3, 'a\n\n:::')}`
+
+```{r, eval=is_senegal, results='asis'}
+qc_description <- "Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the device which is normally used in this facility **fid_from_main_device**."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info3"
+df <- facility_data
+qc_text <- "inconsistent facility information"
+qc_idx <- paste0(qc_inconsistent_facility_info3,"a")
+qc_export_label <- "inconsistent_facility_info3"
+qc_export_description <- "facility information between the child ID and fid_from_main_device is inconsistent"
+
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_inconsistent_facility_info3 <- n_detected
+```
+
+```{r, eval=is_senegal, results='asis'}
+mc_description <- ""
+to_correct_df <- facility_data
+correction_type <- "correct_day0_inconsistent_facilities3"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_inconsistent_facility_info3, "b")
+qc_export_label <- "inconsistent_facility_info3"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_inconsistent_fid3 <- n_mc
+facility_data <- corrected_df
+```
+
+```{r}
+n_edit_inconsistent_fid_records <- n_edit_inconsistent_fid1a + n_edit_inconsistent_fid1b + n_edit_inconsistent_fid2 + n_edit_inconsistent_fid3
+n_inconsistent_fid_records <- n_inconsistent_facility_info1 + n_inconsistent_facility_info2 + n_inconsistent_facility_info3
+```
+
+
+```{r}
+write(" o Recalculate fid from device", stderr())
+```
+
+```{r}
+facility_data <- facility_data %>% 
+  dplyr::select(facility_cols)
+```
+
+```{r}
+facility_data <- facility_data %>% 
+  timci::allocate_screening_facility(research_facilities) %>%
+  dplyr::select(c(facility_cols,
+                  "fid_from_device",
+                  "fid_from_main_device"))
+```

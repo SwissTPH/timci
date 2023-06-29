@@ -116,7 +116,7 @@ if (!is.null(raw_oth_fu_data)) {
       dplyr::rename(child_id = 'a1-pid',
                     day7_phonenb = 'a1-phonenb_manual') %>%
       dplyr::group_by(child_id) %>%
-      filter(date == max(date)) %>%
+      dplyr::filter(date == max(date)) %>%
       dplyr::ungroup() %>%
       arrange(child_id, is.na(day7_phonenb)) %>% 
       distinct(child_id, .keep_all = TRUE)  %>% 
@@ -193,7 +193,7 @@ pii_cols <- c("child_id",
 ext_ltfu <- merge(ltfu, pii[, pii_cols], by = c("child_id"))
 if (fu_fid == Sys.getenv('TIMCI_CRF_DAY7_FID')) {
   tmp <- timci::export_df2xlsx(ext_ltfu, output_dir, "day7_lost_to_followup_incl_pii")
-  tmp <- timci::export_df2xlsx(ext_ltfu %>% filter(is.na(fu_attempts)),
+  tmp <- timci::export_df2xlsx(ext_ltfu %>% dplyr::filter(is.na(fu_attempts)),
                                output_dir,
                                "day7_lost_to_followup_no_attempt_incl_pii")
 } else if (params$fu_fid == Sys.getenv('TIMCI_CRF_DAY28_FID')) {

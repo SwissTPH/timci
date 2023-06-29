@@ -1,14 +1,22 @@
-## Day 7 follow-up outcome data quality checks\n\n
+\newpage
 
 ```{r}
 write("Export Day 7 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
+```
+
+## Day 7 follow-up outcome data quality checks
+
+```{r}
+n_death_prior_day0_day7fu <- 0
+n_hospit_prior_day0_day7fu <- 0
+n_death_prior_hospit_day7fu <- 0
 ```
 
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 
 ```{r}
 day7fu_data <- allday7fu_data %>%
-  dplyr::filter ( proceed_day7 == 1 )
+  dplyr::filter( proceed_day7 == 1 )
 n_raw_successday7fu_records <- nrow(day7fu_data)
 day7fu_is_not_null <- !is.null(day7fu_data)
 day7fu_is_not_empty <- timci::is_not_empty(day7fu_data)
@@ -21,9 +29,9 @@ day7fu_data <- day7fu_data %>%
   dplyr::mutate(window = ifelse(days >= 7 & days <= 10, 1, 0))
 ```
 
-### Duplicate management\n\n
+### Duplicate management
 
-#### Successful follow-up duplicates [compliance check `r qc_duplicated_day7fu`]\n\n
+#### Successful follow-up duplicates [Context check `r qc_duplicated_day7fu`]
 
 ```{r}
 write(" o Successful follow-up duplicates", stderr())
@@ -31,10 +39,10 @@ write(" o Successful follow-up duplicates", stderr())
 
 `r if (is_kenya) {'##### Initial check'}`
 
-```{r, eval=!is.null(day7fu_data)&is_kenya, results='asis'}
+```{r, eval=day7fu_is_not_null&is_kenya, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant."
 qc_rule <- "Identify duplicated records that correspond to different participants (participants for whom duplicates were created at enrolment) and reallocate these records to the appropriate participant."
-qc_type <- "duplicates"
+qc_type <- "duplicates_with_names"
 df <- day7fu_data
 col_id <- "child_id"
 col_date <- "start"
@@ -63,10 +71,10 @@ if (!is.null(duplicate_edits)) {
 
 `r if (is_kenya) {'##### Final check after manual edits'}`
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
-qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, Only the most recent successful Day 7 follow-up is kept."
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, only the most recent successful Day 7 follow-up is kept."
 qc_rule <- "Delete all older records and keep only the most recent when more than one successful follow-up is available for the same participant."
-qc_type <- "duplicates"
+qc_type <- "duplicates_with_names"
 df <- day7fu_data
 col_id <- "child_id"
 col_date <- "start"
@@ -85,18 +93,158 @@ n_dropped_duplicate_day7fu_records <- nrow(day7fu_data) - nrow(cleaned_df)
 day7fu_data <- cleaned_df
 ```
 
-### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day7fu`]\n\n
+### Dates
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
-qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 7 follow-up."
+#### Dates of follow-up
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+df <- day7fu_data %>% 
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit),
+        by = "child_id",
+        all.x = TRUE)
+```
+
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_call, date_visit, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and Day 7 follow-up") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+#### Follow-up anterior to enrolment [Context check `r qc_call_before_enrolment_day7fu`]
+
+```{r}
+write(" o Check for follow-up date anterior to date of enrolment", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "Follow-up should have happened 7 days after enrolment on Day 0 and cannot have happened before the date of enrolment."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
+col_date1 <- "date_call"
+col_date2 <- "date_visit"
+qc_text <- "a date of call before the enrolment date"
+qc_idx <- qc_call_before_enrolment_day7fu
+qc_export_label <- "followup_before_enrolment"
+qc_export_description <- "the follow-up was conducted before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_fu_prior_day0_day7fu <- n_detected
+```
+
+#### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day7fu`]
+
+```{r}
+write(" o Missing date of hospitalisation", stderr())
+```
+
+```{r, results='asis', eval=day7fu_is_not_null}
+qc_description <- "All hospitalised participants should have complete information about their hospital visit/hospitalisation."
+qc_rule <- action_alert_no_modification
+qc_type <- "missing_value"
+df <- day7fu_data %>%
+  dplyr::mutate(all_hf_visit_day7 = ifelse(status_day7 == 2 | admission == 1,
+                                           1,
+                                           0)) %>%
+  dplyr::filter(all_hf_visit_day7 == 1)
+col_value <- "date_hosp_day7"
+qc_text <- "missing hospitalisation date"
+qc_idx <- qc_missing_hospit_date_day7fu
+qc_export_label <- "missing_hospitalisation_date"
+qc_export_description <- "the date of hospital visit/hospitalisation is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_hospit_date <- n_detected
+```
+
+#### Dates of hospitalisation
+
+```{r}
+write(" o Visualisation of dates of hospitalisation", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
-  merge(day0_data,
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit),
+        by = "child_id",
+        all.x = TRUE)
+```
+
+```{r}
+fig_caption <- "Spatiotemporal pattern of number of days between "
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+y_col <- "start_time1"
+y_lbl <- "Start time of record entry"
+y_is_time <- TRUE
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+comparison <- "type"
+```
+
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_hosp_day7, date_visit, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and hospitalisation") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+#### Hospitalisations anterior to enrolment [Context check `r qc_hospit_before_enrolment_day7fu`]
+
+```{r}
+write(" o Invalid date of hospitalisation", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "The hospital visit should have happened after enrolment on Day 0."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy_fu"
+df <- day7fu_data %>% 
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit,
+                        hospit,
+                        journey,
+                        prev_hf_type,
+                        prev_hosp),
         by = "child_id",
         all.x = TRUE)
 col_date1 <- "date_hosp_day7"
 col_date2 <- "date_visit"
+fu_cols <- c("hospit", "journey", "prev_hf_type", "prev_hosp")
 qc_text <- "a date of hospitalisation before the enrolment date"
 qc_idx <- qc_hospit_before_enrolment_day7fu
 qc_export_label <- "hospit_before_enrolment"
@@ -104,18 +252,91 @@ qc_export_description <- "the reported date of hospitalisation was before the en
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+n_hospit_prior_day0_day7fu <- n_detected
 ```
 
-### Invalid date of death [context check `r qc_death_before_enrolment_day7fu`]\n\n
+#### Missing date of death [Mandatory check `r qc_missing_death_date_day7fu`]
 
-```{r, eval=!is.null(day7fu_data), results='asis'}
-qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 7 follow-up."
+```{r}
+write(" o Missing date of death", stderr())
+```
+
+```{r, results='asis', eval=day7fu_is_not_null}
+qc_description <- "All deceased participants should have complete information about their death."
 qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
+qc_type <- "missing_value"
+col_value <- "date_death_day7"
+df <- day7fu_data %>%
+  dplyr::filter(status_day7 == 3)
+qc_text <- "missing death date"
+qc_idx <- qc_missing_death_date_day7fu
+qc_export_label <- "missing_death_date"
+qc_export_description <- "the date of death is missing"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_missing_death_date <- n_detected
+```
+
+#### Dates of death
+
+```{r, eval=day7fu_is_not_null, results='asis'}
 df <- day7fu_data %>% 
-  merge(day0_data,
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit),
         by = "child_id",
         all.x = TRUE)
+```
+
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_death_day7, date_visit, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and death (as reported at Day 7 follow-up)") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(df), fig.asp=1}
+ggplot2::ggplot(df %>%
+                  dplyr::mutate(diff = floor(difftime(date_death_day7, date_hosp_day7, units = "days"))) %>% 
+                  dplyr::mutate(week = lubridate::floor_date(as.Date(date_call),
+                                                             "week",
+                                                             week_start = getOption("lubridate.week.start", 1))),
+                ggplot2::aes(x = week, y = diff)) +
+  ggplot2::geom_point() +
+  ggplot2::labs(x = "Weeks",
+                y = "Number of days between enrolment and hospitalisation") +
+  ggplot2::scale_x_date(date_breaks = dbreak_duration,
+                        date_labels = "%b%y") +
+  ggplot2::facet_wrap(~ fid,
+                      ncol = nfacetperrow) +
+  ggplot2::theme(text = element_text(size = tsize),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank())
+```
+
+#### Deaths anterior to enrolment [Context check `r qc_death_before_enrolment_day7fu`]
+
+```{r}
+write(" o Check for date of death anterior to date of enrolment", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "Death should have happened after enrolment on Day 0."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
 col_date1 <- "date_death_day7"
 col_date2 <- "date_visit"
 qc_text <- "a date of death before the enrolment date"
@@ -125,25 +346,120 @@ qc_export_description <- "the reported date of death was before the enrolment da
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_death_prior_day0_day7fu <- n_detected
 ```
 
-### Data cleaning summary\n\n
+#### Deaths anterior to hospitalisation [Context check `r qc_death_before_hospit_day7fu`]
+
+```{r}
+write(" o Check for date of death anterior to date of hospitalisation", stderr())
+```
+
+```{r, eval=day7fu_is_not_null, results='asis'}
+qc_description <- "Death should have happened after hospital visit/hospitalisation."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+col_date1 <- "date_death_day7"
+col_date2 <- "date_hosp_day7"
+qc_text <- "a date of death before the hospital visit/hospitalisation date"
+qc_idx <- qc_death_before_hospit_day7fu
+qc_export_label <- "death_before_hospit"
+qc_export_description <- "the reported date of death was before the hospital visit/hospitalisation date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_death_prior_hospit_day7fu <- n_detected
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+The columns listed in the table below are dropped from the cleaned `r db_name` database.
+
+```{r, eval=day7fu_pii_drops_is_not_empty, results='asis'}
+day7fu_pii_drops %>%
+  dplyr::select(new) %>%
+  knitr::kable(row.names = FALSE,
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
+```
+
+```{r}
+day7fu_data_no_pii <- day7fu_data %>%
+  dplyr::select(dplyr::any_of(c(day7fu_deidentified_dict$new)))
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
+
+```{r}
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_day7fu_records <- nrow(day7fu_data_no_pii)
+```
+
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
-n_cleaned_day7fu_records <- nrow(day7fu_data)
-```
-
-```{r}
 timci::create_day7fu_outcome_qc_flowchart(n_raw_successday7fu_records,
                                           n_dropped_duplicate_day7fu_records,
+                                          n_fu_prior_day0_day7fu,
+                                          n_death_prior_day0_day7fu,
+                                          n_hospit_prior_day0_day7fu,
+                                          n_death_prior_hospit_day7fu,
                                           n_cleaned_day7fu_records)
 ```
 
-### Data export\n\n
+### Data overview
+
+```{r}
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
+  dplyr::mutate(across(c(device_id,
+                         cg_reached,
+                         cg_ok,
+                         status_day7,
+                         cure_day7,
+                         admission),
+                       factor)) %>%
+  dplyr::mutate(across(c(date_call,
+                         date_hosp_day7),
+                       ~format(as.Date(.), "%Y-%m-%d"))) %>% 
+  dplyr::mutate(dplyr::across(c(start),
+                              ~format(as.POSIXct(.))))
+
+if ( "location_death_day7" %in% colnames(day7fu_data_no_pii) ) {
+  day7fu_data_no_pii <- day7fu_data_no_pii %>%
+    dplyr::mutate(dplyr::across(c(location_death_day7),
+                                as.character))
+}
+  
+```
+
+```{r, eval=!is_tanzania}
+day7fu_data_no_pii <- day7fu_data_no_pii %>%
+  dplyr::mutate(across(c(call_ok),
+                       factor))
+```
+
+```{r, results='asis'}
+skimr::skim(day7fu_data_no_pii)
+```
+
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -157,96 +473,10 @@ timci::dataset_export(raw_successday7fu_data,
                       "Raw successful Day 7 follow-up only)")
 ```
 
-```{r}
-day7fu_data <- day7fu_data %>%
-  dplyr::mutate(across(c(device_id,
-                         sys_submit_id,
-                         cg_reached,
-                         cg_ok,
-                         status_day7,
-                         cure_day7,
-                         admission),
-                       factor)) %>%
-  dplyr::mutate(across(c(date_call,
-                         date_hosp_day7),
-                       ~format(as.Date(.), "%Y-%m-%d"))) %>% 
-  dplyr::mutate(across(c(start,
-                         end),
-                       ~format(as.Date(.), "%Y-%m-%d %H:%M:%S"))) %>%
-  dplyr::mutate(across(c(location_death_day7),
-                       as.character)) 
-```
-
-```{r, eval=!is_tanzania}
-day7fu_data <- day7fu_data %>%
-  dplyr::mutate(across(c(call_ok),
-                       factor))
-```
-
 ```{r, results = 'asis'}
-timci::dataset_export(day7fu_data,
+timci::dataset_export(day7fu_data_no_pii,
                       "04b",
                       "timci_followup_successful_day7_data",
                       locked_db_dir,
                       "Cleaned successful Day 7 follow-up data")
-```
-
-```{r day7-lost-to-followup}
-ltfu <- NULL
-if (!is.null(day7fu_data)) {
-  ltfu <- timci::generate_ltfu_log(df = day0_data,
-                                   fudf = allday7fu_data,
-                                   end_date = 12,
-                                   raw = FALSE)
-}
-```
-
-```{r locked-day7-lost-to-followup}
-locked_ltfu <- NULL
-if (!is.null(allday7fu_data)) {
-  if (nrow(allday7fu_data)>0) {
-    locked_ltfu <- timci::generate_ltfu_log(df = day0_data,
-                                            fudf = allday7fu_data,
-                                            end_date = 12,
-                                            raw = FALSE)
-  }
-}
-```
-
-```{r}
-if (!is.null(ltfu)) {
-  fn <- timci::export_df2xlsx(ltfu,
-                              rctls_dir,
-                              "04c_day7_lost_to_followup")
-}
-```
-
-```{r}
-if (!is.null(locked_ltfu)) {
-  fn <- timci::export_df2xlsx(locked_ltfu,
-                              locked_db_dir,
-                              "04c_day7_lost_to_followup")
-}
-```
-
-```{r}
-# if (!is.null(pii) & !is.null(raw_day7fu_data)) {
-#   fu7all <- timci::generate_fu_log(pii,
-#                                    raw_day7fu_data,
-#                                    0,
-#                                    12,
-#                                    7,
-#                                    10,
-#                                    ext = TRUE,
-#                                    deidentify = TRUE)
-#   fn <- timci::export_df2xlsx(fu7all,
-#                               params$rctls_dir,
-#                               "04d_timci_deidentified_day7_fu_weekly_log_all")
-# }
-```
-
-### Data summary statistics\n\n
-
-```{r, results='asis'}
-skimr::skim(day7fu_data)
 ```

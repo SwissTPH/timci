@@ -8,23 +8,6 @@
 match_from_day0_xls_dict <- function(df,
                                      is_pilot = FALSE) {
 
-  # if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
-  #   xls_filename <- "main_dict_senegal.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
-  #   xls_filename <- "main_dict_kenya.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-  #   xls_filename <- "main_dict_india.xlsx"
-  # } else if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
-  #   if ( is_pilot ) {
-  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-  #   } else{
-  #     xls_filename <- "main_dict_tanzania.xlsx"
-  #   }
-  # } else{
-  #   xls_filename <- "main_dict_tanzania.xlsx"
-  # }
-  #df <- match_from_xls_dict(df, xls_filename)
-
   # Import dictionary
   dictionary <- timci::import_country_specific_xls_dict("main_dict.xlsx",
                                                         Sys.getenv('TIMCI_COUNTRY'))
@@ -42,25 +25,6 @@ match_from_day0_xls_dict <- function(df,
 #' @export
 
 read_day0_xls_dict <- function(is_pilot = FALSE) {
-
-  # if ( Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ) {
-  #   xls_filename <- "main_dict_senegal.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ) {
-  #   xls_filename <- "main_dict_kenya.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'India' ) {
-  #   xls_filename <- "main_dict_india.xlsx"
-  # } else if ( Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ) {
-  #   if ( is_pilot ) {
-  #     xls_filename <- "main_dict_tanzania_pilot_baseline.xlsx"
-  #   } else {
-  #     xls_filename <- "main_dict_tanzania.xlsx"
-  #   }
-  # } else{
-  #   xls_filename <- "main_dict_tanzania.xlsx"
-  # }
-  #
-  # xls_pathname <- system.file(file.path('extdata', xls_filename), package = 'timci')
-  # dictionary <- readxl::read_excel(xls_pathname)
 
   dictionary <- import_country_specific_xls_dict("main_dict.xlsx",
                                                  country = Sys.getenv('TIMCI_COUNTRY'))
@@ -81,14 +45,10 @@ process_facility_data <- function(df,
 
   cols <- colnames(df)
 
-  if ( 'crfs-t02b-contact_start' %in% cols ) {
-    df$'crfs-t02b-contact_start' <- strftime(x = df$'crfs-t02b-contact_start',
-                                             format = "%Y-%m-%d %T")
-  }
-
   if ('a3-a3_a_7' %in% cols) {
     # Create a deidentified version of the date of birth with a month and year accuracy for export
-    df <- df %>% dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
+    df <- df %>%
+      dplyr::mutate(ymdob = ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m"), ''))
     # Format the date of birth
     df$'a3-a3_a_7' <- ifelse(!is.na(df$'a3-a3_a_7'), strftime(df$'a3-a3_a_7',"%Y-%m-%d"), '')
   }
@@ -101,26 +61,10 @@ process_facility_data <- function(df,
     df$'a3-yob' <- ifelse(!is.na(df$'a3-yob'), strftime(df$'a3-yob',"%Y"), '')
   }
 
-  # Extract age in days (WHO category)
-  if ('a3-a3_a_9' %in% cols) {
-    df$yi_age_ctg_tmp <- sapply(df$'a3-a3_a_9', timci::convert_yi_age2ctg)
-  }
-  if ('a3-a3_a_9a' %in% cols) {
-    df$yi_age_ctg_tmp2 <- sapply(df$'a3-a3_a_9a', timci::convert_yi_age2ctg)
-  }
-  if ('a3-a3_a_8' %in% cols) {
-    df$'a3-a3_a_8' <- ifelse(is.na(df$'a3-a3_a_8') & df$'a3-is_young_infant' == 1,
-                             ifelse(!is.na(df$'a3-a3_a_9') & df$'a3-dobk' == 1,
-                                    df$yi_age_ctg_tmp,
-                                    ifelse(!is.na(df$'a3-a3_a_9a'),
-                                           df$yi_age_ctg_tmp2,
-                                           "")),
-                             df$'a3-a3_a_8')
-  }
-
   # Combine exact and approximate options to get the age in years
   if ('a3-a3_a_3' %in% cols) {
     df$'a3-a3_a_3' <- ifelse(!is.na(df$'a3-a3_a_3'), df$'a3-a3_a_3', df$'a3-a3_a_2a')
+    df$'a3-a3_a_3' <- as.numeric(df$'a3-a3_a_3')
   } else {
     df$'a3-a3_a_3' <- df$'a3-a3_a_2a'
   }
@@ -148,9 +92,31 @@ process_facility_data <- function(df,
                              ifelse(df$'a3-a3_a_5' != 98, df$'a3-a3_a_5', NA))
   }
 
-  if ('a3-a3_a_5' %in% cols) {
-    df$'a3-a3_a_5' <- ifelse(df$'a3-a3_a_5' == 98 | (df$'a3-dobk' == 98 & df$'a3-a3_a_3' > 1), 0, 1)
-  }
+  # Convert to WHO age categories
+  df <- df %>%
+    dplyr::mutate(age_ctg = dplyr::case_when(
+      # Exact date of birth known
+      as.numeric(`a3-a3_a_9`) >= 1 & as.numeric(`a3-a3_a_9`) < 7                                      ~ "[1-6d]",
+      as.numeric(`a3-a3_a_9`) >= 7 & as.numeric(`a3-a3_a_9`) < 28                                     ~ "[7-27d]",
+      as.numeric(`a3-a3_a_9`) >= 28 & as.numeric(`a3-a3_a_9`) < 60                                    ~ "[28-59d]",
+      as.numeric(`a3-a3_a_9`) >= 60 & as.numeric(`a3-a3_a_9`) < 365                                   ~ "[60-364d]",
+      as.numeric(`a3-a3_a_9`) >= 365 & as.numeric(`a3-a3_a_9`) < 1827                                 ~ "[12-59m]",
+      # Non-exact date of birth
+      as.numeric(`a3-a3_a_9a`) >= 0 & as.numeric(!is.na(`a3-a3_a_9b`)) & as.numeric(`a3-a3_a_9a`) < 7 ~ "[1-6d]",
+      as.numeric(`a3-a3_a_9a`) >= 7 & as.numeric(`a3-a3_a_9a`) < 28                                   ~ "[7-27d]",
+      as.numeric(`a3-a3_a_9a`) >= 28 & as.numeric(`a3-a3_a_9a`) < 60                                  ~ "[28-59d]",
+      as.numeric(`a3-a3_a_9a`) >= 60 & as.numeric(`a3-a3_a_9a`) < 365                                 ~ "[60-364d]",
+      as.numeric(`a3-a3_a_9a`) >= 365 & as.numeric(`a3-a3_a_9a`) < 1827                               ~ "[12-59m]",
+      # Age categories
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 0 & as.numeric(`a3-a3_a_8`) == 1      ~ "[1-6d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 0 & as.numeric(`a3-a3_a_8`) == 2      ~ "[7-27d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) == 1                                     ~ "[28-59d]",
+      as.numeric(`a3-a3_a_2`) == 0 & as.numeric(`a3-a3_a_5`) >= 2                                     ~ "[60-364d]",
+      as.numeric(`a3-a3_a_2`) > 0 & as.numeric(`a3-a3_a_2`) < 5                                       ~ "[12-59m]",
+      as.numeric(`a3-incl1`) == 0 | as.numeric(`a3-excl1`) == 1                                       ~ "non-eligible age",
+      .default = "")) %>%
+    dplyr::select(-`a3-a3_a_8`)  %>%
+    dplyr::rename(`a3-a3_a_8` = age_ctg)
 
   # Format the location
   if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {
@@ -266,7 +232,7 @@ process_facility_data <- function(df,
                   "crfs-t09a2-imcirx_hf"
                   )
 
-  df <- format_multiselect_asws(df, multi_cols, sep)
+  df <- timci::format_multiselect_asws(df, multi_cols, sep)
 
   text_field_cols <- c('visit_reason-a3_c_1o',
                        'visit_reason-main_cg_name',
@@ -296,9 +262,22 @@ process_facility_data <- function(df,
 
   # Match column names with names from dictionary
   df <- timci::match_from_day0_xls_dict(df, is_pilot)
+  cols <- colnames(df)
 
   # Format dates
   df$date_prev <- strftime(df$date_prev,"%Y-%m-%d")
+  if ( 'screening_start' %in% cols ) {
+    df$screening_start <- strftime(strptime(x = df$screening_start, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'contact_start' %in% cols ) {
+    df$contact_start <- strftime(strptime(x = df$contact_start, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'consent_end' %in% cols ) {
+    df$consent_end <- strftime(strptime(x = df$consent_end, format = "%Y-%m-%dT%T"))
+  }
+  if ( 'sd_start' %in% cols ) {
+    df$sd_start <- strftime(strptime(x = df$sd_start, format = "%Y-%m-%dT%T"))
+  }
 
   df
 
@@ -424,7 +403,15 @@ extract_screening_data <- function(df,
   dictionary <- dictionary %>%
     dplyr::filter(screening == 1)
 
-  df[dictionary$new]
+  if ("fid_from_device" %in% colnames(df)) {
+    cols <- c(dictionary$new,
+              "fid_from_device")
+  } else{
+    cols <- dictionary$new
+  }
+
+
+  df[cols]
 
 }
 
@@ -866,7 +853,7 @@ convert_age2ctg <- function(yi_ctg,
                     yr_ctg == 0 ~ "[60-364d]",
                     yr_ctg > 0 ~ "[12-59m]",
                     ( incl == 1 & excl != 1 ) ~ "[12-59m]",
-                    TRUE ~ "")
+                    .default = "")
 }
 
 #' Convert age in days to age categories (TIMCI-specific function)
@@ -888,4 +875,119 @@ convert_yi_age2ctg <- function(val) {
     }
   }
   res
+}
+
+#' Match facility data using the Drug dictionary adapted for each country to account for differences in the data collection (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with columns that match the specified country dictionary.
+#' @export
+
+match_from_drug_xls_dict <- function(df) {
+
+  # Import dictionary
+  dictionary <- timci::import_country_specific_xls_dict("drug_dict.xlsx",
+                                                        Sys.getenv('TIMCI_COUNTRY'))
+
+  # Match column names with names from dictionary
+  df <- df %>%
+    timci::match_from_dict(dictionary)
+
+  # Replace the space between different answers by a semicolon in multiple select questions
+  sep <- ";"
+  multi_cols <- c("rx_antimicrobials",
+                  "rx_antibio_oth",
+                  "rx_antimalarials",
+                  "rx_imci",
+                  "rx_creams",
+                  "rx_consumables",
+                  "rx_misc",
+                  "rx_antimicrobials_hf",
+                  "rx_antibio_oth_hf",
+                  "rx_antimalarials_hf",
+                  "rx_imci_hf",
+                  "rx_creams_hf",
+                  "rx_consumables_hf",
+                  "rx_misc_hf")
+
+  df <- timci::format_multiselect_asws(df, multi_cols, sep)
+  df
+
+}
+
+#' Create derived variable rx_has_been_prescribed (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with a new column.
+#' @import dplyr
+#' @export
+
+calculate_antibio_has_been_prescribed <- function(df) {
+
+  out <- df
+  cols <- colnames(out)
+  rx_cols_list <- c("rx_amoxicillin",
+                    "rx_penicillinG",
+                    "rx_ceftriaxone",
+                    "rx_ciprofloxacin",
+                    "rx_gentamicin",
+                    "rx_metronidazol",
+                    "rx_ampicillin",
+                    "rx_azithromycin",
+                    "rx_aclav",
+                    "rx_benzathinepeniG",
+                    "rx_cotrimoxazole",
+                    "rx_cef_antibiotics")
+  rx_cols <- c()
+  for ( ccol in rx_cols_list ) {
+    if ( ccol %in% cols ) {
+      rx_cols <- c(rx_cols, ccol)
+    }
+  }
+  out$antibio_has_been_prescribed <- ( (rowSums(out[, rx_cols] == 1, na.rm = TRUE ) > 0) * 1 )
+
+  out
+
+}
+
+#' Create derived variable rx_has_been_recorded (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @return This function returns a dataframe with a new column.
+#' @import dplyr
+#' @export
+
+calculate_antibio_has_been_recorded <- function(df) {
+
+  out <- df
+  cols <- colnames(out)
+
+  rx_cols_list <- c("rx_amoxicillin_hf",
+                    "rx_penicillinG_hf",
+                    "rx_ceftriaxone_hf",
+                    "rx_ciprofloxacin_hf",
+                    "rx_gentamicin_hf",
+                    "rx_metronidazol_hf",
+                    "rx_ampicillin_hf",
+                    "rx_azithromycin_hf",
+                    "rx_aclav_hf",
+                    "rx_benzathinepeniG_hf",
+                    "rx_cotrimoxazole_hf",
+                    "rx_cef_antibiotics_hf")
+
+  rx_cols <- c()
+  for ( ccol in rx_cols_list ) {
+    if ( ccol %in% cols ) {
+      rx_cols <- c(rx_cols, ccol)
+    }
+  }
+
+  if ( length(rx_cols) > 0 ) {
+    out$antibio_has_been_recorded <- ( (rowSums(out[, rx_cols] == 1, na.rm = TRUE ) > 0) * 1 )
+  } else {
+    out$antibio_has_been_recorded <- 0
+  }
+
+  out
+
 }

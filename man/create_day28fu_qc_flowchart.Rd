@@ -8,6 +8,10 @@ create_day28fu_qc_flowchart(
   n_raw_allday28fu_records,
   n_after_lockdate_records,
   n_nonvalid_pid_records,
+  n_edit_nonvalid_pid_records,
+  n_drop_nonvalid_pid_records,
+  n_inconsistent_name_records,
+  n_edit_inconsistent_name_records,
   n_cleaned_allday28fu_records
 )
 }

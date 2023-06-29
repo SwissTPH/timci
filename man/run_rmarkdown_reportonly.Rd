@@ -33,11 +33,12 @@ run_rmarkdown_reportonly(
   sample_size = 1e+05,
   is_test = FALSE,
   operational_reports = TRUE,
-  is_pilot = FALSE
+  is_pilot = FALSE,
+  dm_pid = NULL
 )
 }
 \arguments{
-\item{rctls_pid}{Numeric value that refers ID of the RCT/LS ODK Central project}
+\item{rctls_pid}{Numeric value that refers to the ID of the RCT/LS ODK Central project}
 
 \item{rctls_pp}{Encryption passphrase associated with the RCT/LS ODK ODK Central project}
 
@@ -94,6 +95,8 @@ run_rmarkdown_reportonly(
 \item{operational_reports}{Boolean that enables to generate operational reports (optional, default set to TRUE)}
 
 \item{is_pilot}{Boolean that enables to select the pilot mode for Tanzania and India (optional, default set to FALSE)}
+
+\item{dm_pid}{Numeric value that refers to the ID of the Data Management (DM) ODK Central project}
 }
 \description{
 This function runs several Rmarkdown files to generate standardised automated reports for the Tools for Integrated Management of Childhood Illnesses (TIMCI) project.

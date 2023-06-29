@@ -1,5 +1,5 @@
 ---
-title: "TIMCI Data Quality Report"
+title: "TIMCI `r Sys.getenv('TIMCI_COUNTRY')` Data Quality Report"
 author: "`r if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania') {'Ifakara Health Institute (IHI)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {'King Georges Medical University (KGMU)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {'Université Cheikh Anta Diop de Dakar (UCAD)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {'University of Nairobi (UoN)'} else if (Sys.getenv('TIMCI_COUNTRY') == 'Myanmar') {'Burnet Institute (BI)'} else {'Swiss Tropical and Public Health Institute (Swiss TPH)'}`"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M GMT%z')`"
 output:
@@ -34,8 +34,10 @@ params:
   qc_dir: !r tempdir()
   locked_db_dir: !r tempdir()
   facility_data: NULL
+  start_date: NULL
   lock_date: NULL
   facility_data_audit: NULL
+  raw_drug_data: NULL
   raw_day7fu_data: NULL
   raw_hospit_data: NULL
   raw_day28fu_data: NULL
@@ -64,6 +66,10 @@ library(knitr)
 library(skimr)
 library(dataMaid)
 library(ggplot2)
+library(extrafont)
+library(lubridate)
+library(rlang)
+library(digest)
 ```
 
 ```{r setup-options, include=FALSE}
@@ -79,6 +85,7 @@ is_india <- Sys.getenv('TIMCI_COUNTRY') == 'India'
 is_tanzania <- Sys.getenv('TIMCI_COUNTRY') == 'Tanzania'
 is_kenya <- Sys.getenv('TIMCI_COUNTRY') == 'Kenya'
 is_senegal <- Sys.getenv('TIMCI_COUNTRY') == 'Senegal'
+is_ls <- is_kenya | is_senegal
 is_rct <- is_tanzania | is_india
 ```
 
@@ -99,6 +106,7 @@ spa_pid <- Sys.getenv("TIMCI_SPA_PID")
 qpid <- Sys.getenv("TIMCI_QUAL_PID")
 cgidi3_fid <- Sys.getenv("TIMCI_QUAL_CGIDI3_FID")
 
+start_date <- params$start_date
 lock_date <- params$lock_date
 
 rctls_dir <- params$rctls_dir
@@ -116,6 +124,7 @@ if (!is.null(params$facility_data)) {
   
   facility_data <- params$facility_data
   facility_data_audit <- params$facility_data_audit
+  raw_drug_data <- params$raw_drug_data
   raw_day7fu_data <- params$raw_day7fu_data
   raw_hospit_data <- params$raw_hospit_data
   raw_day28fu_data <- params$raw_day28fu_data
@@ -141,84 +150,291 @@ if (!is.null(params$facility_data)) {
 ```
 
 ```{r}
-qc_screening_other_fids <- "DQC_00_00"
-qc_screening_w_nonvalid_deviceid <- "DQC_00_01"
-qc_underaged_cg_id <- "DQC_00_02"
-qc_dup_repeats_id1 <- "DQC_00_03a"
-qc_dup_repeats_id2 <- "DQC_00_03b"
-qc_incorrect_date_setup <- "DQC_00_04"
-qc_screening_after_lockdate <- "DQC_00_04"
-qc_nonvalid_fid1 <- "DQC_00_05a"
-qc_nonvalid_fid2 <- "DQC_00_05b"
-qc_incorrect_enrolment_date <- "DQC_00_06"
-qc_nontimely_completion_id <- "DQC_00_07"
-qc_nontimely_submission_id <- "DQC_00_08"
-qc_duplicate_id1 <- "DQC_00_09a"
-qc_duplicate_id2 <- "DQC_00_09b"
-qc_multiple_enrolment_id <- "DQC_00_10"
-qc_multiple_enrolment_sex_discrepancy_id <- "DQC_00_11"
-qc_missing_cp_id <- "DQC_00_12"
-qc_missing_diagnosis_id <- "DQC_00_13"
-qc_missing_referral_id <- "DQC_00_14"
-qc_negative_nb_days_id <- "DQC_00_15"
-qc_pox_ <- "DQC_00_15"
-qc_summary_id <- "DQC_00_16"
-qc_pids_out_lock_range_day7fu <- "DQC_07_01"
-qc_nonvalid_day7fu <- "DQC_07_02"
-qc_duplicated_day7fu <- "DQC_07_03"
-qc_hospit_before_enrolment_day7fu <- "DQC_07_04"
-qc_death_before_enrolment_day7fu <- "DQC_07_05"
-qc_nontimely_day7_submission_id <- "DQC_07_06"
-qc_nontimely_day7_completion_id <- "DQC_07_07"
-qc_pids_out_lock_range_hospitfu <- "DQC_HS_01"
-qc_nonvalid_hospitfu <- "DQC_HS_02"
-qc_duplicated_hospitfu <- "DQC_HS_03"
-qc_hospit_before_enrolment <- "DQC_HS_04"
-qc_pids_out_lock_range_day28fu <- "DQC_28_01"
-qc_nonvalid_day28fu <- "DQC_28_02"
-qc_duplicated_day28fu <- "DQC_28_03"
-qc_hospit_before_enrolment_day28fu <- "DQC_28_04"
-qc_death_before_enrolment_day28fu <- "DQC_28_05"
+###################
+# Export settings #
+###################
+
+# Day 0 drug quality check IDs
+###############################
+qc_duplicate_drug <- "DQC_00_1DG_01"
+qc_manual_edits_drug <- "DQC_00_1DG_02"
+qc_amox_consistency_drug <- "DQC_00_1DG_03"
+qc_aclav_consistency_drug <- "DQC_00_1DG_04"
+qc_metro_consistency_drug <- "DQC_00_1DG_05"
+qc_ctx_consistency_drug <- "DQC_00_1DG_06"
+qc_cipro_consistency_drug <- "DQC_00_1DG_07"
+qc_genta_consistency_drug <- "DQC_00_1DG_08"
+qc_penig_consistency_drug <- "DQC_00_1DG_09"
+qc_ceftriaxone_consistency_drug <- "DQC_00_1DG_10"
+qc_cefixime_consistency_drug <- "DQC_00_1DG_11"
+qc_ampi_consistency_drug <- "DQC_00_1DG_12"
+qc_azi_consistency_drug <- "DQC_00_1DG_13"
+qc_benza_consistency_drug <- "DQC_00_1DG_14"
+qc_cefadroxil_consistency_drug <- "DQC_00_1DG_15"
+qc_doxycycline_consistency_drug <- "DQC_00_1DG_16"
+qc_erythromycin_consistency_drug <- "DQC_00_1DG_17"
+qc_flucloxacillin_consistency_drug <- "DQC_00_1DG_18"
+qc_mupirocin_consistency_drug <- "DQC_00_1DG_19"
+qc_tetracycline_consistency_drug <- "DQC_00_1DG_20"
+qc_isionazid_consistency_drug <- "DQC_00_1DG_21"
+qc_rifampicin_consistency_drug <- "DQC_00_1DG_22"
+qc_RH_consistency_drug <- "DQC_00_1DG_23"
+qc_RHZE_consistency_drug <- "DQC_00_1DG_24"
+qc_artesunate_consistency_drug <- "DQC_00_1DG_25"
+qc_arthemeter_consistency_drug <- "DQC_00_1DG_26"
+qc_AL_consistency_drug <- "DQC_00_1DG_27"
+qc_ASAQ_consistency_drug <- "DQC_00_1DG_28"
+qc_DHAPPQ_consistency_drug <- "DQC_00_1DG_29"
+qc_primaquine_consistency_drug <- "DQC_00_1DG_30"
+qc_quinine_consistency_drug <- "DQC_00_1DG_31"
+
+# Repeat visit check IDs
+#########################
+qc_pids_out_lock_range_repeat <- "DQC_00_3RV_01"
+qc_nonvalid_repeat <- "DQC_00_3RV_02"
+qc_nonconsistent_name_repeat <- "DQC_00_3RV_03"
+qc_visit_before_enrolment <- "DQC_00_3RV_04"
+
+# Day 7 quality check IDs
+##########################
+qc_nontimely_submission_day7fu <- "DQC_07_01"
+qc_nontimely_completion_day7fu <- "DQC_07_02"
+qc_other_fids_day7fu <- "DQC_07_03"
+qc_pids_out_lock_range_day7fu <- "DQC_07_04"
+qc_nonvalid_day7fu <- "DQC_07_05"
+qc_nonconsistent_name_day7fu <- "DQC_07_06"
+qc_duplicated_day7fu <- "DQC_07_07"
+qc_call_before_enrolment_day7fu <- "DQC_07_08"
+qc_missing_hospit_date_day7fu <- "DQC_07_09"
+qc_hospit_before_enrolment_day7fu <- "DQC_07_10"
+qc_missing_death_date_day7fu <- "DQC_07_11"
+qc_death_before_enrolment_day7fu <- "DQC_07_12"
+qc_death_before_hospit_day7fu <- "DQC_07_13"
+
+# Day 28 quality check IDs
+###########################
+qc_nontimely_submission_day28fu <- "DQC_28_01"
+qc_nontimely_completion_day28fu <- "DQC_28_02"
+qc_other_fids_day28fu <- "DQC_28_03"
+qc_pids_out_lock_range_day28fu <- "DQC_28_04"
+qc_nonvalid_day28fu <- "DQC_28_05"
+qc_nonconsistent_name_day28fu <- "DQC_28_06"
+qc_duplicated_day28fu <- "DQC_28_07"
+qc_missing_hospit_date_day28fu <- "DQC_28_08"
+qc_hospit_before_enrolment_day28fu <- "DQC_28_09"
+qc_missing_death_date_day28fu <- "DQC_28_10"
+qc_death_before_enrolment_day28fu <- "DQC_28_11"
+
+# Withdrawals quality check IDs
+################################
 qc_nonreconciled_withdrawals_id <- "DQC_WD_01"
+qc_withdrawal_before_enrolment <- "DQC_WD_02"
+
+# SPA quality check IDs
+########################
 qc_spa_sco_nonvalid_ids <- "DQC_SP_01"
 qc_spa_sco_duplicates <- "DQC_SP_02"
 qc_spa_sco_incomplete <- "DQC_SP_03"
 qc_spa_hcpi_nonvalid_ids <- "DQC_SP_04"
 qc_spa_hcpi_duplicates <- "DQC_SP_05"
+```
 
+```{r}
 action_alert_no_modification <- "Alert to the study team. No modification of the database."
+
+if (is_india) {
+  hospit_value <- 13
+} else{
+  hospit_value <- 1
+}
+```
+
+```{r}
+
+# Plot settings
+
+tsize <- 7
+tfont <- "Cambria"
+if (is_senegal) {
+  dbreak_duration <- "5 months"
+} else {
+  dbreak_duration <- "4 months"
+}
+nfacetperrow <- 4
+time_break_str <- "4 hours"
+time_format <- "%H:%M"
+y_min <- NA
+y_max <- NA
+```
+
+```{r}
+
+# Cryptographic settings
+
+crypto_algo <- "md5"
 ```
 
 \newpage
 
-# Context
+# Abbreviations & Definitions
+
+## Abbreviations
+
+| Abbreviation | Meaning                                                    |
+|--------------|------------------------------------------------------------|
+| .CSV         | Comma-Separated Value                                      |
+| DB           | DataBase                                                   |
+| LS           | Longitudinal Observational Study                           |
+| ODK          | Open Data Toolkit                                          |
+| PII          | Personnally Identifiable Information                       |
+| RCT          | Randomised Controlled Trial                                |
+| SPA          | Service Provision Assessment                               |
+| TIMCI        | Tools for the Integrated Management of Childhood Illnesses |
+
+: List of abbreviations
+
+## Definitions
+
+-   **Anonymisation**: Process of completely destroying direct or indirect identifiers and thereby making it impossible to identify the data subject.
+-   **Pseudonymisation (EU GDPR)**: Processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person.
+-   **Standard Operating Procedure (ICH GCP 1.55)**: Detailed written instructions to achieve uniformity of the performance of a specific function.  In simple terms, a SOP is a written process for a clinical site to perform a task the same way each time it is completed.
+
+\newpage
+
+# Introduction and aim
+
+This document describes the data review processes and outputs for the Tools for Integrated Management of Childhood Illness (TIMCI) project.
+
+Data cleaning and coding activities include data de-identification, duplicate management and free text management.
+
+-   Mandatory checks
+-   Compliance checks
+-   Reasonability checks
+-   Context checks
+-   Logic checks
+-   Expert knowledge checks
+
+Note that the data collection tools contain a list of in-built range and consistency checks to prevent errors during data manipulation.
+
+## Roles and responsibilities
+
+Procedures for cleaning and coding quantitative data are developed by the lead data manager at Swiss TPH to ensure consistency across countries.
+
+Data cleaning and coding activities are supervised by the in-country data manager in charge in each country, with possible country-specific additions.
+
+## Frequency
+
+Data quality checks will be run on a daily basis.
+
+At critical junctures of the pragmatic cluster RCT, the research database will be reviewed and cleaned per established procedures, before being locked.
+
+Consistency between the data cleaning procedures in each country will be regularly reviewed.
+
+## Distribution
+
+Each updated version is to be circulated to by the data management team to the research team in each TIMCI country.
+
+\newpage
+
+# `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
 
 ```{r}
-write(formats2h2("Context"),stderr())
-write("Write contextual information including dates, study facilities, facility and device correspondence", stderr())
+day7fu_is_not_null <- !is.null(raw_day7fu_data)
+day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
+```
+
+```{r, eval = day7fu_is_not_empty}
+day7_out <- timci::format_day7_data(raw_day7fu_data,
+                                    is_deidentified = FALSE)
+# Extract all Day 7 follow-up records
+raw_allday7fu_data <- day7_out[[3]]
+# Extract successful Day 7 follow-up records only
+raw_successday7fu_data <- day7_out[[1]]
 ```
 
 ```{r}
-start_date <- NULL
+hospitfu_is_not_null <- !is.null(raw_hospit_data)
+hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
+```
+
+```{r}
+day28fu_is_not_null <- !is.null(raw_day28fu_data)
+day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
+```
+
+<!-- Context -->
+
+```{r db-export-context-subsection, child = 'database_export_sub_rctls_context.Rmd'}
+```
+
+<!-- Screening -->
+
+```{r db-export-screening-subsection, child = 'database_export_sub_rctls_screening.Rmd'}
+```
+
+<!-- LS drug re-entry -->
+
+```{r db-export-day0-drug-subsection, child = if(is_ls) 'database_export_sub_rctls_day0_drug.Rmd'}
+```
+
+<!-- Day 0 enrolments -->
+
+```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
+```
+
+<!-- Withdrawals -->
+
+```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
+```
+
+<!-- Day 7 follow-up -->
+
+```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
+```
+
+```{r db-export-successfulday7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7_outcome.Rmd'}
+```
+
+<!-- Hospital follow-up -->
+
+```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
+```
+
+<!-- RCT Day 28 follow-up -->
+
+```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
+```
+
+```{r db-export-successfulday28fu-subsection, child = if(is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28_outcome.Rmd'}
+```
+
+<!-- Deaths -->
+
+```{r}
+disable <- FALSE
+```
+
+```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty & disable) 'database_export_sub_rctls_deaths.Rmd'}
+```
+
+<!-- Repeat scheduled and unscheduled visits -->
+
+```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
+```
+
+\newpage
+
+# Service Provision Assessment (SPA)
+
+## Cross-sectional quantitative studies
+
+```{r}
 end_date <- NULL
 facility_data_is_not_null <- !is.null(facility_data)
 facility_data_is_not_empty <- timci::is_not_empty(facility_data)
-```
 
-## Dates
-
-```{r load-RCT-LS-ODK-facility-data, results='asis', eval=facility_data_is_not_empty}
-start_date <- min(facility_data$date_visit)
-end_date <- max(facility_data$date_visit)
-if (is.null(lock_date)) {
-  lock_date <- end_date
-}
-week_nb <- ceiling(difftime(as.Date(lock_date), as.Date(start_date) - 1,units = "weeks"))
-if (is_senegal) {
-  cat(paste0("* Début de la collecte longitudinale au niveau des postes de santé : **", start_date, "**"))
-} else {
-  cat(paste0("* Facility data collection start: **", start_date, "**"))
-}
+tf_cond <- timci::is_not_empty(tf_data)
+pm_cond <- FALSE# timci::is_not_empty(pm_data)
 ```
 
 ```{r, results='asis'}
@@ -236,137 +452,21 @@ if (!is.null(spa_sco_data)) {
 }
 ```
 
-```{r, results='asis', eval=facility_data_is_not_empty}
-if (is_senegal) {
-  cat(paste0("* Clôture de la base de données : **", lock_date, "** (semaine **", week_nb,"** de la collecte)"))
-} else {
-  cat(paste0("* Database lock: **", lock_date, "** (week **", week_nb,"** of the data collection)"))
-}
+-   First round: **`r spa_start_date`** to **`r Sys.getenv("TIMCI_SPA_Q1_END_DATE")`**
+-   Second round: **`r Sys.getenv("TIMCI_SPA_Q1_END_DATE")`** to **`r Sys.getenv("TIMCI_SPA_Q2_END_DATE")`**
+-   Third round: **`r Sys.getenv("TIMCI_SPA_Q2_END_DATE")`** to **`r Sys.getenv("TIMCI_SPA_Q3_END_DATE")`**
+
+```{r, results='asis', eval=timci::is_not_empty(spa_sco_data), fig.asp=1}
+timci::generate_calendar_heatmap2(spa_sco_data,
+                                  date,
+                                  legendtitle = "Calendar heatmap of SPA submissions")
 ```
 
-## Study facilities
-
-```{r context-facility-subsection, child = 'context_facility_list.Rmd'}
+```{r, results='asis', eval=tf_cond, fig.asp=1}
+timci::generate_calendar_heatmap2(tf_data[[1]],
+                                  date,
+                                  legendtitle = "Calendar heatmap of time-flow submissions")
 ```
-
-```{r, results='asis', eval=is_india}
-cat("### Included facilities")
-```
-
-```{r, results='asis'}
-cat(paste0("Data collection was planned in **", facility_nb, "** facilities."))
-```
-
-```{r, results='asis'}
-facility_disp %>%
-  knitr::kable()
-```
-
-```{r, results='asis', eval=is_india}
-cat("### Excluded facilities")
-```
-
-```{r, results='asis', eval=is_india}
-cat("Data from the facilities listed in the table hereafter are present in the database despite the fact that these facilities are not part of the current study. The data from these facilities will therefore be deleted in subsequent data cleaning stages.")
-```
-
-```{r, results='asis', eval=is_india}
-excluded_facility_disp %>%
-  knitr::kable()
-```
-
-## Facility / device correspondence
-
-```{r, results='asis'}
-facility_device <- facility_data[facility_data$fid %in% research_facilities$facility_id, ] %>%
-  dplyr::select(c('device_id',
-                  'fid')) %>%
-  unique()
-facility_device <- facility_device %>%
-  merge(research_facilities,
-        by.x = 'fid',
-        by.y = 'facility_id',
-        all.x = TRUE) %>%
-  dplyr::select(c('device_id',
-                  'fid',
-                  'facility_name'))
-```
-
-```{r, results='asis'}
-if (is_senegal){
-  # Remove device identification row for Senegal (RA used wrong QR codes)
-  facility_device <- facility_device[!(facility_device$device_id  == "collect:Qrefi36S3VGHH9VP" & facility_device$fid == "F0059"),]
-}
-```
-
-```{r, results='asis'}
-cat(paste0("Data collection has been done using **", nrow(facility_device), "** tablets."))
-```
-
-```{r, results='asis'}
-facility_device %>%
-  knitr::kable(col.names = c("Device ID", "Facility ID", "Facility name"))
-```
-
-\newpage
-
-# `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
-
-```{r db-export-screening-subsection, child = 'database_export_sub_rctls_screening.Rmd'}
-```
-
-\newpage
-
-```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
-```
-
-\newpage
-
-```{r}
-day7fu_is_not_null <- !is.null(raw_day7fu_data)
-day7fu_is_not_empty <- timci::is_not_empty(raw_day7fu_data)
-```
-
-```{r db-export-day7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7.Rmd'}
-```
-
-\newpage
-
-```{r db-export-successfulday7fu-subsection, child = if(day7fu_is_not_empty) 'database_export_sub_rctls_day7_outcome.Rmd'}
-```
-
-\newpage
-
-```{r}
-hospitfu_is_not_null <- !is.null(raw_hospit_data)
-hospitfu_is_not_empty <- timci::is_not_empty(raw_hospit_data)
-```
-
-```{r db-export-hospit-subsection, child = if(hospitfu_is_not_empty) 'database_export_sub_rctls_hospit.Rmd'}
-```
-
-```{r}
-day28fu_is_not_null <- !is.null(raw_day28fu_data)
-day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
-```
-
-```{r db-export-day28fu-subsection, child = if (is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28.Rmd'}
-```
-
-```{r db-export-successfulday28fu-subsection, child = if(is_rct & day28fu_is_not_empty) 'database_export_sub_rctls_day28_outcome.Rmd'}
-```
-
-\newpage
-
-```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
-```
-
-```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty) 'database_export_sub_rctls_deaths.Rmd'}
-```
-
-\newpage
-
-# Service Provision Assessment (SPA)
 
 ```{r db-export-spa-subsection, child = 'database_export_sub_spa.Rmd'}
 ```
@@ -389,7 +489,7 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 
 # Qualitative studies
 
-```{r db-export-qual-subsection, child = 'database_export_sub_qual.Rmd'}
+```{r db-export-qual-subsection, eval = FALSE, child = 'database_export_sub_qual.Rmd'}
 ```
 
 \newpage
@@ -423,7 +523,6 @@ locked_allday7fu_data <- allday7fu_data
 ```
 
 ```{r, eval=is_rct}
-
 locked_allday28fu_data <- allday28fu_data
 
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
@@ -438,7 +537,7 @@ save(locked_day0_data,
      file = "timci_locked_data.rda")
 ```
 
-```{r, eval=!is_rct}
+```{r, eval=is_ls}
 # Save locked data to *.rda file to be reused in other rmarkdown documents if needed
 save(locked_day0_data,
      locked_allday7fu_data,

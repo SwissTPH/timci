@@ -1,19 +1,20 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/SwissTPH/timci/commits/master)
 
-# Tools for Integrated Management of Childhood Illnesses (TIMCI)
+# :stethoscope: Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
 `timci` is a R package for managing, exporting Markdown reports and visualising in a Shiny app the data collected by [ODK](https://getodk.org/) for the different studies of the TIMCI project (Tools for Integrated Management of Childhood Illnesses). 
 
 The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by [PATH](https://www.path.org/), in partnership with the [Swiss Tropical and Public Health Institute (swiss TPH)](https://www.swisstph.ch/en/) and local research organisations.
 
-The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and two Asian countries (the Indian state of Uttar Pradesh (UP) and Myanmar).
+The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and in the Indian state of Uttar Pradesh (UP). 
+
+The data collection includes a pragmatic cluster-randomized controlled trial in Tanzania and Uttar Pradesh (see [NCT04910750](https://clinicaltrials.gov/ct2/show/NCT04910750) for more details) while a longitudinal observational study is conducted in Kenya and Senegal (see [NCT05065320](https://clinicaltrials.gov/ct2/show/NCT05065320) for more details).
 
 |Country|Research partner|
 |-|-|
 |Kenya|University of Nairobi (UoN)|
 |India|King's College Medical University (KGMU)|
-|Myanmar|Burnet Institute (BI)|
 |Senegal|Université Cheikh Anta Diop de Dakar (UCAD)|
 |Tanzania|Ifakara Health Institute (IHI)|
 
@@ -63,7 +64,7 @@ To install `TinyTeX` from the `tinytex` package, please proceed as follow:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
-If specific LaTeX packages (e.g., `fancyhdr`, `lastpage`, `babel`, `tocbibind`) or styles are missing, they can be installed using the following commands:
+If specific LaTeX packages (e.g., `fancyhdr`, `lastpage`, `babel`, `tocbibind`, `worldflags`) or styles are missing, they can be installed using the following commands:
 
 ```r
 tinytex::tlmgr_install("fancyhdr")
@@ -80,7 +81,7 @@ In order to avoid the warning *No hyphenation patterns were preloaded for the la
 tinytex::tlmgr_install("hyphen-french")
 ```
 
-#### emayili
+#### :email: emayili
 This package is required to send emails using a gmail address.
 The function `send_email_tls` in the `timci` package requires `emayili v0.6.5` and above to work correctly.
 
@@ -423,5 +424,3 @@ Please make sure to update tests as appropriate.
 
 ## License
 [GPL-3]
-
-## Demo purpose

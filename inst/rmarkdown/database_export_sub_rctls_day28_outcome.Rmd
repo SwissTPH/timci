@@ -1,31 +1,39 @@
 \newpage
 
-## Day 28 follow-up outcome data quality checks\n\n
-
 ```{r}
 write("Export Day 28 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
 ```
+
+```{r}
+n_fu_prior_day0_day28fu <- 0
+n_death_prior_day0_day28fu <- 0
+n_hospit_prior_day0_day28fu <- 0
+n_death_prior_hospit_day28fu <- 0
+```
+
+
+## Day 28 follow-up outcome data quality checks
 
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 
 ```{r}
 day28fu_data <- allday28fu_data %>%
-  dplyr::filter ( proceed_day28 == 1 )
+  dplyr::filter( proceed_day28 == 1 )
 n_raw_successday28fu_records <- nrow(day28fu_data)
 day28fu_is_not_null <- !is.null(day28fu_data)
 day28fu_is_not_empty <- timci::is_not_empty(day28fu_data)
 ```
 
-Among the **`r n_cleaned_allday28fu_records`** cleaned **`r db_name`** record(s), there are **`r n_raw_successday7fu_records`** record(s) corresponding to successful Day 28 follow-up(s).
+Among the **`r n_cleaned_allday28fu_records`** cleaned **`r db_name`** record(s), there are **`r n_raw_successday28fu_records`** record(s) corresponding to successful Day 28 follow-up(s).
 
 ```{r, eval=day28fu_is_not_empty}
 day28fu_data <- day28fu_data %>%
   dplyr::mutate(window = ifelse(days >= 28 & days <= 32, 1, 0))
 ```
 
-### Duplicate management\n\n
+### Duplicate management
 
-#### Successful follow-up duplicates [compliance check `r qc_duplicated_day28fu`]\n\n
+#### Successful follow-up duplicates [Compliance check `r qc_duplicated_day28fu`]
 
 ```{r, eval=day28fu_is_not_null, results='asis'}
 qc_description <- "It is possible to have more than one successful follow-up records available for the same participant. In this case, following the guidance from the statistical analysis plan, Only the most recent successful Day 28 follow-up is kept."
@@ -49,18 +57,41 @@ n_dropped_duplicate_day28fu_records <- nrow(day28fu_data) - nrow(cleaned_df)
 day28fu_data <- cleaned_df
 ```
 
-### Invalid date of hospitalisation [context check `r qc_hospit_before_enrolment_day28fu`]\n\n
+### Missing date of hospitalisation [Mandatory check `r qc_missing_hospit_date_day28fu`]
+
+```{r}
+write(" o Missing date of hospitalisation", stderr())
+```
+
+### Invalid date of hospitalisation [Context check `r qc_hospit_before_enrolment_day28fu`]
+
+```{r}
+write(" o Invalid date of hospitalisation", stderr())
+```
 
 ```{r, eval=!is.null(day28fu_data), results='asis'}
 qc_description <- "The reported hospital visit should have happened between enrolment at Day 0 and the Day 28 follow-up."
 qc_rule <- action_alert_no_modification
-qc_type <- "date_discrepancy"
-df <- day28fu_data %>% 
-  merge(day0_data,
+qc_type <- "date_discrepancy_fu"
+df <- day28fu_data %>%
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        date_visit,
+                        hospit,
+                        journey,
+                        prev_hf_type,
+                        prev_hosp),
+        by = "child_id",
+        all.x = TRUE) %>%
+  merge(day7fu_data %>%
+          dplyr::select(child_id,
+                        date_hosp_day7),
         by = "child_id",
         all.x = TRUE)
+
 col_date1 <- "date_hosp_day28"
 col_date2 <- "date_visit"
+fu_cols <- c("hospit", "journey", "prev_hf_type", "prev_hosp")
 qc_text <- "a date of hospitalisation before the enrolment date"
 qc_idx <- qc_hospit_before_enrolment_day28fu
 qc_export_label <- "hospit_before_enrolment"
@@ -70,14 +101,26 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Invalid date of death [context check `r qc_death_before_enrolment_day28fu`]\n\n
+### Missing date of death [Mandatory check `r qc_missing_death_date_day28fu`]
+
+```{r}
+write(" o Missing date of death", stderr())
+```
+
+### Invalid date of death [Context check `r qc_death_before_enrolment_day28fu`]
+
+```{r}
+write(" o Invalid date of death", stderr())
+```
 
 ```{r, eval=!is.null(day28fu_data), results='asis'}
 qc_description <- "The reported death should have happened between enrolment at Day 0 and the Day 28 follow-up."
 qc_rule <- action_alert_no_modification
 qc_type <- "date_discrepancy"
-df <- day28fu_data %>% 
-  merge(day0_data,
+df <- day28fu_data %>%
+  merge(day0_data %>%
+          dplyr::select(child_id,
+                        date_visit),
         by = "child_id",
         all.x = TRUE)
 col_date1 <- "date_death_day28"
@@ -91,7 +134,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
@@ -104,10 +147,14 @@ n_cleaned_day28fu_records <- nrow(day28fu_data)
 ```{r}
 timci::create_day7fu_outcome_qc_flowchart(n_raw_successday28fu_records,
                                           n_dropped_duplicate_day28fu_records,
+                                          n_fu_prior_day0_day28fu,
+                                          n_death_prior_day0_day28fu,
+                                          n_hospit_prior_day0_day28fu,
+                                          n_death_prior_hospit_day28fu,
                                           n_cleaned_day28fu_records)
 ```
 
-### Data export\n\n
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -129,7 +176,7 @@ timci::dataset_export(day28fu_data,
                       "Cleaned successful Day 28 follow-up data")
 ```
 
-### Data summary statistics\n\n
+### Data summary statistics
 
 ```{r, results='asis'}
 skimr::skim(day28fu_data)

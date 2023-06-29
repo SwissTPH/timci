@@ -14,7 +14,7 @@ match_from_filtered_xls_dict(
 \arguments{
 \item{df}{Input dataframe}
 
-\item{xls_dict}{Excel file containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe}
+\item{xls_dict}{Excel spreadsheet containing 2 columns ('old' and 'new') that map the names of the variables in the input dataframe and the names of the variables in the output dataframe}
 
 \item{is_deidentified}{Boolean, flag to not export personally identifiable variable (default set to FALSE)}
 

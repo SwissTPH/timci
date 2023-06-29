@@ -1,17 +1,59 @@
+\newpage
+
 ```{r}
 write("Export withdrawal data and run corresponding quality checks", stderr())
 ```
 
-## Withdrawal quality checks\n\n
+## Withdrawal quality checks
+
+```{r}
+db_name <- "withdrawal"
+```
+
+```{r}
+n_raw_withdrawal_records <- 0
+raw_withdrawal_is_not_empty <- timci::is_not_empty(raw_withdrawal_data)
+```
+
+```{r, eval=raw_withdrawal_is_not_empty}
+n_raw_withdrawal_records <- nrow(raw_withdrawal_data)
+```
+
+There are **`r n_raw_withdrawal_records`** records in the raw `r db_name` database.
+
+```{r, eval=raw_withdrawal_is_not_empty}
+raw_withdrawal_data <- raw_withdrawal_data %>%
+  dplyr::select(date,
+                start,
+                end,
+                deviceid,
+                `page-qr_code_avail`,
+                `page-a1_a_4`,
+                `page-a1_a_4a`,
+                `page-study`,
+                `page-withdrawal`,
+                `page-withdrawal_reason`,
+                `meta-instanceID`)
+```
+
+```{r}
+n_drop_nonvalid_ids <- 0
+n_no_doc_child_id_withdrawal <- 0
+n_invalid_date_of_withdrawal <- 0
+```
+
+### Participant identification
 
 **Rule:** withdrawals with documented child IDs are kept in the locked Day 0 database, then removed in all the databases where entries are posterior to the date of withdrawal. If withdrawn IDs cannot be found in the locked Day 0 database, it is assumed that the caregiver withdrew during data collection. More information will be collected about this in the withdrawal form.
 
 ```{r, results='asis'}
-if (nrow(day0_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) { 
       raw_withdrawal_data$child_id <- ifelse(!is.na(raw_withdrawal_data$'page-a1_a_4'), raw_withdrawal_data$'page-a1_a_4', raw_withdrawal_data$'page-a1_a_4a')
       withdrawal_data2 <- raw_withdrawal_data[!is.na(raw_withdrawal_data$child_id), ]
+      withdrawal_data_no_doc <- raw_withdrawal_data[is.na(raw_withdrawal_data$child_id), ]
+      n_no_doc_child_id_withdrawal <- nrow(withdrawal_data_no_doc)
       withdrawal_data2$child_id <- gsub("O", "0", withdrawal_data2$child_id)
     }
   }
@@ -19,7 +61,7 @@ if (nrow(day0_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(day0_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) { 
       cat(paste0("**", nrow(raw_withdrawal_data), "** withdrawal(s) reported (among which **", nrow(withdrawal_data2),"** withdrawals with documented child IDs)."))
@@ -37,17 +79,24 @@ day0_data_id_withdrawal <- NULL
 non_reconciled_withdrawn_ids <- NULL
 `%!in%` <- Negate(`%in%`)
 
-if (nrow(day0_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(raw_withdrawal_data)) {
     if (nrow(raw_withdrawal_data) > 0) {
       
       # Non reconciled withdrawn IDs
-      non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% day0_data$child_id, ]
+      non_reconciled_withdrawn_ids <- withdrawal_data2[withdrawal_data2$child_id %!in% allday0_data$child_id, ]
+      n_drop_nonvalid_ids <- nrow(non_reconciled_withdrawn_ids)
       
       # Reconciled withdrawn IDs
-      day0_data_id_withdrawal <- day0_data[day0_data$child_id %in% withdrawal_data2$child_id, ]
+      day0_data_id_withdrawal <- allday0_data[allday0_data$child_id %in% withdrawal_data2$child_id, ] %>%
+          dplyr::select(child_id,
+                        fid,
+                        date_visit,
+                        uuid)
       day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
-        merge(withdrawal_data2, by = 'child_id', all.x = TRUE)
+        merge(withdrawal_data2,
+              by = 'child_id',
+              all.x = TRUE)
       
     }
   }
@@ -55,7 +104,7 @@ if (nrow(day0_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(day0_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(day0_data_id_withdrawal)) {
     cat(paste0("**", nrow(day0_data_id_withdrawal), "** participant(s) who withdrew found in the locked Day 0 database."))
   }
@@ -63,10 +112,12 @@ if (nrow(day0_data) > 0) {
 ```
 
 ```{r, results='asis'}
-if (nrow(day0_data) > 0) {
+if (nrow(allday0_data) > 0) {
   if (!is.null(non_reconciled_withdrawn_ids)) {
     non_reconciled_withdrawn_ids %>%
-      dplyr::select(c("child_id", "date", "page-withdrawal_reason")) %>%
+      dplyr::select(c("child_id",
+                      "date",
+                      "page-withdrawal_reason")) %>%
       knitr::kable(col.names = c("Child ID",
                                  "Withdrawal date",
                                  "Documented reason"),
@@ -83,7 +134,68 @@ timci::quality_check_export(non_reconciled_withdrawn_ids,
                             "withdrawals were not reconciled")
 ```
 
-### Data export\n\n
+### Invalid date of withdrawal [Context check `r qc_withdrawal_before_enrolment`]
+
+```{r}
+write(" o Invalid date of withdrawal", stderr())
+```
+
+```{r, eval=!is.null(day0_data_id_withdrawal), results='asis'}
+qc_description <- "The withdrawal date should have happened after enrolment at Day 0."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- day0_data_id_withdrawal
+col_date1 <- "date"
+col_date2 <- "date_visit"
+qc_text <- "a date of withdrawal before the enrolment date"
+qc_idx <- qc_withdrawal_before_enrolment
+qc_export_label <- "withdrawal_before_enrolment"
+qc_export_description <- "the date of withdrawal was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_invalid_date_of_withdrawal <- n_detected
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+day0_data_id_withdrawal <- day0_data_id_withdrawal %>%
+  dplyr::select(-"page-a1_a_4",
+                -uuid) %>%
+  dplyr::rename(uuid = `meta-instanceID`) %>% 
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                deviceid = ifelse(deviceid != "", digest(deviceid, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_withdrawal_records <- nrow(day0_data_id_withdrawal)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+timci::create_withdrawal_qc_flowchart(n_raw_withdrawal_records,
+                                      n_no_doc_child_id_withdrawal,
+                                      n_drop_nonvalid_ids,
+                                      n_invalid_date_of_withdrawal,
+                                      n_cleaned_withdrawal_records)
+```
+
+### Data export
 
 ```{r}
 write(" o Export withdrawal data", stderr())

@@ -8,10 +8,20 @@ create_screening_qc_flowchart(
   n_raw_screening_records,
   n_nonvalid_deviceid_records,
   n_other_fid_records,
+  n_before_startdate_records,
+  n_before_facility_startdate_records,
   n_after_lockdate_records,
   n_ineligible_cg_records,
+  n_nonvalid_fid_records,
+  n_edited_nonvalid_fid_records,
+  n_inconsistent_fid_records,
+  n_edited_inconsistent_fid_records,
+  n_repeat_visit_records,
   n_edited_repeat_visit_records,
   n_incorrect_date_setup_records,
+  n_late_submissions,
+  n_late_completions,
+  n_inconsistent_age_info,
   n_cleaned_screening_records
 )
 }
@@ -22,6 +32,10 @@ create_screening_qc_flowchart(
 
 \item{n_other_fid_records}{Number of screening records corresponding to facility involved in another TIMCI study (India-specific)}
 
+\item{n_before_startdate_records}{Number of screening records with an entry date anterior to the start date}
+
+\item{n_before_facility_startdate_records}{Number of screening records with an entry date anterior to the specific facility start date}
+
 \item{n_after_lockdate_records}{Number of screening records with an entry date posterior to the lock date}
 
 \item{n_ineligible_cg_records}{Number of screening records with an ineligible caregiver}
@@ -29,6 +43,12 @@ create_screening_qc_flowchart(
 \item{n_edited_repeat_visit_records}{Number of screening records that were edited manually}
 
 \item{n_incorrect_date_setup_records}{Number of screening records with an incorrect date that had to be edited manually}
+
+\item{n_late_submissions}{Number of screening records with late submission}
+
+\item{n_late_completions}{Number of screening records with late completion}
+
+\item{n_inconsistent_age_info}{Number of screening records with inconsistent age information}
 
 \item{n_cleaned_screening_records}{Number of cleaned screening records}
 }

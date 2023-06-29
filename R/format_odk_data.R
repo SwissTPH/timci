@@ -5,7 +5,7 @@
 #' @param start_date start date (optional, by default set to `NULL`)
 #' @param end_date end date (optional, by default set to `NULL`)
 #' @return This function returns a formatted dataframe for future display and analysis.
-#' @import magrittr dplyr
+#' @import magrittr dplyr lubridate
 #' @export
 
 format_odk_metadata <- function(df,
@@ -13,22 +13,23 @@ format_odk_metadata <- function(df,
                                 end_date = NULL) {
 
   if (dim(df)[1] > 0) {
-    df$SubmissionDate <- strftime(x = df$SubmissionDate,
-                                  format = "%Y-%m-%d %T")
-    df$today <- strftime(df$start,
-                         "%Y-%m-%d")
-    df$duration <- as.integer(round(df$end - df$start, digits = 0))
-    df$start_time <- strftime(df$start,"%T")
-    df$start <- strftime(df$start,"%Y-%m-%d %T")
-    df$end_time <- strftime(df$end,"%T")
-    df$end <- strftime(df$end,"%Y-%m-%d %T")
-    df <- df %>% dplyr::rename(date = today)
+    df$SubmissionDate <- strftime(strptime(x = df$SubmissionDate, format = "%Y-%m-%dT%T"))
+    df$start <- strftime(strptime(x = df$start, format = "%Y-%m-%dT%T"))
+    df$end <- strftime(strptime(x = df$end, format = "%Y-%m-%dT%T"))
+
+    df$start_time <- strftime(df$start, "%T")
+    df$end_time <- strftime(df$end, "%T")
+
+    df$today <- strftime(df$start, "%Y-%m-%d")
+    df$duration <- floor(difftime(df$end, df$start, units = "days"))
+
+    df <- df %>%
+      dplyr::rename(date = today)
 
     # Filter by start date and end date
     if (!is.null(start_date)) {
       df <- df %>%
         dplyr::filter(date >= as.Date(start_date, "%Y-%m-%d"))
-      print(df)
     }
     if (!is.null(end_date)) {
       df <- df %>%
@@ -68,15 +69,11 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name,
   #print(fn)
   #raw_odk_data <- fn %>% readr::read_csv()
   fs::dir_ls(local_dir)
-  if (!is.null(col_specs)) {
-    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
-                                    col_types = col_specs,
-                                    guess_max = 2000)
-  } else{
-    raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
-                                    guess_max = 2000)
-  }
-  timci::format_odk_metadata(raw_odk_data, start_date, end_date)
+  raw_odk_data <- readr::read_csv(file.path(local_dir, csv_name),
+                                  col_types = cols(.default = "c"))
+  timci::format_odk_metadata(raw_odk_data,
+                             start_date,
+                             end_date)
 
 }
 
@@ -100,7 +97,8 @@ extract_data_from_odk_zip <- function(odk_zip, csv_name,
 
 extract_data_from_odk_server <- function(cpid,
                                          cpid_forms,
-                                         cfid, cpp="",
+                                         cfid,
+                                         cpp="",
                                          start_date = NULL,
                                          end_date = NULL,
                                          filter = NULL,

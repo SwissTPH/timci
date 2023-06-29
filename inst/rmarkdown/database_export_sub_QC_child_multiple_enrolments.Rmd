@@ -1,89 +1,74 @@
-**Rule:** possible participant duplicates are detected based on their name, sex and date of birth. No specific action at the moment.
+### Detection of multiple 28-disease episodes for the same children
 
-```{r check-RCT-LS-ODK-facility-data-002, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    day0_qc1 <- timci::detect_participant_duplicates(locked_pii)
-    day0_qc <- merge(day0_qc, day0_qc1, by = 'child_id')
-    duplicates <- day0_qc[(day0_qc$ex_name_fq > 1) | (day0_qc$sw_name_fq > 1),]
-  }
-}
+```{r}
+write(" o Detection of multiple 28-disease episodes for the same children", stderr())
 ```
 
-```{r check-RCT-LS-ODK-facility-data-002-disp, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    if (length(duplicates) > 0 & nrow(duplicates) > 0) { 
-      cat(paste0("", nrow(duplicates), " possible participant duplicates detected based on their name, sex and date of birth. No specific action was taken."))
-    } else {
-      cat("No duplicated names detected")
-    }
-  } else {
-    cat("N/A")
-  }
-}
-  
-# Approximate String Matching (Fuzzy Matching)
-#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-#df3 <- df[c("child_id", "full_name")]
-#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
-#print(qc3)
+```{r}
+qc_df <- NULL
+qc_df2 <- NULL
+cleaned_df <- NULL
 ```
 
-```{r, results = 'asis'}
-timci::quality_check_export(duplicates,
-                            qc_multiple_enrolment_id,
-                            "possible_multiple_enrolments",
-                            qc_dir,
-                            "possible multiple enrolment of the same child")
+```{r, eval=timci::is_not_empty(day0_data)}
+multiple_enrolment_data <- day0_data %>%
+  dplyr::filter( prev_id != "" ) %>%
+  timci::concatenate_names()
 ```
 
-#### Possible participant duplicates with sex discrepancy
-
-**Rule:** possible participant duplicates detected based on their name and date of birth, but with a sex discrepancy. No specific action at the moment.
-
-```{r, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    day0_qc2 <- timci::detect_namedob_duplicates(locked_pii)
-    day0_qc <- merge(day0_qc, day0_qc2, by = 'child_id')
-    duplicates2 <- day0_qc[(day0_qc$ex_name2_fq > 1 & day0_qc$ex_name2_fq > day0_qc$ex_name_fq) | (day0_qc$sw_name2_fq > 1 & day0_qc$sw_name2_fq > day0_qc$sw_name_fq),]
-  }
-}
+```{r, eval=timci::is_not_empty(multiple_enrolment_data), results='asis'}
+qc_df <- multiple_enrolment_data[order(multiple_enrolment_data$date_visit,
+                                       na.last = TRUE,
+                                       decreasing = FALSE),] %>%
+  dplyr::rename(date = date_visit) %>% 
+  dplyr::group_by(prev_id) %>% 
+  dplyr::mutate(row_n = row_number()) %>%
+  tidyr::pivot_wider(prev_id,
+                     names_from = row_n,
+                     values_from = c(date, child_id, name, mother_name, uuid))
 ```
 
-```{r check-RCT-LS-ODK-facility-data-003-disp, results='asis'}
-if (!is.null(facility_data)) {
-  if (nrow(locked_pii) > 0) {
-    if (length(duplicates2) > 0 & nrow(duplicates2) > 0) { 
-      cat(paste0("", nrow(duplicates2), " possible participant duplicates detected based on their name and date of birth, but with sex discrepancy. No specific action was taken."))
-    } else {
-      cat("No possible participant duplicates detected based on their name and date of birth, but with sex discrepancy detected")
-    }
-  } else {
-    cat("N/A")
-  }
-}
-  
-# Approximate String Matching (Fuzzy Matching)
-#df <- dplyr::mutate(pii, full_name = tolower(paste(fs_name, ls_name, sep = ' ')))
-#df3 <- df[c("child_id", "full_name")]
-#qc3 <- lapply(list(df3$full_name), agrep, x = list(df3$full_name), value = TRUE)
-#print(qc3)
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+qc_df <- day0_data %>%
+  timci::concatenate_names() %>%
+  dplyr::select(child_id, date_visit, name, mother_name) %>%
+  dplyr::rename(date = date_visit) %>% 
+  merge(qc_df,
+        by.x = "child_id",
+        by.y = "prev_id",
+        all.y = TRUE)
 ```
 
 ```{r, results = 'asis'}
-timci::quality_check_export(duplicates2,
-                            qc_multiple_enrolment_sex_discrepancy_id,
-                            "possible_multiple_enrolments_with_sex_discrepancy",
-                            qc_dir,
-                            "possible multiple enrolment of the same child with sex discrepancy")
+timci::quality_check_export(df = qc_df,
+                            idx = qc_multiple_enrolment_id,
+                            label = "multiple_enrolments",
+                            cdir = qc_dir,
+                            description = "Multiple enrolments")
 ```
 
-```{r export-duplicates, results='asis'}
-timci::quality_check_export(day0_qc,
-                            qc_summary_id,
-                            "data_quality_check_summary",
-                            qc_dir,
-                            "quality checks were raised")
+```{r}
+merge_cond <- timci::is_not_empty(qc_df) & "child_id_1" %in% colnames(qc_df)
+```
+
+```{r, eval=merge_cond, results='asis'}
+qc_df1 <- qc_df %>% 
+  dplyr::filter(child_id != child_id_1) %>%
+  dplyr::select_if(~!(all(is.na(.)) | all(. == "")))
+if ( timci::is_not_empty(qc_df1) ) {
+  qc_df <- qc_df %>%
+    dplyr::select(-date, -name, -mother_name) %>% 
+    merge(qc_df1,
+          by.x = "child_id_1",
+          by.y = "child_id",
+          all.x = TRUE)
+}
+```
+
+```{r, results = 'asis'}
+timci::quality_check_export(df = qc_df,
+                            idx = qc_multiple_enrolment_id,
+                            label = "multiple_enrolments1",
+                            cdir = qc_dir,
+                            description = "Multiple enrolments")
 ```

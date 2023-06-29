@@ -8,7 +8,11 @@ create_hospit_qc_flowchart(
   n_raw_hospit_records,
   n_afterlock_pids_hospitfu_records,
   n_nonvalid_pid_records,
+  n_inconsistent_names_day7fu_records,
   n_duplicated_records,
+  n_death_prior_day0_hospitfu,
+  n_hospit_prior_day0_hospitfu,
+  n_discharge_prior_day0_hospitfu,
   n_cleaned_hospit_records
 )
 }
@@ -21,7 +25,7 @@ create_hospit_qc_flowchart(
 
 \item{n_duplicated_records}{Number of screening records with an entry date posterior to the lock date}
 
-\item{n_cleaned_hospit_records}{Number of cleaned screening records}
+\item{n_cleaned_hospit_records}{Number of cleaned hospitalisation records}
 }
 \value{
 This function returns a graph object

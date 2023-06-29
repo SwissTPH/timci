@@ -2,22 +2,22 @@
 % Please edit documentation in R/utils.R
 \name{export_df2xlsx}
 \alias{export_df2xlsx}
-\title{Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp}
+\title{Write dataframe to an Excel spreadsheet, with a filename consisting of a prefix and a date stamp}
 \usage{
 export_df2xlsx(df, dirname, prefix, rnames = FALSE)
 }
 \arguments{
 \item{df}{dataframe.}
 
-\item{dirname}{directory where the Excel file will be created.}
+\item{dirname}{directory where the Excel spreadsheet will be created.}
 
 \item{prefix}{filename prefix}
 
 \item{rnames}{Row names}
 }
 \value{
-This function returns the creation timestamp of the Excel file
+This function returns the creation timestamp of the Excel spreadsheet
 }
 \description{
-Write dataframe to an Excel file, with a filename consisting of a prefix and a date stamp
+Write dataframe to an Excel spreadsheet, with a filename consisting of a prefix and a date stamp
 }

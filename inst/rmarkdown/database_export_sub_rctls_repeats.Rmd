@@ -1,0 +1,335 @@
+\newpage
+
+```{r}
+write("Export repeat visit data and run corresponding quality checks", stderr())
+```
+
+```{r}
+n_nonvalid_pids_repeat_records <- 0
+n_nonconsistent_names_repeat_records <- 0
+n_drop_inconsistent_names_repeat_records <- 0
+n_visit_before_enrolment <- 0
+```
+
+## Repeat visit quality checks
+
+```{r}
+db_name <- "Repeat visit"
+repeat_data <- facility_data %>%
+  dplyr::filter(repeat_consult == 1)
+n_raw_repeat_records <- nrow(repeat_data)
+repeat_is_not_null <- !is.null(repeat_data)
+repeat_is_not_empty <- timci::is_not_empty(repeat_data)
+```
+
+Among the **`r n_cleaned_screening_records`** cleaned screening record(s), there are **`r nrow(repeat_data)`** record(s) corresponding to repeat visit(s) within the enrolment period.
+
+### Format raw data
+
+```{r}
+repeat_pii_dictionary <- subset(dictionary, repeats_pii == 1)
+repeat_dictionary <- subset(dictionary, repeats_exp == 1)
+n_repeat_dictionary_vars <- nrow(repeat_dictionary)
+```
+
+There are **`r n_repeat_dictionary_vars`** variables exported from the raw `r db_name` database.
+
+```{r, results='asis'}
+repeat_dictionary %>%
+  dplyr::select(new,
+                old) %>%
+  knitr::kable(col.names = c("Database reference",
+                             "ODK reference"))
+```
+
+```{r}
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_pii_dictionary$new,
+                                "fid_from_device"))) %>%
+  dplyr::mutate(child_name = gsub('[0-9]+', '', tolower(paste(fs_name_check, ls_name_check, sep = ' '))))
+```
+
+```{r}
+n_outlock_pids_repeat_records <- 0
+```
+
+### Participant identification
+
+#### Repeat visits corresponding to participants enrolled outside the lock date range [Context check `r qc_pids_out_lock_range_repeat`]
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled outside the lock date range", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+qc_description <- paste0("Repeat visits are relevant only if associated to participants enrolled between the start date ", start_date, " and the lock date on ", lock_date, ".")
+qc_rule <- "Discard repeat visit records of participants who are enrolled in the Day 0 database outside the date range considered for the lock."
+qc_type <- "nonvalid_ids2"
+df <- repeat_data
+idcol1 <- "prev_id"
+refdf <- rbind(facility_data_before_start,
+               facility_data_after_lock) %>%
+  dplyr::filter( !is.na(child_id) )
+idcol2 <- "child_id"
+cleaning <- "drop_all"
+qc_text <- "participant IDs outside the lock date range"
+qc_idx <- qc_pids_out_lock_range_repeat
+qc_export_label <- "pids_outside_lock_range"
+qc_export_description <- "the repeat visit corresponds to a child who has been enrolled outside the date range for the lock"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_outlock_pids_repeat_records <- n_detected
+repeat_data <- cleaned_df %>%
+  dplyr::rename(date_repeat = date_visit)
+```
+
+#### Non-valid participant IDs [Context check `r qc_nonvalid_repeat`]
+
+```{r}
+write(" o Non-valid participant IDs", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled repeat visits are searched for matched names."
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_type <- "nonvalid_ids_identify_names"
+df <- repeat_data %>%
+  dplyr::filter(!is.na(prev_id))
+idcol1 <- "prev_id"
+refdf <- allday0_data
+idcol2 <- "child_id"
+datecol <- "date_repeat"
+col_name <- "child_name"
+ldate_diff <- -29
+udate_diff <- -1
+matched_names <- TRUE
+cleaning <- "drop_all"
+qc_text <- "non-valid participant IDs"
+qc_idx <- qc_nonvalid_repeat
+qc_export_label <- "nonvalid_pids_repeat_with_matched_names"
+qc_export_description <- "the child ID does not correspond to any ID found in the locked Day 0 database"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_nonvalid_pids_repeat_records <- n_detected
+repeat_data_part <- cleaned_df
+repeat_data <- rbind(repeat_data %>%
+                       dplyr::filter(is.na(prev_id)),
+                     repeat_data_part)
+```
+
+#### Non-consistent participant names [Context check `r qc_nonconsistent_name_repeat`]
+
+```{r}
+write(" o Non-consistent participant names", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+qc_description <- "Repeat visits are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually. Detected repeat visits are then searched for matched names."
+qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
+qc_type <- "inconsistent_names"
+df <- repeat_data %>% 
+  dplyr::filter(child_name != "na na")
+refdf <- allday0_data
+datecol <- "date_repeat"
+ldate_diff <- -29
+udate_diff <- -1
+matched_names <- FALSE
+cleaning <- "none"
+qc_text <- "non-consistent participant names"
+qc_idx <- paste0(qc_nonconsistent_name_repeat, "a")
+qc_export_label <- "nonconsistent_names_repeat_with_matched_names"
+qc_export_description <- paste0("the child name found in the ", db_name, " is not consistent with the name of the child with the same ID found in the locked Day 0 database")
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_nonconsistent_names_repeat_records <- n_detected
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- repeat_data %>% 
+  dplyr::filter(child_name != "na na")
+correction_type <- "delete_repeat_records"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_repeat, "b")
+qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+cleaning <- "none"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+repeat_data <- repeat_data %>% 
+  dplyr::filter(child_name == "na na") %>%
+  dplyr::bind_rows(corrected_df) %>%
+  dplyr::rename(date_visit = date_repeat)
+
+n_drop_inconsistent_names_repeat_records <- n_mc
+```
+
+### Dates and times
+
+#### Repeat visit anterior to enrolment [Context check `r qc_visit_before_enrolment`]
+
+```{r}
+write(" o Check for date of repeat visit anterior to date of enrolment", stderr())
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+df <- repeat_data %>% 
+  merge(allday0_data %>%
+          dplyr::select(child_id,
+                        date_visit) %>%
+          dplyr::rename(date_day0 = date_visit),
+        by.x = "prev_id",
+        by.y = "child_id",
+        all.x = TRUE)
+```
+
+```{r, eval=!is.null(repeat_data), results='asis'}
+qc_description <- "Repeat visit should have happened after enrolment on Day 0."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+col_date1 <- "date_visit"
+col_date2 <- "date_day0"
+qc_text <- "a date of repeat visit before the enrolment date"
+qc_idx <- qc_visit_before_enrolment
+qc_export_label <- "repeat_visit_before_enrolment"
+qc_export_description <- "the reported date of repeat visit was before the enrolment date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_visit_before_enrolment <- n_detected
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+raw_repeat_data <- raw_repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new)))
+```
+
+```{r}
+repeat_data <- repeat_data %>% 
+  dplyr::select(dplyr::any_of(c(repeat_dictionary$new)))
+```
+
+```{r}
+repeat_data <- repeat_data %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                prev_id = ifelse(prev_id != "", digest(prev_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_repeat_records <- nrow(repeat_data)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
+```
+
+```{r}
+timci::create_repeat_qc_flowchart(n_raw_repeat_records,
+                                  n_nonvalid_pids_repeat_records,
+                                  n_drop_inconsistent_names_repeat_records,
+                                  n_nonconsistent_names_repeat_records,
+                                  n_visit_before_enrolment,
+                                  n_cleaned_repeat_records)
+```
+
+### Data overview
+
+```{r}
+write(" o Data overview", stderr())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(repeat_data), results='asis'}
+fig_df <- repeat_data %>%
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
+fig_caption <- "Repeat data overview"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- ""
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+repeat_data <- repeat_data %>%
+  dplyr::mutate(across(c(form_version,
+                         fid,
+                         who_age_ctg,
+                         dob_knwn,
+                         age_mo_knwn,
+                         consult_reason,
+                         main_cg,
+                         main_cg_lbl,
+                         repeat_consult),
+                       factor)) %>%
+  dplyr::mutate(across(c(age_yr,
+                         age_mo),
+                       as.integer)) %>% 
+  dplyr::mutate(across(c(date_visit),
+                       ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
+  dplyr::mutate(across(c(start),
+                       as.POSIXct))
+```
+
+```{r, results='asis'}
+skimr::skim(repeat_data)
+```
+
+### Data export
+
+```{r}
+write(" o Data export", stderr())
+```
+
+```{r, eval=!deidentification_on, results = 'asis'}
+timci::dataset_export(raw_repeat_data,
+                      "02b",
+                      "timci_repeat_data",
+                      rctls_dir,
+                      "Raw Repeat visit data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(repeat_data,
+                      "02b",
+                      "timci_repeat_data",
+                      locked_db_dir,
+                      "Cleaned Repeat visit data")
+```
+
+```{r, results='hide'}
+rm(raw_repeat_data)
+gc()
+```

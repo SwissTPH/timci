@@ -1,0 +1,19 @@
+```{r}
+tmp <- fig_df %>%
+  dplyr::group_by(!!rlang::sym(date_col)) %>%
+  dplyr::count()
+max_val = max(tmp$n)
+```
+
+```{r, results='asis', eval=timci::is_not_empty(fig_df), fig.cap=fig_caption}
+timci::plot_geom_bar_over_time(df = fig_df,
+                               facility_col = facility_col,
+                               date_col = date_col,
+                               date_lbl = date_lbl,
+                               date_break_str = dbreak_duration,
+                               date_format = date_format,
+                               start_date = start_date,
+                               end_date = lock_date,
+                               max_val = max_val,
+                               text_size = tsize)
+```

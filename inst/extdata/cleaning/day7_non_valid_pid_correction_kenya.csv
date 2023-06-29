@@ -1,0 +1,9 @@
+old_child_id,uuid,new_child_id,reason,action
+K-F0197-P0060,uuid:4dfa8ccc-5b7a-4db4-a170-37bb07d04485,K-F0197-P0061,manual error,correct
+K-F0204-P0315,uuid:75fc7f18-410e-49d3-823a-e14c7a91a29f,K-F0204-P0316,manual error,correct
+K-F0204-P0312,uuid:78eaaac2-db6e-4336-bd99-9938d8d6a551,K-F0204-P0313,manual error,correct
+K-F8218-P0344,uuid:883ac1dc-1244-498c-ba5b-2ed563721b66,K-F0218-P0344,manual error,correct
+K-F0119-P0352,uuid:cd5c5c84-dce2-42d0-a5cb-91458455f603,K-F0199-P0352,manual error,correct
+K-F0214-P0431,uuid:9cb432c7-eedf-4982-bee6-5e20d3a3ae95,M-F0214-P0431,manual error,correct
+K-F0197-P0213,uuid:16aabc53-6613-46be-b273-8d994e722288,K-F0197-C0211,manual error,correct
+K-F0197-P0213,uuid:cea8c20b-a244-43b8-b977-911d95595063,K-F0197-C0211,manual error,correct

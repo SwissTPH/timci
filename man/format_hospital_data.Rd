@@ -4,10 +4,12 @@
 \alias{format_hospital_data}
 \title{Process hospital data (TIMCI-specific function)}
 \usage{
-format_hospital_data(df)
+format_hospital_data(df, is_deidentified = TRUE)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data collected at the referral level}
+
+\item{is_deidentified}{Boolean, flag to not export personally identifiable variable (default set to `TRUE`)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

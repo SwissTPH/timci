@@ -4,10 +4,12 @@
 \alias{format_day7_data}
 \title{Process day 7 follow-up data (TIMCI-specific function)}
 \usage{
-format_day7_data(df)
+format_day7_data(df, is_deidentified = TRUE)
 }
 \arguments{
 \item{df}{dataframe containing the non de-identified (raw) ODK data collected during the Day 7 follow-up call}
+
+\item{is_deidentified}{Boolean, flag to not export personally identifiable variable (default set to `TRUE`)}
 }
 \value{
 This function returns a formatted dataframe for future display and analysis.

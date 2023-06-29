@@ -10,12 +10,12 @@ write(formats2h2("Generate the context subsection"), stderr())
 ```{r context-facility-type, results='asis'}
 if (Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' || Sys.getenv('TIMCI_COUNTRY') == 'Kenya') {
   facilities$type <- tolower(facilities$type)
-  hc_nb <- nrow(facilities %>% filter(type == "health center"))
-  dispensary_nb <- nrow(facilities %>% filter(type == "dispensary"))
+  hc_nb <- nrow(facilities %>% dplyr::filter(type == "health center"))
+  dispensary_nb <- nrow(facilities %>% dplyr::filter(type == "dispensary"))
   cat(paste0("**", facility_nb, "** research facilities, among which **", hc_nb, "** health centres and **", dispensary_nb, "** dispensaries"))
 } else if (Sys.getenv('TIMCI_COUNTRY') == 'India') {
-  hc_nb <- nrow(facilities %>% filter(type == "CHC"))
-  dispensary_nb <- nrow(facilities %>% filter(type == "PHC"))
+  hc_nb <- nrow(facilities %>% dplyr::filter(type == "CHC"))
+  dispensary_nb <- nrow(facilities %>% dplyr::filter(type == "PHC"))
   cat(paste0("**", facility_nb, "** research facilities, among which **", hc_nb, "** community health centres (CHCs) and **", dispensary_nb, "** primary health centres (PHCs)"))
 } else if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal'){
   cat(paste0("**", facility_nb, "** postes de recherche"))
