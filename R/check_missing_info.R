@@ -204,9 +204,15 @@ detect_missing_treatment <- function(df) {
 
   if ( timci::is_not_empty(df) ) {
 
-    if ( "rx_amoxicillin_hf" %in% colnames(df) ) {
+    if ( "rx_amoxicillin_hf" %in% colnames(df) & "rx_amoxicillin" %in% colnames(df) ) {
       out <- df %>%
         dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin) & ( is.na(rx_misc) | rx_misc == "996" ) & is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996"),
+                                       1,
+                                       0)) %>%
+        dplyr::filter(missing == 1)
+    } else if ( "rx_amoxicillin_hf" %in% colnames(df) ) {
+      out <- df %>%
+        dplyr::mutate(missing = ifelse(is.na(rx_amoxicillin_hf) & ( is.na(rx_misc_hf) | rx_misc_hf == "996"),
                                        1,
                                        0)) %>%
         dplyr::filter(missing == 1)
