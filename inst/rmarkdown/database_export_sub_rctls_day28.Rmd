@@ -11,12 +11,6 @@ db_name <- "Day 28 follow-up"
 ```
 
 ```{r}
-day28fu_pii_drops <- c("name",
-                       "cg_name",
-                       "phone_nb")
-```
-
-```{r}
 out <- timci::format_day28_data(raw_day28fu_data,
                                 is_deidentified = FALSE)
 raw_allday28fu_data <- out[[3]]
@@ -50,12 +44,22 @@ There are **`r n_day28fu_dictionary_vars`** variables exported from the raw `r d
 
 ```{r, results='asis'}
 day28fu_dictionary %>%
+   dplyr::filter(deidentified == 1) %>%
   dplyr::select(new,
-                old,
-                deidentified) %>%
+                old) %>%
   knitr::kable(col.names = c("Database reference",
-                             "ODK reference",
-                             "Deidentified export"))
+                             "ODK reference"))
+```
+
+```{r}
+day28fu_deidentified_dict <- day28fu_dictionary %>%
+  dplyr::filter(deidentified == 1)
+```
+
+```{r}
+day28fu_pii_drops <- day28fu_dictionary %>%
+  dplyr::filter(deidentified == 0)
+day28fu_pii_drops_is_not_empty <- timci::is_not_empty(day28fu_pii_drops)
 ```
 
 ### Dates and times
@@ -325,14 +329,46 @@ n_edit_inconsistent_name_day28fu_records <- n_mc
 allday28fu_data <- cleaned_df
 ```
 
-### Data cleaning summary\n\n
+# Pseudonymisation
 
 ```{r}
-write(" o Data cleaning summary", stderr())
+write(" o Pseudonymisation", stderr())
+```
+
+The columns listed in the table below are dropped from the cleaned `r db_name` database.
+
+```{r, eval=day28fu_pii_drops_is_not_empty, results='asis'}
+day28fu_pii_drops %>%
+  dplyr::select(new) %>%
+  knitr::kable(row.names = FALSE,
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
 ```
 
 ```{r}
-n_cleaned_allday28fu_records <- nrow(allday28fu_data)
+allday28fu_data_no_pii <- allday28fu_data %>%
+  dplyr::select(dplyr::any_of(c(day28fu_deidentified_dict$new)))
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
+
+```{r}
+allday28fu_data_no_pii <- allday28fu_data_no_pii %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_allday28fu_records <- nrow(allday28fu_data_no_pii)
+```
+
+### Data cleaning summary
+
+```{r}
+write(" o Data cleaning summary", stderr())
 ```
 
 ```{r}
@@ -346,7 +382,39 @@ timci::create_day28fu_qc_flowchart(n_raw_allday28fu_data_records,
                                    n_cleaned_allday28fu_records)
 ```
 
-### Data export\n\n
+### Data overview
+
+```{r}
+write(" o Data overview", stderr())
+```
+
+```{r, results='asis', eval=timci::is_not_empty(allday28fu_data), results='asis'}
+fig_df <- allday28fu_data %>%
+  dplyr::mutate(Status = dplyr::case_when(
+    proceed_day28 == 1 ~ "Done",
+    .default      = "Not done")) %>% 
+  dplyr::mutate(week = lubridate::floor_date(as.Date(start),
+                                             "week",
+                                             week_start = getOption("lubridate.week.start", 1)))
+
+fig_caption <- "Day 28 follow-up data overview over time by facility"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+fill_col <- "Status"
+comparison <- "type"
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, results='asis'}
+skimr::skim(allday28fu_data_no_pii)
+```
+
+### Data export
 
 ```{r}
 write(" o Data export", stderr())
@@ -361,7 +429,7 @@ timci::dataset_export(raw_allday28fu_data,
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(allday28fu_data,
+timci::dataset_export(allday28fu_data_no_pii,
                       "06a",
                       "timci_followup_day28_data",
                       locked_db_dir,

@@ -4,15 +4,14 @@
 write("Export Day 28 follow-up outcome data (successful follow-ups only) and run corresponding quality checks", stderr())
 ```
 
+## Day 28 follow-up outcome data quality checks
+
 ```{r}
 n_fu_prior_day0_day28fu <- 0
 n_death_prior_day0_day28fu <- 0
 n_hospit_prior_day0_day28fu <- 0
 n_death_prior_hospit_day28fu <- 0
 ```
-
-
-## Day 28 follow-up outcome data quality checks
 
 This section only focus on successful follow-ups, i.e. follow-ups where the participant was successfully reached and where follow-up outcomes were collected.
 
@@ -134,14 +133,46 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+The columns listed in the table below are dropped from the cleaned `r db_name` database.
+
+```{r, eval=day28fu_pii_drops_is_not_empty, results='asis'}
+day28fu_pii_drops %>%
+  dplyr::select(new) %>%
+  knitr::kable(row.names = FALSE,
+               col.names = c("Database reference"),
+               caption = "Columns dropped for the cleaned data export")
+```
+
+```{r}
+day28fu_data_no_pii <- day28fu_data %>%
+  dplyr::select(dplyr::any_of(c(day28fu_deidentified_dict$new)))
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input (variables **uuid**,**child_id**, and **device_id**) and produces a random-like fixed-length output.
+
+```{r}
+day28fu_data_no_pii <- day28fu_data_no_pii %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
+                child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_day28fu_records <- nrow(day28fu_data_no_pii)
+```
+
 ### Data cleaning summary
 
 ```{r}
 write(" o Data cleaning summary", stderr())
-```
-
-```{r}
-n_cleaned_day28fu_records <- nrow(day28fu_data)
 ```
 
 ```{r}
@@ -152,6 +183,12 @@ timci::create_day7fu_outcome_qc_flowchart(n_raw_successday28fu_records,
                                           n_hospit_prior_day0_day28fu,
                                           n_death_prior_hospit_day28fu,
                                           n_cleaned_day28fu_records)
+```
+
+### Data overview
+
+```{r, results='asis'}
+skimr::skim(day28fu_data)
 ```
 
 ### Data export
@@ -169,15 +206,9 @@ timci::dataset_export(raw_successday28fu_data,
 ```
 
 ```{r, results = 'asis'}
-timci::dataset_export(day28fu_data,
+timci::dataset_export(day28fu_data_no_pii,
                       "06b",
                       "timci_followup_successful_day28_data",
                       locked_db_dir,
                       "Cleaned successful Day 28 follow-up data")
-```
-
-### Data summary statistics
-
-```{r, results='asis'}
-skimr::skim(day28fu_data)
 ```
