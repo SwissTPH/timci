@@ -40,6 +40,10 @@ I-F0304-P0027,uuid:0f361cfd-7a94-4c04-8aff-254a901e2a40,I-F0304-P0582,manual err
 I-F0304-P0028,uuid:5ee2eaf4-fffa-4d54-890e-6e8267b08242,I-F0304-P0583,manual error,correct
 I-F0304-P0029,uuid:0f9efa29-a4c0-412f-929c-e1dc4b3d0317,I-F0304-P0584,manual error,correct
 I-F0304-P0030,uuid:cd3a0861-01da-450b-8855-2e13c32e2e90,I-F0304-P0585,manual error,correct
+I-F0304-P0030,uuid:a57c0541-0f94-4a55-8782-9c6505a8a0d3,I-F0304-P0585,manual error,correct
+I-F0304-P0030,uuid:072e70dc-018a-4f81-a4f5-39134fcdf821,I-F0304-P0585,manual error,correct
+I-F0304-P0030,uuid:002a03ef-2607-412b-80b0-56c40310da3d,I-F0304-P0585,manual error,correct
+I-F0304-P0030,uuid:b172c11d-02c2-45a7-be30-36faf9f1f8c1,I-F0304-P0585,manual error,correct
 I-F0304-P0031,uuid:86b10609-05a2-402d-99cf-840358cb094a,I-F0304-P0586,manual error,correct
 I-F0304-P0032,uuid:0e6a603c-e4c2-4f41-a6e5-dc37e991f28e,I-F0304-P0587,manual error,correct
 I-F0304-P0033,uuid:4aa0bce7-71b4-49f8-bf21-c9c76da93598,I-F0304-P0588,manual error,correct
@@ -97,6 +101,7 @@ I-F0307-P0034,uuid:86850cac-6a76-4228-839c-40ce2a568714,I-F0307-P0597,manual err
 I-F0307-P0035,uuid:90cbdad1-f28c-4350-84f0-b2c8634d327e,I-F0307-P0598,manual error,correct
 I-F0307-P0037,uuid:4d2e629f-16aa-4a05-b650-2ac86848ae90,I-F0307-P0600,manual error,correct
 I-F0307-P0038,uuid:02674f5d-460e-4154-9aa2-5fb04823ef25,I-F0307-P0601,manual error,correct
+I-F0307-P0038,uuid:ab9b58fb-7513-4e6d-a3b4-1513838af3d5,I-F0307-P0601,manual error,correct
 I-F0307-P0039,uuid:f2e0d110-7d9d-464f-b252-b17d4c40b705,I-F0307-P0602,manual error,correct
 I-F0307-P0040,uuid:0915ace8-6477-4955-a95f-95b0dd1f13a3,I-F0307-P0603,manual error,correct
 I-F0307-P0041,uuid:19b343bf-1a62-4752-b305-e7189ea4c6b5,I-F0307-P0604,manual error,correct
@@ -106,6 +111,7 @@ I-F0307-P0044,uuid:fa3e331b-9011-4936-904c-777f39da7880,I-F0307-P0607,manual err
 I-F0307-P0045,uuid:a616ef12-9bb6-4694-a3b2-b7ed7651b1e4,I-F0307-P0608,manual error,correct
 I-F0307-P0046,uuid:a0133def-aa02-464d-a1b1-df0c3b07b97f,I-F0307-P0609,manual error,correct
 I-F0307-P0047,uuid:16e6bccf-1854-4fea-b81b-234bc08d2331,I-F0307-P0610,manual error,correct
+I-F0307-P0047,uuid:02c5f6aa-80ba-4a12-9a40-8be135773944,I-F0307-P0610,manual error,correct
 I-F0307-P0048,uuid:9bd3e51a-66b4-4068-b489-1bfa45ab4b47,I-F0307-P0611,manual error,correct
 I-F0307-P0049,uuid:1a1eadbf-ffc3-47e1-9435-5a2655a876e3,I-F0307-P0612,manual error,correct
 I-F0307-P0050,uuid:55bf2fab-76b8-4876-bf78-fc3a02e2596c,I-F0307-P0613,manual error,correct
