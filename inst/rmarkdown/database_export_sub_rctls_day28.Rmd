@@ -26,6 +26,7 @@ raw_allday28fu_is_not_empty <- timci::is_not_empty(raw_allday28fu_data)
 There are **`r n_raw_allday28fu_data_records`** records in the raw `r db_name` database.
 
 ```{r}
+n_cdsa_pilot_day28fu_records <- 0
 n_nonvalid_pids_day28fu_records <- 0
 n_edit_nonvalid_pid_day28fu_records <- 0
 n_drop_nonvalid_pid_day28fu_records <- 0
@@ -373,6 +374,7 @@ write(" o Data cleaning summary", stderr())
 
 ```{r}
 timci::create_day28fu_qc_flowchart(n_raw_allday28fu_data_records,
+                                   n_cdsa_pilot_day28fu_records,
                                    n_afterlock_pids_day28fu_records,
                                    n_nonvalid_pids_day28fu_records,
                                    n_edit_nonvalid_pid_day28fu_records,

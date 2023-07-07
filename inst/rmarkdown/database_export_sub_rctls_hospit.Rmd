@@ -14,13 +14,16 @@ db_name <- "hospitalisation follow-up"
 
 ```{r}
 qc_root <- "DQC_HS"
-qc_pids_out_lock_range_hospitfu <- paste(qc_root, "01", sep = "_")
-qc_nonvalid_hospitfu <- paste(qc_root, "02", sep = "_")
-qc_nonconsistent_name_hospitfu <- paste(qc_root, "03", sep = "_")
-qc_duplicated_hospitfu <- paste(qc_root, "04", sep = "_")
-qc_hospit_before_enrolment <- paste(qc_root, "05", sep = "_")
-qc_death_before_enrolment <- paste(qc_root, "06", sep = "_")
-qc_discharge_before_enrolment <- paste(qc_root, "07", sep = "_")
+qc_nontimely_submission_hospitfu <- paste(qc_root, "01", sep = "_")
+qc_nontimely_completion_hospitfu <- paste(qc_root, "02", sep = "_")
+qc_other_fids_hospitfu <- paste(qc_root, "03", sep = "_")
+qc_pids_out_lock_range_hospitfu <- paste(qc_root, "04", sep = "_")
+qc_nonvalid_hospitfu <- paste(qc_root, "05", sep = "_")
+qc_nonconsistent_name_hospitfu <- paste(qc_root, "06", sep = "_")
+qc_duplicated_hospitfu <- paste(qc_root, "07", sep = "_")
+qc_hospit_before_enrolment <- paste(qc_root, "08", sep = "_")
+qc_death_before_enrolment <- paste(qc_root, "09", sep = "_")
+qc_discharge_before_enrolment <- paste(qc_root, "10", sep = "_")
 ```
 
 ```{r}
@@ -31,7 +34,12 @@ hospitfu_pii_drops_is_not_empty <- NULL
 ```
 
 ```{r}
+n_cdsa_pilot_hospitfu_records <- 0
+n_edit_nonvalid_pid_hospitfu_records <- 0
+n_drop_nonvalid_pid_hospitfu_records <- 0
 n_inconsistent_names_day7fu_records <- 0
+n_edit_inconsistent_name_hospitfu_records <- 0
+n_drop_inconsistent_name_hospitfu_records <- 0
 n_death_prior_day0_hospitfu <- 0
 n_hospit_prior_day0_hospitfu <- 0
 n_discharge_prior_day0_hospitfu <- 0
@@ -62,7 +70,139 @@ hospitfu_dictionary %>%
                              "ODK reference"))
 ```
 
+### Dates and times
+
+#### Late submissions [Compliance check `r qc_nontimely_submission_hospitfu`]
+
+```{r}
+write(" o Inconsistent finalisation and submission", stderr())
+```
+
+```{r, eval=!is.null(raw_hospit_data), results='asis'}
+qc_description <- "Transfer of a finalised submission to the ODK Central server not done on the day the submission was finalised (i.e. transfer time superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_hospit_data
+col_date1 <- "end"
+col_date2 <- "submission_date"
+cleaning <- "none"
+qc_text <- "the submission was not transferred on the same day it was finalised"
+qc_idx <- qc_nontimely_submission_hospitfu
+qc_export_label <- "nontimely_hospit_submission"
+qc_export_description <- "the submission was not transferred on the same day it was finalised"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+fig_caption <- "Submissions not transferred on the same day they were finalised"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>% 
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(end), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(fid = substr(child_id, 3,7)) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff < 3 ~ "Less than 3 days",
+    diff >= 3 & diff < 7 ~ "3-6 days",
+    diff >= 7 ~ "7 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+#### Late completions [Compliance check `r qc_nontimely_completion_hospitfu`]
+
+```{r}
+write(" o Non-timely completion", stderr())
+```
+
+```{r, eval=!is.null(raw_hospit_data), results='asis'}
+qc_description <- "Finalisation of the submission not done on the same day the submission was started (i.e., duration from start to end strictly superior to 0 day)."
+qc_rule <- action_alert_no_modification
+qc_type <- "date_discrepancy"
+df <- raw_hospit_data
+col_date1 <- "start"
+col_date2 <- "end"
+cleaning <- "none"
+qc_text <- "the submission was not finalised on the same day it was started"
+qc_idx <- qc_nontimely_completion_hospitfu
+qc_export_label <- "nontimely_hospit_completion"
+qc_export_description <- "the submission was not finalised on the same day it was started"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r}
+fig_caption <- "Number of submissions not finalised on the same day they were started"
+facility_col <- "fid"
+date_col <- "week"
+date_lbl <- "Weeks"
+date_format <- "%b%y"
+comparison <- "area"
+fill_col <- "Difference"
+```
+
+```{r, eval=timci::is_not_empty(qc_df), results='asis'}
+fig_df <- qc_df %>%
+  dplyr::mutate(week = as.Date(lubridate::floor_date(as.Date(start), "week", week_start = getOption("lubridate.week.start", 1)))) %>% 
+  dplyr::mutate(fid = substr(child_id, 3,7)) %>% 
+  dplyr::mutate(Difference = dplyr::case_when(
+    diff <= 1 ~ "1 day",
+    diff > 1 & diff < 3 ~ "1-2 days",
+    diff >= 3 ~ "3 days and above"))
+
+cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
 ### Participant identification
+
+```{r}
+hospit_data <- raw_hospit_data
+```
+
+#### Follow-ups corresponding to participants enrolled in the CDSA pilot (India only) [Context check `r qc_other_fids_hospitfu`]
+
+```{r}
+write(" o Follow-ups corresponding to participants enrolled in the CDSA pilot", stderr())
+```
+
+`r if (!is_india) {paste0("This check is only implemented for India.")}`
+
+```{r, eval=!is.null(hospit_data)&is_india, results='asis'}
+qc_description <- paste0("Exclude hospital follow-ups that correspond to participants enrolled in the CDSA pilot.")
+qc_rule <- "Discard follow-up records of participants who are enrolled in CDSA pilot facilities."
+qc_type <- "nonvalid_ids2"
+df <- hospit_data
+idcol1 <- "child_id"
+refdf <- rbind(other_timci_study_df) %>%
+  dplyr::filter( !is.na(child_id) )
+idcol2 <- "child_id"
+qc_text <- "follow-up records corresponding to participants enrolled for the CDSA pilot"
+qc_idx <- qc_other_fids_hospitfu
+qc_export_label <- "pids_from_cdsa_pilot"
+qc_export_description <- "the follow-up corresponds to a child who has been enrolled in the CDSA pilot"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+```
+
+```{r, eval=!is.null(cleaned_df)}
+n_cdsa_pilot_hospitfu_records <- n_detected
+hospit_data <- cleaned_df
+```
 
 #### Follow-ups corresponding to participants enrolled outside the lock date range [context check `r qc_pids_out_lock_range_hospitfu`]
 
@@ -100,7 +240,9 @@ hospit_data <- cleaned_df
 write(" o Non-valid participant IDs", stderr())
 ```
 
-`r paste0('[Initial check ', qc_nonvalid_hospitfu, 'a]{custom-style="underlined"}')`
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonvalid_hospitfu`a
+:::
 
 ```{r, eval=!is.null(hospit_data), results='asis'}
 qc_description <- "Hospitalisation follow-ups are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID."
@@ -114,7 +256,7 @@ datecol <- "date_enrol"
 ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
-cleaning <- "drop_all"
+cleaning <- "none"
 qc_text <- "non-valid participant IDs"
 qc_idx <- paste0(qc_nonvalid_hospitfu, "a")
 qc_export_label <- "nonvalid_pids_hospitfu_and_matched_names"
@@ -124,6 +266,24 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
 n_nonvalid_pids_hospitfu <- n_detected
+```
+
+```{r, eval=!is.null(hospit_data), results='asis'}
+mc_description <- ""
+to_correct_df <- hospit_data
+correction_type <- "correct_hospit_non_valid_ids"
+
+# Parameters for the quality check following manual corrections
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_idx <- paste0(qc_nonvalid_hospitfu, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_nonvalid_pid_hospitfu_records <- n_mc
+n_drop_nonvalid_pid_hospitfu_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
@@ -148,7 +308,7 @@ datecol <- "date_enrol"
 ldate_diff <- -2
 udate_diff <- 2
 matched_names <- TRUE
-cleaning <- "drop_all"
+cleaning <- "none"
 qc_text <- "non-consistent participant names"
 qc_idx <- paste0(qc_nonconsistent_name_hospitfu, "a")
 qc_export_label <- "nonconsistent_names_hospitfu_with_matched_names"
@@ -161,9 +321,43 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_inconsistent_names_day7fu_records <- n_detected
 ```
 
-```{r, eval=!is.null(cleaned_df)}
-hospit_data <- cleaned_df
+```{r, eval=!is.null(hospit_data), results='asis'}
+mc_description <- ""
+to_correct_df <- hospit_data
+correction_type <- "correct_hospit_inconsistent_names"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_hospitfu, "b")
+qc_export_label <- "nonconsistent_names_hospitfu_with_matched_names"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+hospit_data <- corrected_df
+n_edit_inconsistent_name_hospitfu_records <- n_mc
 ```
+
+```{r, eval=!is.null(hospit_data), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- hospit_data
+correction_type <- "delete_hospit_records"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_hospitfu, "c")
+qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+qc_export_label <- "nonconsistent_names_hospitfu_with_matched_names"
+cleaning <- "none"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+hospit_data <- corrected_df
+n_drop_inconsistent_name_hospitfu_records <- n_mc
+```
+
+The following checks will focus solely on records where the child has been found in hospital records, i.e. records where the variable `found` is set to `1`. 
 
 ```{r}
 found_hospit_data <- hospit_data %>% 
@@ -351,9 +545,14 @@ hospit_data_no_pii <- hospit_data_no_pii %>%
 
 ```{r}
 timci::create_hospit_qc_flowchart(nrow(raw_hospit_data),
+                                  n_cdsa_pilot_hospitfu_records,
                                   n_afterlock_pids_hospitfu_records,
                                   n_nonvalid_pids_hospitfu,
+                                  n_edit_nonvalid_pid_hospitfu_records,
+                                  n_drop_nonvalid_pid_hospitfu_records,
                                   n_inconsistent_names_day7fu_records,
+                                  n_edit_inconsistent_name_hospitfu_records,
+                                  n_drop_inconsistent_name_hospitfu_records,
                                   n_duplicates_hospitfu,
                                   n_death_prior_day0_hospitfu,
                                   n_hospit_prior_day0_hospitfu,

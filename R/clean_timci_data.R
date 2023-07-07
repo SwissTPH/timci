@@ -514,6 +514,57 @@ correct_day28_all <- function(df) {
 
 }
 
+#' Correct hospital follow-up IDs (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day7_non_valid_pid_correction").
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_hospit_ids <- function(df,
+                               csv_prefix = "hospit_non_valid_pid_correction") {
+
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
+                                   TRUE ~ "")
+
+  out <- list(df, NULL, NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname)
+      if ("a1-id" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("a1-id", "meta-instanceID"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$"a1-id" <- ifelse(is.na(df$new_child_id), df$"a1-pid", df$new_child_id)
+      } else if ("child_id" %in% colnames(df))
+      {
+        df <- df %>%
+          merge(edits[, c("old_child_id", "uuid", "new_child_id")],
+                by.x = c("child_id", "uuid"),
+                by.y = c("old_child_id", "uuid"),
+                all.x = TRUE)
+        df$child_id <- ifelse(is.na(df$new_child_id), df$child_id, df$new_child_id)
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, NULL)
+    }
+  }
+  out
+
+}
+
 #' Edit incorrect healthcare provider (HCP) IDs in SPA sick child observation entries (TIMCI-specific function)
 #' This function can be used to correct documented HCP IDs
 #'

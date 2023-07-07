@@ -53,7 +53,7 @@ create_screening_qc_flowchart <- function(n_raw_screening_records,
                   1 [label = 'Raw screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a non-valid device ID\n%s record(s) with a facility from another TIMCI study\n%s record(s) anterior to the study start date\n%s record(s) anterior to the specific facility start date\n%s record(s) posterior to the lock date']
                   m2 [label = 'Automatically edited (N = %s)\n%s record(s) with an incorrect creation date\n%s record(s) with an ineligible caregiver']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for non-valid facility IDs (out of %s detected)\n%s record(s) corrected for inconsistent facility ID (out of %s detected)\n%s record(s) modified from new enrolment to repeat visit (out of %s detected)']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid facility IDs (out of %s detected)\n%s record(s) corrected for inconsistent facility ID (out of %s detected)\n%s record(s) modified from new enrolment to repeat visit (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with late submission\n%s record(s) with late completion\n%s record(s) with inconsistent age information']
                   2 [label = 'Cleaned screening records\nN = %s', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -267,7 +267,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with a duplicated record (out of %s detected)\n%s record(s) with a duplicated child ID (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a negative illness onset']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a missing clinical presentation\n%s record(s) with a missing diagnosis\n%s record(s) with no referral info from caregiver']
                   2 [label = 'Cleaned Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -387,6 +387,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
 #'
 #' @param n_raw_allday7fu_records Number of records
 #' @param n_after_lockdate_records TBD
+#' @param n_cdsa_pilot_day7fu_records
 #' @param n_nonvalid_pid_records Number of records with a non-valid participan ID
 #' @param n_edit_nonvalid_pid_records
 #' @param n_drop_nonvalid_pid_records
@@ -399,6 +400,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
 #' @import DiagrammeR
 
 create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
+                                       n_cdsa_pilot_day7fu_records,
                                        n_after_lockdate_records,
                                        n_nonvalid_pid_records,
                                        n_edit_nonvalid_pid_records,
@@ -408,7 +410,7 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                                        n_drop_inconsistent_names_day7fu_records,
                                        n_cleaned_allday7fu_records) {
 
-  n_excluded <- n_after_lockdate_records + n_drop_nonvalid_pid_records + n_drop_inconsistent_names_day7fu_records
+  n_excluded <- n_cdsa_pilot_day7fu_records + n_after_lockdate_records + n_drop_nonvalid_pid_records + n_drop_inconsistent_names_day7fu_records
   n_auto_edited <- 0
   n_manual_edited <- n_edit_nonvalid_pid_records + n_edit_inconsistent_name_records
   n_informed <- 0
@@ -418,9 +420,9 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) related to the CDSA pilot (India only)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for non-valid child IDs (out of %s detected)\n%s record(s) edited for non-consistent names (out of %s detected)']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)']
                   2 [label = 'Cleaned Day 7 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -445,6 +447,7 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
                 }",
                 n_raw_allday7fu_records,
                 n_excluded,
+                n_cdsa_pilot_day7fu_records,
                 n_after_lockdate_records,
                 n_drop_nonvalid_pid_records,
                 n_nonvalid_pid_records,
@@ -538,6 +541,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
 #' Create cleaning flowchart for Day 28 follow-up data (TIMCI-specific)
 #'
 #' @param n_raw_allday28fu_records Number of records
+#' @param n_cdsa_pilot_day28fu_records
 #' @param n_after_lockdate_records TBD
 #' @param n_nonvalid_pid_records Number of records with a non-valid participan ID
 #' @param n_edit_nonvalid_pid_records
@@ -550,6 +554,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
 #' @import DiagrammeR
 
 create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
+                                        n_cdsa_pilot_day28fu_records,
                                         n_after_lockdate_records,
                                         n_nonvalid_pid_records,
                                         n_edit_nonvalid_pid_records,
@@ -558,7 +563,7 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                                         n_edit_inconsistent_name_records,
                                         n_cleaned_allday28fu_records) {
 
-  n_excluded <- n_after_lockdate_records + n_drop_nonvalid_pid_records
+  n_excluded <- n_cdsa_pilot_day28fu_records + n_after_lockdate_records + n_drop_nonvalid_pid_records
   n_auto_edited <- 0
   n_manual_edited <- n_edit_nonvalid_pid_records + n_edit_inconsistent_name_records
   n_informed <- 0
@@ -568,9 +573,9 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\nXX record(s) with non-consistent names']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) related to the CDSA pilot (India only)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\nXX record(s) with non-consistent names']
                   m2 [label = 'Automatically edited (N = %s)']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) edited for non-valid child IDs (out of %s detected)\n%s record(s) edited for non-consistent names (out of %s detected)']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)']
                   2 [label = 'Cleaned Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -595,6 +600,7 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                 }",
                 n_raw_allday28fu_records,
                 n_excluded,
+                n_cdsa_pilot_day28fu_records,
                 n_after_lockdate_records,
                 n_drop_nonvalid_pid_records,
                 n_auto_edited,
@@ -668,9 +674,14 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 #' Create cleaning flowchart for hospitalisation data (TIMCI-specific)
 #'
 #' @param n_raw_hospit_records Initial number of hospitalisation records
+#' @param n_cdsa_pilot_hospitfu_records
 #' @param n_afterlock_pids_hospitfu_records Number of records outside of lock range
 #' @param n_nonvalid_pid_records Number of screening records with a non-valid device ID
+#' @param n_edit_nonvalid_pid_hospitfu_records
+#' @param n_drop_nonvalid_pid_hospitfu_records,
 #' @param n_inconsistent_names_day7fu_records
+#' @param n_edit_inconsistent_name_hospitfu_records
+#' @param n_drop_inconsistent_name_hospitfu_records
 #' @param n_duplicated_records Number of screening records with an entry date posterior to the lock date
 #' @param n_death_prior_day0_hospitfu,
 #' @param n_hospit_prior_day0_hospitfu,
@@ -681,18 +692,23 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 #' @import DiagrammeR
 
 create_hospit_qc_flowchart <- function(n_raw_hospit_records,
+                                       n_cdsa_pilot_hospitfu_records,
                                        n_afterlock_pids_hospitfu_records,
                                        n_nonvalid_pid_records,
+                                       n_edit_nonvalid_pid_hospitfu_records,
+                                       n_drop_nonvalid_pid_hospitfu_records,
                                        n_inconsistent_names_day7fu_records,
+                                       n_edit_inconsistent_name_hospitfu_records,
+                                       n_drop_inconsistent_name_hospitfu_records,
                                        n_duplicated_records,
                                        n_death_prior_day0_hospitfu,
                                        n_hospit_prior_day0_hospitfu,
                                        n_discharge_prior_day0_hospitfu,
                                        n_cleaned_hospit_records) {
 
-  n_excluded <- n_afterlock_pids_hospitfu_records + n_nonvalid_pid_records + n_inconsistent_names_day7fu_records
+  n_excluded <- n_cdsa_pilot_hospitfu_records + n_afterlock_pids_hospitfu_records + n_drop_nonvalid_pid_hospitfu_records + n_drop_inconsistent_name_hospitfu_records
   n_auto_edited <- 0
-  n_manual_edited <- 0
+  n_manual_edited <- n_edit_nonvalid_pid_hospitfu_records + n_edit_inconsistent_name_hospitfu_records
   n_informed <- n_death_prior_day0_hospitfu + n_hospit_prior_day0_hospitfu + n_discharge_prior_day0_hospitfu
 
   gr <- sprintf("digraph flowchart {
@@ -700,9 +716,9 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\n%s record(s) with non consistent names']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) related to the CDSA pilot (India only)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
-                  m3 [label = 'Manually edited (N = %s)']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with discharge prior to enrolment']
                   2 [label = 'Cleaned hospitalisation records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -727,11 +743,18 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
                 }",
                 n_raw_hospit_records,
                 n_excluded,
+                n_cdsa_pilot_hospitfu_records,
                 n_afterlock_pids_hospitfu_records,
+                n_drop_nonvalid_pid_hospitfu_records,
                 n_nonvalid_pid_records,
+                n_drop_inconsistent_name_hospitfu_records,
                 n_inconsistent_names_day7fu_records,
                 n_auto_edited,
                 n_manual_edited,
+                n_edit_nonvalid_pid_hospitfu_records,
+                n_nonvalid_pid_records,
+                n_edit_inconsistent_name_hospitfu_records,
+                n_inconsistent_names_day7fu_records,
                 n_informed,
                 n_death_prior_day0_hospitfu,
                 n_hospit_prior_day0_hospitfu,

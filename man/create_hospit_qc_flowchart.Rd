@@ -6,9 +6,14 @@
 \usage{
 create_hospit_qc_flowchart(
   n_raw_hospit_records,
+  n_cdsa_pilot_hospitfu_records,
   n_afterlock_pids_hospitfu_records,
   n_nonvalid_pid_records,
+  n_edit_nonvalid_pid_hospitfu_records,
+  n_drop_nonvalid_pid_hospitfu_records,
   n_inconsistent_names_day7fu_records,
+  n_edit_inconsistent_name_hospitfu_records,
+  n_drop_inconsistent_name_hospitfu_records,
   n_duplicated_records,
   n_death_prior_day0_hospitfu,
   n_hospit_prior_day0_hospitfu,

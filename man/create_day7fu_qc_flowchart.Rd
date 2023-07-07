@@ -6,6 +6,7 @@
 \usage{
 create_day7fu_qc_flowchart(
   n_raw_allday7fu_records,
+  n_cdsa_pilot_day7fu_records,
   n_after_lockdate_records,
   n_nonvalid_pid_records,
   n_edit_nonvalid_pid_records,
