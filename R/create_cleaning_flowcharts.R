@@ -547,6 +547,7 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
 #' @param n_edit_nonvalid_pid_records
 #' @param n_drop_nonvalid_pid_records
 #' @param n_inconsistent_name_records
+#' @param n_drop_inconsistent_name_records
 #' @param n_edit_inconsistent_name_records
 #' @param n_cleaned_allday28fu_records TBD
 #' @return This function returns a graph object
@@ -560,10 +561,11 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                                         n_edit_nonvalid_pid_records,
                                         n_drop_nonvalid_pid_records,
                                         n_inconsistent_name_records,
+                                        n_drop_inconsistent_name_records,
                                         n_edit_inconsistent_name_records,
                                         n_cleaned_allday28fu_records) {
 
-  n_excluded <- n_cdsa_pilot_day28fu_records + n_after_lockdate_records + n_drop_nonvalid_pid_records
+  n_excluded <- n_cdsa_pilot_day28fu_records + n_after_lockdate_records + n_drop_nonvalid_pid_records + n_drop_inconsistent_name_records
   n_auto_edited <- 0
   n_manual_edited <- n_edit_nonvalid_pid_records + n_edit_inconsistent_name_records
   n_informed <- 0
@@ -573,7 +575,7 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                   node [fontname = Helvetica, shape = rectangle, fixedsize = false, width = 1]
 
                   1 [label = 'Raw Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
-                  m1 [label = 'Excluded (N = %s)\n%s record(s) related to the CDSA pilot (India only)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs\nXX record(s) with non-consistent names']
+                  m1 [label = 'Excluded (N = %s)\n%s record(s) related to the CDSA pilot (India only)\n%s record(s) outside the lock date range\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
                   m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non-consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)']
@@ -603,6 +605,9 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                 n_cdsa_pilot_day28fu_records,
                 n_after_lockdate_records,
                 n_drop_nonvalid_pid_records,
+                n_nonvalid_pid_records,
+                n_drop_inconsistent_name_records,
+                n_inconsistent_name_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_edit_nonvalid_pid_records,
