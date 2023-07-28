@@ -625,14 +625,22 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
 #'
 #' @param n_raw_day28fu_records Number of records
 #' @param n_dropped_duplicate_records TBD
+#' @param n_fu_prior_day0_day28fu
+#' @param n_death_prior_day0_day28fu
+#' @param n_hospit_prior_day0_day28fu
+#' @param n_death_prior_hospit_day28fu
 #' @param n_cleaned_day28fu_records TBD
 #' @return This function returns a graph object
 #' @export
 #' @import DiagrammeR
 
 create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
-                                                n_dropped_duplicate_records,
-                                                n_cleaned_day28fu_records) {
+                                               n_dropped_duplicate_records,
+                                               n_fu_prior_day0_day28fu,
+                                               n_death_prior_day0_day28fu,
+                                               n_hospit_prior_day0_day28fu,
+                                               n_death_prior_hospit_day28fu,
+                                               n_cleaned_day28fu_records) {
 
   n_excluded <- n_dropped_duplicate_records
   n_auto_edited <- 0
@@ -646,11 +654,16 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
                   1 [label = 'Raw successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with a more recent follow-up available\n']
                   m2 [label = 'Automatically edited (N = %s)']
-                  m3 [label = 'Other checks triggered (N = %s)']
+                  m3 [label = 'Manually edited (N = %s)']
+                  m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with follow-up prior to enrolment\n%s record(s) with death prior to enrolment\n%s record(s) with hospitalisation prior to enrolment\n%s record(s) with death prior to hospitalisation']
                   2 [label = 'Cleaned successful Day 28 follow-up records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
                   node [shape=none, width=0, height=0, label='']
-                  p3 -> 2 [arrowhead='none']
+                  p4 -> 2 [arrowhead='none']
+                  {rank=same; p4 -> m4}
+
+                  node [shape=none, width=0, height=0, label='']
+                  p3 -> p4 [arrowhead='none']
                   {rank=same; p3 -> m3}
 
                   node [shape=none, width=0, height=0, label='']
@@ -670,6 +683,10 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
                 n_auto_edited,
                 n_manual_edited,
                 n_informed,
+                n_fu_prior_day0_day28fu,
+                n_death_prior_day0_day28fu,
+                n_hospit_prior_day0_day28fu,
+                n_death_prior_hospit_day28fu,
                 n_cleaned_day28fu_records)
 
   DiagrammeR::grViz(gr)

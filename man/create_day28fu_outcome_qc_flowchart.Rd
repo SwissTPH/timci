@@ -7,6 +7,10 @@
 create_day28fu_outcome_qc_flowchart(
   n_raw_day28fu_records,
   n_dropped_duplicate_records,
+  n_fu_prior_day0_day28fu,
+  n_death_prior_day0_day28fu,
+  n_hospit_prior_day0_day28fu,
+  n_death_prior_hospit_day28fu,
   n_cleaned_day28fu_records
 )
 }
