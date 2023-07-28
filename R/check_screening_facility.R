@@ -86,7 +86,8 @@ allocate_screening_facility <- function(facility_data,
                   facility_name_from_daily_device = facility_name)
 
   # Remove all data that originates from non-valid device IDs
-  out <- facility_data[facility_data$device_id %in% ddf2$device_id,]
+  #out <- facility_data[facility_data$device_id %in% ddf2$device_id,] # commented on 28.07.2023 for Tanzania / India hard locks
+  out <- facility_data
 
   out <- out %>%
     merge(y = ddf1[, c("device_id", "fid_from_main_device", "facility_name_from_main_device")],

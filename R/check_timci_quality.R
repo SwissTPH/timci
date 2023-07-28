@@ -152,15 +152,15 @@ detect_inconsistent_dates <- function(df,
                                       list_of_cols = c(),
                                       date_format = "%Y-%m-%d %T") {
 
-  qc_df <- NULL
+  qc_df <- df
   cleaned_df <- NULL
   cols <- colnames(df)
 
-  df$diff <- floor(difftime(df[[col_date_end]], df[[col_date_start]], units = "days"))
-  df[[paste0("day_", col_date_end)]] <- lubridate::wday(df[[col_date_end]], label = TRUE)
-  df[[paste0("day_", col_date_start)]] <- lubridate::wday(df[[col_date_start]], label = TRUE)
+  qc_df$diff <- floor(difftime(qc_df[[col_date_end]], qc_df[[col_date_start]], units = "days"))
+  qc_df[[paste0("day_", col_date_end)]] <- lubridate::wday(qc_df[[col_date_end]], label = TRUE)
+  qc_df[[paste0("day_", col_date_start)]] <- lubridate::wday(qc_df[[col_date_start]], label = TRUE)
 
-  cols <- colnames(df)
+  cols <- colnames(qc_df)
   kcols <- c()
   if ( 'fid' %in% cols ) {
     kcols <- c(kcols,"fid")
@@ -192,7 +192,7 @@ detect_inconsistent_dates <- function(df,
   }
   kcols <- c(kcols, "diff", "uuid")
 
-  qc_df <- df %>%
+  qc_df <- qc_df %>%
     dplyr::select(kcols) %>%
     dplyr::filter(diff > 0)
 
