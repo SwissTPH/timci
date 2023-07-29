@@ -689,10 +689,11 @@ detect_inconsistent_names_between_visits <- function(refdf,
           dplyr::mutate(refname3 = tolower(paste(fs_name, ls_name, sep = ' ')))
       } else {
         refdf <- refdf %>%
-          dplyr::mutate(refname = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
-          dplyr::mutate(refname2 = tolower(paste(fs_name, ls_name, sep = ' '))) %>%
-          dplyr::mutate(refname3 = tolower(paste(ms_name, ls_name, sep = ' '))) %>%
-          dplyr::mutate(refname4 = tolower(fs_name))
+          dplyr::mutate(refname = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname2 = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
+          dplyr::mutate(refname3 = tolower(paste(fs_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname4 = tolower(paste(ms_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname5 = tolower(fs_name))
       }
     } else{
       refdf <- refdf %>%
@@ -719,6 +720,7 @@ detect_inconsistent_names_between_visits <- function(refdf,
                       refname2,
                       refname3,
                       refname4,
+                      refname5,
                       child_id)
     } else {
       qc_df <- refdf %>%
@@ -748,8 +750,9 @@ detect_inconsistent_names_between_visits <- function(refdf,
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
           dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
-          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(refname4, fs_name_check)) %>%
-          dplyr::mutate(lvr = max(lvr1, lvr2, lvr3, lvr4)) %>%
+          dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname4, name)) %>%
+          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(refname5, fs_name_check)) %>%
+          dplyr::mutate(lvr = max(lvr1, lvr2, lvr3, lvr4, lvr5)) %>%
           dplyr::select(child_id,
                         uuid,
                         name,
