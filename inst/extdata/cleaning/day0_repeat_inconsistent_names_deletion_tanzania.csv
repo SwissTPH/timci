@@ -1,4 +1,4 @@
-old_child_id,uuid,action
+child_id,uuid,action
 T-F0036-P1193,uuid:00500e5c-5f08-47f4-93d6-b149a5a3b99b,delete
 T-F0102-P1539,uuid:05b392d0-b8a7-43b2-8f84-9ea6454fc48b,delete
 T-F0089-P0311,uuid:9c79b0b2-671d-4d45-8b1d-8fdc1efcdc61,delete
