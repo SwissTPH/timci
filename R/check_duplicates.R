@@ -750,8 +750,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
           dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
           dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
           dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
-          dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname4, name)) %>%
-          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(refname5, fs_name_check)) %>%
+          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(refname4, name)) %>%
+          dplyr::mutate(lvr5 = timci::normalised_levenshtein_ratio(refname5, fs_name_check)) %>%
           dplyr::mutate(lvr = max(lvr1, lvr2, lvr3, lvr4, lvr5)) %>%
           dplyr::select(child_id,
                         uuid,
