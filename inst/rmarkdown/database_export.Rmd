@@ -382,6 +382,11 @@ day28fu_is_not_empty <- timci::is_not_empty(raw_day28fu_data)
 ```{r db-export-day0-subsection, child = 'database_export_sub_rctls_day0.Rmd'}
 ```
 
+<!-- Repeat scheduled and unscheduled visits -->
+
+```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
+```
+
 <!-- Withdrawals -->
 
 ```{r db-export-withdrawals-subsection, child = if(day0_is_not_empty) 'database_export_sub_rctls_withdrawals.Rmd'}
@@ -415,11 +420,6 @@ disable <- FALSE
 ```
 
 ```{r db-export-deaths-subsection, child = if (day7fu_is_not_empty & disable) 'database_export_sub_rctls_deaths.Rmd'}
-```
-
-<!-- Repeat scheduled and unscheduled visits -->
-
-```{r db-export-repeats-subsection, child = 'database_export_sub_rctls_repeats.Rmd'}
 ```
 
 \newpage

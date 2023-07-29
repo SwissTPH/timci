@@ -691,7 +691,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
         refdf <- refdf %>%
           dplyr::mutate(refname = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
           dplyr::mutate(refname2 = tolower(paste(fs_name, ls_name, sep = ' '))) %>%
-          dplyr::mutate(refname3 = tolower(fs_name))
+          dplyr::mutate(refname3 = tolower(paste(ms_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname4 = tolower(fs_name))
       }
     } else{
       refdf <- refdf %>%
@@ -707,16 +708,25 @@ detect_inconsistent_names_between_visits <- function(refdf,
         dplyr::mutate(name = tolower(ifelse(name == "NA NA", "", name)))
     } else if ( "fs_name_check" %in% cols ) {
       fudf <- fudf %>%
-        dplyr::mutate(name = tolower(paste(ifelse(fs_name_check == "NA", "", fs_name_check),
-                                           ifelse(ls_name_check == "NA", "", ls_name_check),
-                                           sep = ' ')))
+        dplyr::mutate(fs_name_check = ifelse(fs_name_check == "NA", "", fs_name_check)) %>%
+        dplyr::mutate(ls_name_check = ifelse(ls_name_check == "NA", "", ls_name_check)) %>%
+        dplyr::mutate(name = tolower(paste(fs_name_check, ls_name_check, sep = ' ')))
     }
 
-    qc_df <- refdf %>%
-      dplyr::select(refname,
-                    refname2,
-                    refname3,
-                    child_id)
+    if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" & repeats ) {
+      qc_df <- refdf %>%
+        dplyr::select(refname,
+                      refname2,
+                      refname3,
+                      refname4,
+                      child_id)
+    } else {
+      qc_df <- refdf %>%
+        dplyr::select(refname,
+                      refname2,
+                      refname3,
+                      child_id)
+    }
     if ( "child_id" %in% cols ) {
       qc_df <- qc_df %>%
         merge(fudf,
@@ -732,19 +742,36 @@ detect_inconsistent_names_between_visits <- function(refdf,
 
     if ( "name" %in% colnames(qc_df)) {
       qc_df$date_for_matching <- qc_df[[col_date]]
-      qc_df <- qc_df %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
-        dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
-        dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
-        dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
-        dplyr::select(child_id,
-                      uuid,
-                      name,
-                      refname,
-                      lvr,
-                      date_for_matching) %>%
-        dplyr::filter(lvr < thres1)
+      if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" & repeats ) {
+        qc_df <- qc_df %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
+          dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
+          dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
+          dplyr::mutate(lvr4 = timci::normalised_levenshtein_ratio(refname4, fs_name_check)) %>%
+          dplyr::mutate(lvr = max(lvr1, lvr2, lvr3, lvr4)) %>%
+          dplyr::select(child_id,
+                        uuid,
+                        name,
+                        refname,
+                        lvr,
+                        date_for_matching) %>%
+          dplyr::filter(lvr < thres1)
+      } else {
+        qc_df <- qc_df %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(lvr1 = timci::normalised_levenshtein_ratio(refname, name)) %>%
+          dplyr::mutate(lvr2 = timci::normalised_levenshtein_ratio(refname2, name)) %>%
+          dplyr::mutate(lvr3 = timci::normalised_levenshtein_ratio(refname3, name)) %>%
+          dplyr::mutate(lvr = max(lvr1, lvr2, lvr3)) %>%
+          dplyr::select(child_id,
+                        uuid,
+                        name,
+                        refname,
+                        lvr,
+                        date_for_matching) %>%
+          dplyr::filter(lvr < thres1)
+      }
     } else {
       qc_df <- NULL
     }

@@ -95,14 +95,14 @@ repeat_data <- cleaned_df %>%
 write(" o Non-valid participant IDs", stderr())
 ```
 
-::: {custom-style="redparagraph"}
-Initial check `r qc_nonvalid_repeat`a
-:::
-
 ```{r, eval=!is.null(repeat_data)}
 repeat_data_with_id <- repeat_data %>%
   dplyr::filter(!is.na(prev_id))
 ```
+
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonvalid_repeat`a
+:::
 
 ```{r, eval=!is.null(repeat_data_with_id), results='asis'}
 qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled repeat visits are searched for matched names."
@@ -160,21 +160,25 @@ repeat_data <- rbind(repeat_data %>%
 write(" o Non-consistent participant names", stderr())
 ```
 
+```{r, eval=!is.null(repeat_data)}
+repeat_data_with_name <- repeat_data %>%
+  dplyr::filter(child_name != "na na")
+```
+
 ::: {custom-style="redparagraph"}
 Initial check `r qc_nonconsistent_name_repeat`a
 :::
 
-```{r, eval=!is.null(repeat_data), results='asis'}
+```{r, eval=!is.null(repeat_data_with_name), results='asis'}
 qc_description <- "Repeat visits are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually. Detected repeat visits are then searched for matched names."
 qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
 qc_type <- "inconsistent_names_repeat_visits"
-df <- repeat_data %>% 
-  dplyr::filter(child_name != "na na")
+df <- repeat_data_with_name
 refdf <- allday0_data
 datecol <- "date_repeat"
 ldate_diff <- -29
 udate_diff <- -1
-matched_names <- FALSE
+matched_names <- TRUE
 cleaning <- "none"
 qc_text <- "non-consistent participant names"
 qc_idx <- paste0(qc_nonconsistent_name_repeat, "a")
@@ -186,14 +190,30 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_nonconsistent_names_repeat_records <- n_detected
 ```
 
-```{r, eval=!is.null(repeat_data), results='asis'}
-mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
-to_correct_df <- repeat_data %>% 
-  dplyr::filter(child_name != "na na")
-correction_type <- "delete_repeat_records"
+```{r, eval=!is.null(repeat_data_with_name), results='asis'}
+mc_description <- ""
+to_correct_df <- repeat_data_with_name
+correction_type <- "correct_repeat_inconsistent_names"
 
 # Parameters for the quality check following manual corrections
 qc_idx <- paste0(qc_nonconsistent_name_repeat, "b")
+qc_export_label <- "nonconsistent_names_repeat_with_matched_names"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+repeat_data_with_name <- corrected_df
+n_edit_inconsistent_name_repeat_records <- n_mc
+```
+
+```{r, eval=!is.null(repeat_data_with_name), results='asis'}
+mc_description <- "Delete records where it cannot be ascertained that the child enrolled and followed-up are the same individual (manual evaluation)."
+to_correct_df <- repeat_data_with_name
+correction_type <- "delete_repeat_records"
+
+# Parameters for the quality check following manual corrections
+qc_idx <- paste0(qc_nonconsistent_name_repeat, "c")
 qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
 cleaning <- "none"
 
@@ -203,13 +223,17 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
 
 repeat_data <- repeat_data %>% 
   dplyr::filter(child_name == "na na") %>%
-  dplyr::bind_rows(corrected_df) %>%
-  dplyr::rename(date_visit = date_repeat)
+  dplyr::bind_rows(corrected_df)
 
 n_drop_inconsistent_names_repeat_records <- n_mc
 ```
 
 ### Dates and times
+
+```{r}
+repeat_data <- repeat_data %>%
+  dplyr::rename(date_visit = date_repeat)
+```
 
 #### Repeat visit anterior to enrolment [Context check `r qc_visit_before_enrolment`]
 
