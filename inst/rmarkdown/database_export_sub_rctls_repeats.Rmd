@@ -6,6 +6,8 @@ write("Export repeat visit data and run corresponding quality checks", stderr())
 
 ```{r}
 n_nonvalid_pids_repeat_records <- 0
+n_edit_nonvalid_pid_repeat_records <- 0
+n_drop_nonvalid_pid_repeat_records <- 0
 n_nonconsistent_names_repeat_records <- 0
 n_drop_inconsistent_names_repeat_records <- 0
 n_visit_before_enrolment <- 0
@@ -93,12 +95,20 @@ repeat_data <- cleaned_df %>%
 write(" o Non-valid participant IDs", stderr())
 ```
 
-```{r, eval=!is.null(repeat_data), results='asis'}
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonvalid_repeat`a
+:::
+
+```{r, eval=!is.null(repeat_data)}
+repeat_data_with_id <- repeat_data %>%
+  dplyr::filter(!is.na(prev_id))
+```
+
+```{r, eval=!is.null(repeat_data_with_id), results='asis'}
 qc_description <- "Repeat visits are relevant only if they can be reconciled with a participant enrolled at Day 0. Reconciliation is based on the participant ID. Non-reconciled repeat visits are searched for matched names."
 qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
 qc_type <- "nonvalid_ids_identify_names"
-df <- repeat_data %>%
-  dplyr::filter(!is.na(prev_id))
+df <- repeat_data_with_id
 idcol1 <- "prev_id"
 refdf <- allday0_data
 idcol2 <- "child_id"
@@ -109,16 +119,35 @@ udate_diff <- -1
 matched_names <- TRUE
 cleaning <- "drop_all"
 qc_text <- "non-valid participant IDs"
-qc_idx <- qc_nonvalid_repeat
+qc_idx <- paste0(qc_nonvalid_repeat, "a")
 qc_export_label <- "nonvalid_pids_repeat_with_matched_names"
 qc_export_description <- "the child ID does not correspond to any ID found in the locked Day 0 database"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))
+
+n_nonvalid_pids_repeat_records <- n_detected
+```
+
+```{r, eval=!is.null(repeat_data_with_id), results='asis'}
+mc_description <- ""
+to_correct_df <- repeat_data_with_id
+correction_type <- "correct_repeat_non_valid_ids"
+
+# Parameters for the quality check following manual corrections
+qc_rule <- "Keep only IDs of children who can be found in the initial Day 0 database."
+qc_idx <- paste0(qc_nonvalid_repeat, "b")
+cleaning <- "drop_all"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+n_edit_nonvalid_pid_repeat_records <- n_mc
+n_drop_nonvalid_pid_repeat_records <- n_detected
 ```
 
 ```{r, eval=!is.null(cleaned_df)}
-n_nonvalid_pids_repeat_records <- n_detected
 repeat_data_part <- cleaned_df
 repeat_data <- rbind(repeat_data %>%
                        dplyr::filter(is.na(prev_id)),
@@ -131,10 +160,14 @@ repeat_data <- rbind(repeat_data %>%
 write(" o Non-consistent participant names", stderr())
 ```
 
+::: {custom-style="redparagraph"}
+Initial check `r qc_nonconsistent_name_repeat`a
+:::
+
 ```{r, eval=!is.null(repeat_data), results='asis'}
 qc_description <- "Repeat visits are relevant only if the name of the participant matches the name of the participant enrolled at Day 0. Some errors can be introduced when participant IDs have been duplicated or follow-ups have been entered manually. Detected repeat visits are then searched for matched names."
 qc_rule <- "Keep only IDs of children whose name matches the name in the initial Day 0 database."
-qc_type <- "inconsistent_names"
+qc_type <- "inconsistent_names_repeat_visits"
 df <- repeat_data %>% 
   dplyr::filter(child_name != "na na")
 refdf <- allday0_data
@@ -251,6 +284,8 @@ write(" o Data cleaning summary", stderr())
 ```{r}
 timci::create_repeat_qc_flowchart(n_raw_repeat_records,
                                   n_nonvalid_pids_repeat_records,
+                                  n_edit_nonvalid_pid_repeat_records,
+                                  n_drop_nonvalid_pid_repeat_records,
                                   n_drop_inconsistent_names_repeat_records,
                                   n_nonconsistent_names_repeat_records,
                                   n_visit_before_enrolment,

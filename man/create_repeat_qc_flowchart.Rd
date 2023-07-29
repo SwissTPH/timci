@@ -7,6 +7,8 @@
 create_repeat_qc_flowchart(
   n_raw_repeat_records,
   n_nonvalid_pids_repeat_records,
+  n_edit_nonvalid_pid_repeat_records,
+  n_drop_nonvalid_pid_repeat_records,
   n_drop_inconsistent_names_repeat_records,
   n_nonconsistent_names_repeat_records,
   n_visit_before_enrolment,

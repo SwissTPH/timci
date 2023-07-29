@@ -657,6 +657,7 @@ identify_multiple_enrolments <- function(df) {
 #' @param ldate_diff Lower date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
 #' @param udate_diff Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.
 #' @param matched_names Boolean indicating whether to perform matching based on names.
+#' @param repeats Boolean to be used to only compare 2 names (instead of 3) in Tanzania
 #' @return This function returns a dataframe.
 #' @export
 #' @import dplyr
@@ -667,7 +668,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
                                                      ldate_diff,
                                                      udate_diff,
                                                      matched_names = FALSE,
-                                                     cleaning = "none") {
+                                                     cleaning = "none",
+                                                     repeats = FALSE) {
 
   qc_df <- NULL
   cleaned_df <- fudf
@@ -680,10 +682,17 @@ detect_inconsistent_names_between_visits <- function(refdf,
 
     # Generate plausible combinations of names to be compared
     if ( Sys.getenv("TIMCI_COUNTRY") == "Tanzania" ) {
-      refdf <- refdf %>%
-        dplyr::mutate(refname = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
-        dplyr::mutate(refname2 = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
-        dplyr::mutate(refname3 = tolower(paste(fs_name, ls_name, sep = ' ')))
+      if ( !repeats ) {
+        refdf <- refdf %>%
+          dplyr::mutate(refname = tolower(paste(fs_name, ms_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname2 = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
+          dplyr::mutate(refname3 = tolower(paste(fs_name, ls_name, sep = ' ')))
+      } else {
+        refdf <- refdf %>%
+          dplyr::mutate(refname = tolower(paste(fs_name, ms_name, sep = ' '))) %>%
+          dplyr::mutate(refname2 = tolower(paste(fs_name, ls_name, sep = ' '))) %>%
+          dplyr::mutate(refname3 = tolower(fs_name))
+      }
     } else{
       refdf <- refdf %>%
         dplyr::mutate(refname = tolower(paste(fs_name, ls_name, sep = ' '))) %>%

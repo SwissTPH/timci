@@ -170,6 +170,11 @@ out <- timci::delete_day0_records(to_correct_df,
 
 <!-- Repeat visit corrections -->
 
+```{r, eval=(correction_type=="correct_repeat_non_valid_ids")}
+out <- timci::correct_repeat_ids(to_correct_df,
+                                 csv_prefix = "repeat_non_valid_pid_correction")
+```
+
 ```{r, eval=(correction_type=="delete_repeat_records")}
 out <- timci::delete_repeat_records(to_correct_df,
                                     csv_prefix = "day0_repeat_inconsistent_names_deletion")

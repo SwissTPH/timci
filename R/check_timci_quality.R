@@ -387,6 +387,8 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
     kcols <- c(kcols, "date_visit")
   } else if ( "date_call" %in% cols ) {
     kcols <- c(kcols, "date_call")
+  } else if ( "date_repeat" %in% cols ) {
+    kcols <- c(kcols, "date_repeat")
   }
   if ( "district" %in% cols ) {
     kcols <- c(kcols, "district")
@@ -417,7 +419,7 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
     dplyr::select(kcols)
 
   if (matched_names) {
-    if ( "name" %in% cols ) {
+    if ( "name" %in% kcols ) {
       out <- timci::find_best_matched_names_between_fu_and_day0(df = qc_df %>%
                                                                   dplyr::mutate(name = tolower(name)),
                                                                 day0_df = df2,
@@ -425,7 +427,7 @@ identify_nonvalid_ids_with_matched_names <- function(df1,
                                                                 col_name = "name",
                                                                 ldate_diff = ldate_diff,
                                                                 udate_diff = udate_diff)
-    } else if ( "child_name" %in% cols ) {
+    } else if ( "child_name" %in% kcols ) {
       out <- timci::find_best_matched_names_between_fu_and_day0(df = qc_df %>%
                                                                   dplyr::mutate(child_name = tolower(child_name)),
                                                                 day0_df = df2,

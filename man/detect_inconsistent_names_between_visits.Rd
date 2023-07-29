@@ -11,7 +11,8 @@ detect_inconsistent_names_between_visits(
   ldate_diff,
   udate_diff,
   matched_names = FALSE,
-  cleaning = "none"
+  cleaning = "none",
+  repeats = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ detect_inconsistent_names_between_visits(
 \item{udate_diff}{Upper date difference (default is same day), negative numbers indicate a difference in the past, positive numbers indicate a difference in the future.}
 
 \item{matched_names}{Boolean indicating whether to perform matching based on names.}
+
+\item{repeats}{Boolean to be used to only compare 2 names (instead of 3) in Tanzania}
 }
 \value{
 This function returns a dataframe.
