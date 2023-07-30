@@ -288,6 +288,8 @@ identify_nonvalid_ids <- function(df1,
   }
   if ( "child_name" %in% cols ) {
     kcols <- c(kcols, "child_name")
+  } else if ( "name" %in% cols ) {
+    kcols <- c(kcols, "name")
   }
   if ( "deviceid" %in% cols ) {
     kcols <- c(kcols, "deviceid")
