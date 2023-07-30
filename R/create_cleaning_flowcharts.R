@@ -320,6 +320,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 #' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participan ID
 #' @param n_edit_nonvalid_pid_repeat_records
 #' @param n_drop_nonvalid_pid_repeat_records
+#' @param n_edit_inconsistent_names_repeat_records
 #' @param n_drop_inconsistent_names_repeat_records
 #' @param n_nonconsistent_names_repeat_records
 #' @param n_visit_before_enrolment
@@ -332,6 +333,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                                        n_nonvalid_pids_repeat_records,
                                        n_edit_nonvalid_pid_repeat_records,
                                        n_drop_nonvalid_pid_repeat_records,
+                                       n_edit_inconsistent_names_repeat_records,
                                        n_drop_inconsistent_names_repeat_records,
                                        n_nonconsistent_names_repeat_records,
                                        n_visit_before_enrolment,
@@ -339,7 +341,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
 
   n_excluded <- n_drop_nonvalid_pid_repeat_records + n_drop_inconsistent_names_repeat_records
   n_auto_edited <- 0
-  n_manual_edited <- n_edit_nonvalid_pid_repeat_records
+  n_manual_edited <- n_edit_nonvalid_pid_repeat_records + n_edit_inconsistent_names_repeat_records
   n_informed <- n_visit_before_enrolment
 
   gr <- sprintf("digraph flowchart {
@@ -349,7 +351,7 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                   1 [label = 'Raw repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non consistent names (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with non-valid child IDs (out of %s detected)\n%s record(s) with non consistent names (out of %s detected)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a date of visit prior to enrolment']
                   2 [label = 'Cleaned repeat visit records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -382,6 +384,8 @@ create_repeat_qc_flowchart <- function(n_raw_repeat_records,
                 n_manual_edited,
                 n_edit_nonvalid_pid_repeat_records,
                 n_nonvalid_pids_repeat_records,
+                n_edit_inconsistent_names_repeat_records,
+                n_nonconsistent_names_repeat_records,
                 n_informed,
                 n_visit_before_enrolment,
                 n_cleaned_repeat_records)

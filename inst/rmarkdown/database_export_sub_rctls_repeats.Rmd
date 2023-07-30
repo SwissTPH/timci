@@ -9,6 +9,7 @@ n_nonvalid_pids_repeat_records <- 0
 n_edit_nonvalid_pid_repeat_records <- 0
 n_drop_nonvalid_pid_repeat_records <- 0
 n_nonconsistent_names_repeat_records <- 0
+n_edit_inconsistent_names_repeat_records <- 0
 n_drop_inconsistent_names_repeat_records <- 0
 n_visit_before_enrolment <- 0
 ```
@@ -204,7 +205,7 @@ cat(knitr::knit_child('database_export_sub_corrections.Rmd',
                       quiet = TRUE))
 
 repeat_data_with_name <- corrected_df
-n_edit_inconsistent_name_repeat_records <- n_mc
+n_edit_inconsistent_names_repeat_records <- n_mc
 ```
 
 ```{r, eval=!is.null(repeat_data_with_name), results='asis'}
@@ -311,6 +312,7 @@ timci::create_repeat_qc_flowchart(n_raw_repeat_records,
                                   n_nonvalid_pids_repeat_records,
                                   n_edit_nonvalid_pid_repeat_records,
                                   n_drop_nonvalid_pid_repeat_records,
+                                  n_edit_inconsistent_names_repeat_records,
                                   n_drop_inconsistent_names_repeat_records,
                                   n_nonconsistent_names_repeat_records,
                                   n_visit_before_enrolment,
