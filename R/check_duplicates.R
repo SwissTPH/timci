@@ -721,12 +721,14 @@ detect_inconsistent_names_between_visits <- function(refdf,
                       refname3,
                       refname4,
                       refname5,
+                      sex,
                       child_id)
     } else {
       qc_df <- refdf %>%
         dplyr::select(refname,
                       refname2,
                       refname3,
+                      sex,
                       child_id)
     }
     if ( "child_id" %in% cols ) {
@@ -758,6 +760,8 @@ detect_inconsistent_names_between_visits <- function(refdf,
                         name,
                         refname,
                         lvr,
+                        sex_check,
+                        sex,
                         date_for_matching) %>%
           dplyr::filter(lvr < thres1)
       } else {
