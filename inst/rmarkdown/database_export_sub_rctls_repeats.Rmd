@@ -215,6 +215,7 @@ correction_type <- "delete_repeat_records"
 # Parameters for the quality check following manual corrections
 qc_idx <- paste0(qc_nonconsistent_name_repeat, "c")
 qc_rule <- "Remaining records with inconsistent names are kept in the database (i.e. some similarity have been found despite the low automated score)."
+qc_export_label <- "nonconsistent_names_repeat_with_matched_names"
 cleaning <- "none"
 
 cat(knitr::knit_child('database_export_sub_corrections.Rmd',
