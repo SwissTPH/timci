@@ -133,7 +133,6 @@ T-F0095-P1697,uuid:d7f7c5c1-62f3-44c5-8cc9-708e43b63967,T-F0095-P1698,,edit,08.0
 T-F0102-P0983,uuid:98324f13-aec8-46c0-abb1-30c66f6e1b0f,T-F0102-P1087,,edit,08.01.2022,IHI,1/27/2022
 T-F0001-P0376,uuid:5ff0643e-8ab3-4a38-ad5d-64cfbc142c5c,T-F0021-P0376,manual entry with incorrect facility code,edit,08.02.2022,IHI,1/22/2022
 T-F0001-P0377,uuid:53ac17b0-edea-4144-9df7-5fa28c5b17d2,T-F0021-P0377,manual entry with incorrect facility code,edit,08.02.2022,IHI,1/22/2022
-T-F0021-P0377,uuid:0f6dfbfc-4336-4724-be5b-325d1bf81373,T-F9021-P0377,Ra manually entered pid with errors in the fid hes till sent the data and entered new records for these child with correct id,delete,08.02.2022,IHI,1/22/2022
 T-F0039-P0671,uuid:84e4e42a-cdc5-47f1-8738-e74a54ff4728,T-F0043-P1814,,edit,08.09.2022,IHI,08.01.2022
 T-F0001-P0363,uuid:73ce57fd-65b8-4946-8707-8b6bacc8b626,T-F0001-P0538,,edit,08.09.2022,IHI,08.02.2022
 T-F0083-P1072,uuid:928e3a0d-17c1-47b2-86d7-451aded69d52,T-F0083-P1073,,edit,08.09.2022,IHI,08.02.2022
@@ -151,14 +150,12 @@ T-F0010-P1802,uuid:c8a2320a-7bce-4c22-abb5-5c38d4a1562f,T-F0010-P1825,Ra entered
 T-F0010-P1803,uuid:827b0877-63a0-42a9-96ce-7032ad49d7e6,T-F0010-P1826,Ra entered manually arleady used QR codes,edit,,IHI,15. Aug 22
 T-F0010-P1804,uuid:232255f9-89d2-4d0e-ba85-b6b3a58488a8,T-F0010-P1827,Ra entered manually arleady used QR codes,edit,,IHI,15. Aug 22
 T-F0010-P1805,uuid:e4bda5c1-c96f-4fcf-a5a2-3d962ded3abf,T-F0010-P1828,Ra entered manually arleady used QR codes,edit,,IHI,15. Aug 22
-T-F0082-P1432,uuid:088e7954-5be0-4678-9bef-864b2a59738e,T-F0082-P1432,,delete,,IHI,16. Aug 22
 T-F0082-P1405,uuid:48b3f72f-6a74-461c-b87e-24948e149688,T-F0082-P1432,Ra re-entered data with the correct ID - there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male,edit,,IHI,15. Aug 22
 T-F0082-P1015,uuid:c3540f77-0c3e-436b-bc00-609e9db16fa6,T-F0082-P1431,Ra entered former id instead of scanning new id,edit,,IHI,16. Aug 22
 T-F0082-P1402,uuid:52701e48-1734-4e9e-a6f1-f03f57122c8e,T-F0082-P1418,,edit,,IHI,15. Aug 22
 T-F0082-P1404,uuid:a57c5c01-596c-40f5-950b-fb4fb711c5d2,T-F0082-P1419,,edit,,IHI,15. Aug 22
-T-F0082-P1420,uuid:206a9b2e-38d2-4f14-a29e-aa6b73faf890,T-F0082-P1420,Ra re-entered data with the correct ID - there was difference in these records so I retained the first informarion entered,delete,,IHI,15. Aug 22
 T-F0082-P1403,uuid:5405f273-9c89-4f52-8e5e-b2f3db630225,T-F0082-P1420,Ra re-entered data with the correct ID - there was difference in these records so I retained the first informarion entered. Although the sex information is not correct instead of Female the Ra selected male,edit,,IHI,15. Aug 22
-T-F0028-P1417,uuid:c1a77ae5-8f81-4092-a081-54172e64f992,T-F0028-P1404,Wrongly scanning Qrcode,edit,,IHI,17. Aug 22
+T-F0028-P1404,uuid:c1a77ae5-8f81-4092-a081-54172e64f992,T-F0028-C1404,Wrongly scanning Qrcode,edit,,IHI,17. Aug 22
 T-F0082-P1394,uuid:3fbcbc3f-d5fd-4def-b773-fbcb3e5a53d9,T-F0082-P1494,Ra entered arleady used QR codes,edit,,IHI,24. Aug 22
 T-F0001-P0675,uuid:800683a8-40df-47ac-bed0-5ee640e2d414,T-F0001-P0676,,edit,,IHI,29. Aug 22
 T-F0024-P0353,uuid:33250280-7d68-4cce-b15d-a0601dd02eea,T-F0024-P0354,,edit,,IHI,29. Aug 22
@@ -257,7 +254,6 @@ T-F0082-P2363,uuid:d5bc7765-2975-4719-98bd-d4ff33458257,T-F0082-P2362,,edit,,IHI
 T-F0082-P1354,uuid:9611125f-ddf0-4559-8b4c-4c70753a4b57,T-F0082-P2354,,edit,,IHI,12/16/2022
 T-F0082-P1353,uuid:f3d2aff5-5784-407d-b31a-aff969f6021c,T-F0082-P2353,,edit,,IHI,12/16/2022
 T-F0043-P3372,uuid:935b587a-a7cf-4e8c-82ac-5a405f3a12b9,T-F0043-P3622,,edit,,IHI,11/29/2022
-T-F0033-P0705,uuid:bbdd7161-2241-4b15-bbdb-20028532cc24,T-F0033-P0705,RA re entered information of the participants two times after mistakengly taking the picture,delete,,IHI,12/16/2022
 T-F0004-P1607,uuid:e4c0a0cf-c65d-4ca5-ae68-8f085f81aa09,T-F0004-P1727,,edit,,IHI,12/16/2022
 T-F0006-P0797,uuid:69365645-a09a-49af-be9b-75bea5482626,T-F0006-P0893,,edit,,IHI,12/19/2022
 T-F0006-P0798,uuid:c1e2e4b5-78e4-4e47-b7bb-121b45f842a8,T-F0006-P0894,,edit,,IHI,12/19/2022
@@ -342,7 +338,7 @@ T-F0020-P0676,uuid:f18c72a0-da54-4631-ade6-90b7add8d6df,T-F0020-P0931,,edit,,IHI
 T-F0001-P1617,uuid:d00903e5-227a-4677-bbcd-9d798c37cd36,T-F0010-P1617,,edit,,IHI,7/18/2022
 T-F0001-P1621,uuid:b6641b4c-6f82-49b1-ba4c-da083aba45c4,T-F0010-P1621,,edit,,IHI,7/18/2022
 T-F0001-P1624,uuid:a5412b65-cc6c-4f54-ab96-1e97954ef2b3,T-F0010-P1624,,edit,,IHI,7/18/2022
-T-F0001-P1626,uuid:630cc089-266d-4461-8551-c5489d538b73,T-F0010-P1626,,edit,,IHI,7/19/2022
+T-F0010-P1626,uuid:630cc089-266d-4461-8551-c5489d538b73,T-F0010-C1626,,edit,,IHI,7/19/2022
 T-F0001-P1628,uuid:64bac0cd-1f91-4be4-9ea9-f0e4321695a8,T-F0010-P1628,,edit,,IHI,7/19/2022
 T-F0001-P1629,uuid:aa2cf1e0-a658-45ef-8d1d-5ea48415a9a4,T-F0010-P1629,,edit,,IHI,7/19/2022
 T-F0001-P1630,uuid:a0103e13-e69a-4687-abf0-f563aff1f326,T-F0010-P1630,,edit,,IHI,7/19/2022
@@ -389,17 +385,13 @@ T-F0082-P1950,uuid:4c292685-4dd6-4ad9-891c-25cb295522f0,T-F0082-P3144,,edit,,IHI
 T-F0017-P1292,uuid:8586b2e5-6d06-44d8-ba83-27b063bb5e30,T-F0017-C1292,,edit,,IHI,2/28/2023
 T-F0034-P1452,uuid:d71cb1d3-4eb6-4fab-bfaf-72a7d2e9e682,T-F0034-P3191,,edit,,IHI,2/28/2023
 T-F0002-P1475,uuid:46f208f1-a57a-40da-a580-7206988d1f66,T-F0002-P1474,,edit,,IHI,3/30/2023
-T-F0082-P1950,uuid:4c292685-4dd6-4ad9-891c-25cb295522f0,T-F0082-P3177,,edit,,IHI,3/28/2023
 T-F0080-P1560,uuid:281782b1-fd07-4494-aaf9-1dab9b90dac9,T-F0080-P1559,,edit,,IHI,3/30/2023
-T-F0034-P1452,uuid:d71cb1d3-4eb6-4fab-bfaf-72a7d2e9e682,T-F0034-P3229,,edit,,IHI,3/28/2023
 T-F0017-P1292,uuid:548a0449-1e49-44cf-9e83-d3c3bf245aeb,T-F0017-P1294,,edit,,IHI,3/27/2023
 T-F0017-P0882,uuid:4acb5b49-3d35-4db0-8cad-afabc96ebddb,T-F0017-P1327,,edit,,IHI,3/30/2023
 T-F0001-P0886,uuid:a84454a8-d635-4ce1-9f88-383b2a9044af,T-F0001-C0886,,,,,
 T-F0003-P0434,uuid:36a8ff63-fa20-4328-8436-7c78b8558c37,T-F0003-C0434,,,,,
-T-F0010-P1626,uuid:630cc089-266d-4461-8551-c5489d538b73,T-F0010-C1626,,,,,
 T-F0021-P0464,uuid:bf988dfd-0bc4-468c-902a-947e4193616a,T-F0021-C0464,,,,,
 T-F0025-P0995,uuid:c68326f0-486c-42ea-8308-c9f1b700996b,T-F0025-C0995,,,,,
-T-F0028-P1404,uuid:c1a77ae5-8f81-4092-a081-54172e64f992,T-F0028-C1404,,,,,
 T-F0039-P1242,uuid:e85085c9-8922-47b6-8b7b-a782db424bc1,T-F0039-C1242,,,,,
 T-F0081-P0322,uuid:1141e447-3140-4401-afb1-316c789dda95,T-F0081-C0322,,,,,
 T-F0018-P1504,uuid:f819c0c7-fefe-4368-8c08-ac87fe522792,T-F0018-C1504,,edit,,,28/07/2023
