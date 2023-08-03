@@ -558,8 +558,8 @@ create_day7fu_outcome_qc_flowchart <- function(n_raw_day7fu_records,
 #' @param n_edit_nonvalid_pid_records
 #' @param n_drop_nonvalid_pid_records
 #' @param n_inconsistent_name_records
-#' @param n_drop_inconsistent_name_records
 #' @param n_edit_inconsistent_name_records
+#' @param n_drop_inconsistent_name_records
 #' @param n_cleaned_allday28fu_records TBD
 #' @return This function returns a graph object
 #' @export
@@ -572,8 +572,8 @@ create_day28fu_qc_flowchart <- function(n_raw_allday28fu_records,
                                         n_edit_nonvalid_pid_records,
                                         n_drop_nonvalid_pid_records,
                                         n_inconsistent_name_records,
-                                        n_drop_inconsistent_name_records,
                                         n_edit_inconsistent_name_records,
+                                        n_drop_inconsistent_name_records,
                                         n_cleaned_allday28fu_records) {
 
   n_excluded <- n_cdsa_pilot_day28fu_records + n_after_lockdate_records + n_drop_nonvalid_pid_records + n_drop_inconsistent_name_records
