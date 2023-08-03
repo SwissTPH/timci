@@ -1,24 +1,26 @@
-#' Create cleaning flowchart for screening data (TIMCI-specific)
+' Create a Flowchart for Cleaning Screening Data (TIMCI-specific)
 #'
-#' @param n_raw_screening_records Initial number of screening records
-#' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID
-#' @param n_other_fid_records Number of screening records corresponding to facility involved in another TIMCI study (India-specific)
-#' @param n_before_startdate_records Number of screening records with an entry date anterior to the start date
-#' @param n_before_facility_startdate_records Number of screening records with an entry date anterior to the specific facility start date
-#' @param n_after_lockdate_records Number of screening records with an entry date posterior to the lock date
-#' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver
-#' @param n_nonvalid_fid_records
-#' @param n_edited_nonvalid_fid_records
-#' @param n_inconsistent_fid_records
-#' @param n_edited_inconsistent_fid_records
-#' @param n_repeat_visit_records
-#' @param n_edited_repeat_visit_records Number of screening records that were edited manually
-#' @param n_incorrect_date_setup_records Number of screening records with an incorrect date that had to be edited manually
-#' @param n_late_submissions Number of screening records with late submission
-#' @param n_late_completions Number of screening records with late completion
-#' @param n_inconsistent_age_info Number of screening records with inconsistent age information
-#' @param n_cleaned_screening_records Number of cleaned screening records
-#' @return This function returns a graph object
+#' This function generates a flowchart to visualize the cleaning process for screening data specific to the TIMCI project. The flowchart illustrates the steps involved in identifying and addressing different issues in the raw screening records to obtain cleaned data for further analysis.
+
+#' @param n_raw_screening_records Initial number of screening records.
+#' @param n_nonvalid_deviceid_records Number of screening records with a non-valid device ID.
+#' @param n_other_fid_records Number of screening records corresponding to a facility involved in another TIMCI study (India-specific).
+#' @param n_before_startdate_records Number of screening records with an entry date earlier than the study start date.
+#' @param n_before_facility_startdate_records Number of screening records with an entry date earlier than the specific facility start date.
+#' @param n_after_lockdate_records Number of screening records with an entry date later than the lock date.
+#' @param n_ineligible_cg_records Number of screening records with an ineligible caregiver.
+#' @param n_nonvalid_fid_records Number of screening records with a non-valid facility ID.
+#' @param n_edited_nonvalid_fid_records Number of screening records where non-valid facility IDs were manually corrected.
+#' @param n_inconsistent_fid_records Number of screening records with inconsistent facility ID information.
+#' @param n_edited_inconsistent_fid_records Number of screening records where inconsistent facility IDs were manually corrected.
+#' @param n_repeat_visit_records Number of screening records marked as repeat visits.
+#' @param n_edited_repeat_visit_records Number of screening records that were manually edited to indicate repeat visits.
+#' @param n_incorrect_date_setup_records Number of screening records with incorrect creation dates that were manually edited.
+#' @param n_late_submissions Number of screening records with late submissions.
+#' @param n_late_completions Number of screening records with late completions.
+#' @param n_inconsistent_age_info Number of screening records with inconsistent age information.
+#' @param n_cleaned_screening_records Number of cleaned screening records obtained after the data cleaning process.
+#' @return This function returns a graph object representing the flowchart.
 #' @export
 #' @import DiagrammeR
 
@@ -231,6 +233,8 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 #' @param n_dropped_duplicate_records Number of Day 0 records that were dropped
 #' @param n_edited_duplicate_records Number of Day 0 records with a duplicated child ID that were edited
 #' @param n_drug_edits
+#' @param n_spo2_meas1_edits
+#' @param n_spo2_meas2_edits
 #' @param n_negative_illness_onset
 #' @param n_missing_cp
 #' @param n_missing_diagnosis
@@ -249,6 +253,8 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                                      n_dropped_duplicate_records,
                                      n_edited_duplicate_records,
                                      n_drug_edits,
+                                     n_spo2_meas1_edits,
+                                     n_spo2_meas2_edits,
                                      n_negative_illness_onset,
                                      n_missing_cp,
                                      n_missing_diagnosis,
@@ -257,7 +263,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
   n_excluded <- n_nonvalid_fid_records + n_dropped_true_duplicate_records + n_dropped_duplicate_records
   n_auto_edited <- n_incorrect_enroldate_records + n_negative_illness_onset
-  n_manual_edited <- n_edited_duplicate_records + n_drug_edits
+  n_manual_edited <- n_edited_duplicate_records + n_drug_edits + n_spo2_meas1_edits + n_spo2_meas2_edits
   n_informed <- n_missing_cp + n_missing_diagnosis + n_missing_referral_cg
 
   gr <- sprintf("digraph flowchart {
@@ -267,7 +273,7 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                   1 [label = 'Raw Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
                   m1 [label = 'Excluded (N = %s)\n%s record(s) with non-valid facility IDs\n%s record(s) with a duplicated record (out of %s detected)\n%s record(s) with a duplicated child ID (out of %s detected)']
                   m2 [label = 'Automatically edited (N = %s)\n%s record(s) with incorrect enrolment date\n%s record(s) with a negative illness onset']
-                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data']
+                  m3 [label = 'Manually edited (N = %s)\n%s record(s) with a duplicated child ID (out of %s detected)\n%s record(s) with re-entered structured drug data\n%s record(s) with corrected SpO2 measure 1 (India only)\n%s record(s) with corrected SpO2 measure 2 (India only)']
                   m4 [label = 'Other checks triggered (N = %s)\n%s record(s) with a missing clinical presentation\n%s record(s) with a missing diagnosis\n%s record(s) with no referral info from caregiver']
                   2 [label = 'Cleaned Day 0 records\n(N = %s)', shape = folder, style = filled, fillcolor = '#f79679']
 
@@ -304,6 +310,8 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
                 n_edited_duplicate_records,
                 n_duplicate_records,
                 n_drug_edits,
+                n_spo2_meas1_edits,
+                n_spo2_meas2_edits,
                 n_informed,
                 n_missing_cp,
                 n_missing_diagnosis,

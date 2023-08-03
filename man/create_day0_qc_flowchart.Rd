@@ -14,6 +14,8 @@ create_day0_qc_flowchart(
   n_dropped_duplicate_records,
   n_edited_duplicate_records,
   n_drug_edits,
+  n_spo2_meas1_edits,
+  n_spo2_meas2_edits,
   n_negative_illness_onset,
   n_missing_cp,
   n_missing_diagnosis,

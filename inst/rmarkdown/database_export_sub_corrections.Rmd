@@ -28,12 +28,16 @@ mc_status_update <- ""
 ```
 
 ```{r}
-corrections_from_field <- c("correct_device_ids")
+corrections_from_field <- c("correct_device_ids",
+                            "correct_spo2_meas1",
+                            "correct_spo2_meas2")
 is_not_from_field <- (!correction_type %in% corrections_from_field)
 
 deletions <- c("delete_training_data",
                "delete_day0_records",
                "delete_day7_records",
+               "delete_day28_records",
+               "delete_hospit_records",
                "delete_repeat_records")
 is_deletion <- (correction_type %in% deletions)
 
@@ -108,6 +112,20 @@ out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
 ```{r, eval=(correction_type=="correct_day0_inconsistent_facilities3")}
 out <- timci::correct_day0_inconsistent_facilities(to_correct_df,
                                                    csv_prefix = "day0_facility_correction3")
+```
+
+<!-- SpO2 value corrections -->
+
+```{r, eval=(correction_type=="correct_spo2_meas1")}
+out <- timci::correct_spo2_values(to_correct_df,
+                                  csv_prefix = "day0_spo2_meas1",
+                                  meas = 1)
+```
+
+```{r, eval=(correction_type=="correct_spo2_meas2")}
+out <- timci::correct_spo2_values(to_correct_df,
+                                  csv_prefix = "day0_spo2_meas2",
+                                  meas = 2)
 ```
 
 <!-- Drug corrections -->
@@ -292,7 +310,7 @@ discarded_edits %>%
 
 <!-- Quality check run after manual edits -->
 
-```{r}
+```{r, eval=is_not_from_field}
 write("   o Check after manual corrections", stderr())
 ```
 

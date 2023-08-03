@@ -841,3 +841,48 @@ selective_multi_replace <- function(df, col, cols) {
   out
 
 }
+
+#' Correct hospital follow-up IDs (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day7_non_valid_pid_correction").
+#' @param meas integer with value 1 or 2 to indicate the measurement variable to replace
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_spo2_values <- function(df,
+                               csv_prefix = "day0_spo2_meas1",
+                               meas = 1) {
+
+  csv_filename <- dplyr::case_when(Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                                   Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
+                                   TRUE ~ "")
+
+  out <- list(df, NULL, NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname)
+      df <- df %>%
+        merge(edits[, c("child_id", "uuid", "new_spo2")],
+              by = c("child_id", "uuid"),
+              all.x = TRUE)
+      if (meas == 1) {
+        df$spo2_meas1 <- ifelse(is.na(df$new_spo2), df$spo2_meas1, df$new_spo2)
+      } else if (meas == 2) {
+        df$spo2_meas2 <- ifelse(is.na(df$new_spo2), df$spo2_meas2, df$new_spo2)
+      }
+
+      # Remove the column new_spo2 from the dataframe
+      drop <- c("new_spo2")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, NULL)
+    }
+  }
+  out
+
+}

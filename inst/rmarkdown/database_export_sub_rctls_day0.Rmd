@@ -37,6 +37,8 @@ n_incorrect_enroldate_records <- 0
 n_missing_cp <- 0
 n_missing_diagnosis <- 0
 n_drug_edits <- 0
+n_spo2_meas1_edits <- 0
+n_spo2_meas2_edits <- 0
 ```
 
 ## Day 0 data quality checks and cleaning
@@ -838,8 +840,30 @@ cat(knitr::knit_child('database_export_sub_facet_scatter_plot.Rmd',
                       quiet = TRUE))
 ```
 
-```{r, results='asis', eval=is_india&timci::is_not_empty(facility_data)}
-cat("Correct pulse ox values")
+```{r, eval=is_india&timci::is_not_empty(facility_data), results='asis'}
+mc_description <- "Correct SpO2 measure 1 values based on source data"
+to_correct_df <- day0_data
+correction_type <- "correct_spo2_meas1"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+day0_data <- corrected_df
+n_spo2_meas1_edits <- n_mc
+```
+
+```{r, eval=is_india&timci::is_not_empty(facility_data), results='asis'}
+mc_description <- "Correct SpO2 measure 2 values based on source data"
+to_correct_df <- day0_data
+correction_type <- "correct_spo2_meas2"
+
+cat(knitr::knit_child('database_export_sub_corrections.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+
+day0_data <- corrected_df
+n_spo2_meas2_edits <- n_mc
 ```
 
 #### Respiratory rate [Reasonability checks]
@@ -942,6 +966,8 @@ timci::create_day0_qc_flowchart(n_raw_day0_records,
                                 n_dropped_duplicate_records,
                                 n_duplicate_edits,
                                 n_drug_edits,
+                                n_spo2_meas1_edits,
+                                n_spo2_meas2_edits,
                                 n_negative_illness_onset,
                                 n_missing_cp,
                                 n_missing_diagnosis,
