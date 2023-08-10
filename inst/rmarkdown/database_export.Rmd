@@ -187,6 +187,7 @@ qc_ASAQ_consistency_drug <- "DQC_00_1DG_28"
 qc_DHAPPQ_consistency_drug <- "DQC_00_1DG_29"
 qc_primaquine_consistency_drug <- "DQC_00_1DG_30"
 qc_quinine_consistency_drug <- "DQC_00_1DG_31"
+qc_noantibio_consistency_drug <- "DQC_00_1DG_32"
 
 # Repeat visit check IDs
 #########################
@@ -268,7 +269,6 @@ y_max <- NA
 ```
 
 ```{r}
-
 # Cryptographic settings
 
 crypto_algo <- "md5"

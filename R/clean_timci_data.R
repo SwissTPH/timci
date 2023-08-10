@@ -741,35 +741,45 @@ correct_day0_drug_data <- function(day0_df,
           by.x = "uuid",
           by.y = "uuid1",
           all.x = TRUE) %>%
-    selective_replace("rx_amoxicillin", cols) %>%
-    selective_replace("rx_amoxicillin_hf", cols) %>%
-    selective_replace("rx_penicillinG", cols) %>%
-    selective_replace("rx_penicillinG_hf", cols) %>%
-    selective_replace("rx_ceftriaxone", cols) %>%
-    selective_replace("rx_ceftriaxone_hf", cols) %>%
-    selective_replace("rx_cef_antibiotics", cols) %>%
-    selective_replace("rx_cef_antibiotics_hf", cols) %>%
-    selective_replace("rx_ciprofloxacin", cols) %>%
-    selective_replace("rx_ciprofloxacin_hf", cols) %>%
-    selective_replace("rx_gentamicin", cols) %>%
-    selective_replace("rx_gentamicin_hf", cols) %>%
-    selective_replace("rx_metronidazol", cols) %>%
-    selective_replace("rx_metronidazol_hf", cols) %>%
-    selective_replace("rx_ampicillin", cols) %>%
-    selective_replace("rx_ampicillin_hf", cols) %>%
-    selective_replace("rx_azithromycin", cols) %>%
-    selective_replace("rx_azithromycin_hf", cols) %>%
-    selective_replace("rx_benzathinepeniG", cols) %>%
-    selective_replace("rx_benzathinepeniG_hf", cols) %>%
-    selective_replace("rx_aclav", cols) %>%
-    selective_replace("rx_aclav_hf", cols) %>%
-    selective_replace("rx_cotrimoxazole", cols) %>%
-    selective_replace("rx_cotrimoxazole_hf", cols) %>%
-    selective_multi_replace("rx_antibio_oth", cols) %>%
-    selective_multi_replace("rx_antimalarials", cols) %>%
-    selective_multi_replace("rx_imci", cols) %>%
-    selective_multi_replace("rx_creams", cols) %>%
-    selective_multi_replace("rx_consumables", cols) %>%
+    timci::selective_replace("rx_amoxicillin", cols) %>%
+    timci::selective_replace("rx_amoxicillin_hf", cols) %>%
+    timci::selective_replace("rx_penicillinG", cols) %>%
+    timci::selective_replace("rx_penicillinG_hf", cols) %>%
+    timci::selective_replace("rx_ceftriaxone", cols) %>%
+    timci::selective_replace("rx_ceftriaxone_hf", cols) %>%
+    timci::selective_replace("rx_cef_antibiotics", cols) %>%
+    timci::selective_replace("rx_cef_antibiotics_hf", cols) %>%
+    timci::selective_replace("rx_ciprofloxacin", cols) %>%
+    timci::selective_replace("rx_ciprofloxacin_route", cols) %>%
+    timci::selective_replace("rx_ciprofloxacin_hf", cols) %>%
+    timci::selective_replace("rx_ciprofloxacin_route_hf", cols) %>%
+    timci::selective_replace("rx_gentamicin", cols) %>%
+    timci::selective_replace("rx_gentamicin_route", cols) %>%
+    timci::selective_replace("rx_gentamicin_hf", cols) %>%
+    timci::selective_replace("rx_gentamicin_route_hf", cols) %>%
+    timci::selective_replace("rx_metronidazol", cols) %>%
+    timci::selective_replace("rx_metronidazol_route", cols) %>%
+    timci::selective_replace("rx_metronidazol_hf", cols) %>%
+    timci::selective_replace("rx_metronidazol_route_hf", cols) %>%
+    timci::selective_replace("rx_ampicillin", cols) %>%
+    timci::selective_replace("rx_ampicillin_type", cols) %>%
+    timci::selective_replace("rx_ampicillin_hf", cols) %>%
+    timci::selective_replace("rx_ampicillin_spec_hf", cols) %>%
+    timci::selective_replace("rx_azithromycin", cols) %>%
+    timci::selective_replace("rx_azithromycin_hf", cols) %>%
+    timci::selective_replace("rx_benzathinepeniG", cols) %>%
+    timci::selective_replace("rx_benzathinepeniG_hf", cols) %>%
+    timci::selective_replace("rx_aclav", cols) %>%
+    timci::selective_replace("rx_aclav_hf", cols) %>%
+    timci::selective_replace("rx_cotrimoxazole", cols) %>%
+    timci::selective_replace("rx_cotrimoxazole_hf", cols) %>%
+    timci::selective_multi_replace("rx_antibio_oth", cols) %>%
+    timci::selective_multi_replace("rx_antimalarials", cols) %>%
+    timci::selective_multi_replace("rx_artesunate_route", cols) %>%
+    timci::selective_multi_replace("rx_quinine_route", cols) %>%
+    timci::selective_multi_replace("rx_imci", cols) %>%
+    timci::selective_multi_replace("rx_creams", cols) %>%
+    timci::selective_multi_replace("rx_consumables", cols) %>%
     dplyr::select(cols)
 
   out <- list(df, drug_df, NULL)
@@ -799,8 +809,8 @@ selective_replace <- function(df, col, cols) {
     qcol <- rlang::sym(col) # Quote the arguments that refer to data frame columns
     out <- out %>%
       dplyr::mutate(!!qcol := dplyr::case_when(
-        ( !!qcol == 0 ) & ( !!rlang::sym(paste0(col, "1")) == 1 ) ~ 1,
-        is.na(as.numeric(!!qcol)) & !is.na(as.numeric(!!rlang::sym(paste0(col, "1"))))    ~ as.numeric(!!rlang::sym(paste0(col, "1"))),
+        ( !!qcol == 0 ) & ( !!rlang::sym(paste0(col, "1")) == 1 )                      ~ 1,
+        is.na(as.numeric(!!qcol)) & !is.na(as.numeric(!!rlang::sym(paste0(col, "1")))) ~ as.numeric(!!rlang::sym(paste0(col, "1"))),
         .default = as.numeric(!!qcol))
         )
   }

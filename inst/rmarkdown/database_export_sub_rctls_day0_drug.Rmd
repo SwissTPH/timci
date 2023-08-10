@@ -716,6 +716,26 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 n_quinine_records <- n_detected
 ```
 
+### Entries that do not contain antibiotics [Expert knowledge checks `r qc_noantibio_consistency_drug`]
+
+```{r}
+write(" o No antibiotic check", stderr())
+```
+
+```{r, results='asis', eval=drug_is_not_null}
+qc_description <- "All free entries detected by this check should not contain any antibiotic"
+col_id <- "rx_antimalarials"
+value <- 20
+qc_text <- "entries that do not contain antibiotics"
+qc_idx <- qc_noantibio_consistency_drug
+qc_export_label <- "no_antibio_entries"
+qc_export_description <- "no antibiotics were re-entered"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+n_quinine_records <- n_detected
+```
+
 ### Pseudonymisation
 
 ```{r}
