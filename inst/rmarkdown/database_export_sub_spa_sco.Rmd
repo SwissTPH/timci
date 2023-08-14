@@ -48,7 +48,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_spa_sco_data <- cleaned_df
 ```
 
-### Duplicate management [compliance check `r qc_spa_sco_duplicates`]\n\n
+### Duplicate management [compliance check `r qc_spa_sco_duplicates`]
 
 ```{r}
 cleaned_df <- NULL
@@ -75,7 +75,7 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_spa_sco_data <- cleaned_df
 ```
 
-### Incomplete observations [compliance check `r qc_spa_sco_incomplete`]\n\n
+### Incomplete observations [compliance check `r qc_spa_sco_incomplete`]
 
 ```{r, eval=!is.null(locked_spa_sco_data)&!is_senegal, results='asis'}
 qc_description <- "Observation of children back from the laboratory should not be a stand-alone observation, but should complement the observation of the initial consultation (before the child was sent to the lab)."
@@ -91,11 +91,11 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       quiet = TRUE))
 ```
 
-### Data cleaning summary\n\n
+### Data cleaning summary
 
 There are **`r nrow(locked_spa_sco_data)`** records in the locked `r db_name` database.
 
-### Data export\n\n
+### Data export
 
 ```{r sick-child-observation-export, eval=deidentification_on}
 spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
@@ -117,7 +117,7 @@ timci::dataset_export(locked_spa_sco_data,
                       "Cleaned SPA sick child observation data")
 ```
 
-### Data summary statistics\n\n
+### Data summary statistics
 
 ```{r, results='asis'}
 skimr::skim(locked_spa_sco_data)

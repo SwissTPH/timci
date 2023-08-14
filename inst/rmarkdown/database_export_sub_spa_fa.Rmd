@@ -18,7 +18,7 @@ timci::dataset_export(spa_fa_data,
                       "Raw SPA facility assessment data")
 ```
 
-```{r cleaned-cg-exit-interview-export, results='asis'}
+```{r cleaned-facility-assessment-export, results='asis'}
 timci::dataset_export(spa_fa_data,
                       "01",
                       "timci_spa_facility_assessment_data",
