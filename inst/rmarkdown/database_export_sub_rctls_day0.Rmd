@@ -931,13 +931,13 @@ write(" o Pseudonymisation", stderr())
 allday0_data <- day0_data
 out <- timci::extract_pii(day0_data,
                           is_pilot)
-day0_data <- out[[1]]
+day0_data_nopseudo <- out[[1]]
 ```
 
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
 
 ```{r}
-day0_data <- day0_data %>%
+day0_data <- day0_data_nopseudo %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
                 child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
@@ -987,6 +987,14 @@ timci::dataset_export(raw_day0_data,
                       "timci_day0_data",
                       rctls_dir,
                       "Raw Day 0 data")
+```
+
+```{r, results = 'asis'}
+timci::dataset_export(day0_data_nopseudo,
+                      "02",
+                      "timci_day0_data_without_pseudonymisation",
+                      locked_db_dir,
+                      "Cleaned Day 0 data")
 ```
 
 ```{r, results = 'asis'}
@@ -1046,5 +1054,6 @@ skimr::skim(day0_data)
 
 ```{r, results='hide'}
 rm(raw_day0_data)
+rm(day0_data_nopseudo)
 gc()
 ```
