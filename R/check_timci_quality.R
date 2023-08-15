@@ -285,6 +285,8 @@ identify_nonvalid_ids <- function(df1,
     kcols <- c(kcols, "child_id")
   } else if ( "prev_id" %in% cols ) {
     kcols <- c(kcols, "prev_id")
+  } else if ( "child_identification-pid" %in% cols ) {
+    kcols <- c(kcols, "child_identification-pid")
   }
   if ( "child_name" %in% cols ) {
     kcols <- c(kcols, "child_name")
