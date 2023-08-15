@@ -762,9 +762,7 @@ correct_day0_drug_data <- function(day0_df,
     timci::selective_replace("rx_metronidazol_hf", cols) %>%
     timci::selective_replace("rx_metronidazol_route_hf", cols) %>%
     timci::selective_replace("rx_ampicillin", cols) %>%
-    timci::selective_replace("rx_ampicillin_type", cols) %>%
     timci::selective_replace("rx_ampicillin_hf", cols) %>%
-    timci::selective_replace("rx_ampicillin_spec_hf", cols) %>%
     timci::selective_replace("rx_azithromycin", cols) %>%
     timci::selective_replace("rx_azithromycin_hf", cols) %>%
     timci::selective_replace("rx_benzathinepeniG", cols) %>%
@@ -775,8 +773,8 @@ correct_day0_drug_data <- function(day0_df,
     timci::selective_replace("rx_cotrimoxazole_hf", cols) %>%
     timci::selective_multi_replace("rx_antibio_oth", cols) %>%
     timci::selective_multi_replace("rx_antimalarials", cols) %>%
-    timci::selective_multi_replace("rx_artesunate_route", cols) %>%
-    timci::selective_multi_replace("rx_quinine_route", cols) %>%
+    #timci::selective_multi_replace("rx_artesunate_route", cols) %>%
+    #timci::selective_multi_replace("rx_quinine_route", cols) %>%
     timci::selective_multi_replace("rx_imci", cols) %>%
     timci::selective_multi_replace("rx_creams", cols) %>%
     timci::selective_multi_replace("rx_consumables", cols) %>%
