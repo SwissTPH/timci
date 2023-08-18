@@ -225,3 +225,10 @@ timci::plot_geom_bar_by_facility_over_time(df = fig_df,
                                            n_facet_per_row = 5,
                                            text_size = tsize)
 ```
+
+```{r, results='hide'}
+rm(df1,
+   df2,
+   df3)
+gc()
+```
