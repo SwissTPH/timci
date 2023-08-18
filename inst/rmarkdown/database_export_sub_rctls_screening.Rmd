@@ -574,6 +574,10 @@ cat(knitr::knit_child('database_export_sub_facet_bar_plot.Rmd',
 ```
 
 ```{r}
+write("   o Cast data types", stderr())
+```
+
+```{r}
 screening_data <- screening_data %>%
   dplyr::mutate(across(c(form_version,
                          fid,
@@ -594,6 +598,10 @@ screening_data <- screening_data %>%
                        ~format(as.POSIXct(.),"%Y-%m-%d"))) %>% 
   dplyr::mutate(across(c(start),
                        as.POSIXct))
+```
+
+```{r}
+write("   o Skim data", stderr())
 ```
 
 ```{r, results='asis'}

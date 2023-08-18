@@ -242,6 +242,7 @@ detect_inconsistent_dates <- function(df,
 #' @param df2 reference dataframe
 #' @param col_id2 column name containing IDs in `df2`
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @import dplyr
 #' @export
 
 identify_nonvalid_ids <- function(df1,
@@ -265,6 +266,8 @@ identify_nonvalid_ids <- function(df1,
     kcols <- c(kcols, "date_visit")
   } else if ( "date_call" %in% cols ) {
     kcols <- c(kcols, "date_call")
+  } else if ( "date" %in% cols ) {
+    kcols <- c(kcols, "date")
   }
   if ( "fid" %in% cols ) {
     kcols <- c(kcols, "fid")
@@ -298,6 +301,8 @@ identify_nonvalid_ids <- function(df1,
   }
   if ( "uuid" %in% cols ) {
     kcols <- c(kcols, "uuid")
+  } else if ( "meta-instanceID" %in% cols ) {
+    kcols <- c(kcols, "meta-instanceID")
   }
   qc_df <- qc_df %>%
     dplyr::select(kcols)
@@ -313,6 +318,7 @@ identify_nonvalid_ids <- function(df1,
 #' @param df2 reference dataframe
 #' @param col_id2 column name containing IDs in `df2`
 #' @return This function returns a dataframe containing IDs and dates at which the ID has been allocated in different columns.
+#' @import dplyr
 #' @export
 
 identify_nonvalid_ids2 <- function(df1,
@@ -345,6 +351,86 @@ identify_nonvalid_ids2 <- function(df1,
     dplyr::select(kcols)
 
   list(qc_df, cleaned_df)
+
+}
+
+#' Identify Non-Valid IDs in a Dataframe Based on Reference IDs (TIMCI-specific)
+#'
+#' This function identifies non-valid IDs in a dataframe by comparing them with reference IDs from another dataframe. It is specifically designed for TIMCI data quality checks.
+#'
+#' @param df1 A dataframe containing the data to be checked.
+#' @param col_id1 The name of the column containing IDs in the \code{df1} dataframe.
+#' @param df2 A reference dataframe used for comparison.
+#' @param col_id2 The name of the column containing reference IDs in the \code{df2} dataframe.
+#' @return A list containing two dataframes:
+#'   \item{Non-Valid IDs Dataframe}{A dataframe containing rows with non-valid IDs and related dates, grouped in relevant columns.}
+#'   \item{Flagged Dataframe}{A dataframe similar to \code{df1} with an additional column indicating if each ID is flagged as non-valid (1) or not (0).}
+#' @import dplyr
+#' @export
+
+identify_nonvalid_ids_flagged <- function(df1,
+                                          col_id1,
+                                          df2,
+                                          col_id2) {
+
+  df1_empty <- df1 %>%
+    dplyr::filter(!!rlang::sym(col_id1) == "" | is.na(!!rlang::sym(col_id1)))
+
+  df1 <- df1 %>%
+    dplyr::filter(!!rlang::sym(col_id1) != "" & !is.na(!!rlang::sym(col_id1)))
+  qc_df <- df1[!df1[[col_id1]] %in% df2[[col_id2]], ]
+
+  flagged_df <- df1 %>%
+    dplyr::mutate(matched = ifelse(!!rlang::sym(col_id1) %in% df2[[col_id2]], 1, 0))
+
+  cols <- colnames(qc_df)
+  kcols <- c()
+  if ( "date_visit" %in% cols ) {
+    kcols <- c(kcols, "date_visit")
+  } else if ( "date_call" %in% cols ) {
+    kcols <- c(kcols, "date_call")
+  } else if ( "date" %in% cols ) {
+    kcols <- c(kcols, "date")
+  }
+  if ( "fid" %in% cols ) {
+    kcols <- c(kcols, "fid")
+  }
+  if ( "fid_ra" %in% cols ) {
+    kcols <- c(kcols, "fid_ra")
+  }
+  if ( "fid_from_device" %in% cols ) {
+    kcols <- c(kcols, "fid_from_device")
+  }
+  if ( "fid_from_main_device" %in% cols ) {
+    kcols <- c(kcols, "fid_from_main_device")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  }
+  if ( "child_id" %in% cols ) {
+    kcols <- c(kcols, "child_id")
+  } else if ( "prev_id" %in% cols ) {
+    kcols <- c(kcols, "prev_id")
+  } else if ( "child_identification-pid" %in% cols ) {
+    kcols <- c(kcols, "child_identification-pid")
+  }
+  if ( "child_name" %in% cols ) {
+    kcols <- c(kcols, "child_name")
+  } else if ( "name" %in% cols ) {
+    kcols <- c(kcols, "name")
+  }
+  if ( "deviceid" %in% cols ) {
+    kcols <- c(kcols, "deviceid")
+  }
+  if ( "uuid" %in% cols ) {
+    kcols <- c(kcols, "uuid")
+  } else if ( "meta-instanceID" %in% cols ) {
+    kcols <- c(kcols, "meta-instanceID")
+  }
+  qc_df <- qc_df %>%
+    dplyr::select(kcols)
+
+  list(qc_df, flagged_df)
 
 }
 
