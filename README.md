@@ -10,7 +10,7 @@ The TIMCI project is funded by [Unitaid](https://unitaid.org/) and led by [PATH]
 
 The overall goal of the TIMCI project is to reduce morbidity and mortality in sick children attending primary care facilities, while supporting the rational and efficient use of diagnostics and medicines by healthcare providers. The project is conducted in three African countries (Kenya, Senegal and Tanzania) and in the Indian state of Uttar Pradesh (UP). 
 
-The data collection includes a pragmatic cluster-randomized controlled trial in Tanzania and Uttar Pradesh (see [NCT04910750](https://clinicaltrials.gov/ct2/show/NCT04910750) for more details) while a quasi-experimental pre-post study is conducted in Kenya and Senegal (see [NCT05065320](https://clinicaltrials.gov/ct2/show/NCT05065320) for more details).
+The data collection includes a pragmatic cluster-randomized controlled trial in Tanzania and Uttar Pradesh (see [NCT04910750](https://www.clinicaltrials.gov/study/NCT04910750) for more details) while a quasi-experimental pre-post study is conducted in Kenya and Senegal (see [NCT05065320](https://www.clinicaltrials.gov/study/NCT05065320) for more details).
 
 |Country|Research partner|
 |-|-|
