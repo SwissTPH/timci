@@ -2,7 +2,7 @@
     "description": "This R package was created to download, clean and process data generated in the TIMCI project", 
     "license": "other-open", 
     "title": "timci R package", 
-    "version": "v0.3.11", 
+    "version": "v0.3.12", 
     "upload_type": "software", 
     "publication_date": "2023-08-21", 
     "creators": [
@@ -44,12 +44,15 @@
     "communities": [
         {
             "identifier": "timci"
+        },
+        {
+            "identifier": "swisstph"
         }
     ],
     "related_identifiers": [
         {
             "scheme": "url", 
-            "identifier": "https://github.com/SwissTPH/timci/tree/v0.3.11", 
+            "identifier": "https://github.com/SwissTPH/timci/tree/v0.3.12", 
             "relation": "isSupplementTo"
         }, 
         {
