@@ -11,6 +11,52 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
+```{r}
+db_name <- "time-flow"
+qc_tf_sco_nonvalid_ids <- "DQC_TF_01"
+```
+
+```{r}
+tf_data_main <- tf_data[[1]]
+tf_data_steps <- tf_data[[2]]
+i <- length(tf_data)
+n_raw_tf_data <- nrow(tf_data_main)
+```
+
+```{r}
+locked_tf_data_main <- tf_data_main %>%
+  dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
+```
+
+There are **`r n_raw_tf_data`** records between **`r spa_start_date`** and **`r lock_date`** in the raw `r db_name` database.
+
+### Non-valid participant IDs [compliance check `r qc_tf_sco_nonvalid_ids`]
+
+```{r}
+cleaned_df <- NULL
+```
+
+```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
+qc_description <- "Children can be part of the time-flow data even if they have been enrolled in the RCT/LS and on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column `matched` the IDs of children who are found in the locked Day 0 database."
+qc_type <- "spatf_nonvalid_ids"
+df <- locked_tf_data_main
+idcol1 <- "child_identification-pid"
+refdf <- facility_data
+idcol2 <- "child_id"
+qc_text <- "participant ID not valid"
+qc_idx <- qc_spa_sco_nonvalid_ids
+qc_export_label <- "timci_timeflow_data_unknown_ids"
+qc_export_description <- "child IDs are not found in the Day 0 dataset"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_tf_data_main <- cleaned_df
+```
+
 ## Time-flow
 
 ```{r time-flow-verbose}
@@ -18,36 +64,40 @@ write("Export time-flow data", stderr())
 ```
 
 ```{r time-flow-export-data, results = 'asis', eval=!is.null(tf_data[[1]])}
-timci::dataset_export(tf_data[[1]],
-                      "05a",
+timci::dataset_export(tf_data_main,
+                      "15a",
                       "timci_timeflow_data",
                       params$spa_dir,
                       "Raw time-flow data")
 ```
 
 ```{r time-flow-export-steps, results = 'asis', eval=!is.null(tf_data[[2]])}
-timci::dataset_export(tf_data[[2]],
-                      "05b",
+timci::dataset_export(tf_data_steps,
+                      "15b",
                       "timci_timeflow_steps",
                       params$spa_dir,
                       "Time-flow step data")
 ```
 
 ```{r, results='asis'}
-timci::dataset_export(tf_data[[1]],
-                      "05b",
+timci::dataset_export(locked_tf_data_main,
+                      "15a",
+                      "timci_timeflow_data",
+                      locked_db_dir,
+                      "Time-flow step data")
+```
+
+```{r, results='asis'}
+timci::dataset_export(tf_data_steps,
+                      "15b",
                       "timci_timeflow_steps",
                       locked_db_dir,
                       "Time-flow step data")
 ```
 
-```{r}
-i <- length(tf_data)
-```
-
 ```{r time-flow-export-audit, results = 'asis', eval=!is.null(tf_data[[i]])}
 timci::dataset_export(tf_data[[i]],
-                      "05z",
+                      "15z",
                       "timci_timeflow_audit",
                       params$spa_dir,
                       "Time-flow audit log data")
