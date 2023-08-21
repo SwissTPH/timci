@@ -28,8 +28,8 @@ cleaned_df <- NULL
 ```
 
 ```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
-qc_description <- "Children can be part of the SPA sick child,observation protocol only if they have been enrolled in the RCT/LS and on their Day 0 visit."
-qc_rule <- "Keep only IDs of children who are found in the locked Day 0 database."
+qc_description <- "Children can be part of the SPA sick child,observation protocol even if they have been enrolled in the RCT/LS and on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column `matched` the IDs of children who are found in the locked Day 0 database."
 qc_type <- "spatf_nonvalid_ids"
 df <- locked_spa_sco_data
 idcol1 <- "child_identification-pid"
@@ -103,7 +103,7 @@ spa_sco_data <- timci::deidentify_spa_data(spa_sco_data)
 
 ```{r, results='asis'}
 timci::dataset_export(spa_sco_data,
-                      "04",
+                      "14",
                       "timci_spa_consultation_obs_data",
                       params$spa_dir,
                       "Raw SPA sick child observation data")
@@ -111,7 +111,7 @@ timci::dataset_export(spa_sco_data,
 
 ```{r, results='asis'}
 timci::dataset_export(locked_spa_sco_data,
-                      "04",
+                      "14",
                       "timci_spa_consultation_obs_data",
                       locked_db_dir,
                       "Cleaned SPA sick child observation data")

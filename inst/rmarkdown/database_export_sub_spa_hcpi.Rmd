@@ -64,7 +64,7 @@ There are **`r n_locked_spa_hcpi_data`** records in the locked `r db_name` datab
 
 ```{r hcp-interview-export-raw-data, results='asis'}
 timci::dataset_export(spa_hcpi_data,
-                      "02",
+                      "12",
                       "timci_spa_provider_interview_data",
                       params$spa_dir,
                       "Raw SPA healthcare provider interview data")
@@ -72,7 +72,7 @@ timci::dataset_export(spa_hcpi_data,
 
 ```{r hcp-interview-export-cleaned-data, results='asis'}
 timci::dataset_export(locked_spa_hcpi_data,
-                      "02",
+                      "12",
                       "timci_spa_provider_interview_data",
                       locked_db_dir,
                       "Cleaned SPA healthcare provider interview data")

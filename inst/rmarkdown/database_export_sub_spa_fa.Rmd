@@ -12,7 +12,7 @@ skimr::skim(spa_fa_data)
 
 ```{r facility-assessment-export, results='asis'}
 timci::dataset_export(spa_fa_data,
-                      "01",
+                      "11",
                       "timci_spa_facility_assessment_data",
                       params$spa_dir,
                       "Raw SPA facility assessment data")
@@ -20,7 +20,7 @@ timci::dataset_export(spa_fa_data,
 
 ```{r cleaned-facility-assessment-export, results='asis'}
 timci::dataset_export(spa_fa_data,
-                      "01",
+                      "11",
                       "timci_spa_facility_assessment_data",
                       locked_db_dir,
                       "Cleaned SPA facility assessment data")
