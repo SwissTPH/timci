@@ -2,7 +2,7 @@
     "description": "Tools for Integrated Management of Childhood Illness", 
     "license": "other-open", 
     "title": "SwissTPH/timci: First Zenodo release", 
-    "version": "v0.3.7", 
+    "version": "v0.3.8", 
     "upload_type": "software", 
     "publication_date": "2023-08-21", 
     "creators": [
@@ -15,31 +15,36 @@
     "contributors": [
         {
             "affiliation": "King George's Medical University, Lucknow, Uttar Pradesh, India",
-            "name": "Anmol Jacob"
+            "name": "Anmol Jacob",
+            "type": "Other"
         },
         {
             "affiliation": "Universit\u00e9 Cheikh Anta Diop de Dakar, Dakar, Senegal",
             "name": "Tine, Jean Augustin Di\u00e9gane",
-            "orcid": "0000-0002-6636-7548"
+            "orcid": "0000-0002-6636-7548",
+            "type": "Other"
         },
         {
             "affiliation": "Ifakara Health Institute, Dar-es-Salaam, Tanzania",
-            "name": "Lwambura, Samwel"
+            "name": "Lwambura, Samwel",
+            "type": "Other"
         }, 
         {
             "affiliation": "University of Nairobi, Nairobi, Kenya",
-            "name": "Otieno, Dominic Ngalo"
+            "name": "Otieno, Dominic Ngalo",
+            "type": "Other"
         },
         {
             "affiliation": "University of Nairobi, Nairobi, Kenya",
-            "name": "Ngari, Kevin"
+            "name": "Ngari, Kevin",
+            "type": "Other"
         }
     ],
     "access_right": "open", 
     "related_identifiers": [
         {
             "scheme": "url", 
-            "identifier": "https://github.com/SwissTPH/timci/tree/v0.3.7", 
+            "identifier": "https://github.com/SwissTPH/timci/tree/v0.3.8", 
             "relation": "isSupplementTo"
         }, 
         {
