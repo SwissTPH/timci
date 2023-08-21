@@ -1,5 +1,6 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Last-changedate](https://img.shields.io/github/last-commit/SwissTPH/timci.svg)](https://github.com/SwissTPH/timci/commits/master)
+[![DOI](https://zenodo.org/badge/297342392.svg)](https://zenodo.org/badge/latestdoi/297342392)
 
 # :stethoscope: Tools for Integrated Management of Childhood Illnesses (TIMCI)
 
