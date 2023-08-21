@@ -526,14 +526,14 @@ hospitfu_deidentified_dict <- hospitfu_dictionary %>%
 There are **`r nrow(hospitfu_deidentified_dict)`** variables exported from the cleaned anonymised `r db_name` database.
 
 ```{r}
-hospit_data_no_pii <- hospit_data %>%
+hospit_data_nopseudo <- hospit_data %>%
   dplyr::select(dplyr::any_of(c(hospitfu_deidentified_dict$new)))
 ```
 
 Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
 
 ```{r}
-hospit_data_no_pii <- hospit_data_no_pii %>%
+hospit_data_no_pii <- hospit_data_nopseudo %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
                 child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
@@ -617,9 +617,23 @@ timci::dataset_export(raw_hospit_data,
 ```
 
 ```{r, results = 'asis'}
+timci::dataset_export(hospit_data_nopseudo,
+                      "05a",
+                      "timci_cleaned_followup_hospit_data_without_pseudonymisation",
+                      rctls_dir,
+                      "Cleaned hospitalisation data")
+```
+
+```{r, results = 'asis'}
 timci::dataset_export(hospit_data_no_pii,
                       "05a",
                       "timci_followup_hospit_data",
                       locked_db_dir,
                       "Cleaned de-identified hospitalisation data")
+```
+
+```{r, results='hide'}
+rm(raw_hospit_data,
+   hospit_data_nopseudo)
+gc()
 ```

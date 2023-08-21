@@ -499,13 +499,13 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 
 ```{r}
 facility_data$fid <- facility_data$fid_from_device
-screening_data <- timci::extract_screening_data(facility_data,
-                                                is_pilot) %>%
+screening_data_nopseudo <- timci::extract_screening_data(facility_data,
+                                                         is_pilot) %>%
   dplyr::select(-fid_from_device)
 ```
 
 ```{r}
-screening_data <- screening_data %>%
+screening_data <- screening_data_nopseudo %>%
   dplyr::rowwise() %>%
   dplyr::mutate(uuid = ifelse(uuid != "", digest(uuid, algo = crypto_algo), ""),
                 prev_id = ifelse(prev_id != "", digest(prev_id, algo = crypto_algo), ""),
@@ -630,6 +630,14 @@ timci::dataset_export(raw_screening_data,
                       "Raw screening data")
 ```
 
+```{r export-locked-screening-data-no-pseudonymisation, results = 'asis'}
+timci::dataset_export(screening_data_nopseudo,
+                      "01",
+                      "timci_screening_data_without_pseudonymisation",
+                      rctls_dir,
+                      "Cleaned screening data")
+```
+
 ```{r export-locked-screening-data, results = 'asis'}
 timci::dataset_export(screening_data,
                       "01",
@@ -648,6 +656,7 @@ timci::dataset_export(facility_data_audit,
 
 ```{r, results='hide'}
 rm(raw_screening_data,
+   screening_data_nopseudo,
    screening_data,
    facility_data_audit)
 gc()

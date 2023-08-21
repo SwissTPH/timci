@@ -992,8 +992,8 @@ timci::dataset_export(raw_day0_data,
 ```{r, results = 'asis'}
 timci::dataset_export(day0_data_nopseudo,
                       "02",
-                      "timci_day0_data_without_pseudonymisation",
-                      locked_db_dir,
+                      "timci_cleaned_day0_data_without_pseudonymisation",
+                      rctls_dir,
                       "Cleaned Day 0 data")
 ```
 
