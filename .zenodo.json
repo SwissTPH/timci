@@ -40,7 +40,12 @@
             "type": "Other"
         }
     ],
-    "access_right": "open", 
+    "access_right": "open",
+    "communities": [
+        {
+            "identifier": "timci"
+        }
+    ],
     "related_identifiers": [
         {
             "scheme": "url", 
