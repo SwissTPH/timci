@@ -1,6 +1,6 @@
 {
     "description": "Tools for Integrated Management of Childhood Illness", 
-    "license": "https://spdx.org/licenses/GPL-3.0", 
+    "license": "other-open", 
     "title": "SwissTPH/timci: First Zenodo release", 
     "version": "v0.3.3", 
     "upload_type": "software", 
