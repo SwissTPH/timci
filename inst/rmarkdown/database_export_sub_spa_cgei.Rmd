@@ -20,7 +20,7 @@ qc_description <- "Children can be part of the SPA sick child,observation protoc
 qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
 qc_type <- "spatf_nonvalid_ids"
 df <- locked_spa_cgei_data
-idcol1 <- "child_identification-pid"
+idcol1 <- "pid"
 refdf <- facility_data
 idcol2 <- "child_id"
 qc_text <- "participant ID not valid"
