@@ -11,16 +11,16 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
+## Observations by children
+
 ```{r}
-db_name <- "time-flow"
-qc_tf_sco_nonvalid_ids <- "DQC_TF_01"
+db_name <- "time-flow main"
+qc_tf_nonvalid_ids <- "DQC_TF_01"
 ```
 
 ```{r}
 tf_data_main <- tf_data[[1]]
-tf_data_steps <- tf_data[[2]]
-i <- length(tf_data)
-n_raw_tf_data <- nrow(tf_data_main)
+n_raw_tf_data_main <- nrow(tf_data_main)
 ```
 
 ```{r}
@@ -28,17 +28,17 @@ locked_tf_data_main <- tf_data_main %>%
   dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
 ```
 
-There are **`r n_raw_tf_data`** records between **`r spa_start_date`** and **`r lock_date`** in the raw `r db_name` database.
+There are **`r n_raw_tf_data_main`** records between **`r spa_start_date`** and **`r lock_date`** in the raw `r db_name` database.
 
-### Non-valid participant IDs [compliance check `r qc_tf_sco_nonvalid_ids`]
+### Non-valid participant IDs [compliance check `r qc_tf_nonvalid_ids`]
 
 ```{r}
 cleaned_df <- NULL
 ```
 
-```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
-qc_description <- "Children can be part of the time-flow data even if they have been enrolled in the RCT/LS and on their Day 0 visit."
-qc_rule <- "Flag with value 1 in column `matched` the IDs of children who are found in the locked Day 0 database."
+```{r, eval=!is.null(locked_tf_data_main), results='asis'}
+qc_description <- "Children can be part of the time-flow data even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
 qc_type <- "spatf_nonvalid_ids"
 df <- locked_tf_data_main
 idcol1 <- "child_identification-pid"
@@ -57,10 +57,20 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_tf_data_main <- cleaned_df
 ```
 
-## Time-flow
+### Data cleaning summary
 
-```{r time-flow-verbose}
-write("Export time-flow data", stderr())
+There are **`r nrow(locked_tf_data_main)`** records in the locked `r db_name` database.
+
+### Data overview
+
+```{r, results='asis'}
+skimr::skim(locked_tf_data_main)
+```
+
+### Export
+
+```{r time-flow-main-verbose}
+write("Export time-flow main data", stderr())
 ```
 
 ```{r time-flow-export-data, results = 'asis', eval=!is.null(tf_data[[1]])}
@@ -71,14 +81,6 @@ timci::dataset_export(tf_data_main,
                       "Raw time-flow data")
 ```
 
-```{r time-flow-export-steps, results = 'asis', eval=!is.null(tf_data[[2]])}
-timci::dataset_export(tf_data_steps,
-                      "15b",
-                      "timci_timeflow_steps",
-                      params$spa_dir,
-                      "Time-flow step data")
-```
-
 ```{r, results='asis'}
 timci::dataset_export(locked_tf_data_main,
                       "15a",
@@ -87,12 +89,82 @@ timci::dataset_export(locked_tf_data_main,
                       "Time-flow step data")
 ```
 
-```{r, results='asis'}
+## Steps
+
+```{r}
+db_name <- "time-flow step"
+qc_tf_negative_times <- "DQC_TF_02"
+```
+
+```{r}
+tf_data_steps <- tf_data[[2]]
+n_raw_tf_data_steps <- nrow(tf_data_steps)
+```
+
+```{r}
+tf_data_steps <- tf_data_steps %>%
+  dplyr::mutate(step_duration_in_seconds = difftime(strptime(time_end, "%Y-%m-%d %H:%M:%S"),
+                                                    strptime(time_start, "%Y-%m-%d %H:%M:%S")))
+```
+
+There are **`r n_raw_tf_data_steps`** records in the raw `r db_name` database.
+
+### Negative step duration [Logic check `r qc_tf_negative_times`]
+
+```{r}
+cleaned_df <- NULL
+```
+
+```{r, eval=!is.null(tf_data_steps), results='asis'}
+qc_description <- "Detect negative step durations and how frequently it happened for a given time-flow observation to assess the quality of the whole time-flow record."
+qc_rule <- "Delete steps where the duration is negative."
+qc_type <- "tf_negative_value"
+df <- tf_data_steps
+qc_text <- "negative duration"
+qc_idx <- qc_tf_negative_times
+qc_export_label <- "timci_timeflow_negative_durations"
+qc_export_description <- "step duration is negative"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_tf_data_steps <- cleaned_df
+```
+
+### Export
+
+```{r time-flow-step-verbose}
+write("Export time-flow step data", stderr())
+```
+
+```{r time-flow-export-steps, results = 'asis', eval=!is.null(tf_data_steps)}
 timci::dataset_export(tf_data_steps,
+                      "15b",
+                      "timci_timeflow_steps",
+                      params$spa_dir,
+                      "Time-flow step data")
+```
+
+```{r, results='asis', eval=!is.null(locked_tf_data_steps)}
+timci::dataset_export(locked_tf_data_steps,
                       "15b",
                       "timci_timeflow_steps",
                       locked_db_dir,
                       "Time-flow step data")
+```
+
+## Audit data
+
+```{r}
+i <- length(tf_data)
+```
+
+### Export
+
+```{r time-flow-audit-verbose}
+write("Export time-flow audit data", stderr())
 ```
 
 ```{r time-flow-export-audit, results = 'asis', eval=!is.null(tf_data[[i]])}

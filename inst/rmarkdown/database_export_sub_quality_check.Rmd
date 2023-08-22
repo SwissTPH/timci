@@ -416,7 +416,7 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
-<!-- Negative value -->
+<!-- Negative values -->
 
 ```{r, eval=(qc_type=="negative_value")}
 qc_df <- timci::detect_negative_value(df, col_value)
@@ -424,6 +424,21 @@ outcols <- c("child_id", "fid", "uuid")
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="tf_negative_value")}
+qc_df <- df %>%
+  dplyr::filter(step_duration_in_seconds < 0) %>%
+  dplyr::select(step_type,
+                step_name,
+                time_start,
+                time_end,
+                step_duration_in_seconds,
+                PARENT_KEY) %>%
+  dplyr::count(PARENT_KEY) %>%
+  dplyr::arrange(desc(n))
+cleaned_df <- df %>%
+  dplyr::filter(step_duration_in_seconds >= 0)
 ```
 
 <!-- Missing clinical presentation -->

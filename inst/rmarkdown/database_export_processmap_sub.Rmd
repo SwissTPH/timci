@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE)
 ```
 
-## Process mapping
-
 ```{r process-mapping-verbose}
 write("Export process mapping data", stderr())
 ```

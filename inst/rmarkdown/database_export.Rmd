@@ -233,11 +233,12 @@ qc_withdrawal_before_enrolment <- "DQC_WD_02"
 
 # SPA quality check IDs
 ########################
-qc_spa_sco_nonvalid_ids <- "DQC_SP_01"
-qc_spa_sco_duplicates <- "DQC_SP_02"
-qc_spa_sco_incomplete <- "DQC_SP_03"
-qc_spa_hcpi_nonvalid_ids <- "DQC_SP_04"
-qc_spa_hcpi_duplicates <- "DQC_SP_05"
+qc_spa_sco_nonvalid_ids <- "DQC_SPO_01"
+qc_spa_sco_duplicates <- "DQC_SPO_02"
+qc_spa_sco_incomplete <- "DQC_SPO_03"
+qc_spa_cgei_nonvalid_ids <- "DQC_SPC_01"
+qc_spa_hcpi_nonvalid_ids <- "DQC_SPH_01"
+qc_spa_hcpi_duplicates <- "DQC_SPH_02"
 ```
 
 ```{r}
@@ -284,7 +285,7 @@ crypto_algo <- "md5"
 |--------------|------------------------------------------------------------|
 | .CSV         | Comma-Separated Value                                      |
 | DB           | DataBase                                                   |
-| LS           | Longitudinal Observational Study                           |
+| LS           | Quasi-experimental Pre-Post Study                          |
 | ODK          | Open Data Toolkit                                          |
 | PII          | Personnally Identifiable Information                       |
 | RCT          | Randomised Controlled Trial                                |
@@ -336,7 +337,7 @@ Each updated version is to be circulated to by the data management team to the r
 
 \newpage
 
-# `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Longitudinal Observational Study (LS)'}`
+# `r if (is_rct) {'Pragmatic cluster Randomised Controlled Trial (RCT)'} else {'Quasi-experimental Pre-Post Study (LS)'}`
 
 ```{r}
 day7fu_is_not_null <- !is.null(raw_day7fu_data)
@@ -473,9 +474,26 @@ timci::generate_calendar_heatmap2(tf_data[[1]],
 
 \newpage
 
-# Process mapping & Time-flow
+# Process mapping
 
-```{r db-export-pmtf-subsection, child = 'database_export_sub_pmtf.Rmd'}
+```{r process-mapping-subsection, eval=pm_cond, results="asis"}
+if (!is.null(pm_data)) {
+  out <- knitr::knit_child('database_export_processmap_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
+```
+
+# Time-flow
+
+```{r timeflow-subsection, eval=tf_cond, results="asis"}
+if (!is.null(tf_data)) {
+  out <- knitr::knit_child('database_export_timeflow_sub.Rmd',
+                           envir = environment(),
+                           quiet = TRUE)
+  cat(out, sep = '\n')
+}
 ```
 
 \newpage

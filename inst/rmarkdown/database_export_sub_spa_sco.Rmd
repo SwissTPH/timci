@@ -28,8 +28,8 @@ cleaned_df <- NULL
 ```
 
 ```{r, eval=!is.null(locked_spa_sco_data), results='asis'}
-qc_description <- "Children can be part of the SPA sick child,observation protocol even if they have been enrolled in the RCT/LS and on their Day 0 visit."
-qc_rule <- "Flag with value 1 in column `matched` the IDs of children who are found in the locked Day 0 database."
+qc_description <- "Children can be part of the SPA sick child,observation protocol even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
 qc_type <- "spatf_nonvalid_ids"
 df <- locked_spa_sco_data
 idcol1 <- "child_identification-pid"
@@ -95,6 +95,12 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 There are **`r nrow(locked_spa_sco_data)`** records in the locked `r db_name` database.
 
+### Data overview
+
+```{r, results='asis'}
+skimr::skim(locked_spa_sco_data)
+```
+
 ### Data export
 
 ```{r sick-child-observation-export, eval=deidentification_on}
@@ -115,10 +121,4 @@ timci::dataset_export(locked_spa_sco_data,
                       "timci_spa_consultation_obs_data",
                       locked_db_dir,
                       "Cleaned SPA sick child observation data")
-```
-
-### Data summary statistics
-
-```{r, results='asis'}
-skimr::skim(locked_spa_sco_data)
 ```

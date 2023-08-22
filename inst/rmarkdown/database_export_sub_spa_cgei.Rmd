@@ -2,10 +2,48 @@
 write("Export SPA caregiver exit interview data and run corresponding quality checks", stderr())
 ```
 
+```{r}
+locked_spa_cgei_data <- spa_cgei_data %>%
+  dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
+n_raw_spa_cgei_data <- nrow(locked_spa_cgei_data)
+db_name <- "SPA caregiver exit interview"
+```
+
+### Non-valid participant IDs [compliance check `r qc_spa_cgei_nonvalid_ids`]
+
+```{r}
+cleaned_df <- NULL
+```
+
+```{r, eval=!is.null(locked_spa_cgei_data), results='asis'}
+qc_description <- "Children can be part of the SPA sick child,observation protocol even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
+qc_type <- "spatf_nonvalid_ids"
+df <- locked_spa_cgei_data
+idcol1 <- "child_identification-pid"
+refdf <- facility_data
+idcol2 <- "child_id"
+qc_text <- "participant ID not valid"
+qc_idx <- qc_spa_cgei_nonvalid_ids
+qc_export_label <- "timci_spa_caregiver_exit_data_unknown_ids"
+qc_export_description <- "child IDs are not found in the Day 0 dataset"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_spa_cgei_data <- cleaned_df
+```
+
+### Data cleaning summary
+
+There are **`r nrow(locked_spa_cgei_data)`** records in the locked `r db_name` database.
+
 ### Data overview
 
 ```{r, results='asis'}
-skimr::skim(spa_cgei_data)
+skimr::skim(locked_spa_cgei_data)
 ```
 
 ### Data export
@@ -19,7 +57,7 @@ timci::dataset_export(spa_cgei_data,
 ```
 
 ```{r cleaned-cg-exit-interview-export, results='asis'}
-timci::dataset_export(spa_cgei_data,
+timci::dataset_export(locked_spa_cgei_data,
                       "13",
                       "timci_spa_exit_interview_data",
                       locked_db_dir,
