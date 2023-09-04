@@ -383,7 +383,7 @@ process_tanzania_facility_data <- function(df,
           'crfs-t09a1-t05b-c3_6',
           'crfs-t09a1-t05b-c3_6o')
   df <- combine_columns(df, c1, c2)
-  process_facility_data(df, is_pilot)
+  timci::process_facility_data(df, is_pilot)
 
 }
 

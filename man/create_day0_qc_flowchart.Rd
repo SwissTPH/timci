@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_day0_qc_flowchart}
 \alias{create_day0_qc_flowchart}
-\title{Create cleaning flowchart for Day 0 data (TIMCI-specific)}
+\title{Create a Flowchart Illustrating Cleaning Process for Day 0 Data (TIMCI-specific)}
 \usage{
 create_day0_qc_flowchart(
   n_raw_day0_records,
@@ -24,21 +24,44 @@ create_day0_qc_flowchart(
 )
 }
 \arguments{
-\item{n_raw_day0_records}{Initial number of Day 0 records}
+\item{n_raw_day0_records}{Initial number of Day 0 records in the dataset.}
 
-\item{n_nonvalid_fid_records}{Number of Day 0 records with a non-valid device ID}
+\item{n_nonvalid_fid_records}{Number of records with a non-valid facility ID.}
 
-\item{n_incorrect_enroldate_records}{Number of Day 0 records with an incorrect enrolment date}
+\item{n_incorrect_enroldate_records}{Number of records with an incorrect enrolment date.}
 
-\item{n_dropped_duplicate_records}{Number of Day 0 records that were dropped}
+\item{n_dropped_true_duplicate_records}{Number of records dropped due to true duplication.}
 
-\item{n_edited_duplicate_records}{Number of Day 0 records with a duplicated child ID that were edited}
+\item{n_true_duplicate_detected}{Number of true duplicate records detected.}
 
-\item{n_cleaned_day0_records}{TBD}
+\item{n_duplicate_records}{Number of records with duplicated child IDs.}
+
+\item{n_dropped_duplicate_records}{Number of records dropped due to duplicated child IDs.}
+
+\item{n_edited_duplicate_records}{Number of records edited due to duplicated child IDs.}
+
+\item{n_drug_edits}{Number of records with re-entered structured drug data.}
+
+\item{n_spo2_meas1_edits}{Number of records with corrected SpO2 measure 1 (India only).}
+
+\item{n_spo2_meas2_edits}{Number of records with corrected SpO2 measure 2 (India only).}
+
+\item{n_negative_illness_onset}{Number of records with a negative illness onset.}
+
+\item{n_missing_cp}{Number of records with missing clinical presentation.}
+
+\item{n_missing_diagnosis}{Number of records with missing diagnosis.}
+
+\item{n_missing_referral_cg}{Number of records with no referral information from caregiver.}
+
+\item{n_cleaned_day0_records}{Number of records after cleaning.}
 }
 \value{
-This function returns a graph object
+A graph object representing the flowchart of the Day 0 data cleaning process.
 }
 \description{
-Create cleaning flowchart for Day 0 data (TIMCI-specific)
+This function generates a flowchart diagram illustrating the cleaning process for Day 0 data
+specific to TIMCI. The flowchart visually represents the various stages and
+outcomes of data processing, including exclusion, editing, and checks for data quality related to
+Day 0 records.
 }

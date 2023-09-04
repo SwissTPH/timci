@@ -21,7 +21,7 @@ format_odk_metadata <- function(df,
     df$end_time <- strftime(df$end, "%T")
 
     df$today <- strftime(df$start, "%Y-%m-%d")
-    df$duration <- floor(difftime(df$end, df$start, units = "days"))
+    df$duration <- floor(difftime(df$end, df$start, units = "minutes"))
 
     df <- df %>%
       dplyr::rename(date = today)

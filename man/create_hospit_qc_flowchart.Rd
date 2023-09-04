@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_hospit_qc_flowchart}
 \alias{create_hospit_qc_flowchart}
-\title{Create cleaning flowchart for hospitalisation data (TIMCI-specific)}
+\title{Create a Flowchart Illustrating Cleaning Process for Hospitalisation Data (TIMCI-specific)}
 \usage{
 create_hospit_qc_flowchart(
   n_raw_hospit_records,
@@ -22,19 +22,40 @@ create_hospit_qc_flowchart(
 )
 }
 \arguments{
-\item{n_raw_hospit_records}{Initial number of hospitalisation records}
+\item{n_raw_hospit_records}{Initial number of hospitalisation records in the dataset.}
 
-\item{n_afterlock_pids_hospitfu_records}{Number of records outside of lock range}
+\item{n_cdsa_pilot_hospitfu_records}{Number of records related to the CDSA pilot (India only).}
 
-\item{n_nonvalid_pid_records}{Number of screening records with a non-valid device ID}
+\item{n_afterlock_pids_hospitfu_records}{Number of records outside the specified lock date range.}
 
-\item{n_duplicated_records}{Number of screening records with an entry date posterior to the lock date}
+\item{n_nonvalid_pid_records}{Number of records with non-valid child IDs (out of a total of detected IDs).}
 
-\item{n_cleaned_hospit_records}{Number of cleaned hospitalisation records}
+\item{n_edit_nonvalid_pid_hospitfu_records}{Number of records edited due to non-valid child IDs.}
+
+\item{n_drop_nonvalid_pid_hospitfu_records}{Number of records dropped due to non-valid child IDs.}
+
+\item{n_inconsistent_names_day7fu_records}{Number of records with non-consistent names (out of a total of detected inconsistencies).}
+
+\item{n_edit_inconsistent_name_hospitfu_records}{Number of records edited due to non-consistent names.}
+
+\item{n_drop_inconsistent_name_hospitfu_records}{Number of records dropped due to non-consistent names.}
+
+\item{n_duplicated_records}{Number of records with an entry date posterior to the lock date.}
+
+\item{n_death_prior_day0_hospitfu}{Number of records with death prior to enrolment.}
+
+\item{n_hospit_prior_day0_hospitfu}{Number of records with hospitalisation prior to enrolment.}
+
+\item{n_discharge_prior_day0_hospitfu}{Number of records with discharge prior to enrolment.}
+
+\item{n_cleaned_hospit_records}{Number of records after cleaning.}
 }
 \value{
-This function returns a graph object
+A graph object representing the flowchart of the hospitalisation data cleaning process.
 }
 \description{
-Create cleaning flowchart for hospitalisation data (TIMCI-specific)
+This function generates a flowchart diagram illustrating the cleaning process for hospitalisation data
+specific to TIMCI. The flowchart visually represents the various stages and
+outcomes of data processing, including exclusion, editing, and checks for data quality related to
+hospitalisation records.
 }

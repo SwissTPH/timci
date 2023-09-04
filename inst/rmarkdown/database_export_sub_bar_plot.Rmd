@@ -17,3 +17,9 @@ timci::plot_geom_bar_over_time(df = fig_df,
                                max_val = max_val,
                                text_size = tsize)
 ```
+
+```{r, results='hide'}
+rm(tmp,
+   fig_df)
+gc()
+```

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_withdrawal_qc_flowchart}
 \alias{create_withdrawal_qc_flowchart}
-\title{Create cleaning flowchart for withdrawal data (TIMCI-specific)}
+\title{Create a Flowchart Illustrating Cleaning Process for Withdrawal Data (TIMCI-specific)}
 \usage{
 create_withdrawal_qc_flowchart(
   n_raw_wd_records,
@@ -13,13 +13,22 @@ create_withdrawal_qc_flowchart(
 )
 }
 \arguments{
-\item{n_raw_wd_records}{Initial number of withdrawal records}
+\item{n_raw_wd_records}{Initial number of withdrawal records in the dataset.}
 
-\item{n_cleaned_wd_records}{Number of cleaned withdrawal records}
+\item{n_no_doc_child_id_withdrawal}{Number of records with no child ID.}
+
+\item{n_drop_nonvalid_ids}{Number of records dropped due to non-valid child IDs.}
+
+\item{n_invalid_date_of_withdrawal}{Number of records with a date of withdrawal prior to enrolment.}
+
+\item{n_cleaned_wd_records}{Number of records after cleaning.}
 }
 \value{
-This function returns a graph object
+A graph object representing the flowchart of the withdrawal data cleaning process.
 }
 \description{
-Create cleaning flowchart for withdrawal data (TIMCI-specific)
+This function generates a flowchart diagram illustrating the cleaning process for withdrawal data
+specific to TIMCI. The flowchart visually represents the various stages and
+outcomes of data processing, including exclusion, editing, and checks for data quality related to
+withdrawal records.
 }

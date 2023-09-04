@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_day7fu_outcome_qc_flowchart}
 \alias{create_day7fu_outcome_qc_flowchart}
-\title{Create cleaning flowchart for successful Day 7 follow-up data (TIMCI-specific)}
+\title{Create a Flowchart Illustrating Cleaning Process for Successful Day 7 Follow-up Data (TIMCI-specific)}
 \usage{
 create_day7fu_outcome_qc_flowchart(
   n_raw_day7fu_records,
@@ -15,15 +15,25 @@ create_day7fu_outcome_qc_flowchart(
 )
 }
 \arguments{
-\item{n_raw_day7fu_records}{Number of records}
+\item{n_raw_day7fu_records}{Number of raw Day 7 follow-up records in the dataset.}
 
-\item{n_dropped_duplicate_records}{TBD}
+\item{n_dropped_duplicate_records}{Number of records dropped due to duplication.}
 
-\item{n_cleaned_day7fu_records}{TBD}
+\item{n_fu_prior_day0_day7fu}{Number of records with follow-up prior to Day 0 (enrolment).}
+
+\item{n_death_prior_day0_day7fu}{Number of records with death prior to Day 0 (enrolment).}
+
+\item{n_hospit_prior_day0_day7fu}{Number of records with hospitalization prior to Day 0 (enrolment).}
+
+\item{n_death_prior_hospit_day7fu}{Number of records with death prior to hospitalization.}
+
+\item{n_cleaned_day7fu_records}{Number of records after cleaning.}
 }
 \value{
-This function returns a graph object
+A graph object representing the flowchart of the cleaning process.
 }
 \description{
-Create cleaning flowchart for successful Day 7 follow-up data (TIMCI-specific)
+This function generates a flowchart diagram illustrating the cleaning process for successful Day 7
+follow-up data specific to TIMCI. The flowchart visually represents the various
+stages and outcomes of data processing, including exclusion, editing, and checks for data quality.
 }

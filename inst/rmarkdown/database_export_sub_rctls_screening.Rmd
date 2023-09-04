@@ -287,7 +287,7 @@ df <- facility_data
 qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
 qc_idx <- qc_screening_after_lockdate
 qc_export_label <- "posterior_to_lockdate"
-qc_export_description <- "the entry date ID is posterior to the lock date"
+qc_export_description <- "the entry date is posterior to the lock date"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))

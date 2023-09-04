@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_cleaning_flowcharts.R
 \name{create_repeat_qc_flowchart}
 \alias{create_repeat_qc_flowchart}
-\title{Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)}
+\title{Create a Flowchart Illustrating Cleaning Process for Repeat Visit Data (TIMCI-specific)}
 \usage{
 create_repeat_qc_flowchart(
   n_raw_repeat_records,
@@ -19,7 +19,7 @@ create_repeat_qc_flowchart(
 \arguments{
 \item{n_raw_repeat_records}{Number of records}
 
-\item{n_nonvalid_pids_repeat_records}{Number of records with a non-valid participan ID}
+\item{n_nonvalid_pids_repeat_records}{Number of records with a non-valid participant ID}
 
 \item{n_cleaned_repeat_records}{TBD}
 }
@@ -27,5 +27,8 @@ create_repeat_qc_flowchart(
 This function returns a graph object
 }
 \description{
-Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)
+This function generates a flowchart diagram illustrating the cleaning process for repeat visit data
+specific to TIMCI. The flowchart visually represents the various stages and
+outcomes of data processing, including exclusion, editing, and checks for data quality related to
+repeat visit records
 }

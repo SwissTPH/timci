@@ -14,38 +14,111 @@ knitr::opts_chunk$set(echo = FALSE,
 ## Observations by children
 
 ```{r}
-db_name <- "time-flow main"
-qc_tf_nonvalid_ids <- "DQC_TF_01"
+write(" o Observations by children", stderr())
 ```
 
 ```{r}
-tf_data_main <- tf_data[[1]]
+db_name <- "time-flow main"
+qc_tf_before_startdate <- "DQC_TF_01"
+qc_tf_after_lockdate <- "DQC_TF_02"
+qc_tf_nonvalid_ids <- "DQC_TF_03"
+qc_tf_nonvalid_fids <- "DQC_TF_04"
+```
+
+```{r}
+tf_data_main <- timci::match_from_tf_xls_dict(tf_data[[1]])
 n_raw_tf_data_main <- nrow(tf_data_main)
+```
+
+There are **`r n_raw_tf_data_main`** records in the raw `r db_name` database.
+
+### Dates and times
+
+```{r}
+write("   o Date and time checks", stderr())
 ```
 
 ```{r}
 locked_tf_data_main <- tf_data_main %>%
-  dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
+  dplyr::mutate(date_visit = as.Date(date_visit))
 ```
 
-There are **`r n_raw_tf_data_main`** records between **`r spa_start_date`** and **`r lock_date`** in the raw `r db_name` database.
+#### Study start date [Context check `r qc_tf_before_startdate`]
 
-### Non-valid participant IDs [compliance check `r qc_tf_nonvalid_ids`]
+```{r}
+write("   o Study start date context", stderr())
+```
+
+```{r, results='asis'}
+qc_description <- "Time-flow observations are considered valid only from the study start date. Data may have been entered before this date for training purposes."
+qc_rule <- paste0("Records entered before the study start date on ", start_date, " are deleted")
+qc_type <- "anterior_to_startdate"
+df <- tf_data_main
+qc_text <- paste0("an entry date anterior to the study start date on **", start_date, "**")
+qc_idx <- qc_tf_before_startdate
+qc_export_label <- "anterior_to_startdate"
+qc_export_description <- "the entry date is anterior to the study start date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+tf_data_before_start <- qc_df %>%
+  dplyr::select(date_visit, child_id)
+n_before_startdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_tf_data_main <- cleaned_df
+```
+
+#### Study lock date [Context check `r qc_tf_after_lockdate`]
+
+```{r}
+write("   o Study lock date context", stderr())
+```
+
+```{r, results='asis'}
+qc_description <- "Time-flow observations are considered valid only until the date for the lock. Note that follow-up data will be managed differently, since they are considered valid after the lock data as soon as they correspond to a participant enrolled before the date of the lock."
+qc_rule <- paste0("Records entered after the lock date on ", lock_date, " are deleted")
+qc_type <- "posterior_to_lockdate"
+df <- locked_tf_data_main
+qc_text <- paste0("an entry date posterior to the lock date on **", lock_date, "**")
+qc_idx <- qc_tf_after_lockdate
+qc_export_label <- "posterior_to_lockdate"
+qc_export_description <- "the entry date is posterior to the lock date"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+tf_data_after_lock <- qc_df %>%
+  dplyr::select(date_visit, child_id)
+n_after_lockdate_records <- n_detected
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_tf_data_main <- cleaned_df
+```
+
+### Facilities
+
+#### Non-valid facility IDs [compliance check `r qc_tf_nonvalid_fids`]
+
+```{r}
+write("   o Non-valid facility IDs", stderr())
+```
 
 ```{r}
 cleaned_df <- NULL
 ```
 
-```{r, eval=!is.null(locked_tf_data_main), results='asis'}
+```{r, eval=FALSE, results='asis'}
 qc_description <- "Children can be part of the time-flow data even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
 qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
 qc_type <- "spatf_nonvalid_ids"
 df <- locked_tf_data_main
-idcol1 <- "child_identification-pid"
+idcol1 <- "child_id"
 refdf <- facility_data
 idcol2 <- "child_id"
 qc_text <- "participant ID not valid"
-qc_idx <- qc_spa_sco_nonvalid_ids
+qc_idx <- qc_tf_nonvalid_fids
 qc_export_label <- "timci_timeflow_data_unknown_ids"
 qc_export_description <- "child IDs are not found in the Day 0 dataset"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
@@ -57,9 +130,62 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_tf_data_main <- cleaned_df
 ```
 
+### Participants
+
+#### Non-valid participant IDs [compliance check `r qc_tf_nonvalid_ids`]
+
+```{r}
+write("   o Non-valid participant IDs", stderr())
+```
+
+```{r}
+cleaned_df <- NULL
+```
+
+```{r, eval=!is.null(locked_tf_data_main), results='asis'}
+qc_description <- "Children can be part of the time-flow data even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
+qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
+qc_type <- "spatf_nonvalid_ids"
+df <- locked_tf_data_main
+idcol1 <- "child_id"
+refdf <- facility_data
+idcol2 <- "child_id"
+qc_text <- "participant ID not valid"
+qc_idx <- qc_tf_nonvalid_ids
+qc_export_label <- "timci_timeflow_data_unknown_ids"
+qc_export_description <- "child IDs are not found in the Day 0 dataset"
+cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
+                      envir = environment(),
+                      quiet = TRUE))
+```
+
+```{r, eval=!is.null(cleaned_df)}
+locked_tf_data_main <- cleaned_df
+```
+
+### Pseudonymisation
+
+```{r}
+write(" o Pseudonymisation", stderr())
+```
+
+Pseudonymisation is performed using a cryptographic hash function (md5) that takes strings as input and produces a random-like fixed-length output.
+
+```{r}
+locked_tf_data_main <- locked_tf_data_main %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(child_id = ifelse(child_id != "", digest(child_id, algo = crypto_algo), ""),
+                device_id = ifelse(device_id != "", digest(device_id, algo = crypto_algo), "")) %>%
+  dplyr::ungroup()
+```
+
+```{r}
+n_cleaned_tf_main_records <- nrow(locked_tf_data_main)
+```
+
 ### Data cleaning summary
 
-There are **`r nrow(locked_tf_data_main)`** records in the locked `r db_name` database.
+There are **`r n_cleaned_tf_main_records`** records in the locked `r db_name` database.
 
 ### Data overview
 
@@ -93,7 +219,7 @@ timci::dataset_export(locked_tf_data_main,
 
 ```{r}
 db_name <- "time-flow step"
-qc_tf_negative_times <- "DQC_TF_02"
+qc_tf_negative_times <- "DQC_TF_05"
 ```
 
 ```{r}
@@ -103,8 +229,12 @@ n_raw_tf_data_steps <- nrow(tf_data_steps)
 
 ```{r}
 tf_data_steps <- tf_data_steps %>%
-  dplyr::mutate(step_duration_in_seconds = difftime(strptime(time_end, "%Y-%m-%d %H:%M:%S"),
-                                                    strptime(time_start, "%Y-%m-%d %H:%M:%S")))
+  dplyr::mutate(step_dur_sec = difftime(strptime(time_end, "%Y-%m-%d %H:%M:%S"),
+                                        strptime(time_start, "%Y-%m-%d %H:%M:%S"))) %>%
+  dplyr::mutate(cdsa_dur_sec = difftime(strptime(`cdsa-time_cdsaend`, "%Y-%m-%d %H:%M:%S"),
+                                        strptime(`cdsa-time_cdsastart`, "%Y-%m-%d %H:%M:%S"))) %>%
+  dplyr::mutate(pox_dur_sec = difftime(strptime(`pox-time_poxend`, "%Y-%m-%d %H:%M:%S"),
+                                       strptime(`pox-time_poxstart`, "%Y-%m-%d %H:%M:%S")))
 ```
 
 There are **`r n_raw_tf_data_steps`** records in the raw `r db_name` database.

@@ -222,25 +222,30 @@ create_drug_qc_flowchart <- function(n_raw_drug_records,
 
 }
 
-#' Create cleaning flowchart for Day 0 data (TIMCI-specific)
+#' Create a Flowchart Illustrating Cleaning Process for Day 0 Data (TIMCI-specific)
 #'
-#' @param n_raw_day0_records Initial number of Day 0 records
-#' @param n_nonvalid_fid_records Number of Day 0 records with a non-valid device ID
-#' @param n_incorrect_enroldate_records Number of Day 0 records with an incorrect enrolment date
-#' @param n_dropped_true_duplicate_records
-#' @param n_true_duplicate_detected
-#' @param n_duplicate_records
-#' @param n_dropped_duplicate_records Number of Day 0 records that were dropped
-#' @param n_edited_duplicate_records Number of Day 0 records with a duplicated child ID that were edited
-#' @param n_drug_edits
-#' @param n_spo2_meas1_edits
-#' @param n_spo2_meas2_edits
-#' @param n_negative_illness_onset
-#' @param n_missing_cp
-#' @param n_missing_diagnosis
-#' @param n_missing_referral_cg
-#' @param n_cleaned_day0_records TBD
-#' @return This function returns a graph object
+#' This function generates a flowchart diagram illustrating the cleaning process for Day 0 data
+#' specific to TIMCI. The flowchart visually represents the various stages and
+#' outcomes of data processing, including exclusion, editing, and checks for data quality related to
+#' Day 0 records.
+#'
+#' @param n_raw_day0_records Initial number of Day 0 records in the dataset.
+#' @param n_nonvalid_fid_records Number of records with a non-valid facility ID.
+#' @param n_incorrect_enroldate_records Number of records with an incorrect enrolment date.
+#' @param n_dropped_true_duplicate_records Number of records dropped due to true duplication.
+#' @param n_true_duplicate_detected Number of true duplicate records detected.
+#' @param n_duplicate_records Number of records with duplicated child IDs.
+#' @param n_dropped_duplicate_records Number of records dropped due to duplicated child IDs.
+#' @param n_edited_duplicate_records Number of records edited due to duplicated child IDs.
+#' @param n_drug_edits Number of records with re-entered structured drug data.
+#' @param n_spo2_meas1_edits Number of records with corrected SpO2 measure 1 (India only).
+#' @param n_spo2_meas2_edits Number of records with corrected SpO2 measure 2 (India only).
+#' @param n_negative_illness_onset Number of records with a negative illness onset.
+#' @param n_missing_cp Number of records with missing clinical presentation.
+#' @param n_missing_diagnosis Number of records with missing diagnosis.
+#' @param n_missing_referral_cg Number of records with no referral information from caregiver.
+#' @param n_cleaned_day0_records Number of records after cleaning.
+#' @return A graph object representing the flowchart of the Day 0 data cleaning process.
 #' @export
 #' @import DiagrammeR
 
@@ -322,10 +327,15 @@ create_day0_qc_flowchart <- function(n_raw_day0_records,
 
 }
 
-#' Create cleaning flowchart for Day 7 follow-up data (TIMCI-specific)
+#' Create a Flowchart Illustrating Cleaning Process for Repeat Visit Data (TIMCI-specific)
+#'
+#' This function generates a flowchart diagram illustrating the cleaning process for repeat visit data
+#' specific to TIMCI. The flowchart visually represents the various stages and
+#' outcomes of data processing, including exclusion, editing, and checks for data quality related to
+#' repeat visit records
 #'
 #' @param n_raw_repeat_records Number of records
-#' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participan ID
+#' @param n_nonvalid_pids_repeat_records Number of records with a non-valid participant ID
 #' @param n_edit_nonvalid_pid_repeat_records
 #' @param n_drop_nonvalid_pid_repeat_records
 #' @param n_edit_inconsistent_names_repeat_records
@@ -485,16 +495,20 @@ create_day7fu_qc_flowchart <- function(n_raw_allday7fu_records,
 
 }
 
-#' Create cleaning flowchart for successful Day 7 follow-up data (TIMCI-specific)
+#' Create a Flowchart Illustrating Cleaning Process for Successful Day 7 Follow-up Data (TIMCI-specific)
 #'
-#' @param n_raw_day7fu_records Number of records
-#' @param n_dropped_duplicate_records TBD
-#' @param n_fu_prior_day0_day7fu
-#' @param n_death_prior_day0_day7fu
-#' @param n_hospit_prior_day0_day7fu
-#' @param n_death_prior_hospit_day7fu
-#' @param n_cleaned_day7fu_records TBD
-#' @return This function returns a graph object
+#' This function generates a flowchart diagram illustrating the cleaning process for successful Day 7
+#' follow-up data specific to TIMCI. The flowchart visually represents the various
+#' stages and outcomes of data processing, including exclusion, editing, and checks for data quality.
+#'
+#' @param n_raw_day7fu_records Number of raw Day 7 follow-up records in the dataset.
+#' @param n_dropped_duplicate_records Number of records dropped due to duplication.
+#' @param n_fu_prior_day0_day7fu Number of records with follow-up prior to Day 0 (enrolment).
+#' @param n_death_prior_day0_day7fu Number of records with death prior to Day 0 (enrolment).
+#' @param n_hospit_prior_day0_day7fu Number of records with hospitalization prior to Day 0 (enrolment).
+#' @param n_death_prior_hospit_day7fu Number of records with death prior to hospitalization.
+#' @param n_cleaned_day7fu_records Number of records after cleaning.
+#' @return A graph object representing the flowchart of the cleaning process.
 #' @export
 #' @import DiagrammeR
 
@@ -712,23 +726,28 @@ create_day28fu_outcome_qc_flowchart <- function(n_raw_day28fu_records,
 
 }
 
-#' Create cleaning flowchart for hospitalisation data (TIMCI-specific)
+#' Create a Flowchart Illustrating Cleaning Process for Hospitalisation Data (TIMCI-specific)
 #'
-#' @param n_raw_hospit_records Initial number of hospitalisation records
-#' @param n_cdsa_pilot_hospitfu_records
-#' @param n_afterlock_pids_hospitfu_records Number of records outside of lock range
-#' @param n_nonvalid_pid_records Number of screening records with a non-valid device ID
-#' @param n_edit_nonvalid_pid_hospitfu_records
-#' @param n_drop_nonvalid_pid_hospitfu_records,
-#' @param n_inconsistent_names_day7fu_records
-#' @param n_edit_inconsistent_name_hospitfu_records
-#' @param n_drop_inconsistent_name_hospitfu_records
-#' @param n_duplicated_records Number of screening records with an entry date posterior to the lock date
-#' @param n_death_prior_day0_hospitfu,
-#' @param n_hospit_prior_day0_hospitfu,
-#' @param n_discharge_prior_day0_hospitfu,
-#' @param n_cleaned_hospit_records Number of cleaned hospitalisation records
-#' @return This function returns a graph object
+#' This function generates a flowchart diagram illustrating the cleaning process for hospitalisation data
+#' specific to TIMCI. The flowchart visually represents the various stages and
+#' outcomes of data processing, including exclusion, editing, and checks for data quality related to
+#' hospitalisation records.
+#'
+#' @param n_raw_hospit_records Initial number of hospitalisation records in the dataset.
+#' @param n_cdsa_pilot_hospitfu_records Number of records related to the CDSA pilot (India only).
+#' @param n_afterlock_pids_hospitfu_records Number of records outside the specified lock date range.
+#' @param n_nonvalid_pid_records Number of records with non-valid child IDs (out of a total of detected IDs).
+#' @param n_edit_nonvalid_pid_hospitfu_records Number of records edited due to non-valid child IDs.
+#' @param n_drop_nonvalid_pid_hospitfu_records Number of records dropped due to non-valid child IDs.
+#' @param n_inconsistent_names_day7fu_records Number of records with non-consistent names (out of a total of detected inconsistencies).
+#' @param n_edit_inconsistent_name_hospitfu_records Number of records edited due to non-consistent names.
+#' @param n_drop_inconsistent_name_hospitfu_records Number of records dropped due to non-consistent names.
+#' @param n_duplicated_records Number of records with an entry date posterior to the lock date.
+#' @param n_death_prior_day0_hospitfu Number of records with death prior to enrolment.
+#' @param n_hospit_prior_day0_hospitfu Number of records with hospitalisation prior to enrolment.
+#' @param n_discharge_prior_day0_hospitfu Number of records with discharge prior to enrolment.
+#' @param n_cleaned_hospit_records Number of records after cleaning.
+#' @return A graph object representing the flowchart of the hospitalisation data cleaning process.
 #' @export
 #' @import DiagrammeR
 
@@ -806,14 +825,19 @@ create_hospit_qc_flowchart <- function(n_raw_hospit_records,
 
 }
 
-#' Create cleaning flowchart for withdrawal data (TIMCI-specific)
+#' Create a Flowchart Illustrating Cleaning Process for Withdrawal Data (TIMCI-specific)
 #'
-#' @param n_raw_wd_records Initial number of withdrawal records
-#' @param n_no_doc_child_id_withdrawal
-#' @param n_drop_nonvalid_ids
-#' @param n_invalid_date_of_withdrawal
-#' @param n_cleaned_wd_records Number of cleaned withdrawal records
-#' @return This function returns a graph object
+#' This function generates a flowchart diagram illustrating the cleaning process for withdrawal data
+#' specific to TIMCI. The flowchart visually represents the various stages and
+#' outcomes of data processing, including exclusion, editing, and checks for data quality related to
+#' withdrawal records.
+#'
+#' @param n_raw_wd_records Initial number of withdrawal records in the dataset.
+#' @param n_no_doc_child_id_withdrawal Number of records with no child ID.
+#' @param n_drop_nonvalid_ids Number of records dropped due to non-valid child IDs.
+#' @param n_invalid_date_of_withdrawal Number of records with a date of withdrawal prior to enrolment.
+#' @param n_cleaned_wd_records Number of records after cleaning.
+#' @return A graph object representing the flowchart of the withdrawal data cleaning process.
 #' @export
 #' @import DiagrammeR
 
