@@ -894,3 +894,60 @@ correct_spo2_values <- function(df,
   out
 
 }
+
+#' Edit non-valid facilities in time-flow data entries (TIMCI-specific function)
+#'
+#' @param df dataframe
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "tf_facility_correction").
+#' @return This function returns a list that contains a dataframe with corrections and the list of edits
+#' @import dplyr
+#' @export
+
+correct_tf_inconsistent_facilities <- function(df,
+                                               csv_prefix = "tf_facility_correction") {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
+                            TRUE ~ "")
+
+  out <- list(df, NULL, NULL)
+  if ( csv_filename != "" ) {
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+
+      discarded_edits <- df %>%
+        merge(edits[, c("old_fid", "uuid", "new_fid")],
+              by.x = c("fid", "uuid"),
+              by.y = c("old_fid", "uuid"),
+              all.y = TRUE) %>%
+        dplyr::filter(fid == "") %>%
+        dplyr::select(fid,
+                      uuid,
+                      new_fid)
+
+      df <- df %>%
+        merge(edits[, c("old_fid", "uuid", "new_fid")],
+              by.x = c("fid", "uuid"),
+              by.y = c("old_fid", "uuid"),
+              all.x = TRUE)
+
+      df$fid <- ifelse(is.na(df$new_fid), df$fid, df$new_fid)
+      if ( "fid_from_device" %in% colnames(df) )
+      {
+        df$fid_from_device <- ifelse(is.na(df$new_fid), df$fid_from_device, df$new_fid)
+      }
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_fid")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, edits, discarded_edits)
+    }
+  }
+  out
+
+}

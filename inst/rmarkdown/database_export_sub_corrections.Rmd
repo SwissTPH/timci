@@ -203,6 +203,13 @@ out <- timci::delete_repeat_records(to_correct_df,
                                     csv_prefix = "day0_repeat_inconsistent_names_deletion")
 ```
 
+<!-- Time-flow corrections -->
+
+```{r, eval=(correction_type=="correct_tf_inconsistent_facilities")}
+out <- timci::correct_tf_inconsistent_facilities(to_correct_df,
+                                                 csv_prefix = "tf_facility_correction")
+```
+
 <!-- Display summary of valid and non-valid edits that were done -->
 
 ```{r, eval=!is.null(out)}
