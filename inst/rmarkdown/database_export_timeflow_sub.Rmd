@@ -21,8 +21,8 @@ write(" o Observations by children", stderr())
 db_name <- "time-flow main"
 qc_tf_before_startdate <- "DQC_TF_01"
 qc_tf_after_lockdate <- "DQC_TF_02"
-qc_tf_nonvalid_ids <- "DQC_TF_03"
-qc_tf_nonvalid_fids <- "DQC_TF_04"
+qc_tf_nonvalid_fids <- "DQC_TF_03"
+qc_tf_nonvalid_ids <- "DQC_TF_04"
 ```
 
 ```{r}
@@ -109,18 +109,17 @@ write("   o Non-valid facility IDs", stderr())
 cleaned_df <- NULL
 ```
 
-```{r, eval=FALSE, results='asis'}
-qc_description <- "Children can be part of the time-flow data even if they have not been enrolled in the RCT/LS and are not on their Day 0 visit."
-qc_rule <- "Flag with value 1 in column *matched* the IDs of children who are found in the locked Day 0 database."
-qc_type <- "spatf_nonvalid_ids"
-df <- locked_tf_data_main
-idcol1 <- "child_id"
-refdf <- facility_data
-idcol2 <- "child_id"
-qc_text <- "participant ID not valid"
+```{r, eval=!is.null(locked_tf_data_main), results='asis'}
+qc_description <- "Facility ID does not refer to a SPA facility and is not consistent with the facility code in the child ID. Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the research assistant's manual entry (**fid_ra**)."
+qc_rule <- action_alert_no_modification
+qc_type <- "inconsistent_facility_info2"
+df <- locked_tf_data_main %>%
+  dplyr::mutate(fid_ra = fid,
+                fid = substr(child_id, 3, 7))
+qc_text <- "inconsistent facility info"
 qc_idx <- qc_tf_nonvalid_fids
-qc_export_label <- "timci_timeflow_data_unknown_ids"
-qc_export_description <- "child IDs are not found in the Day 0 dataset"
+qc_export_label <- "timci_timeflow_data_inconsistent_facility"
+qc_export_description <- "facility information between the child ID and the research assistant's entry is inconsistent"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
                       quiet = TRUE))

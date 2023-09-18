@@ -322,11 +322,19 @@ qccols <- colnames(qc_df)
 outcols <- c("date_visit",
              "child_id",
              "fid",
-             "district",
-             "fid_from_device",
-             "fid_from_main_device",
-             "fid_ra",
-             "district_ra")
+             "district")
+if ( "fid_from_device" %in%  qccols ) {
+  outcols <- c(outcols, "fid_from_device")
+}
+if ( "fid_from_main_device" %in%  qccols ) {
+  outcols <- c(outcols, "fid_from_main_device")
+}
+if ( "fid_ra" %in%  qccols ) {
+  outcols <- c(outcols, "fid_ra")
+}
+if ( "district_ra" %in%  qccols ) {
+  outcols <- c(outcols, "district_ra")
+}
 if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }

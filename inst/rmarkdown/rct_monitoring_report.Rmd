@@ -1800,7 +1800,7 @@ if (nrow(baseline_data) > 0) {
 Weekly data from Thursday to Wednesday
 
 ```{r, results='asis'}
-if (!is.null(baseline_data)){
+if (!is.null(baseline_data)) {
     if (length(baseline_data) > 0 & nrow(baseline_data) > 0) {
        baseline_data %>%
         dplyr::mutate(Week = lubridate::floor_date(as.Date(date_visit),
@@ -1823,7 +1823,7 @@ if (!is.null(baseline_data)){
 ```
 
 ```{r, results='asis'}
-if (!is.null(fu_var_cpy)){
+if (!is.null(fu_var_cpy)) {
     if (length(fu_var_cpy) > 0 & nrow(fu_var_cpy) > 0) {
        fu_var_cpy %>%
         dplyr::filter(proceed_day7 == 1) %>%
