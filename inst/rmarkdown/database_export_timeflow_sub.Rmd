@@ -111,9 +111,9 @@ qc_df <- NULL
 ```
 
 ```{r, eval=!is.null(locked_tf_data_main), results='asis'}
-qc_description <- "Facility ID does not refer to a SPA facility and is not consistent with the facility code in the child ID. Check the facility ID from the first 5 characters of the child ID (**fid**) versus from the research assistant's manual entry (**fid_ra**)."
+qc_description <- "Facility ID does not refer to a SPA facility and is not consistent with the facility code in the child ID. Check the facility ID from the first 5 characters of the child ID versus from the research assistant's manual entry."
 qc_rule <- action_alert_no_modification
-qc_type <- "spatf_inconsistent_facility_info"
+qc_type <- "tf_inconsistent_facility_info"
 df <- locked_tf_data_main
 qc_text <- "inconsistent facility info"
 qc_idx <- paste0(qc_tf_nonvalid_fids, "a")

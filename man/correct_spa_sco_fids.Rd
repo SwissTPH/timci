@@ -2,18 +2,18 @@
 % Please edit documentation in R/clean_timci_data.R
 \name{correct_spa_sco_fids}
 \alias{correct_spa_sco_fids}
-\title{Edit incorrect facility IDs in SPA sick child observation entries (TIMCI-specific function)
-This function can be used to correct documented HCP IDs}
+\title{Edit non-valid facilities in SPA sick child observation data entries (TIMCI-specific function)}
 \usage{
-correct_spa_sco_fids(df)
+correct_spa_sco_fids(df, csv_prefix = "spa_sco_facility_correction")
 }
 \arguments{
 \item{df}{dataframe}
+
+\item{csv_prefix}{A string value indicating the prefix of the CSV file from which to read the corrections (default is "spa_sco_facility_correction").}
 }
 \value{
 This function returns a list that contains a dataframe with corrections and the list of edits
 }
 \description{
-Edit incorrect facility IDs in SPA sick child observation entries (TIMCI-specific function)
-This function can be used to correct documented HCP IDs
+Edit non-valid facilities in SPA sick child observation data entries (TIMCI-specific function)
 }

@@ -233,9 +233,10 @@ qc_withdrawal_before_enrolment <- "DQC_WD_02"
 
 # SPA quality check IDs
 ########################
-qc_spa_sco_nonvalid_ids <- "DQC_SPO_01"
-qc_spa_sco_duplicates <- "DQC_SPO_02"
-qc_spa_sco_incomplete <- "DQC_SPO_03"
+qc_spa_sco_nonvalid_fids <- "DQC_SPO_01"
+qc_spa_sco_nonvalid_ids <- "DQC_SPO_02"
+qc_spa_sco_duplicates <- "DQC_SPO_03"
+qc_spa_sco_incomplete <- "DQC_SPO_04"
 qc_spa_cgei_nonvalid_ids <- "DQC_SPC_01"
 qc_spa_hcpi_nonvalid_ids <- "DQC_SPH_01"
 qc_spa_hcpi_duplicates <- "DQC_SPH_02"

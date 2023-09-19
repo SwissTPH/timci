@@ -408,16 +408,11 @@ qc_df <- qc_df %>%
   dplyr::arrange(fid)
 ```
 
-```{r, eval=(qc_type=="spatf_inconsistent_facility_info")}
+```{r, eval=(qc_type=="tf_inconsistent_facility_info")}
 qc_df <- df %>%
   dplyr::filter(fid != "" & !is.na(fid),
                 child_id != "" & !is.na(child_id),
                 fid != substr(child_id, 3, 7))
-if ( "longitude" %in% cols ) {
-  qc_df <- qc_df %>%
-    timci::find_closest_facility(research_facilities) %>%
-    dplyr::filter(facility_id != "" & !is.na(facility_id))
-}
 
 qccols <- colnames(qc_df)
 outcols <- c("date_visit",
@@ -427,18 +422,6 @@ outcols <- c("date_visit",
 if ( "facility_id" %in%  qccols ) {
   outcols <- c(outcols, "facility_id")
 }
-if ( "latitude" %in%  qccols ) {
-  outcols <- c(outcols, "latitude")
-}
-if ( "longitude" %in%  qccols ) {
-  outcols <- c(outcols, "longitude")
-}
-if ( "gps_accuracy" %in%  qccols ) {
-  outcols <- c(outcols, "gps_accuracy")
-}
-if ( "dist" %in%  qccols ) {
-  outcols <- c(outcols, "dist")
-}
 outcols <- c(outcols,
              "uuid",
              "device_id")
@@ -446,6 +429,29 @@ outcols <- c(outcols,
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
   dplyr::arrange(fid)
+```
+
+```{r, eval=(qc_type=="spa_sco_inconsistent_facility_info")}
+qc_df <- df %>%
+  dplyr::filter(`facility_identification-fcode` != "" & !is.na(`facility_identification-fcode`),
+                `child_identification-pid` != "" & !is.na(`child_identification-pid`),
+                `facility_identification-fcode` != substr(`child_identification-pid`, 3, 7))
+
+qccols <- colnames(qc_df)
+outcols <- c("date",
+             "child_identification-pid",
+             "facility_identification-fcode",
+             "facility_identification-district")
+if ( "facility_id" %in%  qccols ) {
+  outcols <- c(outcols, "facility_id")
+}
+outcols <- c(outcols,
+             "meta-instanceID",
+             "DeviceID")
+
+qc_df <- qc_df %>%
+  dplyr::select(outcols) %>%
+  dplyr::arrange(`facility_identification-fcode`)
 ```
 
 <!-- Missing value (NA) -->

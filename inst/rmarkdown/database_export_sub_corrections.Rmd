@@ -203,6 +203,13 @@ out <- timci::delete_repeat_records(to_correct_df,
                                     csv_prefix = "day0_repeat_inconsistent_names_deletion")
 ```
 
+<!-- SPA sick child observation corrections -->
+
+```{r, eval=(correction_type=="correct_spa_sco_inconsistent_facilities")}
+out <- timci::correct_spa_sco_fids(to_correct_df,
+                                   csv_prefix = "spa_sco_facility_correction")
+```
+
 <!-- Time-flow corrections -->
 
 ```{r, eval=(correction_type=="correct_tf_inconsistent_facilities")}
