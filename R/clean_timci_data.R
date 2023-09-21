@@ -196,6 +196,64 @@ edit_day0_child_ids <- function(df,
 
 }
 
+#' Edit incorrect child IDs based on Day 0 data correction in SPA observation entries (TIMCI-specific function)
+#'
+#' This function can be used to correct documented child ID duplicates, incorrect facility codes, or typos in Day 0 data entries. It reads in a CSV file containing corrections and applies them to the input dataframe.
+#'
+#' @param df A dataframe containing the Day 0 data entries to be corrected.
+#' @param csv_prefix A string value indicating the prefix of the CSV file from which to read the corrections (default is "day0_duplicate_correction").
+#' @return A list containing the edited dataframe and the list of applied corrections.
+#' @import dplyr
+#' @import readr
+#' @export
+
+edit_day0_child_ids_spa_sco <- function(df,
+                                        csv_prefix = "day0_duplicate_correction") {
+
+  csv_filename <- case_when(Sys.getenv('TIMCI_COUNTRY') == 'Tanzania' ~ paste(csv_prefix, "tanzania.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Kenya' ~ paste(csv_prefix, "kenya.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'Senegal' ~ paste(csv_prefix, "senegal.csv", sep = "_"),
+                            Sys.getenv('TIMCI_COUNTRY') == 'India' ~ paste(csv_prefix, "india.csv", sep = "_"),
+                            TRUE ~ "")
+
+  out <- list(df, NULL, NULL)
+  if ( csv_filename != "" ) {
+
+    csv_pathname <- system.file(file.path('extdata', 'cleaning', csv_filename), package = 'timci')
+
+    if ( file.exists(csv_pathname) ) {
+      edits <- readr::read_csv(csv_pathname, show_col_types = FALSE)
+
+      found_edits <- edits[, c("old_child_id", "new_child_id")] %>%
+        merge(df[, c("child_identification-pid", "meta-instanceID")],
+              by.x = "old_child_id",
+              by.y = "child_identification-pid",
+              all.x = FALSE,
+              all.y = FALSE)
+
+      df <- df %>%
+        merge(edits[, c("old_child_id", "new_child_id")],
+              by.x = "child_identification-pid",
+              by.y = "old_child_id",
+              all.x = TRUE) %>%
+        dplyr::mutate(`child_identification-pid` = as.character(ifelse(is.na(new_child_id),
+                                                                       `child_identification-pid`,
+                                                                       new_child_id)),
+                      `facility_identification-fcode` = ifelse(is.na(new_child_id),
+                                                               `facility_identification-fcode`,
+                                                               substr(`child_identification-pid`, 3,7)))
+
+      # Remove the column new_child_id from the dataframe
+      drop <- c("new_child_id")
+      df <- df[,!(names(df) %in% drop)]
+
+      out <- list(df, found_edits, NULL)
+    }
+  }
+  out
+
+}
+
 #' Edit incorrect child IDs in Day 0 data entries (TIMCI-specific function)
 #' This function can be used to correct documented child ID duplicates, incorrect facility codes or typos
 #'

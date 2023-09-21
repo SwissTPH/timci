@@ -451,6 +451,7 @@ outcols <- c(outcols,
 
 qc_df <- qc_df %>%
   dplyr::select(outcols) %>%
+  dplyr::rename(uuid = `meta-instanceID`) %>% 
   dplyr::arrange(`facility_identification-fcode`)
 ```
 

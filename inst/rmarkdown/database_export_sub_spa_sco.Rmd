@@ -21,7 +21,51 @@ spa_sco_data_hcp_edits %>%
   knitr::kable(caption = "Healthcare provider ID to be corrected")
 ```
 
-#### Non-valid facility IDs [compliance check `r qc_spa_sco_nonvalid_fids`]
+### Child ID from Day 0
+
+```{r}
+write("   o Child ID correction 1", stderr())
+```
+
+```{r, eval=!is.null(locked_spa_sco_data)}
+out <- timci::edit_day0_child_ids_spa_sco(locked_spa_sco_data,
+                                          csv_prefix = "day0_childID_correction_inconsistent_facility_check1")
+locked_spa_sco_data <- out[[1]]
+edited_records1 <- out[[2]]
+discarded_edits1 <- out[[3]]
+```
+
+```{r}
+write("   o Child ID correction 2", stderr())
+```
+
+```{r, eval=!is.null(locked_spa_sco_data)}
+out <- timci::edit_day0_child_ids_spa_sco(locked_spa_sco_data,
+                                          csv_prefix = "day0_childID_correction_inconsistent_facility_check2")
+
+locked_spa_sco_data <- out[[1]]
+edited_records2 <- out[[2]]
+discarded_edits2 <- out[[3]]
+```
+
+```{r}
+write("   o Child ID correction 3", stderr())
+```
+
+```{r, eval=!is.null(locked_spa_sco_data)}
+out <- timci::edit_day0_child_ids_spa_sco(locked_spa_sco_data,
+                                          csv_prefix = "day0_duplicate_correction")
+
+locked_spa_sco_data <- out[[1]]
+edited_records3 <- out[[2]]
+discarded_edits3 <- out[[3]]
+```
+
+* `nrow(edited_records1)` records edited and `nrow(discarded_edits1)` edits not applied (as no corresponding child ID in the SPA dataset).
+* `nrow(edited_records2)` records edited and `nrow(discarded_edits2)` edits not applied (as no corresponding child ID in the SPA dataset).
+* `nrow(edited_records3)` records edited and `nrow(discarded_edits3)` edits not applied (as no corresponding child ID in the SPA dataset).
+
+### Non-valid facility IDs [compliance check `r qc_spa_sco_nonvalid_fids`]
 
 ```{r}
 write("   o Non-valid facility IDs", stderr())
