@@ -442,8 +442,9 @@ pm_cond <- FALSE# timci::is_not_empty(pm_data)
 ```{r, results='asis'}
 spa_start_date <- NULL
 if (!is.null(spa_sco_data)) {
-  if (nrow(spa_sco_data) > 0) {
-    spa_start_date <- min(spa_sco_data$date)
+  main_spa_sco_data <- spa_sco_data[[1]]
+  if (nrow(main_spa_sco_data) > 0) {
+    spa_start_date <- min(main_spa_sco_data$date)
     spa_week_nb <- ceiling(difftime(as.Date(spa_start_date), as.Date(start_date) - 1,units = "weeks"))
    if (is_senegal) {
       cat(paste0("* Début de la collecte SPA : **", spa_start_date, "**"))
@@ -458,8 +459,8 @@ if (!is.null(spa_sco_data)) {
 -   Second round: **`r Sys.getenv("TIMCI_SPA_Q1_END_DATE")`** to **`r Sys.getenv("TIMCI_SPA_Q2_END_DATE")`**
 -   Third round: **`r Sys.getenv("TIMCI_SPA_Q2_END_DATE")`** to **`r Sys.getenv("TIMCI_SPA_Q3_END_DATE")`**
 
-```{r, results='asis', eval=timci::is_not_empty(spa_sco_data), fig.asp=1}
-timci::generate_calendar_heatmap2(spa_sco_data,
+```{r, results='asis', eval=timci::is_not_empty(main_spa_sco_data), fig.asp=1}
+timci::generate_calendar_heatmap2(main_spa_sco_data,
                                   date,
                                   legendtitle = "Calendar heatmap of SPA submissions")
 ```

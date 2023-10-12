@@ -3,7 +3,7 @@ write("Export SPA sick child observation protocol data and run corresponding qua
 ```
 
 ```{r}
-locked_spa_sco_data <- spa_sco_data %>%
+locked_spa_sco_data <- main_spa_sco_data %>%
   dplyr::filter(date <= as.Date(lock_date, "%Y-%m-%d"))
 n_raw_spa_sco_data <- nrow(locked_spa_sco_data)
 db_name <- "SPA sick child observation"
@@ -211,4 +211,24 @@ timci::dataset_export(locked_spa_sco_data,
                       "timci_spa_consultation_obs_data",
                       locked_db_dir,
                       "Cleaned SPA sick child observation data")
+```
+
+## Audit data
+
+```{r}
+i <- length(spa_sco_data)
+```
+
+### Data export
+
+```{r spa-sco-audit-verbose}
+write("Export SPA sick child observation audit data", stderr())
+```
+
+```{r spa-sco-export-audit, results = 'asis', eval=!is.null(spa_sco_data[[i]])}
+timci::dataset_export(spa_sco_data[[i]],
+                      "14z",
+                      "timci_spa_sco_audit",
+                      params$spa_dir,
+                      "SPA sick child observation audit log data")
 ```

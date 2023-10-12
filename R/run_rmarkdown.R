@@ -213,6 +213,9 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                           start_date = NULL,
                                                           end_date = end_date,
                                                           local_dir = t)
+
+    # Process Day 0 data
+    write(formats2h3("Process day 0 data"), stderr())
     if (is_tanzania) {
       facility_data <- timci::process_tanzania_facility_data(raw_facility_data, is_pilot)
     } else{
@@ -380,9 +383,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  verbose = TRUE)
 
       write("Combine SPA sick child observation data", stderr())
-      spa_sco_data <- timci::combine_dataframes(df1 = spa_sco_data,
-                                                df2 = spa_sco_data2,
-                                                verbose = TRUE)
+      spa_sco_data <- lapply(seq_along(spa_sco_data),
+                             function(x) timci::combine_dataframes(df1 = spa_sco_data[[x]],
+                                                                   df2 = spa_sco_data2[[x]],
+                                                                   verbose = FALSE))
 
       write("Combine PM & TF data", stderr())
       tf_data <- lapply(seq_along(tf_data),

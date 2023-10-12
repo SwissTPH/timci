@@ -336,12 +336,12 @@ load_spapmtf_data <- function(odkc_project_list,
 
     # Load SPA sick child observation protocol data
     write(formats2h3("Load SPA sick child observation protocol data"), stderr())
-    spa_sco_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                 cpid_forms = spa_form_list,
-                                                 cfid = sco_fid,
-                                                 start_date = spa_start_date,
-                                                 end_date = spa_end_date,
-                                                 verbose = TRUE)
+    spa_sco_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                         cpid_forms = spa_form_list,
+                                                         cfid = sco_fid,
+                                                         start_date = spa_start_date,
+                                                         end_date = spa_end_date,
+                                                         verbose = TRUE)
 
     # Load time-flow data
     write(formats2h3("Load time-flow data"), stderr())
