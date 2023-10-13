@@ -213,13 +213,48 @@ timci::dataset_export(locked_spa_sco_data,
                       "Cleaned SPA sick child observation data")
 ```
 
-## Audit data
+### Treatments
+
+```{r}
+db_name <- "SPA sick child observation treatments"
+```
+
+```{r}
+sco_spa_data_rx <- spa_sco_data[[2]]
+n_raw_sco_spa_data_rx <- nrow(sco_spa_data_rx)
+```
+
+There are **`r n_raw_sco_spa_data_rx`** records in the raw `r db_name` database.
+
+#### Export
+
+```{r}
+write("Export SPA sick child observation treatment data", stderr())
+```
+
+```{r, results = 'asis', eval=!is.null(sco_spa_data_rx)}
+timci::dataset_export(sco_spa_data_rx,
+                      "14b",
+                      "timci_spa_consultation_obs_rx",
+                      params$spa_dir,
+                      "SPA sick child observation treatment data")
+```
+
+```{r, results='asis', eval=!is.null(sco_spa_data_rx)}
+timci::dataset_export(sco_spa_data_rx,
+                      "14b",
+                      "timci_spa_consultation_obs_rx",
+                      locked_db_dir,
+                      "SPA sick child observation treatment data")
+```
+
+### Audit data
 
 ```{r}
 i <- length(spa_sco_data)
 ```
 
-### Data export
+#### Data export
 
 ```{r spa-sco-audit-verbose}
 write("Export SPA sick child observation audit data", stderr())
