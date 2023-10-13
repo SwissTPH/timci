@@ -373,9 +373,10 @@ run_rmarkdown_reportonly <- function(rctls_pid,
                                                  verbose = TRUE)
 
       write("Combine SPA FA data", stderr())
-      spa_fa_data <- timci::combine_dataframes(df1 = spa_fa_data,
-                                               df2 = spa_fa_data2,
-                                               verbose = TRUE)
+      spa_fa_data <- lapply(seq_along(spa_fa_data),
+                            function(x) timci::combine_dataframes(df1 = spa_fa_data[[x]],
+                                                                  df2 = spa_fa_data2[[x]],
+                                                                  verbose = FALSE))
 
       write("Combine SPA HCPI data", stderr())
       spa_hcpi_data <- timci::combine_dataframes(df1 = spa_hcpi_data,

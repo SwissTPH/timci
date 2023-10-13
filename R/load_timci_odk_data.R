@@ -317,13 +317,13 @@ load_spapmtf_data <- function(odkc_project_list,
 
     # Load SPA facility assessment data
     write(formats2h3("Load SPA facility assessment data"), stderr())
-    spa_fa_data <- extract_data_from_odk_server(cpid = spa_pid,
-                                                cpid_forms = spa_form_list,
-                                                cfid = fa_fid,
-                                                start_date = spa_start_date,
-                                                end_date = spa_end_date,
-                                                group = FALSE,
-                                                verbose = TRUE)
+    spa_fa_data <- extract_complex_data_from_odk_server(cpid = spa_pid,
+                                                        cpid_forms = spa_form_list,
+                                                        cfid = fa_fid,
+                                                        start_date = spa_start_date,
+                                                        end_date = spa_end_date,
+                                                        group = FALSE,
+                                                        verbose = TRUE)
 
     # Load SPA healthcare provider interview data
     write(formats2h3("Load SPA healthcare provider interview data"), stderr())
