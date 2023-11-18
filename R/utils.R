@@ -10,7 +10,7 @@
 export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 
   t <- NULL
-  if ( !is.null(dirname) ){
+  if ( !is.null(dirname) ) {
     fname <- file.path(dirname, paste0(prefix, ".xlsx"))
     openxlsx::write.xlsx(df,
                          fname,
@@ -34,7 +34,7 @@ export_df2xlsx <- function(df, dirname, prefix, rnames = FALSE) {
 export_df2csv <- function(df, dirname, prefix) {
 
   t <- NULL
-  if ( !is.null(dirname) ){
+  if ( !is.null(dirname) ) {
     fname <- file.path(dirname, paste0(prefix, ".csv"))
     write.csv(df,
               file = fname,
@@ -80,7 +80,7 @@ export_df2csvxlsx <- function(df, dirname, prefix) {
 export_df2sqlite <- function(df, dirname, prefix, rnames = FALSE) {
 
   t <- NULL
-  if ( !is.null(dirname) ){
+  if ( !is.null(dirname) ) {
     "To be updated"
   }
   t
@@ -271,7 +271,7 @@ import_col_specifications <- function(xls_dict,
   }
 
   n <- length(col_specs)
-  col_specs[c(1, n-1)]
+  col_specs[c(1, n - 1)]
 }
 
 #' Combine two dataframes in one
@@ -293,9 +293,9 @@ combine_dataframes <- function(df1,
   }
 
   df1 <- data.frame(lapply(df1, as.character),
-                    stringsAsFactors=FALSE)
+                    stringsAsFactors = FALSE)
   df2 <- data.frame(lapply(df2, as.character),
-                    stringsAsFactors=FALSE)
+                    stringsAsFactors = FALSE)
 
   combined_list <- list(source1 = df1,
                         source2 = df2)
@@ -365,5 +365,59 @@ normalised_levenshtein_ratio <- function(s1, s2) {
   d <- stringdist(s1, s2, method = 'lv')
   out <- 100 * (1 - d/n)
   out
+
+}
+
+#' Export datasets
+#'
+#' @param df quality check dataframe.
+#' @param idx directory where the Excel file will be created.
+#' @param label filename prefix
+#' @param cdir Row names
+#' @param description Row names
+#' @return creation timestamp of the Excel file
+#' @export
+
+dataset_export <- function(df,
+                           idx,
+                           label,
+                           cdir,
+                           description) {
+
+  msg <- paste0("**",
+                description,
+                "** is a NULL object and cannot be exported.")
+
+  if (!is.null(df)) {
+
+    filename <- paste(idx, label, sep = "_")
+    timestamps <- timci::export_df2csvxlsx(df, cdir, filename)
+    if ( !is.null(timestamps[[2]]) ) {
+      msg <- paste0(description,
+                    " have been exported to **",
+                    filename,
+                    ".xslx** (**",
+                    timestamps[[1]],
+                    "**) and to **",
+                    filename,
+                    ".csv** (**",
+                    timestamps[[2]],
+                    "**) in the **",
+                    basename(cdir),
+                    "** folder.")
+    } else{
+      msg <- paste0(description,
+                    " have been exported to **",
+                    filename,
+                    ".xslx** (**",
+                    timestamps[[1]],
+                    "**) in the **",
+                    basename(cdir),
+                    "** folder.")
+    }
+
+  }
+
+  cat(msg)
 
 }

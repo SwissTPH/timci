@@ -274,6 +274,13 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 locked_tf_data_steps <- cleaned_df
 ```
 
+<!-- Encoding -->
+
+```{r}
+locked_tf_data_steps <- locked_tf_data_steps %>%
+  dplyr::mutate(step_name = enc2utf8(step_name))
+```
+
 ### Export
 
 ```{r time-flow-step-verbose}

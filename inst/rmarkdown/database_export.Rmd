@@ -443,6 +443,7 @@ pm_cond <- FALSE# timci::is_not_empty(pm_data)
 spa_start_date <- NULL
 if (!is.null(spa_sco_data)) {
   main_spa_sco_data <- spa_sco_data[[1]]
+  main_spa_fa_data <- spa_fa_data[[1]]
   if (nrow(main_spa_sco_data) > 0) {
     spa_start_date <- min(main_spa_sco_data$date)
     spa_week_nb <- ceiling(difftime(as.Date(spa_start_date), as.Date(start_date) - 1,units = "weeks"))

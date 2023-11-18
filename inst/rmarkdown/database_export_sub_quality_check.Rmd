@@ -497,7 +497,7 @@ qc_df <- df %>%
   dplyr::count(PARENT_KEY) %>%
   dplyr::arrange(desc(n))
 cleaned_df <- df %>%
-  dplyr::filter(step_dur_sec >= 0)
+  dplyr::mutate(step_dur_sec = ifelse(step_dur_sec >= 0, step_dur_sec, NA))
 ```
 
 <!-- Missing clinical presentation -->

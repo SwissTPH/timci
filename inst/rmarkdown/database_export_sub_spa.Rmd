@@ -9,8 +9,8 @@ spa_sco_is_not_empty <- timci::is_not_empty(main_spa_sco_data)
 spa_cgei_is_not_null <- !is.null(spa_cgei_data)
 spa_cgei_is_not_empty <- timci::is_not_empty(spa_cgei_data)
 
-spa_fa_is_not_null <- !is.null(spa_fa_data)
-spa_fa_is_not_empty <- timci::is_not_empty(spa_fa_data)
+spa_fa_is_not_null <- !is.null(main_spa_fa_data)
+spa_fa_is_not_empty <- timci::is_not_empty(main_spa_fa_data)
 
 spa_hcpi_is_not_null <- !is.null(spa_hcpi_data)
 spa_hcpi_is_not_empty <- timci::is_not_empty(spa_hcpi_data)

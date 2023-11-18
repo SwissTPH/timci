@@ -38,60 +38,6 @@ quality_check_export <- function(df,
 
 }
 
-#' Export datasets
-#'
-#' @param df quality check dataframe.
-#' @param idx directory where the Excel file will be created.
-#' @param label filename prefix
-#' @param cdir Row names
-#' @param description Row names
-#' @return creation timestamp of the Excel file
-#' @export
-
-dataset_export <- function(df,
-                           idx,
-                           label,
-                           cdir,
-                           description) {
-
-  msg <- paste0("**",
-                description,
-                "** is a NULL object and cannot be exported.")
-
-  if (!is.null(df)) {
-
-    filename <- paste(idx, label, sep = "_")
-    timestamps <- timci::export_df2csvxlsx(df, cdir, filename)
-    if ( !is.null(timestamps[[2]]) ) {
-      msg <- paste0(description,
-                    " have been exported to **",
-                    filename,
-                    ".xslx** (**",
-                    timestamps[[1]],
-                    "**) and to **",
-                    filename,
-                    ".csv** (**",
-                    timestamps[[2]],
-                    "**) in the **",
-                    basename(cdir),
-                    "** folder.")
-    } else{
-      msg <- paste0(description,
-                    " have been exported to **",
-                    filename,
-                    ".xslx** (**",
-                    timestamps[[1]],
-                    "**) in the **",
-                    basename(cdir),
-                    "** folder.")
-    }
-
-  }
-
-  cat(msg)
-
-}
-
 #' Detect non-timely submissions, i.e. submissions not sent to the server on the day they were finalised (ODK function)
 #'
 #' @param df dataframe containing any ODK data, assuming standard metadata fields (`start`, `end`) are present.
