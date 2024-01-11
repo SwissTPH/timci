@@ -102,6 +102,8 @@ detect_inconsistent_dates <- function(df,
   cleaned_df <- NULL
   cols <- colnames(df)
 
+  qc_df[[col_date_start]] <- as.Date(qc_df[[col_date_start]])
+  qc_df[[col_date_end]] <- as.Date(qc_df[[col_date_end]])
   qc_df$diff <- floor(difftime(qc_df[[col_date_end]], qc_df[[col_date_start]], units = "days"))
   qc_df[[paste0("day_", col_date_end)]] <- lubridate::wday(qc_df[[col_date_end]], label = TRUE)
   qc_df[[paste0("day_", col_date_start)]] <- lubridate::wday(qc_df[[col_date_start]], label = TRUE)
