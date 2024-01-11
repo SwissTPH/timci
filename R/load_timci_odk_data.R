@@ -9,7 +9,7 @@ set_language_settings <- function() {
 
   if (Sys.getenv('TIMCI_COUNTRY') == 'Senegal') {
     Sys.setenv(LANG = "fr")
-    Sys.setlocale("LC_TIME", "French")
+    Sys.setlocale("LC_TIME", "English")
   } else {
     Sys.setenv(LANG = "en")
     Sys.setlocale("LC_TIME", "English")
