@@ -131,6 +131,8 @@ cleaned_df$consent[cleaned_df$uuid %in% qc_df$uuid] <- 0
 cleaned_df$enrolled[cleaned_df$uuid %in% qc_df$uuid] <- 0
 ```
 
+<!-- Non-valid facility IDs -->
+
 ```{r, eval=(qc_type=="nonvalid_facility_ids")}
 out <- timci::identify_nonvalid_ids(df,
                                     idcol1,
@@ -138,6 +140,8 @@ out <- timci::identify_nonvalid_ids(df,
                                     idcol2)
 qc_df <- out[[1]]
 ```
+
+<!-- Non-valid IDs -->
 
 ```{r, eval=(qc_type=="nonvalid_ids")}
 out <- timci::identify_nonvalid_ids(df,

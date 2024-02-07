@@ -2,18 +2,18 @@
 % Please edit documentation in R/deidentify.R
 \name{deidentify_spa_data}
 \alias{deidentify_spa_data}
-\title{Deidentify SPA data (TIMCI-specific function)}
+\title{De-identify SPA data (TIMCI-specific Function)}
 \usage{
 deidentify_spa_data(df, mapping = NULL)
 }
 \arguments{
-\item{df}{dataframe containing the processed facility data}
+\item{df}{A dataframe containing the processed facility data. This should include a column for child identification numbers that will be anonymized.}
 
-\item{mapping}{dataframe containing the mapping of the original / hashed IDs}
+\item{mapping}{Optional. A dataframe containing the mapping between original and hashed IDs. If provided, it will be used for anonymization; otherwise, IDs are anonymized without a predefined mapping.}
 }
 \value{
-This function returns de-identified data.
+Returns a dataframe with de-identified data. The 'child_identification_pid' column is anonymized to protect patient privacy.
 }
 \description{
-De-identification of the TIMCI research data
+This function performs de-identification of the TIMCI SPA observation data.
 }
