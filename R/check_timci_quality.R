@@ -251,6 +251,8 @@ identify_nonvalid_ids <- function(df1,
     kcols <- c(kcols, "uuid")
   } else if ( "meta-instanceID" %in% cols ) {
     kcols <- c(kcols, "meta-instanceID")
+  } else if ( "PARENT_KEY" %in% cols ) {
+    kcols <- c(kcols, "KEY", "PARENT_KEY")
   }
   qc_df <- qc_df %>%
     dplyr::select(kcols)

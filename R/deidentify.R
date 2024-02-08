@@ -79,7 +79,6 @@ deidentify_spa_data <- function(df, mapping = NULL) {
                    '')
 
   dropped <- c("meta-instanceID",
-               "origin",
                "deviceid",
                "hcp_identification-hcp_code_scan",
                "hcp_identification-hcp_code_manual",

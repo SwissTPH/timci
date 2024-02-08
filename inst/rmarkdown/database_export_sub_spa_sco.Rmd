@@ -183,19 +183,19 @@ cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
 
 ### Data cleaning summary
 
-There are **`r nrow(locked_spa_sco_data)`** records in the locked `r db_name` database.
+```{r sick-child-observation-export}
+locked_deid_spa_sco_data <- timci::deidentify_spa_data(locked_spa_sco_data)
+```
+
+There are **`r nrow(locked_deid_spa_sco_data)`** records in the locked `r db_name` database.
 
 ### Data overview
 
 ```{r, results='asis'}
-skimr::skim(locked_spa_sco_data)
+skimr::skim(locked_deid_spa_sco_data)
 ```
 
 ### Data export
-
-```{r sick-child-observation-export}
-locked_deid_spa_sco_data <- timci::deidentify_spa_data(locked_spa_sco_data)
-```
 
 ```{r, results='asis'}
 timci::dataset_export(spa_sco_data,
@@ -213,7 +213,7 @@ timci::dataset_export(locked_deid_spa_sco_data,
                       "Cleaned SPA sick child observation data")
 ```
 
-## Treatments
+### Treatments
 
 ```{r}
 db_name <- "SPA sick child observation treatments"
@@ -227,10 +227,10 @@ n_raw_sco_spa_data_rx <- nrow(sco_spa_data_rx)
 There are **`r n_raw_sco_spa_data_rx`** records in the raw `r db_name` database.
 
 
-### Non-valid parent IDs [compliance check `r qc_spa_sco_rx_nonvalid_ids`]
+#### Non-valid parent IDs [compliance check `r qc_spa_sco_rx_nonvalid_ids`]
 
 ```{r}
-write("   o Non-valid participant IDs", stderr())
+write("   o Non-valid treatment parent IDs", stderr())
 ```
 
 ```{r}
@@ -240,14 +240,14 @@ cleaned_df <- NULL
 ```{r, eval=!is.null(sco_spa_data_rx), results='asis'}
 qc_description <- "Treatments need to be associated with a parent ID in the main SPA observation dataset"
 qc_rule <- "Delete non-valid parent IDs."
-qc_type <- "nonvalid_ids2"
+qc_type <- "nonvalid_ids"
 df <- sco_spa_data_rx
 idcol1 <- "PARENT_KEY"
 refdf <- locked_spa_sco_data
 idcol2 <- "KEY"
 qc_text <- "parent ID not valid"
 qc_idx <- qc_spa_sco_rx_nonvalid_ids
-qc_export_label <- "unknown_ids"
+qc_export_label <- "unknown_treatment_parent_ids"
 qc_export_description <- "parent IDs are not found in the SPA observation dataset"
 cat(knitr::knit_child('database_export_sub_quality_check.Rmd',
                       envir = environment(),
