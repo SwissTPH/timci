@@ -499,6 +499,9 @@ Pseudonymisation is performed using a cryptographic hash function (md5) that tak
 
 ```{r}
 facility_data$fid <- facility_data$fid_from_device
+```
+
+```{r}
 screening_data_nopseudo <- timci::extract_screening_data(facility_data,
                                                          is_pilot) %>%
   dplyr::select(-fid_from_device)
